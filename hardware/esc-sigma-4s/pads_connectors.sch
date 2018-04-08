@@ -1,0 +1,883 @@
+EESchema Schematic File Version 4
+LIBS:esc-sigma-4s-cache
+EELAYER 26 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 4 5
+Title "ESC 4s 15A"
+Date "2017-12-16"
+Rev "5.1"
+Comp "Sigmadrone"
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+Text HLabel 1950 2900 0    60   Output ~ 0
+VBAT
+Text HLabel 2650 2300 2    60   UnSpc ~ 0
+GND
+Text HLabel 2850 1000 2    60   UnSpc ~ 0
+PHASE_A
+Text HLabel 2850 1250 2    60   UnSpc ~ 0
+PHASE_B
+Text HLabel 2850 1550 2    60   UnSpc ~ 0
+PHASE_C
+$Comp
+L sigmadrone:PAD P7
+U 1 1 58BEEF81
+P 1750 1000
+F 0 "P7" H 1800 1100 60  0000 C CNN
+F 1 "PAD" H 1750 1000 60  0000 C CNN
+F 2 "Sigmadrone:SolderWirePad_single_SMD_2x3mm" H 1750 1000 60  0001 C CNN
+F 3 "" H 1750 1000 60  0001 C CNN
+	1    1750 1000
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR045
+U 1 1 58BEF22A
+P 2150 2500
+F 0 "#PWR045" H 2150 2250 50  0001 C CNN
+F 1 "GND" H 2150 2350 50  0000 C CNN
+F 2 "" H 2150 2500 50  0001 C CNN
+F 3 "" H 2150 2500 50  0001 C CNN
+	1    2150 2500
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:+BATT #PWR046
+U 1 1 58BEF24C
+P 4300 1800
+F 0 "#PWR046" H 4300 1650 50  0001 C CNN
+F 1 "+BATT" H 4300 1940 50  0000 C CNN
+F 2 "" H 4300 1800 50  0001 C CNN
+F 3 "" H 4300 1800 50  0001 C CNN
+	1    4300 1800
+	-1   0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:ACS711 U3
+U 1 1 58CF4867
+P 6350 2150
+F 0 "U3" H 6600 2450 60  0000 C CNN
+F 1 "ACS711" H 6450 1850 60  0000 C CNN
+F 2 "Housings_SOIC:SOIC-8_3.9x4.9mm_Pitch1.27mm" H 6350 2150 60  0001 C CNN
+F 3 "http://www.allegromicro.com/en/Products/Part_Numbers/0711/0711.pdf" H 6350 2150 60  0001 C CNN
+F 4 "620-1373-1-ND" H 6350 2150 60  0001 C CNN "Part"
+F 5 "DigiKey" H 6350 2150 60  0001 C CNN "Provider"
+	1    6350 2150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:PWR_FLAG #FLG047
+U 1 1 58CF500A
+P 5700 1900
+F 0 "#FLG047" H 5700 1975 50  0001 C CNN
+F 1 "PWR_FLAG" H 5700 2050 50  0000 C CNN
+F 2 "" H 5700 1900 50  0001 C CNN
+F 3 "" H 5700 1900 50  0001 C CNN
+	1    5700 1900
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:PWR_FLAG #FLG048
+U 1 1 58CF52F3
+P 5700 2400
+F 0 "#FLG048" H 5700 2475 50  0001 C CNN
+F 1 "PWR_FLAG" H 5700 2550 50  0000 C CNN
+F 2 "" H 5700 2400 50  0001 C CNN
+F 3 "" H 5700 2400 50  0001 C CNN
+	1    5700 2400
+	1    0    0    1   
+$EndComp
+Text HLabel 9950 2100 2    60   Output ~ 0
+CURRENT_ADC_FILTERED
+Text HLabel 8300 2200 2    60   Output ~ 0
+CURRENT_FAULT
+$Comp
+L power:GND #PWR049
+U 1 1 58CF635C
+P 7000 2400
+F 0 "#PWR049" H 7000 2150 50  0001 C CNN
+F 1 "GND" H 7000 2250 50  0000 C CNN
+F 2 "" H 7000 2400 50  0001 C CNN
+F 3 "" H 7000 2400 50  0001 C CNN
+	1    7000 2400
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR050
+U 1 1 58CF656C
+P 7300 1850
+F 0 "#PWR050" H 7300 1600 50  0001 C CNN
+F 1 "GND" H 7300 1700 50  0000 C CNN
+F 2 "" H 7300 1850 50  0001 C CNN
+F 3 "" H 7300 1850 50  0001 C CNN
+	1    7300 1850
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR051
+U 1 1 58CF7DF0
+P 4300 3150
+F 0 "#PWR051" H 4300 2900 50  0001 C CNN
+F 1 "GND" H 4300 3000 50  0000 C CNN
+F 2 "" H 4300 3150 50  0001 C CNN
+F 3 "" H 4300 3150 50  0001 C CNN
+	1    4300 3150
+	1    0    0    -1  
+$EndComp
+Text Label 8600 2100 0    60   ~ 0
+CURRENT_ADC
+$Comp
+L power:GND #PWR052
+U 1 1 58CF92CD
+P 9700 3000
+F 0 "#PWR052" H 9700 2750 50  0001 C CNN
+F 1 "GND" H 9700 2850 50  0000 C CNN
+F 2 "" H 9700 3000 50  0001 C CNN
+F 3 "" H 9700 3000 50  0001 C CNN
+	1    9700 3000
+	1    0    0    -1  
+$EndComp
+Text Notes 8850 1900 0    60   ~ 0
+Low-pass filter, cutoff at 3.4 Hz
+Text Notes 4600 3200 0    60   ~ 0
+Power\nDecoupling\n
+$Comp
+L power:GND #PWR053
+U 1 1 58CF9CC6
+P 9700 5100
+F 0 "#PWR053" H 9700 4850 50  0001 C CNN
+F 1 "GND" H 9700 4950 50  0000 C CNN
+F 2 "" H 9700 5100 50  0001 C CNN
+F 3 "" H 9700 5100 50  0001 C CNN
+	1    9700 5100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+BATT #PWR054
+U 1 1 58CF9E89
+P 9700 3800
+F 0 "#PWR054" H 9700 3650 50  0001 C CNN
+F 1 "+BATT" H 9700 3940 50  0000 C CNN
+F 2 "" H 9700 3800 50  0001 C CNN
+F 3 "" H 9700 3800 50  0001 C CNN
+	1    9700 3800
+	-1   0    0    -1  
+$EndComp
+Text HLabel 10100 4450 2    60   Output ~ 0
+VBAT_ADC
+Text Notes 10100 3800 0    60   ~ 0
+Voltage Sense
+Text Label 2700 4000 2    60   ~ 0
+PWM_IN
+Text Label 2700 4250 2    60   ~ 0
+PWM_5V
+Text Label 2700 3750 2    60   ~ 0
+PWM_GND
+$Comp
+L power:GND #PWR055
+U 1 1 58CFB2AA
+P 2150 3500
+F 0 "#PWR055" H 2150 3250 50  0001 C CNN
+F 1 "GND" H 2150 3350 50  0000 C CNN
+F 2 "" H 2150 3500 50  0001 C CNN
+F 3 "" H 2150 3500 50  0001 C CNN
+	1    2150 3500
+	-1   0    0    1   
+$EndComp
+Text HLabel 3000 4000 2    60   Output ~ 0
+PWM
+$Comp
+L power:PWR_FLAG #FLG056
+U 1 1 58D20919
+P 2500 2500
+F 0 "#FLG056" H 2500 2575 50  0001 C CNN
+F 1 "PWR_FLAG" H 2500 2650 50  0000 C CNN
+F 2 "" H 2500 2500 50  0001 C CNN
+F 3 "" H 2500 2500 50  0001 C CNN
+	1    2500 2500
+	1    0    0    1   
+$EndComp
+$Comp
+L device:CP C6
+U 1 1 58D0D4BD
+P 4300 2600
+F 0 "C6" H 4325 2700 50  0000 L CNN
+F 1 "100uF" H 4325 2500 50  0000 L CNN
+F 2 "Capacitors_SMD:CP_Elec_6.3x7.7" H 4338 2450 50  0001 C CNN
+F 3 "http://katalog.we-online.de/pbs/datasheet/865080545012.pdf" H 4300 2600 50  0001 C CNN
+F 4 "732-8511-1-ND" H 4300 2600 60  0001 C CNN "Part"
+F 5 "DigiKey" H 4300 2600 60  0001 C CNN "Provider"
+	1    4300 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:CP C2
+U 1 1 58D0D552
+P 4600 2600
+F 0 "C2" H 4625 2700 50  0000 L CNN
+F 1 "100uF" H 4625 2500 50  0000 L CNN
+F 2 "Capacitors_SMD:CP_Elec_6.3x7.7" H 4638 2450 50  0001 C CNN
+F 3 "http://katalog.we-online.de/pbs/datasheet/865080545012.pdf" H 4600 2600 50  0001 C CNN
+F 4 "732-8511-1-ND" H 4600 2600 60  0001 C CNN "Part"
+F 5 "DigiKey" H 4600 2600 60  0001 C CNN "Provider"
+	1    4600 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:CP C1
+U 1 1 58D0D596
+P 4900 2600
+F 0 "C1" H 4925 2700 50  0000 L CNN
+F 1 "100uF" H 4925 2500 50  0000 L CNN
+F 2 "Capacitors_SMD:CP_Elec_6.3x7.7" H 4938 2450 50  0001 C CNN
+F 3 "http://katalog.we-online.de/pbs/datasheet/865080545012.pdf" H 4900 2600 50  0001 C CNN
+F 4 "732-8511-1-ND" H 4900 2600 60  0001 C CNN "Part"
+F 5 "DigiKey" H 4900 2600 60  0001 C CNN "Provider"
+	1    4900 2600
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:R R15
+U 1 1 58D1E7D1
+P 9400 2100
+F 0 "R15" V 9480 2100 50  0000 C CNN
+F 1 "47k" V 9400 2100 50  0000 C CNN
+F 2 "Resistors_SMD:R_0603" V 9330 2100 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9400 2100 50  0001 C CNN
+F 4 "311-47KDCT-ND" V 9400 2100 60  0001 C CNN "Part"
+F 5 "DigiKey" V 9400 2100 60  0001 C CNN "Provider"
+	1    9400 2100
+	0    -1   -1   0   
+$EndComp
+$Comp
+L sigmadrone:PAD P4
+U 1 1 58D20CB2
+P 1750 1250
+F 0 "P4" H 1800 1350 60  0000 C CNN
+F 1 "PAD" H 1750 1250 60  0000 C CNN
+F 2 "Sigmadrone:SolderWirePad_single_SMD_2x3mm" H 1750 1250 60  0001 C CNN
+F 3 "" H 1750 1250 60  0001 C CNN
+	1    1750 1250
+	-1   0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:PAD P1
+U 1 1 58D20CF2
+P 1750 1550
+F 0 "P1" H 1800 1650 60  0000 C CNN
+F 1 "PAD" H 1750 1550 60  0000 C CNN
+F 2 "Sigmadrone:SolderWirePad_single_SMD_2x3mm" H 1750 1550 60  0001 C CNN
+F 3 "" H 1750 1550 60  0001 C CNN
+	1    1750 1550
+	-1   0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:PAD P8
+U 1 1 58D20D36
+P 1750 2000
+F 0 "P8" H 1800 2100 60  0000 C CNN
+F 1 "PAD" H 1750 2000 60  0000 C CNN
+F 2 "Sigmadrone:SolderWirePad_single_SMD_2x3mm" H 1750 2000 60  0001 C CNN
+F 3 "" H 1750 2000 60  0001 C CNN
+	1    1750 2000
+	-1   0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:PAD P6
+U 1 1 58D20D7E
+P 1750 2300
+F 0 "P6" H 1800 2400 60  0000 C CNN
+F 1 "PAD" H 1750 2300 60  0000 C CNN
+F 2 "Sigmadrone:SolderWirePad_single_SMD_2x3mm" H 1750 2300 60  0001 C CNN
+F 3 "" H 1750 2300 60  0001 C CNN
+	1    1750 2300
+	-1   0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:PAD P2
+U 1 1 58D20E31
+P 1750 4000
+F 0 "P2" H 1800 4100 60  0000 C CNN
+F 1 "PAD" H 1750 4000 60  0000 C CNN
+F 2 "Sigmadrone:SolderWirePad_single_SMD_1.5x2.5mm" H 1750 4000 60  0001 C CNN
+F 3 "" H 1750 4000 60  0001 C CNN
+	1    1750 4000
+	-1   0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:PAD P3
+U 1 1 58D20E95
+P 1750 4250
+F 0 "P3" H 1800 4350 60  0000 C CNN
+F 1 "PAD" H 1750 4250 60  0000 C CNN
+F 2 "Sigmadrone:SolderWirePad_single_SMD_1.5x2.5mm" H 1750 4250 60  0001 C CNN
+F 3 "" H 1750 4250 60  0001 C CNN
+	1    1750 4250
+	-1   0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:PAD P5
+U 1 1 58D20ED5
+P 1750 3750
+F 0 "P5" H 1800 3850 60  0000 C CNN
+F 1 "PAD" H 1750 3750 60  0000 C CNN
+F 2 "Sigmadrone:SolderWirePad_single_SMD_1.5x2.5mm" H 1750 3750 60  0001 C CNN
+F 3 "" H 1750 3750 60  0001 C CNN
+	1    1750 3750
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR058
+U 1 1 58EC13F8
+P 6250 5300
+F 0 "#PWR058" H 6250 5050 50  0001 C CNN
+F 1 "GND" H 6250 5150 50  0000 C CNN
+F 2 "" H 6250 5300 50  0001 C CNN
+F 3 "" H 6250 5300 50  0001 C CNN
+	1    6250 5300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR059
+U 1 1 58EC1407
+P 7200 5300
+F 0 "#PWR059" H 7200 5050 50  0001 C CNN
+F 1 "GND" H 7200 5150 50  0000 C CNN
+F 2 "" H 7200 5300 50  0001 C CNN
+F 3 "" H 7200 5300 50  0001 C CNN
+	1    7200 5300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR060
+U 1 1 58EC1418
+P 5700 5300
+F 0 "#PWR060" H 5700 5050 50  0001 C CNN
+F 1 "GND" H 5700 5150 50  0000 C CNN
+F 2 "" H 5700 5300 50  0001 C CNN
+F 3 "" H 5700 5300 50  0001 C CNN
+	1    5700 5300
+	1    0    0    -1  
+$EndComp
+Text Notes 7750 5200 0    60   ~ 0
+TPS70933\n150 mA\n30V input\nInternal Enable pullup\n
+$Comp
+L power:+3V3 #PWR061
+U 1 1 58EC1595
+P 7500 4500
+F 0 "#PWR061" H 7500 4350 50  0001 C CNN
+F 1 "+3V3" H 7515 4673 50  0000 C CNN
+F 2 "" H 7500 4500 50  0001 C CNN
+F 3 "" H 7500 4500 50  0001 C CNN
+	1    7500 4500
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VDD #PWR063
+U 1 1 58F74240
+P 8200 1350
+F 0 "#PWR063" H 8200 1200 50  0001 C CNN
+F 1 "VDD" H 8217 1523 50  0000 C CNN
+F 2 "" H 8200 1350 50  0001 C CNN
+F 3 "" H 8200 1350 50  0001 C CNN
+	1    8200 1350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VDD #PWR064
+U 1 1 58F742C5
+P 7850 4500
+F 0 "#PWR064" H 7850 4350 50  0001 C CNN
+F 1 "VDD" H 7867 4673 50  0000 C CNN
+F 2 "" H 7850 4500 50  0001 C CNN
+F 3 "" H 7850 4500 50  0001 C CNN
+	1    7850 4500
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:C C9
+U 1 1 59044B35
+P 7200 5050
+F 0 "C9" H 7050 4950 50  0000 L CNN
+F 1 "4.7uF 25V" H 6800 5150 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0805" H 7238 4900 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 7200 5050 50  0001 C CNN
+F 4 "1276-2415-1-ND" H 7200 5050 60  0001 C CNN "Part"
+F 5 "DigiKey" H 7200 5050 60  0001 C CNN "Provider"
+	1    7200 5050
+	-1   0    0    1   
+$EndComp
+$Comp
+L regul:TPS793333-EP U2
+U 1 1 59D31C61
+P 6250 4700
+F 0 "U2" H 6250 5042 50  0000 C CNN
+F 1 "TPS70933" H 6250 4951 50  0000 C CNN
+F 2 "TO_SOT_Packages_SMD:SOT-23-5" H 6250 5025 50  0001 C CIN
+F 3 "http://www.ti.com/lit/ds/symlink/tps709.pdf" H 6250 4750 50  0001 C CNN
+F 4 "296-35483-1-ND" H 6250 4700 60  0001 C CNN "Part"
+F 5 "DigiKey" H 6250 4700 60  0001 C CNN "Provider"
+	1    6250 4700
+	1    0    0    -1  
+$EndComp
+NoConn ~ 6550 4700
+$Comp
+L device:C C8
+U 1 1 5A08C553
+P 7300 1700
+F 0 "C8" H 7150 1600 50  0000 L CNN
+F 1 "1uF 100V" H 6900 1800 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0805" H 7338 1550 50  0001 C CNN
+F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 7300 1700 50  0001 C CNN
+F 4 "445-8887-1-ND" H 7300 1700 60  0001 C CNN "Part"
+F 5 "DigiKey" H 7300 1700 60  0001 C CNN "Provider"
+	1    7300 1700
+	-1   0    0    1   
+$EndComp
+$Comp
+L device:C C13
+U 1 1 5A08C77C
+P 5700 5050
+F 0 "C13" H 5550 4950 50  0000 L CNN
+F 1 "1uF 100V" H 5300 5150 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0805" H 5738 4900 50  0001 C CNN
+F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 5700 5050 50  0001 C CNN
+F 4 "445-8887-1-ND" H 5700 5050 60  0001 C CNN "Part"
+F 5 "DigiKey" H 5700 5050 60  0001 C CNN "Provider"
+	1    5700 5050
+	-1   0    0    1   
+$EndComp
+Text Label 1700 5000 0    60   ~ 0
+BATTERY_INPUT
+Text Label 2200 2000 0    60   ~ 0
+BATTERY_INPUT
+$Comp
+L device:D_Schottky D6
+U 1 1 5A3569CA
+P 6850 4600
+F 0 "D6" H 6850 4700 50  0000 C CNN
+F 1 "BAT30KFILM" H 6850 4500 50  0000 C CNN
+F 2 "Diodes_SMD:D_SOD-523" H 6850 4600 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/b5/44/50/dc/a4/84/48/70/CD00126118.pdf/files/CD00126118.pdf/jcr:content/translations/en.CD00126118.pdf" H 6850 4600 50  0001 C CNN
+F 4 "497-5552-1-ND" H 6850 4600 60  0001 C CNN "Part"
+F 5 "DigiKey" H 6850 4600 60  0001 C CNN "Provider"
+	1    6850 4600
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:PWR_FLAG #FLG02
+U 1 1 5A3AAC76
+P 7200 4500
+F 0 "#FLG02" H 7200 4575 50  0001 C CNN
+F 1 "PWR_FLAG" H 7200 4650 50  0000 C CNN
+F 2 "" H 7200 4500 50  0001 C CNN
+F 3 "" H 7200 4500 50  0001 C CNN
+	1    7200 4500
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR044
+U 1 1 5A34CA62
+P 7300 2750
+F 0 "#PWR044" H 7300 2500 50  0001 C CNN
+F 1 "GND" H 7300 2600 50  0000 C CNN
+F 2 "" H 7300 2750 50  0001 C CNN
+F 3 "" H 7300 2750 50  0001 C CNN
+	1    7300 2750
+	-1   0    0    -1  
+$EndComp
+$Comp
+L device:C C10
+U 1 1 5A36219E
+P 7300 2500
+F 0 "C10" H 7150 2400 50  0000 L CNN
+F 1 "100nF 50V" H 6850 2600 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0603" H 7338 2350 50  0001 C CNN
+F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 7300 2500 50  0001 C CNN
+F 4 "490-4779-2-ND" H 7300 2500 60  0001 C CNN "Part"
+F 5 "DigiKey" H 7300 2500 60  0001 C CNN "Provider"
+	1    7300 2500
+	-1   0    0    1   
+$EndComp
+$Comp
+L device:R R14
+U 1 1 5A39E32B
+P 7900 2500
+F 0 "R14" V 7980 2500 50  0000 C CNN
+F 1 "10k" V 7900 2500 50  0000 C CNN
+F 2 "Resistors_SMD:R_0603" V 7830 2500 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 7900 2500 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 7900 2500 60  0001 C CNN "Part"
+F 5 "DigiKey" V 7900 2500 60  0001 C CNN "Provider"
+	1    7900 2500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2050 2300 2150 2300
+Wire Wire Line
+	2050 2000 5700 2000
+Wire Wire Line
+	2850 1550 2050 1550
+Wire Wire Line
+	2850 1000 2050 1000
+Wire Wire Line
+	2850 1250 2050 1250
+Connection ~ 2150 2300
+Wire Wire Line
+	2150 2500 2150 2300
+Wire Wire Line
+	4900 2950 4900 2750
+Wire Wire Line
+	4600 2950 4600 2750
+Wire Wire Line
+	4300 2750 4300 2950
+Wire Wire Line
+	5700 1900 5700 2000
+Wire Wire Line
+	5700 2100 5850 2100
+Connection ~ 5700 2000
+Wire Wire Line
+	5700 2200 5700 2300
+Connection ~ 5700 2300
+Wire Wire Line
+	6850 2300 7000 2300
+Wire Wire Line
+	7000 2300 7000 2400
+Wire Wire Line
+	6850 2200 7300 2200
+Wire Wire Line
+	6850 2100 9250 2100
+Wire Wire Line
+	7000 1450 7300 1450
+Wire Wire Line
+	7300 1450 7300 1550
+Connection ~ 4300 2950
+Connection ~ 4600 2950
+Wire Wire Line
+	5700 2200 5850 2200
+Wire Wire Line
+	9550 2100 9700 2100
+Wire Wire Line
+	9700 3000 9700 2700
+Wire Wire Line
+	9700 2400 9700 2100
+Connection ~ 9700 2100
+Wire Wire Line
+	9700 5100 9700 4850
+Wire Wire Line
+	9700 4300 9700 4450
+Wire Wire Line
+	9700 3800 9700 4000
+Wire Wire Line
+	9700 4450 10100 4450
+Connection ~ 9700 4450
+Wire Wire Line
+	2050 4000 3000 4000
+Wire Wire Line
+	2050 3750 2150 3750
+Wire Wire Line
+	2500 2500 2500 2300
+Connection ~ 2500 2300
+Wire Wire Line
+	2150 3500 2150 3750
+Connection ~ 2150 3750
+Wire Wire Line
+	7200 5300 7200 5200
+Wire Wire Line
+	5700 5200 5700 5300
+Wire Wire Line
+	6250 5000 6250 5300
+Wire Wire Line
+	7500 4500 7500 4600
+Connection ~ 7500 4600
+Wire Wire Line
+	7850 4500 7850 4600
+Wire Wire Line
+	7200 4500 7200 4600
+Connection ~ 7200 4600
+Wire Wire Line
+	1700 5000 3750 5000
+Wire Wire Line
+	7000 4600 7200 4600
+Wire Wire Line
+	5700 4600 5700 4900
+Wire Wire Line
+	4300 1800 4300 2300
+Connection ~ 4300 2300
+Wire Wire Line
+	4600 2450 4600 2300
+Connection ~ 4600 2300
+Wire Wire Line
+	4900 2450 4900 2300
+Connection ~ 4900 2300
+Wire Wire Line
+	3500 2900 1950 2900
+Wire Wire Line
+	3500 2900 3500 2300
+Wire Wire Line
+	7000 1450 7000 2000
+Wire Wire Line
+	8200 1450 8200 1350
+Connection ~ 7300 1450
+Wire Wire Line
+	6550 4600 6700 4600
+Wire Wire Line
+	7300 2350 7300 2200
+Connection ~ 7300 2200
+Wire Wire Line
+	7300 2650 7300 2750
+Wire Wire Line
+	7900 2350 7900 2200
+Connection ~ 7900 2200
+$Comp
+L power:VDD #PWR057
+U 1 1 5A3AB83D
+P 7900 2750
+F 0 "#PWR057" H 7900 2600 50  0001 C CNN
+F 1 "VDD" H 7917 2923 50  0000 C CNN
+F 2 "" H 7900 2750 50  0001 C CNN
+F 3 "" H 7900 2750 50  0001 C CNN
+	1    7900 2750
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	7900 2650 7900 2750
+$Comp
+L device:C C5
+U 1 1 5A5404E1
+P 9700 2550
+F 0 "C5" H 9550 2450 50  0000 L CNN
+F 1 "1uF 100V" H 9750 2650 50  0000 L CNN
+F 2 "Capacitors_SMD:C_0805" H 9738 2400 50  0001 C CNN
+F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 9700 2550 50  0001 C CNN
+F 4 "445-8887-1-ND" H 9700 2550 60  0001 C CNN "Part"
+F 5 "DigiKey" H 9700 2550 60  0001 C CNN "Provider"
+	1    9700 2550
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	2150 2300 2500 2300
+Wire Wire Line
+	5700 2000 5850 2000
+Wire Wire Line
+	5700 2000 5700 2100
+Wire Wire Line
+	5700 2300 5700 2400
+Wire Wire Line
+	5700 2300 5850 2300
+Wire Wire Line
+	4300 2950 4300 3150
+Wire Wire Line
+	4300 2950 4600 2950
+Wire Wire Line
+	4600 2950 4900 2950
+Wire Wire Line
+	9700 2100 9950 2100
+Wire Wire Line
+	9700 4450 9700 4550
+Wire Wire Line
+	2500 2300 2650 2300
+Wire Wire Line
+	2150 3750 2700 3750
+Wire Wire Line
+	7500 4600 7850 4600
+Wire Wire Line
+	7200 4600 7200 4900
+Wire Wire Line
+	7200 4600 7500 4600
+Wire Wire Line
+	5700 4600 5950 4600
+Wire Wire Line
+	4300 2300 4600 2300
+Wire Wire Line
+	4300 2300 4300 2450
+Wire Wire Line
+	4600 2300 4900 2300
+Wire Wire Line
+	4900 2300 5700 2300
+Wire Wire Line
+	7300 1450 8200 1450
+Wire Wire Line
+	7300 2200 7900 2200
+Wire Wire Line
+	7900 2200 8300 2200
+$Comp
+L sigmadrone:FIDUCIAL F3
+U 1 1 5A8818B5
+P 1250 7300
+F 0 "F3" H 1428 7353 60  0000 L CNN
+F 1 "FIDUCIAL" H 1428 7247 60  0000 L CNN
+F 2 "Fiducials:Fiducial_0.5mm_Dia_1mm_Outer" H 1150 7000 60  0001 C CNN
+F 3 "" H 1250 7300 60  0001 C CNN
+	1    1250 7300
+	1    0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:FIDUCIAL F2
+U 1 1 5A8819A7
+P 1250 6900
+F 0 "F2" H 1428 6953 60  0000 L CNN
+F 1 "FIDUCIAL" H 1428 6847 60  0000 L CNN
+F 2 "Fiducials:Fiducial_0.5mm_Dia_1mm_Outer" H 1150 6600 60  0001 C CNN
+F 3 "" H 1250 6900 60  0001 C CNN
+	1    1250 6900
+	1    0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:FIDUCIAL F1
+U 1 1 5A881A0D
+P 1250 6500
+F 0 "F1" H 1428 6553 60  0000 L CNN
+F 1 "FIDUCIAL" H 1428 6447 60  0000 L CNN
+F 2 "Fiducials:Fiducial_0.5mm_Dia_1mm_Outer" H 1150 6200 60  0001 C CNN
+F 3 "" H 1250 6500 60  0001 C CNN
+	1    1250 6500
+	1    0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:FIDUCIAL F5
+U 1 1 5A87BC27
+P 2050 7300
+F 0 "F5" H 2228 7353 60  0000 L CNN
+F 1 "FIDUCIAL" H 2228 7247 60  0000 L CNN
+F 2 "Fiducials:Fiducial_0.5mm_Dia_1mm_Outer" H 1950 7000 60  0001 C CNN
+F 3 "" H 2050 7300 60  0001 C CNN
+	1    2050 7300
+	1    0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:FIDUCIAL F6
+U 1 1 5A87BC2D
+P 2050 6900
+F 0 "F6" H 2228 6953 60  0000 L CNN
+F 1 "FIDUCIAL" H 2228 6847 60  0000 L CNN
+F 2 "Fiducials:Fiducial_0.5mm_Dia_1mm_Outer" H 1950 6600 60  0001 C CNN
+F 3 "" H 2050 6900 60  0001 C CNN
+	1    2050 6900
+	1    0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:FIDUCIAL F4
+U 1 1 5A87BC33
+P 2050 6500
+F 0 "F4" H 2228 6553 60  0000 L CNN
+F 1 "FIDUCIAL" H 2228 6447 60  0000 L CNN
+F 2 "Fiducials:Fiducial_0.5mm_Dia_1mm_Outer" H 1950 6200 60  0001 C CNN
+F 3 "" H 2050 6500 60  0001 C CNN
+	1    2050 6500
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:R R6
+U 1 1 5A8A6AE2
+P 9700 4150
+F 0 "R6" H 9850 4150 50  0000 C CNN
+F 1 "47k" V 9700 4150 50  0000 C CNN
+F 2 "Resistors_SMD:R_0603" V 9630 4150 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9700 4150 50  0001 C CNN
+F 4 "311-47KDCT-ND" V 9700 4150 60  0001 C CNN "Part"
+F 5 "DigiKey" V 9700 4150 60  0001 C CNN "Provider"
+	1    9700 4150
+	1    0    0    -1  
+$EndComp
+$Comp
+L device:R R7
+U 1 1 5A8A6AEB
+P 9700 4700
+F 0 "R7" H 9850 4700 50  0000 C CNN
+F 1 "4.7k" V 9700 4700 50  0000 C CNN
+F 2 "Resistors_SMD:R_0603" V 9630 4700 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9700 4700 50  0001 C CNN
+F 4 "311-2606-2-ND" V 9700 4700 60  0001 C CNN "Part"
+F 5 "DigiKey" V 9700 4700 60  0001 C CNN "Provider"
+	1    9700 4700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3500 2300 4300 2300
+Text HLabel 2050 4600 0    60   Input ~ 0
+EXT_5V
+Wire Wire Line
+	2050 4250 3050 4250
+$Comp
+L device:D_Schottky D2
+U 1 1 5AAEC18D
+P 3900 4250
+F 0 "D2" H 3900 4350 50  0000 C CNN
+F 1 "BAT30KFILM" H 3900 4150 50  0000 C CNN
+F 2 "Diodes_SMD:D_SOD-523" H 3900 4250 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/b5/44/50/dc/a4/84/48/70/CD00126118.pdf/files/CD00126118.pdf/jcr:content/translations/en.CD00126118.pdf" H 3900 4250 50  0001 C CNN
+F 4 "497-5552-1-ND" H 3900 4250 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3900 4250 60  0001 C CNN "Provider"
+	1    3900 4250
+	-1   0    0    1   
+$EndComp
+NoConn ~ 5950 4700
+Connection ~ 5700 4600
+$Comp
+L device:D_Schottky D7
+U 1 1 5AACA727
+P 3900 5000
+F 0 "D7" H 3900 5100 50  0000 C CNN
+F 1 "BAT30KFILM" H 3900 4900 50  0000 C CNN
+F 2 "Diodes_SMD:D_SOD-523" H 3900 5000 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/b5/44/50/dc/a4/84/48/70/CD00126118.pdf/files/CD00126118.pdf/jcr:content/translations/en.CD00126118.pdf" H 3900 5000 50  0001 C CNN
+F 4 "497-5552-1-ND" H 3900 5000 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3900 5000 60  0001 C CNN "Provider"
+	1    3900 5000
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	4400 4600 5700 4600
+$Comp
+L device:D_Schottky D3
+U 1 1 5AACDF90
+P 3200 4250
+F 0 "D3" H 3200 4150 50  0000 C CNN
+F 1 "BAT30KFILM" H 3200 4350 50  0000 C CNN
+F 2 "Diodes_SMD:D_SOD-523" H 3200 4250 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/b5/44/50/dc/a4/84/48/70/CD00126118.pdf/files/CD00126118.pdf/jcr:content/translations/en.CD00126118.pdf" H 3200 4250 50  0001 C CNN
+F 4 "497-5552-1-ND" H 3200 4250 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3200 4250 60  0001 C CNN "Provider"
+	1    3200 4250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2050 4600 3550 4600
+Wire Wire Line
+	4400 4250 4400 4600
+Wire Wire Line
+	4050 5000 4400 5000
+Wire Wire Line
+	4400 5000 4400 4600
+Connection ~ 4400 4600
+Wire Wire Line
+	4050 4250 4400 4250
+Wire Wire Line
+	3350 4250 3550 4250
+Wire Wire Line
+	3550 4250 3750 4250
+Connection ~ 3550 4250
+Wire Wire Line
+	3550 4600 3550 4250
+$Comp
+L power:PWR_FLAG #FLG0101
+U 1 1 5AAF4132
+P 5700 4300
+F 0 "#FLG0101" H 5700 4375 50  0001 C CNN
+F 1 "PWR_FLAG" H 5700 4450 50  0000 C CNN
+F 2 "" H 5700 4300 50  0001 C CNN
+F 3 "" H 5700 4300 50  0001 C CNN
+	1    5700 4300
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5700 4300 5700 4600
+Wire Wire Line
+	7000 2000 6850 2000
+$EndSCHEMATC

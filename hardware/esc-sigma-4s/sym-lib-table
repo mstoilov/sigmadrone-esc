@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name sigmadrone)(type Legacy)(uri /home/mstoilov/workspace-esc/sigmadrone-esc/hardware/sigmadrone.lib/sigmadrone.lib)(options "")(descr ""))
+)

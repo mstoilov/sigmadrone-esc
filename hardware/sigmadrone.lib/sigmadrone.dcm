@@ -1,0 +1,84 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP HALFBRIDGE-DRIVER
+D High Voltage High and Low Side N-MOSFET Driver
+K driver
+$ENDCMP
+#
+$CMP L6398
+D 300mA low dropout linear regulator, low quiescent current very, low noise, shutdown pin, fixed 3.3V positive output, DFN-6
+K linear regulator ldo fixed positive low noise low quienscent current
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/29/10/f7/87/2f/66/47/f4/DM00076097.pdf/files/DM00076097.pdf/jcr:content/translations/en.DM00076097.pdf
+$ENDCMP
+#
+$CMP LD39050PU33R
+D Ultra low-dropout voltage (200 mV typ. at 500 mA load)
+K low-dropout voltage DFN6
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/12/43/cc/93/21/f6/41/66/CD00227527.pdf/files/CD00227527.pdf/jcr:content/translations/en.CD00227527.pdf
+$ENDCMP
+#
+$CMP LDK130PU10R_DFN6
+D 300mA low dropout linear regulator, low quiescent current very, low noise, shutdown pin, fixed 1.0V positive output, DFN-6
+K linear regulator ldo fixed positive low noise low quienscent current
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/29/10/f7/87/2f/66/47/f4/DM00076097.pdf/files/DM00076097.pdf/jcr:content/translations/en.DM00076097.pdf
+$ENDCMP
+#
+$CMP LDK130PU12R_DFN6
+D 300mA low dropout linear regulator, low quiescent current very, low noise, shutdown pin, fixed 1.2V positive output, DFN-6
+K linear regulator ldo fixed positive low noise low quienscent current
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/29/10/f7/87/2f/66/47/f4/DM00076097.pdf/files/DM00076097.pdf/jcr:content/translations/en.DM00076097.pdf
+$ENDCMP
+#
+$CMP LDK130PU15R_DFN6
+D 300mA low dropout linear regulator, low quiescent current very, low noise, shutdown pin, fixed 1.5V positive output, DFN-6
+K linear regulator ldo fixed positive low noise low quienscent current
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/29/10/f7/87/2f/66/47/f4/DM00076097.pdf/files/DM00076097.pdf/jcr:content/translations/en.DM00076097.pdf
+$ENDCMP
+#
+$CMP LDK130PU18R_DFN6
+D 300mA low dropout linear regulator, low quiescent current very, low noise, shutdown pin, fixed 1.8V positive output, DFN-6
+K linear regulator ldo fixed positive low noise low quienscent current
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/29/10/f7/87/2f/66/47/f4/DM00076097.pdf/files/DM00076097.pdf/jcr:content/translations/en.DM00076097.pdf
+$ENDCMP
+#
+$CMP LDK130PU25R_DFN6
+D 300mA low dropout linear regulator, low quiescent current very, low noise, shutdown pin, fixed 2.5V positive output, DFN-6
+K linear regulator ldo fixed positive low noise low quienscent current
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/29/10/f7/87/2f/66/47/f4/DM00076097.pdf/files/DM00076097.pdf/jcr:content/translations/en.DM00076097.pdf
+$ENDCMP
+#
+$CMP LDK130PU29R_DFN6
+D 300mA low dropout linear regulator, low quiescent current very, low noise, shutdown pin, fixed 2.9V positive output, DFN-6
+K linear regulator ldo fixed positive low noise low quienscent current
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/29/10/f7/87/2f/66/47/f4/DM00076097.pdf/files/DM00076097.pdf/jcr:content/translations/en.DM00076097.pdf
+$ENDCMP
+#
+$CMP LDK130PU30R_DFN6
+D 300mA low dropout linear regulator, low quiescent current very, low noise, shutdown pin, fixed 3.0V positive output, DFN-6
+K linear regulator ldo fixed positive low noise low quienscent current
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/29/10/f7/87/2f/66/47/f4/DM00076097.pdf/files/DM00076097.pdf/jcr:content/translations/en.DM00076097.pdf
+$ENDCMP
+#
+$CMP LDK130PU32R_DFN6
+D 300mA low dropout linear regulator, low quiescent current very, low noise, shutdown pin, fixed 3.2V positive output, DFN-6
+K linear regulator ldo fixed positive low noise low quienscent current
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/29/10/f7/87/2f/66/47/f4/DM00076097.pdf/files/DM00076097.pdf/jcr:content/translations/en.DM00076097.pdf
+$ENDCMP
+#
+$CMP LDK130PU33R_DFN6
+D 300mA low dropout linear regulator, low quiescent current very, low noise, shutdown pin, fixed 3.3V positive output, DFN-6
+K linear regulator ldo fixed positive low noise low quienscent current
+F http://www.st.com/content/ccc/resource/technical/document/datasheet/29/10/f7/87/2f/66/47/f4/DM00076097.pdf/files/DM00076097.pdf/jcr:content/translations/en.DM00076097.pdf
+$ENDCMP
+#
+$CMP NCP5181
+D High Voltage High and Low Side N-MOSFET Driver
+K driver
+$ENDCMP
+#
+$CMP SW_SPST2
+D Single Pole Single Throw (SPST) switch
+K switch lever
+$ENDCMP
+#
+#End Doc Library

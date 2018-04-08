@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name Sigmadrone)(type KiCad)(uri /home/mstoilov/workspace-esc/sigmadrone-esc/hardware/sigmadrone.pretty)(options "")(descr ""))
+)
