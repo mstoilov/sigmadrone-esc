@@ -220,7 +220,9 @@ int bldc_detect_bemf(BLDC_TypeDef *bldc, int32_t Vh, int32_t Vb, int32_t Vl)
 void bldc_set_throttle(BLDC_TypeDef *bldc, uint32_t throttle)
 {
 	uint64_t delta_t = jiffies - bldc->megathrottle_time;
-
+//	float throttle_speed_slope = (THROTTLE_SPEED_HZ_250 - THROTTLE_SPEED_HZ_0) / (250.0);
+//	bldc->throttle_speed = THROTTLE_SPEED_HZ_0 + throttle_speed_slope * bldc->rotation_hz;
+	bldc->throttle_speed = THROTTLE_SPEED_HZ_0 + ((THROTTLE_SPEED_HZ_250 - THROTTLE_SPEED_HZ_0)/ (250.0 * 250.0)) * (bldc->rotation_hz * bldc->rotation_hz);
 	if (delta_t > 100000) {
 		/*
 		 * This can't be trusted as valid delta_t
@@ -229,10 +231,10 @@ void bldc_set_throttle(BLDC_TypeDef *bldc, uint32_t throttle)
 		goto end;
 	}
 
-	if (bldc->megathrottle_current < throttle * 1000000) {
-		bldc->megathrottle_current += THROTTLE_SPEED * delta_t;
+	if (bldc->megathrottle_current < (int32_t)throttle * 1000000) {
+		bldc->megathrottle_current += bldc->throttle_speed * delta_t;
 	} else {
-		bldc->megathrottle_current -= THROTTLE_SPEED * delta_t;
+		bldc->megathrottle_current -= bldc->throttle_speed * delta_t;
 	}
 	bldc_6step_set_throttle(TIM_AMC, bldc->megathrottle_current/1000000);
 end:
@@ -251,6 +253,7 @@ void bldc_generate_com_event(BLDC_TypeDef *bldc)
 		LL_TIM_GenerateEvent_COM(TIM_AMC);
 	}
 
+	bldc->rotation_hz = amc_switching_hz / (SINE_STATES * MECHANICAL_DEGREES_RATIO * REPETIONS_TO_UPDATE * bldc->counter);
 	bldc_set_throttle(bldc, bldc->throttle);
 	bldc->output_counter++;
 
@@ -588,6 +591,7 @@ void bldc_adc_jeos_process()
 		bldc_set_throttle(bldc, bldc->throttle);
 		bldc->bootstrap_time = jiffies;
 		bldc->bootstrap_zerodetected_time = 0ULL;
+		bldc->rotation_hz = 30;
 		LL_TIM_EnableAllOutputs(TIM_AMC);
 #ifdef TEST_BOOTSTRAP
 		LL_TIM_DisableAllOutputs(TIM_AMC);
@@ -630,17 +634,15 @@ void bldc_adc_jeos_callback()
 
 void bldc_print_info(BLDC_TypeDef *bldc)
 {
-	uint32_t rotation_hz = bldc_6step_switching_frequency(TIM_AMC, SystemCoreClock) / (SINE_STATES * MECHANICAL_DEGREES_RATIO * REPETIONS_TO_UPDATE * bldc->counter);
-
 	printf("< %16llu > %1lu: slp: %7ld, incpt: %5ld, zd: %3ld, ibemf: %5ld, %5lu Hz, zd: %3ld (%3ld), sp: %7.2f (%3lu), "
-			" Cur: %5ld, (%4ld, %5ld) - (%4ld, %5ld), JEOS End: %4lu / %4lu\n",
+			" Cur: %5ld, (%4ld, %5ld) - (%4ld, %5ld), JEOS End: %4lu / %4lu, ths: %5.2f\n",
 			jiffies,
 			bldc->state,
 			bldc->bemf_mslope,
 			bldc->bemf_intercept,
 			bldc->bemf_zerodetect,
 			bldc->integral_bemf,
-			rotation_hz,
+			bldc->rotation_hz,
 			bldc->zero_detected,
 			bldc->counter,
 			bldc->megathrottle_current / 1000000.0,
@@ -649,7 +651,8 @@ void bldc_print_info(BLDC_TypeDef *bldc)
 			bldc->bemf_msr1.counter, bldc->bemf_msr1.value,
 			bldc->bemf_msr2.counter, bldc->bemf_msr2.value,
 			bldc->jeos_end,
-			amc_autoreload);
+			amc_autoreload,
+			bldc->throttle_speed);
 
 }
 

@@ -47,6 +47,7 @@ typedef struct BLDC_TypeDef_ {
 	uint32_t state;
 	uint32_t substate;
 	uint32_t counter;
+	uint32_t rotation_hz;
 	uint32_t last_counter;
 	int32_t zero_detected;
 	int32_t integral_bemf;
@@ -57,6 +58,7 @@ typedef struct BLDC_TypeDef_ {
 	BLDC_Measurement bemf_msr1;
 	BLDC_Measurement bemf_msr2;
 	int32_t throttle;						/* Desired throttle value */
+	float throttle_speed;
 	int32_t megathrottle_current;			/* Current throttle value multiplied by 1000000 */
 	uint64_t megathrottle_time;				/* The time the megathrottle value was pushed to the hardaware */
 	uint32_t output_counter;

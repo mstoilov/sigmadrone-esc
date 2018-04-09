@@ -110,7 +110,8 @@
 #define BEMF_INTEGRAL_THRESHOLD		300
 #define BEMF_MEASURE_DELAY_NS		950UL
 #define THROTTLE_MIN_PWM_DUTY		1150	/* Millisceonds */
-#define THROTTLE_SPEED				160		/* percent/Sec */
+#define THROTTLE_SPEED_HZ_250		180		/* Throttle speed when the throttle is at 100% percent/Sec */
+#define THROTTLE_SPEED_HZ_0			50		/* Throttle speed when the throttle is at 0% percent/Sec */
 #define START_WITH_THROTTLE
 #define COMPENSATE_DATA_BIAS
 //#define TEST_BOOTSTRAP
