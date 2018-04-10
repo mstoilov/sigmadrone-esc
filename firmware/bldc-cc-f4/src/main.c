@@ -222,7 +222,10 @@ void bldc_set_throttle(BLDC_TypeDef *bldc, uint32_t throttle)
 	uint64_t delta_t = jiffies - bldc->megathrottle_time;
 //	float throttle_speed_slope = (THROTTLE_SPEED_HZ_250 - THROTTLE_SPEED_HZ_0) / (250.0);
 //	bldc->throttle_speed = THROTTLE_SPEED_HZ_0 + throttle_speed_slope * bldc->rotation_hz;
-	bldc->throttle_speed = THROTTLE_SPEED_HZ_0 + ((THROTTLE_SPEED_HZ_250 - THROTTLE_SPEED_HZ_0)/ (250.0 * 250.0)) * (bldc->rotation_hz * bldc->rotation_hz);
+	float throttle_speed_func = THROTTLE_SPEED_HZ_0 + ((THROTTLE_SPEED_HZ_250 - THROTTLE_SPEED_HZ_0)/ (250.0 * 250.0)) * (bldc->rotation_hz * bldc->rotation_hz);
+
+	bldc->throttle_speed = (throttle_speed_func < THROTTLE_SPEED_HZ_250) ? throttle_speed_func : THROTTLE_SPEED_HZ_250;
+
 	if (delta_t > 100000) {
 		/*
 		 * This can't be trusted as valid delta_t
@@ -472,9 +475,8 @@ void bldc_adc_jeos_process()
 
 	switch (bldc_get_substate(bldc)) {
 	case SUBSTATE_ERROR:
-//		bldc_timer_pwm_decoder_stop(TIM_PWM);
 		bldc->error_counter++;
-		if (bldc->error_counter > 5) {
+		if (bldc->error_counter > 1) {
 			bldc_6step_stop(TIM_AMC);
 			bldc->output_counter++;
 			memcpy(&g_bldc_saved, bldc, sizeof(BLDC_TypeDef));
@@ -802,7 +804,10 @@ int main(int argc, char* argv[])
 
 		bldc_print_info(&bldc_local);
 		if (g_bldc_saved.error_counter) {
-			printf("\n<------ ERROR:  %lu\n", g_bldc.error);
+			printf("\n<------ ERROR:  %lu, error_counter: %lu\n", g_bldc_saved.error, g_bldc_saved.error_counter);
+			if (g_bldc.error == ERROR_MEASUREMENT) {
+				printf("Vh = %ld, Vl = %ld, Vb = %ld, counter: %lu\n", g_bldc_saved.Vh, g_bldc_saved.Vl, g_bldc_saved.Vb, g_bldc_saved.counter);
+			}
 #ifdef DEBUG_SAMPLE_BUFFER
 			for (i = 0; i < SAMPLE_BUFFER_SIZE; i++) {
 				printf("<%lu::%3lu> %5ld\n",
