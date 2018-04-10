@@ -248,8 +248,9 @@ end:
 
 void bldc_generate_com_event(BLDC_TypeDef *bldc)
 {
-	__disable_irq();
 	LL_TIM_GenerateEvent_COM(TIM_AMC);
+
+	__disable_irq();
 
 	bldc->rotation_hz = amc_switching_hz / (SINE_STATES * MECHANICAL_DEGREES_RATIO * REPETIONS_TO_UPDATE * bldc->counter);
 	bldc_set_throttle(bldc, bldc->throttle);
@@ -635,7 +636,7 @@ void bldc_adc_jeos_callback()
 void bldc_print_info(BLDC_TypeDef *bldc)
 {
 	printf("< %16llu > %1lu: slp: %7ld, incpt: %5ld, zd: %3ld, ibemf: %5ld, %5lu Hz, zd: %3ld (%3ld), sp: %7.2f (%3lu), "
-			" Cur: %5ld, (%4ld, %5ld) - (%4ld, %5ld), JEOS End: %4lu / %4lu, ths: %5.2f\n",
+			" Cur: %5ld, (%4ld, %5ld) - (%4ld, %5ld), JEOS: (%4lu - %4lu) / %4lu\n",
 			jiffies,
 			bldc->state,
 			bldc->bemf_mslope,
@@ -650,9 +651,9 @@ void bldc_print_info(BLDC_TypeDef *bldc)
 			bldc->Icur,
 			bldc->bemf_msr1.counter, bldc->bemf_msr1.value,
 			bldc->bemf_msr2.counter, bldc->bemf_msr2.value,
+			bldc->jeos_begin,
 			bldc->jeos_end,
-			amc_autoreload,
-			bldc->throttle_speed);
+			amc_autoreload);
 
 }
 
@@ -804,7 +805,8 @@ int main(int argc, char* argv[])
 		if (g_bldc_saved.substate == SUBSTATE_ERROR) {
 			printf("\n<------ ERROR:  %lu\n", g_bldc_saved.error);
 			if (g_bldc.error == ERROR_MEASUREMENT) {
-				printf("Vh = %ld, Vl = %ld, Vb = %ld, counter: %lu\n", g_bldc_saved.Vh, g_bldc_saved.Vl, g_bldc_saved.Vb, g_bldc_saved.counter);
+				printf("Vh = %ld, Vl = %ld, Vb = %ld, counter: %lu, state: %lu\n",
+						g_bldc_saved.Vh, g_bldc_saved.Vl, g_bldc_saved.Vb, g_bldc_saved.counter, g_bldc.state);
 			}
 #ifdef DEBUG_SAMPLE_BUFFER
 			for (i = 0; i < SAMPLE_BUFFER_SIZE; i++) {

@@ -31,7 +31,7 @@
 ssize_t _write (int fd, const char* buf, size_t nbyte);
 
 
-static uint32_t dma2_stream7_transmitting = 0;
+static volatile uint32_t dma2_stream7_transmitting = 0;
 
 void DMA2_Stream7_TC_callback(void)
 {

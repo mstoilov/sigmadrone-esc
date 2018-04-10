@@ -108,7 +108,7 @@
 #define SWITCHING_FREQUENCY			60000
 #define BOOTSTRAP_STAGES			16
 #define BEMF_INTEGRAL_THRESHOLD		220
-#define BEMF_MEASURE_DELAY_NS		1950UL
+#define BEMF_MEASURE_DELAY_NS		550UL
 #define THROTTLE_MIN_PWM_DUTY		1150	/* Millisceonds */
 #define THROTTLE_SPEED_HZ_250		350		/* Throttle speed when the throttle is at 100% percent/Sec */
 #define THROTTLE_SPEED_HZ_0			150		/* Throttle speed when the throttle is at 0% percent/Sec */
