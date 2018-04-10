@@ -69,7 +69,6 @@ typedef struct BLDC_TypeDef_ {
 	int32_t bootstrap_stage_counter;
 	int32_t bootstrap_stage;
 	uint32_t com_counter;
-	uint32_t error_counter;
 	uint32_t error;
 	uint32_t compdata[4];
 	int32_t Vl;

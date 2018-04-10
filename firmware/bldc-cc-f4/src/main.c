@@ -249,25 +249,19 @@ end:
 void bldc_generate_com_event(BLDC_TypeDef *bldc)
 {
 	__disable_irq();
-	if (bldc->error_counter) {
-		bldc_6step_stop(TIM_AMC);
-//		bldc->error = 1;
-	} else {
-		LL_TIM_GenerateEvent_COM(TIM_AMC);
-	}
+	LL_TIM_GenerateEvent_COM(TIM_AMC);
 
 	bldc->rotation_hz = amc_switching_hz / (SINE_STATES * MECHANICAL_DEGREES_RATIO * REPETIONS_TO_UPDATE * bldc->counter);
 	bldc_set_throttle(bldc, bldc->throttle);
 	bldc->output_counter++;
 
-	if ((bldc->output_counter % 289) == 0 || bldc->error_counter)
+	if ((bldc->output_counter % 289) == 0)
 		memcpy(&g_bldc_saved, bldc, sizeof(BLDC_TypeDef));
 
 	bldc->last_counter = bldc->counter;
 	bldc->counter = 0UL;
 	bldc->zero_detected = 0UL;
 	bldc->integral_bemf = 0L;
-	bldc->error_counter = 0;
 
 	bldc->state = (bldc->state + 1) % 6;
 
@@ -387,7 +381,6 @@ void bldc_load_sine(BLDC_TypeDef *bldc, TIM_TypeDef *TIMx, uint32_t throttle)
 int32_t bldc_bootstrap(BLDC_TypeDef *bldc)
 {
 	if (bldc->bootstrap_stage == 0) {
-		bldc->error_counter = 0;
 		bldc->state = 0;
 		bldc->counter = 0;
 		LL_TIM_DisableAllOutputs(TIM_AMC);
@@ -475,12 +468,7 @@ void bldc_adc_jeos_process()
 
 	switch (bldc_get_substate(bldc)) {
 	case SUBSTATE_ERROR:
-		bldc->error_counter++;
-		if (bldc->error_counter > 1) {
-			bldc_6step_stop(TIM_AMC);
-			bldc->output_counter++;
-			memcpy(&g_bldc_saved, bldc, sizeof(BLDC_TypeDef));
-		}
+		goto irrecoverable_error;
 		return;
 
 	case SUBSTATE_DISABLED:
@@ -501,10 +489,11 @@ void bldc_adc_jeos_process()
 
 //	case SUBSTATE_NONE:
 	case SUBSTATE_MEASUREMENT1:
-		bldc->error_counter = 0;
 		if (bldc->Vh < 5 || bldc->Vl < 5 || bldc->Vb < 5) {
 			bldc_set_error_substate(bldc, ERROR_MEASUREMENT);
 //			BLDC_DEBUG_BKPT();
+			goto irrecoverable_error;
+			return;
 		}
 		bldc_set_substate(bldc, SUBSTATE_MEASUREMENT1);
 		if (bldc->counter >= 2 && bldc->Vh > 1000) {
@@ -517,6 +506,8 @@ void bldc_adc_jeos_process()
 		if (bldc->Vh < 5 || bldc->Vl < 5 || bldc->Vb < 5) {
 			bldc_set_error_substate(bldc, ERROR_MEASUREMENT);
 //			BLDC_DEBUG_BKPT();
+			goto irrecoverable_error;
+			return;
 		}
 
 		/*
@@ -623,6 +614,13 @@ void bldc_adc_jeos_process()
 	}
 
 	return;
+
+irrecoverable_error:
+	bldc_6step_stop(TIM_AMC);
+	bldc->output_counter++;
+	memcpy(&g_bldc_saved, bldc, sizeof(BLDC_TypeDef));
+	return;
+
 }
 
 
@@ -803,8 +801,8 @@ int main(int argc, char* argv[])
 //		last_print = g_bldc_saved.output_counter;
 
 		bldc_print_info(&bldc_local);
-		if (g_bldc_saved.error_counter) {
-			printf("\n<------ ERROR:  %lu, error_counter: %lu\n", g_bldc_saved.error, g_bldc_saved.error_counter);
+		if (g_bldc_saved.substate == SUBSTATE_ERROR) {
+			printf("\n<------ ERROR:  %lu\n", g_bldc_saved.error);
 			if (g_bldc.error == ERROR_MEASUREMENT) {
 				printf("Vh = %ld, Vl = %ld, Vb = %ld, counter: %lu\n", g_bldc_saved.Vh, g_bldc_saved.Vl, g_bldc_saved.Vb, g_bldc_saved.counter);
 			}
