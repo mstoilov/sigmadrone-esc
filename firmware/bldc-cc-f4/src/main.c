@@ -490,7 +490,9 @@ void bldc_adc_jeos_process()
 
 //	case SUBSTATE_NONE:
 	case SUBSTATE_MEASUREMENT1:
-		if (bldc->counter > 1 && (bldc->Vh < 5 || bldc->Vl < 5 || bldc->Vb < 5)) {
+		if (bldc->counter <= 1)
+			break;
+		if (bldc->Vh < 5 || bldc->Vl < 5 || bldc->Vb < 5) {
 			bldc_set_error_substate(bldc, ERROR_MEASUREMENT);
 //			BLDC_DEBUG_BKPT();
 			goto irrecoverable_error;
