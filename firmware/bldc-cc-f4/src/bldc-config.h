@@ -96,7 +96,7 @@
 
 #define UART_BAUD_RATE				230400
 #define RES_MEASUREMENT_CYCLES		1000
-#define MAX_CURRENT_MILIAPMS		25000
+#define MAX_CURRENT_MILIAPMS		30000
 #define SINE_STATES					6
 #define MECHANICAL_DEGREES_RATIO	8
 #define	REPETIONS_TO_UPDATE			1							/* MIN valeue: 1 */
@@ -105,11 +105,11 @@
 #define BOOTSTRAP_POST_THROTTLE		35
 #define MIN_THROTTLE_PERCENT		51
 #define BOOTSTRAP_COUNTER_INIT		20
-#define SWITCHING_FREQUENCY			60000
+#define SWITCHING_FREQUENCY			90000
 #define BOOTSTRAP_STAGES			16
 #define BEMF_INTEGRAL_THRESHOLD		220
 #define BEMF_MEASURE_DELAY_NS		550UL
-#define THROTTLE_MIN_PWM_DUTY		1150	/* Millisceonds */
+#define THROTTLE_MIN_PWM_DUTY		1100	/* Millisceonds */
 #define THROTTLE_SPEED_HZ_250		350		/* Throttle speed when the throttle is at 100% percent/Sec */
 #define THROTTLE_SPEED_HZ_0			150		/* Throttle speed when the throttle is at 0% percent/Sec */
 #define START_WITH_THROTTLE

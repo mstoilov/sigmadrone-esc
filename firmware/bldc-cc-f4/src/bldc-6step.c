@@ -71,7 +71,7 @@ void bldc_6step_stop(TIM_TypeDef *TIMx)
 
 }
 
-#define BLDC_MAX_THROTTLE 88
+#define BLDC_MAX_THROTTLE 90
 void bldc_6step_set_throttle(TIM_TypeDef *TIMx, uint32_t percent /* 0 .. 100 */ )
 {
 	uint32_t arr = 0;

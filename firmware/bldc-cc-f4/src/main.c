@@ -167,6 +167,7 @@ void bldc_emergency_stop()
 {
 	LL_TIM_DisableAllOutputs(TIM_AMC);
 	bldc_6step_stop(TIM_AMC);
+	bldc_6step_stop(TIM_AMC);
 }
 
 void bldc_timer_blink_callback()
@@ -464,7 +465,7 @@ void bldc_adc_jeos_process()
 	if (bldc->Icur > MAX_CURRENT_MILIAPMS) {
 		bldc_set_error_substate(bldc, ERROR_CURRENT_FAULT);
 		bldc_emergency_stop(bldc);
-		return;
+		goto irrecoverable_error;
 	}
 
 	switch (bldc_get_substate(bldc)) {
@@ -490,7 +491,7 @@ void bldc_adc_jeos_process()
 
 //	case SUBSTATE_NONE:
 	case SUBSTATE_MEASUREMENT1:
-		if (bldc->counter <= 1)
+		if (bldc->counter <= 2)
 			break;
 		if (bldc->Vh < 5 || bldc->Vl < 5 || bldc->Vb < 5) {
 			bldc_set_error_substate(bldc, ERROR_MEASUREMENT);
@@ -596,6 +597,7 @@ void bldc_adc_jeos_process()
 		return;
 	}
 
+#ifdef USE_SINECURVED_WAVEFORM
 	if (bldc->substate == SUBSTATE_MEASUREMENT1 || bldc->substate == SUBSTATE_MEASUREMENT2 || bldc->substate == SUBSTATE_ZERODETECTED) {
 		size_t i = 0;
 		if (bldc->last_counter)
@@ -604,6 +606,7 @@ void bldc_adc_jeos_process()
 			i = SINE_SAMPLES - 1;
 		bldc_6step_set_throttle(TIM_AMC, bldc->megathrottle_current  / 1000000 * g_sine_buffer120[i] / 100);
 	}
+#endif
 
 	if (bldc_detect_bemf(bldc, bldc->Vh, bldc->Vb, bldc->Vl) > 0) {
 		bldc_generate_com_event(&g_bldc);
