@@ -490,7 +490,7 @@ void bldc_adc_jeos_process()
 
 //	case SUBSTATE_NONE:
 	case SUBSTATE_MEASUREMENT1:
-		if (bldc->Vh < 5 || bldc->Vl < 5 || bldc->Vb < 5) {
+		if (bldc->counter > 1 && (bldc->Vh < 5 || bldc->Vl < 5 || bldc->Vb < 5)) {
 			bldc_set_error_substate(bldc, ERROR_MEASUREMENT);
 //			BLDC_DEBUG_BKPT();
 			goto irrecoverable_error;
@@ -594,6 +594,15 @@ void bldc_adc_jeos_process()
 		return;
 	}
 
+	if (bldc->substate == SUBSTATE_MEASUREMENT1 || bldc->substate == SUBSTATE_MEASUREMENT2 || bldc->substate == SUBSTATE_ZERODETECTED) {
+		size_t i = 0;
+		if (bldc->last_counter)
+			i = SINE_SAMPLES * (bldc->counter - 1) / (bldc->last_counter * 8 / 10);
+		if (i >= SINE_SAMPLES)
+			i = SINE_SAMPLES - 1;
+		bldc_6step_set_throttle(TIM_AMC, bldc->megathrottle_current  / 1000000 * g_sine_buffer120[i] / 100);
+	}
+
 	if (bldc_detect_bemf(bldc, bldc->Vh, bldc->Vb, bldc->Vl) > 0) {
 		bldc_generate_com_event(&g_bldc);
 		/*
@@ -603,6 +612,7 @@ void bldc_adc_jeos_process()
 		bldc_set_substate(bldc, SUBSTATE_MEASUREMENT1);
 		return;
 	}
+
 
 	if (bldc->counter > com_cycles_max / 10) {
 		if (--bldc->bootstrap_counter <= 0) {
