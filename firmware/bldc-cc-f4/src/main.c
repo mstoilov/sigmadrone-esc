@@ -200,24 +200,6 @@ void bldc_adc_eocs_callback()
 
 }
 
-
-/*
- * return 1 to generate COM event
- * 0 otherwise
- */
-int bldc_detect_bemf(BLDC_TypeDef *bldc, int32_t Vh, int32_t Vb, int32_t Vl)
-{
-	if (bldc_get_substate(bldc) == SUBSTATE_ZERODETECTED) {
-		bldc->integral_bemf += bldc->bemf;
-		if ((abs(bldc->integral_bemf) > (long)BEMF_INTEGRAL_THRESHOLD)) {
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
-
 void bldc_set_throttle(BLDC_TypeDef *bldc, uint32_t throttle)
 {
 	uint64_t delta_t = jiffies - bldc->megathrottle_time;
@@ -277,10 +259,10 @@ void bldc_generate_com_event(BLDC_TypeDef *bldc)
 void bldc_adc_data_acquisition(BLDC_TypeDef *bldc)
 {
 	__disable_irq();
-	injdata[0] = __LL_ADC_CALC_DATA_TO_VOLTAGE(3300, LL_ADC_INJ_ReadConversionData12(ADC1, LL_ADC_INJ_RANK_1), LL_ADC_RESOLUTION_12B);
-	injdata[1] = __LL_ADC_CALC_DATA_TO_VOLTAGE(3300, LL_ADC_INJ_ReadConversionData12(ADC1, LL_ADC_INJ_RANK_2), LL_ADC_RESOLUTION_12B);
-	injdata[2] = __LL_ADC_CALC_DATA_TO_VOLTAGE(3300, LL_ADC_INJ_ReadConversionData12(ADC1, LL_ADC_INJ_RANK_3), LL_ADC_RESOLUTION_12B);
-	injdata[3] = __LL_ADC_CALC_DATA_TO_VOLTAGE(3300, LL_ADC_INJ_ReadConversionData12(ADC1, LL_ADC_INJ_RANK_4), LL_ADC_RESOLUTION_12B);
+	injdata[0] = __LL_ADC_CALC_DATA_TO_VOLTAGE(VOLTAGE_MCU_POWER, LL_ADC_INJ_ReadConversionData12(ADC1, LL_ADC_INJ_RANK_1), LL_ADC_RESOLUTION_12B) * BEMF_SENSE_DEVIDER;
+	injdata[1] = __LL_ADC_CALC_DATA_TO_VOLTAGE(VOLTAGE_MCU_POWER, LL_ADC_INJ_ReadConversionData12(ADC1, LL_ADC_INJ_RANK_2), LL_ADC_RESOLUTION_12B) * BEMF_SENSE_DEVIDER;
+	injdata[2] = __LL_ADC_CALC_DATA_TO_VOLTAGE(VOLTAGE_MCU_POWER, LL_ADC_INJ_ReadConversionData12(ADC1, LL_ADC_INJ_RANK_3), LL_ADC_RESOLUTION_12B) * BEMF_SENSE_DEVIDER;
+	injdata[3] = __LL_ADC_CALC_DATA_TO_VOLTAGE(VOLTAGE_MCU_POWER, LL_ADC_INJ_ReadConversionData12(ADC1, LL_ADC_INJ_RANK_4), LL_ADC_RESOLUTION_12B);
 	__enable_irq();
 
 #ifdef COMPENSATE_DATA_BIAS
@@ -357,7 +339,7 @@ void bldc_measure_bemf(BLDC_TypeDef *bldc)
 	 * i = 60A * (Vout / Vcc) - 30A
 	 */
 #define ACS_SENSITIVITY 30
-	bldc_filter_add_value(&g_current_filter, (1000 * 3300 / ACS_SENSITIVITY) * bldc->Vc/3300 - (1000 * 3300 / (ACS_SENSITIVITY * 2)));
+	bldc_filter_add_value(&g_current_filter, (1000 * VOLTAGE_MCU_POWER / ACS_SENSITIVITY) * bldc->Vc/VOLTAGE_MCU_POWER - (1000 * VOLTAGE_MCU_POWER / (ACS_SENSITIVITY * 2)));
 	bldc->Icur = bldc_filter_get(&g_current_filter);
 }
 
@@ -489,27 +471,20 @@ void bldc_adc_jeos_process()
 		}
 		return;
 
-//	case SUBSTATE_NONE:
 	case SUBSTATE_MEASUREMENT1:
-		if (bldc->counter <= 2)
-			break;
-		if (bldc->Vh < 5 || bldc->Vl < 5 || bldc->Vb < 5) {
-			bldc_set_error_substate(bldc, ERROR_MEASUREMENT);
-//			BLDC_DEBUG_BKPT();
-			goto irrecoverable_error;
-			return;
-		}
-		bldc_set_substate(bldc, SUBSTATE_MEASUREMENT1);
-		if (bldc->counter >= 2 && bldc->Vh > 1000) {
+		if (bldc->counter > BEMF_MAX_KICKBACK_PERIOD) {
+			if (bldc->Vh < SANITY_CHECK_VOLTAGE_RAIL || bldc->Vb < SANITY_CHECK_VOLTAGE_BEMF) {
+				bldc_set_error_substate(bldc, ERROR_MEASUREMENT);
+				goto irrecoverable_error;
+			}
 			bldc_voltage_measurement(bldc, &bldc->bemf_msr1);
 			bldc_set_substate(bldc, SUBSTATE_MEASUREMENT2);
 		}
 		break;
 
 	case SUBSTATE_MEASUREMENT2:
-		if (bldc->Vh < 5 || bldc->Vl < 5 || bldc->Vb < 5) {
+		if (bldc->Vh < SANITY_CHECK_VOLTAGE_RAIL || bldc->Vb < SANITY_CHECK_VOLTAGE_BEMF) {
 			bldc_set_error_substate(bldc, ERROR_MEASUREMENT);
-//			BLDC_DEBUG_BKPT();
 			goto irrecoverable_error;
 			return;
 		}
@@ -535,6 +510,8 @@ void bldc_adc_jeos_process()
 		bldc->bemf_zerodetect = -bldc->bemf_intercept * 1000 / bldc->bemf_mslope;
 		if (((int32_t)bldc->counter) > bldc->bemf_zerodetect) {
 			bldc->zero_detected = bldc->bemf_zerodetect;
+			bldc->last_zerodetected_time = jiffies;
+			bldc->integral_bemf = bldc->bemf;
 			bldc_set_substate(bldc, SUBSTATE_ZERODETECTED);
 		} else {
 			/*
@@ -556,12 +533,22 @@ void bldc_adc_jeos_process()
 		/*
 		 * Error check
 		 */
-		bldc->last_zerodetected_time = jiffies;
 		if (!bldc->bootstrap_zerodetected_time) {
 			bldc->bootstrap_zerodetected_time = jiffies;
 		}
 		if (bldc->throttle > 70 && (bldc->zero_detected < 0 || bldc->zero_detected > 2000)) {
 			bldc_set_error_substate(bldc, ERROR_INVALID_ZEROCROSSING);
+			return;
+		}
+
+		bldc->integral_bemf += bldc->bemf;
+		if ((abs(bldc->integral_bemf) > (long)BEMF_INTEGRAL_THRESHOLD)) {
+			bldc_generate_com_event(&g_bldc);
+			/*
+			 * COM event has been generated, so start the measurement
+			 * cycle all over again
+			 */
+			bldc_set_substate(bldc, SUBSTATE_MEASUREMENT1);
 			return;
 		}
 		break;
@@ -588,7 +575,7 @@ void bldc_adc_jeos_process()
 		bldc_set_throttle(bldc, bldc->throttle);
 		bldc->bootstrap_time = jiffies;
 		bldc->bootstrap_zerodetected_time = 0ULL;
-		bldc->rotation_hz = 30;
+		bldc->rotation_hz = 0;
 		LL_TIM_EnableAllOutputs(TIM_AMC);
 #ifdef TEST_BOOTSTRAP
 		LL_TIM_DisableAllOutputs(TIM_AMC);
@@ -608,17 +595,6 @@ void bldc_adc_jeos_process()
 	}
 #endif
 
-	if (bldc_detect_bemf(bldc, bldc->Vh, bldc->Vb, bldc->Vl) > 0) {
-		bldc_generate_com_event(&g_bldc);
-		/*
-		 * COM event has been generated, so start the measurement
-		 * cycle all over again
-		 */
-		bldc_set_substate(bldc, SUBSTATE_MEASUREMENT1);
-		return;
-	}
-
-
 	if (bldc->counter > com_cycles_max / 10) {
 		if (--bldc->bootstrap_counter <= 0) {
 			bldc->substate = SUBSTATE_BOOTSTRAP_INIT;
@@ -635,6 +611,7 @@ irrecoverable_error:
 	bldc_6step_stop(TIM_AMC);
 	bldc->output_counter++;
 	memcpy(&g_bldc_saved, bldc, sizeof(BLDC_TypeDef));
+//	BLDC_DEBUG_BKPT();
 	return;
 
 }
@@ -650,13 +627,12 @@ void bldc_adc_jeos_callback()
 
 void bldc_print_info(BLDC_TypeDef *bldc)
 {
-	printf("< %16llu > %1lu: slp: %7ld, incpt: %5ld, zd: %3ld, ibemf: %5ld, %5lu Hz, zd: %3ld (%3ld), sp: %7.2f (%3lu), "
-			" Cur: %5ld, (%4ld, %5ld) - (%4ld, %5ld), JEOS: (%4lu - %4lu) / %4lu\n",
+	printf("< %16llu > %1lu: slp: %7ld, incpt: %5ld, ibemf: %5ld, %5lu Hz, zd: %3ld (%3ld), sp: %7.2f (%3lu), "
+			" Cur: %5ld, (%4ld, %5ld) - (%4ld, %5ld), JEOS: (%4lu - %4lu) / %4lu, %5lu, %5lu\n",
 			jiffies,
 			bldc->state,
 			bldc->bemf_mslope,
 			bldc->bemf_intercept,
-			bldc->bemf_zerodetect,
 			bldc->integral_bemf,
 			bldc->rotation_hz,
 			bldc->zero_detected,
@@ -668,7 +644,9 @@ void bldc_print_info(BLDC_TypeDef *bldc)
 			bldc->bemf_msr2.counter, bldc->bemf_msr2.value,
 			bldc->jeos_begin,
 			bldc->jeos_end,
-			amc_autoreload);
+			amc_autoreload,
+			bldc->Vh,
+			bldc->Vb);
 
 }
 
