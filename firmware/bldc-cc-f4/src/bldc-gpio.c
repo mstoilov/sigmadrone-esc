@@ -119,9 +119,8 @@ static void bldc_gpio_input_config()
 	/*
 	 * Init USART pins
 	 */
-	bldc_gpio_config_alternate(PB_6, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_7);
-	bldc_gpio_config_alternate(PB_7, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_7);
-
+	bldc_gpio_config_alternate(USART_TX, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_7);
+	bldc_gpio_config_alternate(USART_RX, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_7);
 }
 
 void bldc_gpio_write(GPIO_TypeDef *GPIOx, uint32_t PinMask, uint32_t value)

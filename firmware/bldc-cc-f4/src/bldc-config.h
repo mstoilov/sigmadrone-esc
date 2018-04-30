@@ -21,34 +21,20 @@
 #define DEAD_TIME_NS				320
 #define ADC_SAMPLING_CYCLES			LL_ADC_SAMPLINGTIME_28CYCLES
 
-#undef _VERSION_30_
-#ifdef _VERSION_30_
+#undef _ESC_MODEL_ZEKENG_
+#ifdef _ESC_MODEL_ZEKENG_
 
-#define PWM_AL						PB_13
-#define PWM_BL						PB_14
-#define PWM_CL						PB_15
-
-#define PIN_ADC1					PA_2
-#define PIN_ADC2					PA_3
-#define PIN_ADC3					PA_4
-#define PIN_ADC4					PA_5
-
-#define LED_WARNING_PIN				PC_9
-
-#define CHANNEL_PHASE_A				LL_ADC_CHANNEL_2
-#define CHANNEL_PHASE_B				LL_ADC_CHANNEL_3
-#define CHANNEL_PHASE_C				LL_ADC_CHANNEL_4
-#define CHANNEL_CENTER				LL_ADC_CHANNEL_5
-#define CHANNEL_CURRENT_ADC			LL_ADC_CHANNEL_0
-
-#define ADC_A						0
-#define ADC_B						1
-#define ADC_C						2
-
-#define LED_STATUS_PIN				PC_8
-#define LED_WARNING_PIN				PA_5
+#define USART_TX					PA_15
+#define USART_RX					PB_3
+#define CURRENT_FAULT_PIN			PB_13
 
 #else
+
+#define USART_TX					PB_6
+#define USART_RX					PB_7
+#define CURRENT_FAULT_PIN			PA_15
+
+#endif
 
 #define PWM_AL						PA_7
 #define PWM_BL						PB_0
@@ -73,19 +59,13 @@
 #define LED_STATUS_PIN				PA_11
 #define LED_WARNING_PIN				PA_12
 
-#endif
-
 #define PWM_AH						PA_8
 #define PWM_BH						PA_9
 #define PWM_CH						PA_10
 
-#define USART_TX					PB_6
-#define USART_RX					PB_7
 
 
 #define LED_STATUS_ACTIVE_LOW		ACTIVE_LOW_TRUE
-
-#define CURRENT_FAULT_PIN			PA_15
 
 #define BTN_USER_PIN				PC_13
 #define BTN_USER_IRQ				EXTI15_10_IRQn
@@ -105,13 +85,13 @@
 #define SINE_STATES					6
 #define MECHANICAL_DEGREES_RATIO	8
 #define REPETIONS_TO_UPDATE			1			/* MIN valeue: 1 */
-#define MIN_MILLIHERTZ				1500
-#define BOOTSTRAP_BASE_THROTTLE		15
+#define MIN_MILLIHERTZ				1000
+#define BOOTSTRAP_BASE_THROTTLE		16
 #define BOOTSTRAP_POST_THROTTLE		35
 #define MIN_THROTTLE_PERCENT		51
 #define BOOTSTRAP_COUNTER_INIT		20
 #define SWITCHING_FREQUENCY			100000
-#define BOOTSTRAP_STAGES			16
+#define BOOTSTRAP_STAGES			18
 #define BEMF_INTEGRAL_THRESHOLD		3300
 #define BEMF_MEASURE_DELAY_NS		550UL
 #define THROTTLE_MIN_PWM_DUTY		1100	/* Millisceonds */
