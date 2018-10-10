@@ -76,9 +76,21 @@ D High Voltage High and Low Side N-MOSFET Driver
 K driver
 $ENDCMP
 #
+$CMP OPA4374
+D 6.5-MHz, 585-µA, Rail-to-Rail I/O CMOS Operational Amplifier
+K ampliop
+F http://www.ti.com/lit/ds/symlink/opa2373.pdf
+$ENDCMP
+#
 $CMP SW_SPST2
 D Single Pole Single Throw (SPST) switch
 K switch lever
+$ENDCMP
+#
+$CMP TSV994
+D Rail-to-rail input/output 20 MHz GBP operational amplifiers
+K ampliop
+F https://www.st.com/content/ccc/resource/technical/document/datasheet/d8/e3/a5/aa/8f/d7/42/67/CD00144611.pdf/files/CD00144611.pdf/jcr:content/translations/en.CD00144611.pdf
 $ENDCMP
 #
 #End Doc Library
