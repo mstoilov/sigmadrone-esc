@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name Sigmadrone)(type KiCad)(uri ${KIPRJMOD}/../sigmadrone.pretty)(options "")(descr ""))
+)

@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name sigmadrone)(type Legacy)(uri ${KIPRJMOD}/../sigmadrone.lib/sigmadrone.lib)(options "")(descr ""))
+)
