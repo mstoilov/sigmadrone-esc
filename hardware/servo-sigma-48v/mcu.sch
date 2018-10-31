@@ -546,15 +546,10 @@ F 3 "" H 12100 2000 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 NoConn ~ 7150 4150
-NoConn ~ 7150 4950
-NoConn ~ 7150 5050
 NoConn ~ 7150 5350
 NoConn ~ 7150 5450
 NoConn ~ 7150 5550
-NoConn ~ 12950 3350
 NoConn ~ 12950 4650
-NoConn ~ 12950 5250
-NoConn ~ 12950 5350
 NoConn ~ 12950 5450
 NoConn ~ 12950 5550
 Wire Wire Line
@@ -598,10 +593,6 @@ Wire Wire Line
 Wire Wire Line
 	12950 4650 13350 4650
 Wire Wire Line
-	12950 5250 13350 5250
-Wire Wire Line
-	12950 5350 13350 5350
-Wire Wire Line
 	12950 5450 13350 5450
 Wire Wire Line
 	12950 5550 13350 5550
@@ -613,10 +604,6 @@ Wire Wire Line
 	13350 3050 12950 3050
 Wire Wire Line
 	13350 3150 12950 3150
-Wire Wire Line
-	13350 3250 12950 3250
-Wire Wire Line
-	13350 3350 12950 3350
 Wire Wire Line
 	13350 4050 12950 4050
 Wire Wire Line
@@ -633,10 +620,6 @@ Wire Wire Line
 	6750 4750 7150 4750
 Wire Wire Line
 	6750 4850 7150 4850
-Wire Wire Line
-	6750 4950 7150 4950
-Wire Wire Line
-	6750 5050 7150 5050
 Wire Wire Line
 	7150 5150 6750 5150
 Wire Wire Line
@@ -773,16 +756,10 @@ Connection ~ 11000 950
 Wire Wire Line
 	10500 1550 10500 1800
 Connection ~ 11000 1800
-NoConn ~ 7150 5750
-NoConn ~ 7150 5850
 Text Label 6750 5750 0    60   ~ 0
 PC14
 Text Label 6750 5850 0    60   ~ 0
 PC15
-Wire Wire Line
-	7150 5750 6750 5750
-Wire Wire Line
-	7150 5850 6750 5850
 Wire Wire Line
 	5600 3900 5600 3850
 $Comp
@@ -841,96 +818,6 @@ Wire Wire Line
 	5450 2800 5850 2800
 Connection ~ 5850 2800
 $Comp
-L device:R R40
-U 1 1 5AB8EC9A
-P 13900 3550
-F 0 "R40" V 13850 3700 50  0000 C CNN
-F 1 "10" V 13900 3550 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 13830 3550 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RC_Group_51_RoHS_L_8.pdf" H 13900 3550 50  0001 C CNN
-F 4 "311-10.0HRCT-ND" V 13900 3550 60  0001 C CNN "Part"
-F 5 "DigiKey" V 13900 3550 60  0001 C CNN "Provider"
-	1    13900 3550
-	0    -1   -1   0   
-$EndComp
-$Comp
-L device:R R30
-U 1 1 59FA59CB
-P 13900 3650
-F 0 "R30" V 13850 3800 50  0000 C CNN
-F 1 "10" V 13900 3650 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 13830 3650 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RC_Group_51_RoHS_L_8.pdf" H 13900 3650 50  0001 C CNN
-F 4 "311-10.0HRCT-ND" V 13900 3650 60  0001 C CNN "Part"
-F 5 "DigiKey" V 13900 3650 60  0001 C CNN "Provider"
-	1    13900 3650
-	0    -1   -1   0   
-$EndComp
-$Comp
-L device:R R20
-U 1 1 59FA5A1B
-P 13900 3750
-F 0 "R20" V 13850 3900 50  0000 C CNN
-F 1 "10" V 13900 3750 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 13830 3750 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RC_Group_51_RoHS_L_8.pdf" H 13900 3750 50  0001 C CNN
-F 4 "311-10.0HRCT-ND" V 13900 3750 60  0001 C CNN "Part"
-F 5 "DigiKey" V 13900 3750 60  0001 C CNN "Provider"
-	1    13900 3750
-	0    -1   -1   0   
-$EndComp
-$Comp
-L device:R R38
-U 1 1 59FA5A6D
-P 13900 5650
-F 0 "R38" V 13850 5800 50  0000 C CNN
-F 1 "10" V 13900 5650 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 13830 5650 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RC_Group_51_RoHS_L_8.pdf" H 13900 5650 50  0001 C CNN
-F 4 "311-10.0HRCT-ND" V 13900 5650 60  0001 C CNN "Part"
-F 5 "DigiKey" V 13900 5650 60  0001 C CNN "Provider"
-	1    13900 5650
-	0    -1   -1   0   
-$EndComp
-$Comp
-L device:R R28
-U 1 1 5AB8EC9E
-P 13900 5750
-F 0 "R28" V 13850 5900 50  0000 C CNN
-F 1 "10" V 13900 5750 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 13830 5750 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RC_Group_51_RoHS_L_8.pdf" H 13900 5750 50  0001 C CNN
-F 4 "311-10.0HRCT-ND" V 13900 5750 60  0001 C CNN "Part"
-F 5 "DigiKey" V 13900 5750 60  0001 C CNN "Provider"
-	1    13900 5750
-	0    -1   -1   0   
-$EndComp
-$Comp
-L device:R R17
-U 1 1 5AB8EC9F
-P 13900 5850
-F 0 "R17" V 13850 6000 50  0000 C CNN
-F 1 "10" V 13900 5850 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 13830 5850 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RC_Group_51_RoHS_L_8.pdf" H 13900 5850 50  0001 C CNN
-F 4 "311-10.0HRCT-ND" V 13900 5850 60  0001 C CNN "Part"
-F 5 "DigiKey" V 13900 5850 60  0001 C CNN "Provider"
-	1    13900 5850
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	14950 3550 14050 3550
-Wire Wire Line
-	14950 3650 14050 3650
-Wire Wire Line
-	14950 3750 14050 3750
-Wire Wire Line
-	14950 5650 14050 5650
-Wire Wire Line
-	14950 5750 14050 5750
-Wire Wire Line
-	14950 5850 14050 5850
-$Comp
 L device:C C32
 U 1 1 5AB8ECA0
 P 5100 4250
@@ -943,9 +830,6 @@ F 5 "DigiKey" V 5100 4250 60  0001 C CNN "Provider"
 	1    5100 4250
 	0    1    1    0   
 $EndComp
-NoConn ~ 12950 3050
-NoConn ~ 12950 3150
-NoConn ~ 12950 3250
 NoConn ~ 7150 5150
 NoConn ~ 7150 5250
 $Comp
@@ -1143,7 +1027,7 @@ F 3 "" H 1150 7050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Text Label 2950 6350 2    60   ~ 0
-PC13
+PA4
 $Comp
 L device:R R9
 U 1 1 5AB8F249
@@ -1252,19 +1136,6 @@ Text Label 7400 9500 0    60   ~ 0
 IB_FB
 Text Label 7400 9600 0    60   ~ 0
 IC_FB
-NoConn ~ 5600 9050
-NoConn ~ 5150 10950
-$Comp
-L conn:CONN_01X06 J5
-U 1 1 5BB280E1
-P 1150 8050
-F 0 "J5" H 1150 8450 50  0000 C CNN
-F 1 "CONN_01X06" H 1150 7700 50  0000 C CNN
-F 2 "" H 1150 8050 50  0001 C CNN
-F 3 "" H 1150 8050 50  0001 C CNN
-	1    1150 8050
-	-1   0    0    -1  
-$EndComp
 Text Label 2100 7800 2    60   ~ 0
 ENCODER_B
 Text Label 2100 7900 2    60   ~ 0
@@ -1285,7 +1156,6 @@ Wire Wire Line
 	1350 8100 2100 8100
 Wire Wire Line
 	1350 8200 2100 8200
-NoConn ~ 1350 8300
 $Comp
 L power:+5V #PWR?
 U 1 1 5BB4B839
@@ -1315,12 +1185,6 @@ ENCODER_A
 Text Label 14650 5150 2    60   ~ 0
 ENCODER_B
 Wire Wire Line
-	12950 3550 13750 3550
-Wire Wire Line
-	12950 3650 13750 3650
-Wire Wire Line
-	12950 3750 13750 3750
-Wire Wire Line
 	12950 3450 13350 3450
 Wire Wire Line
 	12950 4450 13350 4450
@@ -1331,12 +1195,6 @@ Wire Wire Line
 NoConn ~ 12950 4550
 NoConn ~ 12950 4450
 NoConn ~ 12950 3450
-Wire Wire Line
-	12950 5650 13750 5650
-Wire Wire Line
-	12950 5750 13750 5750
-Wire Wire Line
-	12950 5850 13750 5850
 Wire Wire Line
 	12950 4750 13350 4750
 $Comp
@@ -1510,4 +1368,64 @@ Wire Wire Line
 	12950 3850 14650 3850
 Wire Wire Line
 	12950 3950 14650 3950
+Text HLabel 6500 5050 0    60   Output ~ 0
+AUX_L
+Text HLabel 6500 4950 0    60   Output ~ 0
+AUX_H
+$Comp
+L conn:CONN_01X05 J5
+U 1 1 5BCE27D8
+P 1150 8000
+F 0 "J5" H 1150 8300 50  0000 C CNN
+F 1 "CONN_01X05" H 1150 7700 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Angled_1x05_Pitch2.54mm" H 1150 8000 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 1150 8000 50  0001 C CNN
+F 4 "WM4903-ND" H 1150 8000 50  0001 C CNN "Part"
+F 5 "DigiKey" H 1150 8000 50  0001 C CNN "Provider"
+	1    1150 8000
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	12950 3550 14950 3550
+Wire Wire Line
+	12950 3650 14950 3650
+Wire Wire Line
+	12950 3750 14950 3750
+Wire Wire Line
+	12950 5650 14950 5650
+Wire Wire Line
+	12950 5750 14950 5750
+Wire Wire Line
+	12950 5850 14950 5850
+Text Label 8700 9700 2    60   ~ 0
+PA3
+Text HLabel 7100 9700 0    60   Input ~ 0
+IR_FB
+Wire Wire Line
+	7100 9700 8700 9700
+Text Label 14650 3250 2    60   ~ 0
+LED_WARN
+Text Label 14650 3350 2    60   ~ 0
+LED_STATUS
+NoConn ~ 7150 5650
+Wire Wire Line
+	6500 4950 7150 4950
+Wire Wire Line
+	6500 5050 7150 5050
+Wire Wire Line
+	12950 5250 13350 5250
+Wire Wire Line
+	12950 5350 13350 5350
+NoConn ~ 12950 5250
+NoConn ~ 12950 5350
+Wire Wire Line
+	12950 3350 14650 3350
+Wire Wire Line
+	12950 3250 14650 3250
+Wire Wire Line
+	6750 5750 7150 5750
+Wire Wire Line
+	6750 5850 7150 5850
+NoConn ~ 7150 5750
+NoConn ~ 7150 5850
 $EndSCHEMATC

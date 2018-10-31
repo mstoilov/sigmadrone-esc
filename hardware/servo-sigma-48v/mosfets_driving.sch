@@ -1413,10 +1413,10 @@ Connection ~ 6100 5350
 Wire Wire Line
 	6100 5350 6100 5550
 $Comp
-L power:+BATT #PWR?
+L power:+BATT #PWR069
 U 1 1 5BC7FFE0
 P 13550 3300
-F 0 "#PWR?" H 13550 3150 50  0001 C CNN
+F 0 "#PWR069" H 13550 3150 50  0001 C CNN
 F 1 "+BATT" H 13550 3440 50  0000 C CNN
 F 2 "" H 13550 3300 50  0001 C CNN
 F 3 "" H 13550 3300 50  0001 C CNN
@@ -1424,10 +1424,10 @@ F 3 "" H 13550 3300 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR?
+L power:GND #PWR070
 U 1 1 5BC7FFE6
 P 13550 6200
-F 0 "#PWR?" H 13550 5950 50  0001 C CNN
+F 0 "#PWR070" H 13550 5950 50  0001 C CNN
 F 1 "GND" H 13550 6050 50  0000 C CNN
 F 2 "" H 13550 6200 50  0001 C CNN
 F 3 "" H 13550 6200 50  0001 C CNN
@@ -1439,16 +1439,16 @@ GATE_RH
 Text Label 15050 1950 2    60   ~ 0
 PHASE_R
 Text HLabel 12050 1750 0    60   Input ~ 0
-PWM_CL
+AUX_L
 Text Label 15050 1850 2    60   ~ 0
 GATE_RH
 Text HLabel 12050 1850 0    60   Input ~ 0
-PWM_CH
+AUX_H
 $Comp
-L device:C C?
+L device:C C50
 U 1 1 5BC7FFF4
 P 14550 1650
-F 0 "C?" V 14500 1700 50  0000 L CNN
+F 0 "C50" V 14500 1700 50  0000 L CNN
 F 1 "1uF 100V" V 14500 1200 50  0000 L CNN
 F 2 "Capacitors_SMD:C_0805" H 14588 1500 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 14550 1650 50  0001 C CNN
@@ -1458,10 +1458,10 @@ F 5 "DigiKey" H 14550 1650 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L device:D_Schottky D?
+L device:D_Schottky D17
 U 1 1 5BC7FFFC
 P 13650 1350
-F 0 "D?" H 13650 1450 50  0000 C CNN
+F 0 "D17" H 13650 1450 50  0000 C CNN
 F 1 "STPS0560Z" H 13650 1250 50  0000 C CNN
 F 2 "Diodes_SMD:D_SOD-123" H 13650 1350 50  0001 C CNN
 F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/group1/0f/03/9b/7c/50/58/48/d7/CD00001852/files/CD00001852.pdf/jcr:content/translations/en.CD00001852.pdf" H 13650 1350 50  0001 C CNN
@@ -1473,10 +1473,10 @@ $EndComp
 Text Label 15050 2050 2    60   ~ 0
 GATE_RL
 $Comp
-L device:C C?
+L device:C C47
 U 1 1 5BC80005
 P 12300 2200
-F 0 "C?" H 12150 2100 50  0000 L CNN
+F 0 "C47" H 12150 2100 50  0000 L CNN
 F 1 "1uF 100V" V 12350 2300 50  0000 L CNN
 F 2 "Capacitors_SMD:C_0805" H 12338 2050 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 12300 2200 50  0001 C CNN
@@ -1486,10 +1486,10 @@ F 5 "DigiKey" H 12300 2200 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L power:GND #PWR?
+L power:GND #PWR064
 U 1 1 5BC8000B
 P 12300 2750
-F 0 "#PWR?" H 12300 2500 50  0001 C CNN
+F 0 "#PWR064" H 12300 2500 50  0001 C CNN
 F 1 "GND" H 12300 2600 50  0000 C CNN
 F 2 "" H 12300 2750 50  0001 C CNN
 F 3 "" H 12300 2750 50  0001 C CNN
@@ -1497,10 +1497,10 @@ F 3 "" H 12300 2750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR?
+L power:GND #PWR068
 U 1 1 5BC80011
 P 13050 2750
-F 0 "#PWR?" H 13050 2500 50  0001 C CNN
+F 0 "#PWR068" H 13050 2500 50  0001 C CNN
 F 1 "GND" H 13050 2600 50  0000 C CNN
 F 2 "" H 13050 2750 50  0001 C CNN
 F 3 "" H 13050 2750 50  0001 C CNN
@@ -1510,10 +1510,10 @@ $EndComp
 Text Label 11600 5050 0    60   ~ 0
 GATE_RL
 $Comp
-L sigmadrone:L6398 U?
+L sigmadrone:L6398 U11
 U 1 1 5BC8001A
 P 13650 1900
-F 0 "U?" H 13850 2200 60  0000 C CNN
+F 0 "U11" H 13850 2200 60  0000 C CNN
 F 1 "L6398" H 13800 1600 60  0000 C CNN
 F 2 "Housings_SOIC:SOIC-8_3.9x4.9mm_Pitch1.27mm" H 13650 1400 60  0001 C CNN
 F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/d3/f4/04/52/68/e9/40/02/CD00290377.pdf/files/CD00290377.pdf/jcr:content/translations/en.CD00290377.pdf" H 13650 1500 60  0001 C CNN
@@ -1574,10 +1574,10 @@ Wire Wire Line
 	13050 3400 13050 3800
 Connection ~ 13050 3800
 $Comp
-L device:R R?
+L device:R R79
 U 1 1 5BC80040
 P 13050 4050
-F 0 "R?" V 13130 4050 50  0000 C CNN
+F 0 "R79" V 13130 4050 50  0000 C CNN
 F 1 "10k" V 13050 4050 50  0000 C CNN
 F 2 "Resistors_SMD:R_0603" V 12980 4050 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 13050 4050 50  0001 C CNN
@@ -1587,10 +1587,10 @@ F 5 "DigiKey" V 13050 4050 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:R R?
+L device:R R80
 U 1 1 5BC80048
 P 13050 5300
-F 0 "R?" V 13130 5300 50  0000 C CNN
+F 0 "R80" V 13130 5300 50  0000 C CNN
 F 1 "10k" V 13050 5300 50  0000 C CNN
 F 2 "Resistors_SMD:R_0603" V 12980 5300 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 13050 5300 50  0001 C CNN
@@ -1600,10 +1600,10 @@ F 5 "DigiKey" V 13050 5300 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C C?
+L device:C C49
 U 1 1 5BC80050
 P 12800 2200
-F 0 "C?" H 12650 2100 50  0000 L CNN
+F 0 "C49" H 12650 2100 50  0000 L CNN
 F 1 "100pF 100V" V 12850 2300 50  0000 L CNN
 F 2 "Capacitors_SMD:C_0603" H 12838 2050 50  0001 C CNN
 F 3 "https://search.kemet.com/component-edge/download/datasheet/C0603C101J1GACTU.pdf" H 12800 2200 50  0001 C CNN
@@ -1613,10 +1613,10 @@ F 5 "DigiKey" H 12800 2200 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L device:C C?
+L device:C C48
 U 1 1 5BC80058
 P 12550 2200
-F 0 "C?" H 12400 2100 50  0000 L CNN
+F 0 "C48" H 12400 2100 50  0000 L CNN
 F 1 "100pF 100V" V 12600 2300 50  0000 L CNN
 F 2 "Capacitors_SMD:C_0603" H 12588 2050 50  0001 C CNN
 F 3 "https://search.kemet.com/component-edge/download/datasheet/C0603C101J1GACTU.pdf" H 12550 2200 50  0001 C CNN
@@ -1626,10 +1626,10 @@ F 5 "DigiKey" H 12550 2200 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L power:GND #PWR?
+L power:GND #PWR067
 U 1 1 5BC8005E
 P 12800 2750
-F 0 "#PWR?" H 12800 2500 50  0001 C CNN
+F 0 "#PWR067" H 12800 2500 50  0001 C CNN
 F 1 "GND" H 12800 2600 50  0000 C CNN
 F 2 "" H 12800 2750 50  0001 C CNN
 F 3 "" H 12800 2750 50  0001 C CNN
@@ -1637,10 +1637,10 @@ F 3 "" H 12800 2750 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR?
+L power:GND #PWR066
 U 1 1 5BC80064
 P 12550 2750
-F 0 "#PWR?" H 12550 2500 50  0001 C CNN
+F 0 "#PWR066" H 12550 2500 50  0001 C CNN
 F 1 "GND" H 12550 2600 50  0000 C CNN
 F 2 "" H 12550 2750 50  0001 C CNN
 F 3 "" H 12550 2750 50  0001 C CNN
@@ -1667,10 +1667,10 @@ Connection ~ 12800 1750
 Wire Wire Line
 	11600 3800 12100 3800
 $Comp
-L device:D_Schottky D?
+L device:D_Schottky D6
 U 1 1 5BC80077
 P 12750 3400
-F 0 "D?" H 12750 3500 50  0000 C CNN
+F 0 "D6" H 12750 3500 50  0000 C CNN
 F 1 "BAT30KFILM" H 12750 3300 50  0000 C CNN
 F 2 "Diodes_SMD:D_SOD-523" H 12750 3400 50  0001 C CNN
 F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/b5/44/50/dc/a4/84/48/70/CD00126118.pdf/files/CD00126118.pdf/jcr:content/translations/en.CD00126118.pdf" H 12750 3400 50  0001 C CNN
@@ -1691,10 +1691,10 @@ Wire Wire Line
 Wire Wire Line
 	11600 5050 12100 5050
 $Comp
-L device:D_Schottky D?
+L device:D_Schottky D7
 U 1 1 5BC80085
 P 12750 4650
-F 0 "D?" H 12750 4750 50  0000 C CNN
+F 0 "D7" H 12750 4750 50  0000 C CNN
 F 1 "BAT30KFILM" H 12750 4550 50  0000 C CNN
 F 2 "Diodes_SMD:D_SOD-523" H 12750 4650 50  0001 C CNN
 F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/b5/44/50/dc/a4/84/48/70/CD00126118.pdf/files/CD00126118.pdf/jcr:content/translations/en.CD00126118.pdf" H 12750 4650 50  0001 C CNN
@@ -1715,10 +1715,10 @@ Wire Wire Line
 Wire Wire Line
 	13100 1350 13500 1350
 $Comp
-L device:R R?
+L device:R R77
 U 1 1 5BC80093
 P 12400 5050
-F 0 "R?" V 12480 5050 50  0000 C CNN
+F 0 "R77" V 12480 5050 50  0000 C CNN
 F 1 "21" V 12400 5050 50  0000 C CNN
 F 2 "Resistors_SMD:R_0603" V 12330 5050 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 12400 5050 50  0001 C CNN
@@ -1728,10 +1728,10 @@ F 5 "DigiKey" V 12400 5050 60  0001 C CNN "Provider"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:R R?
+L device:R R75
 U 1 1 5BC8009B
 P 12350 4650
-F 0 "R?" V 12430 4650 50  0000 C CNN
+F 0 "R75" V 12430 4650 50  0000 C CNN
 F 1 "5" V 12350 4650 50  0000 C CNN
 F 2 "Resistors_SMD:R_0603" V 12280 4650 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 12350 4650 50  0001 C CNN
@@ -1741,10 +1741,10 @@ F 5 "DigiKey" V 12350 4650 60  0001 C CNN "Provider"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:R R?
+L device:R R76
 U 1 1 5BC800A3
 P 12400 3800
-F 0 "R?" V 12480 3800 50  0000 C CNN
+F 0 "R76" V 12480 3800 50  0000 C CNN
 F 1 "21" V 12400 3800 50  0000 C CNN
 F 2 "Resistors_SMD:R_0603" V 12330 3800 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 12400 3800 50  0001 C CNN
@@ -1754,10 +1754,10 @@ F 5 "DigiKey" V 12400 3800 60  0001 C CNN "Provider"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:R R?
+L device:R R74
 U 1 1 5BC800AB
 P 12350 3400
-F 0 "R?" V 12430 3400 50  0000 C CNN
+F 0 "R74" V 12430 3400 50  0000 C CNN
 F 1 "5" V 12350 3400 50  0000 C CNN
 F 2 "Resistors_SMD:R_0603" V 12280 3400 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 12350 3400 50  0001 C CNN
@@ -1767,10 +1767,10 @@ F 5 "DigiKey" V 12350 3400 60  0001 C CNN "Provider"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:R R?
+L device:R R78
 U 1 1 5BC800B3
 P 12950 1350
-F 0 "R?" V 13030 1350 50  0000 C CNN
+F 0 "R78" V 13030 1350 50  0000 C CNN
 F 1 "5" V 12950 1350 50  0000 C CNN
 F 2 "Resistors_SMD:R_0603" V 12880 1350 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 12950 1350 50  0001 C CNN
@@ -1810,10 +1810,10 @@ Wire Wire Line
 Wire Wire Line
 	12100 5050 12250 5050
 $Comp
-L device:Q_NMOS_SGD Q?
+L device:Q_NMOS_SGD Q7
 U 1 1 5BC800CA
 P 13450 3800
-F 0 "Q?" H 13650 3850 50  0000 L CNN
+F 0 "Q7" H 13650 3850 50  0000 L CNN
 F 1 "STL160NS3LLH7" H 13650 3750 50  0000 L CNN
 F 2 "Sigmadrone:PQFN_5x6_SGD" H 13650 3900 50  0001 C CNN
 F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 13450 3800 50  0001 C CNN
@@ -1823,10 +1823,10 @@ F 5 "497-14988-6-ND" H 13450 3800 60  0001 C CNN "Part"
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:Q_NMOS_SGD Q?
+L device:Q_NMOS_SGD Q8
 U 1 1 5BC800D2
 P 13450 5050
-F 0 "Q?" H 13650 5100 50  0000 L CNN
+F 0 "Q8" H 13650 5100 50  0000 L CNN
 F 1 "STL160NS3LLH7" H 13650 5000 50  0000 L CNN
 F 2 "Sigmadrone:PQFN_5x6_SGD" H 13650 5150 50  0001 C CNN
 F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 13450 5050 50  0001 C CNN
@@ -1836,90 +1836,86 @@ F 5 "497-14988-6-ND" H 13450 5050 60  0001 C CNN "Part"
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	13550 4300 14500 4300
+	13550 4300 14550 4300
 $Comp
-L power:+15V #PWR?
+L power:+15V #PWR061
 U 1 1 5BC800D9
 P 12300 850
-F 0 "#PWR?" H 12300 700 50  0001 C CNN
+F 0 "#PWR061" H 12300 700 50  0001 C CNN
 F 1 "+15V" H 12315 1023 50  0000 C CNN
 F 2 "" H 12300 850 50  0001 C CNN
 F 3 "" H 12300 850 50  0001 C CNN
 	1    12300 850 
 	1    0    0    -1  
 $EndComp
-$Comp
-L device:R R?
-U 1 1 5BC800E1
-P 13550 5700
-F 0 "R?" V 13630 5700 50  0000 C CNN
-F 1 "0.0005 1%" V 13450 5700 50  0000 C CNN
-F 2 "Resistors_SMD:R_2512" V 13480 5700 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 13550 5700 50  0001 C CNN
-F 4 "696-1183-1-ND" V 13550 5700 60  0001 C CNN "Part"
-F 5 "DigiKey" V 13550 5700 60  0001 C CNN "Provider"
-	1    13550 5700
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	13550 5850 13550 6100
-Text Label 14500 4300 2    60   ~ 0
+Text Label 15050 4300 2    60   ~ 0
 PHASE_R
 $Comp
-L power:GND #PWR?
+L power:GND #PWR071
 U 1 1 5BCAB899
-P 10400 8750
-F 0 "#PWR?" H 10400 8500 50  0001 C CNN
-F 1 "GND" H 10400 8600 50  0000 C CNN
-F 2 "" H 10400 8750 50  0001 C CNN
-F 3 "" H 10400 8750 50  0001 C CNN
-	1    10400 8750
+P 14550 6200
+F 0 "#PWR071" H 14550 5950 50  0001 C CNN
+F 1 "GND" H 14550 6050 50  0000 C CNN
+F 2 "" H 14550 6200 50  0001 C CNN
+F 3 "" H 14550 6200 50  0001 C CNN
+	1    14550 6200
 	1    0    0    -1  
 $EndComp
+Connection ~ 14550 6100
 Wire Wire Line
-	10400 7800 10400 7950
-Connection ~ 10400 8650
-Wire Wire Line
-	10400 8650 10400 8750
+	14550 6100 14550 6200
 $Comp
-L device:R R?
+L device:R R82
 U 1 1 5BCAB8A5
-P 10400 8250
-F 0 "R?" V 10480 8250 50  0000 C CNN
-F 1 "0.0005 1%" V 10300 8250 50  0000 C CNN
-F 2 "Resistors_SMD:R_2512" V 10330 8250 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 10400 8250 50  0001 C CNN
-F 4 "696-1183-1-ND" V 10400 8250 60  0001 C CNN "Part"
-F 5 "DigiKey" V 10400 8250 60  0001 C CNN "Provider"
-	1    10400 8250
+P 14550 5700
+F 0 "R82" V 14630 5700 50  0000 C CNN
+F 1 "0.0005 1%" V 14450 5700 50  0000 C CNN
+F 2 "Resistors_SMD:R_2512" V 14480 5700 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 14550 5700 50  0001 C CNN
+F 4 "696-1183-1-ND" V 14550 5700 60  0001 C CNN "Part"
+F 5 "DigiKey" V 14550 5700 60  0001 C CNN "Provider"
+	1    14550 5700
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	10400 8400 10400 8650
-Text HLabel 10800 7950 2    60   Output ~ 0
-C_ISENSE_P
-Text HLabel 10800 8650 2    60   Output ~ 0
-C_ISENSE_N
+	14550 5850 14550 6100
+Text HLabel 14950 5400 2    60   Output ~ 0
+R_ISENSE_P
+Text HLabel 14950 6100 2    60   Output ~ 0
+R_ISENSE_N
 Wire Wire Line
-	10800 7950 10400 7950
-Connection ~ 10400 7950
+	14950 5400 14550 5400
+Connection ~ 14550 5400
 Wire Wire Line
-	10400 7950 10400 8100
+	14550 5400 14550 5550
 Wire Wire Line
-	10800 8650 10400 8650
+	14950 6100 14550 6100
 Wire Wire Line
-	13550 5250 13550 5550
+	13550 5250 13550 6100
+Wire Wire Line
+	14550 4650 14550 4300
+Connection ~ 14550 4300
+Wire Wire Line
+	14550 4300 15050 4300
 $Comp
 L conn:CONN_01X02 J?
-U 1 1 5BCBB2C7
-P 12700 7650
-F 0 "J?" H 12619 7915 50  0000 C CNN
-F 1 "CONN_01X02" H 12619 7824 50  0000 C CNN
-F 2 "Sigmadrone:PhoenixContact_MKDS_02x7.62mm_Vertical" H 12700 7650 50  0001 C CNN
-F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1868076.pdf" H 12700 7650 50  0001 C CNN
-F 4 "277-5840-ND" H 12700 7650 50  0001 C CNN "Part"
-F 5 "DigiKey" H 12700 7650 50  0001 C CNN "Provider"
-	1    12700 7650
-	-1   0    0    1   
+U 1 1 5BC5C1F6
+P 15100 4700
+AR Path="/58BE27E6/5BC5C1F6" Ref="J?"  Part="1" 
+AR Path="/58BF664D/5BC5C1F6" Ref="J7"  Part="1" 
+F 0 "J7" H 15019 4965 50  0000 C CNN
+F 1 "CONN_01X02" H 15019 4874 50  0000 C CNN
+F 2 "Sigmadrone:PhoenixContact_MKDS_02x7.62mm_Vertical" H 15100 4700 50  0001 C CNN
+F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1868076.pdf" H 15100 4700 50  0001 C CNN
+F 4 "277-5840-ND" H 15100 4700 50  0001 C CNN "Part"
+F 5 "DigiKey" H 15100 4700 50  0001 C CNN "Provider"
+	1    15100 4700
+	1    0    0    1   
 $EndComp
+Wire Wire Line
+	14550 4650 14900 4650
+Wire Wire Line
+	14550 4750 14900 4750
+Wire Wire Line
+	14550 4750 14550 5400
 $EndSCHEMATC
