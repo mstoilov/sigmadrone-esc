@@ -31,7 +31,7 @@ U 1 1 58CF4867
 P 4200 3500
 F 0 "U3" H 4450 3800 60  0000 C CNN
 F 1 "ACS711" H 4300 3200 60  0000 C CNN
-F 2 "Housings_SOIC:SOIC-8_3.9x4.9mm_Pitch1.27mm" H 4200 3500 60  0001 C CNN
+F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 4200 3500 60  0001 C CNN
 F 3 "http://www.allegromicro.com/en/Products/Part_Numbers/0711/0711.pdf" H 4200 3500 60  0001 C CNN
 F 4 "620-1373-1-ND" H 4200 3500 60  0001 C CNN "Part"
 F 5 "DigiKey" H 4200 3500 60  0001 C CNN "Provider"
@@ -106,12 +106,12 @@ VBAT_ADC
 Text Notes 10300 4450 0    60   ~ 0
 Voltage Sense
 $Comp
-L device:R R15
+L servo-sigma-48v-rescue:R-device R15
 U 1 1 58D1E7D1
 P 7050 2450
 F 0 "R15" V 7130 2450 50  0000 C CNN
 F 1 "47k" V 7050 2450 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 6980 2450 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6980 2450 50  0001 C CNN
 F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 7050 2450 50  0001 C CNN
 F 4 "311-47KDCT-ND" V 7050 2450 60  0001 C CNN "Part"
 F 5 "DigiKey" V 7050 2450 60  0001 C CNN "Provider"
@@ -130,12 +130,12 @@ F 3 "" H 5200 3050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C C8
+L servo-sigma-48v-rescue:C-device C8
 U 1 1 5A08C553
 P 5200 3850
 F 0 "C8" H 5050 3750 50  0000 L CNN
 F 1 "1uF 100V" H 4800 3950 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0805" H 5238 3700 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 5238 3700 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 5200 3850 50  0001 C CNN
 F 4 "445-8887-1-ND" H 5200 3850 60  0001 C CNN "Part"
 F 5 "DigiKey" H 5200 3850 60  0001 C CNN "Provider"
@@ -154,12 +154,12 @@ F 3 "" H 7350 5200 50  0001 C CNN
 	-1   0    0    -1  
 $EndComp
 $Comp
-L device:C C10
+L servo-sigma-48v-rescue:C-device C10
 U 1 1 5A36219E
 P 7350 4950
 F 0 "C10" H 7200 4850 50  0000 L CNN
 F 1 "100nF 50V" H 6900 5050 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0603" H 7388 4800 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 7388 4800 50  0001 C CNN
 F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 7350 4950 50  0001 C CNN
 F 4 "490-4779-2-ND" H 7350 4950 60  0001 C CNN "Part"
 F 5 "DigiKey" H 7350 4950 60  0001 C CNN "Provider"
@@ -167,12 +167,12 @@ F 5 "DigiKey" H 7350 4950 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L device:R R14
+L servo-sigma-48v-rescue:R-device R14
 U 1 1 5A39E32B
 P 7350 4250
 F 0 "R14" V 7430 4250 50  0000 C CNN
 F 1 "10k" V 7350 4250 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 7280 4250 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 7280 4250 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 7350 4250 50  0001 C CNN
 F 4 "311-10.0KHRCT-ND" V 7350 4250 60  0001 C CNN "Part"
 F 5 "DigiKey" V 7350 4250 60  0001 C CNN "Provider"
@@ -226,12 +226,12 @@ $EndComp
 Wire Wire Line
 	7350 4100 7350 4000
 $Comp
-L device:C C5
+L servo-sigma-48v-rescue:C-device C5
 U 1 1 5A5404E1
 P 7350 2900
 F 0 "C5" H 7200 2800 50  0000 L CNN
 F 1 "1uF 100V" H 7400 3000 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0805" H 7388 2750 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 7388 2750 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 7350 2900 50  0001 C CNN
 F 4 "445-8887-1-ND" H 7350 2900 60  0001 C CNN "Part"
 F 5 "DigiKey" H 7350 2900 60  0001 C CNN "Provider"
@@ -293,12 +293,12 @@ F 3 "" H 2100 10400 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:R R6
+L servo-sigma-48v-rescue:R-device R6
 U 1 1 5A8A6AE2
 P 9950 4350
 F 0 "R6" H 10100 4350 50  0000 C CNN
 F 1 "47k" V 9950 4350 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 9880 4350 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9880 4350 50  0001 C CNN
 F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9950 4350 50  0001 C CNN
 F 4 "311-47KDCT-ND" V 9950 4350 60  0001 C CNN "Part"
 F 5 "DigiKey" V 9950 4350 60  0001 C CNN "Provider"
@@ -306,12 +306,12 @@ F 5 "DigiKey" V 9950 4350 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:R R7
+L servo-sigma-48v-rescue:R-device R7
 U 1 1 5A8A6AEB
 P 9950 4900
 F 0 "R7" H 10100 4900 50  0000 C CNN
 F 1 "4.7k" V 9950 4900 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 9880 4900 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9880 4900 50  0001 C CNN
 F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9950 4900 50  0001 C CNN
 F 4 "311-2606-2-ND" V 9950 4900 60  0001 C CNN "Part"
 F 5 "DigiKey" V 9950 4900 60  0001 C CNN "Provider"
@@ -324,7 +324,7 @@ U 1 1 5B96E901
 P 5400 7750
 F 0 "U1" H 5050 8350 60  0000 C CNN
 F 1 "ST1S14" H 5150 8250 60  0000 C CNN
-F 2 "Housings_SOIC:SOIC-8-1EP_3.9x4.9mm_Pitch1.27mm" H 5150 8350 60  0001 C CNN
+F 2 "Package_SO:SOIC-8-1EP_3.9x4.9mm_P1.27mm_EP2.35x2.35mm" H 5150 8350 60  0001 C CNN
 F 3 "https://www.st.com/content/ccc/resource/technical/document/datasheet/a3/35/21/f8/1a/9f/41/da/CD00285678.pdf/files/CD00285678.pdf/jcr:content/translations/en.CD00285678.pdf" H 5250 8450 60  0001 C CNN
 F 4 "497-10816-1-ND" H 5350 8550 60  0001 C CNN "Part"
 F 5 "DigiKey" H 5450 8650 60  0001 C CNN "Provider"
@@ -332,7 +332,7 @@ F 5 "DigiKey" H 5450 8650 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L conn:CONN_01X02 J1
+L servo-sigma-48v-rescue:CONN_01X02-conn J1
 U 1 1 5B988CDF
 P 1700 3400
 F 0 "J1" H 1619 3665 50  0000 C CNN
@@ -345,12 +345,12 @@ F 5 "DigiKey" H 1700 3400 50  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L device:CP C1
+L servo-sigma-48v-rescue:CP-device C1
 U 1 1 5B98E0E3
 P 3250 5150
 F 0 "C1" H 3275 5250 50  0000 L CNN
 F 1 "120uF" H 3275 5050 50  0000 L CNN
-F 2 "Capacitors_SMD:CP_Elec_10x10" H 3288 5000 50  0001 C CNN
+F 2 "Capacitor_SMD:CP_Elec_10x10" H 3288 5000 50  0001 C CNN
 F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 3250 5150 50  0001 C CNN
 F 4 "P19316CT-ND" H 3250 5150 60  0001 C CNN "Part"
 F 5 "DigiKey" H 3250 5150 60  0001 C CNN "Provider"
@@ -414,12 +414,12 @@ Wire Wire Line
 Text Notes 3700 7650 0    60   ~ 0
 10V-48V
 $Comp
-L device:C C13
+L servo-sigma-48v-rescue:C-device C13
 U 1 1 5B9CA8B3
 P 5400 6950
 F 0 "C13" V 5650 7000 50  0000 L CNN
 F 1 "100nF 50V" V 5550 6700 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0603" H 5438 6800 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 5438 6800 50  0001 C CNN
 F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 5400 6950 50  0001 C CNN
 F 4 "490-4779-2-ND" H 5400 6950 60  0001 C CNN "Part"
 F 5 "DigiKey" H 5400 6950 60  0001 C CNN "Provider"
@@ -446,12 +446,12 @@ Connection ~ 4500 7650
 Wire Wire Line
 	4500 7650 4900 7650
 $Comp
-L device:C C12
+L servo-sigma-48v-rescue:C-device C12
 U 1 1 5B9D6834
 P 4150 8000
 F 0 "C12" H 4200 8100 50  0000 L CNN
 F 1 "100nF 100V" V 4000 7750 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0603" H 4188 7850 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 4188 7850 50  0001 C CNN
 F 3 "https://www.murata.com/~/media/webrenewal/support/library/catalog/products/capacitor/mlcc/c02e.ashx?la=en-us" H 4150 8000 50  0001 C CNN
 F 4 "490-3285-1-ND" H 4150 8000 60  0001 C CNN "Part"
 F 5 "DigiKey" H 4150 8000 60  0001 C CNN "Provider"
@@ -499,12 +499,12 @@ Wire Wire Line
 Text Notes 5550 8750 0    60   ~ 0
 small signal
 $Comp
-L device:C C2
+L servo-sigma-48v-rescue:C-device C2
 U 1 1 5B9F7968
 P 3250 8000
 F 0 "C2" H 3300 8100 50  0000 L CNN
 F 1 "10uF 50V" V 3100 7750 50  0000 L CNN
-F 2 "Capacitors_SMD:C_1206" H 3288 7850 50  0001 C CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric" H 3288 7850 50  0001 C CNN
 F 3 "https://www.murata.com/~/media/webrenewal/support/library/catalog/products/capacitor/mlcc/c02e.ashx?la=en-us" H 3250 8000 50  0001 C CNN
 F 4 "490-12456-1-ND" H 3250 8000 60  0001 C CNN "Part"
 F 5 "DigiKey" H 3250 8000 60  0001 C CNN "Provider"
@@ -512,12 +512,12 @@ F 5 "DigiKey" H 3250 8000 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C C7
+L servo-sigma-48v-rescue:C-device C7
 U 1 1 5B9F7A85
 P 3650 8000
 F 0 "C7" H 3700 8100 50  0000 L CNN
 F 1 "10uF 50V" V 3500 7750 50  0000 L CNN
-F 2 "Capacitors_SMD:C_1206" H 3688 7850 50  0001 C CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric" H 3688 7850 50  0001 C CNN
 F 3 "https://www.murata.com/~/media/webrenewal/support/library/catalog/products/capacitor/mlcc/c02e.ashx?la=en-us" H 3650 8000 50  0001 C CNN
 F 4 "490-12456-1-ND" H 3650 8000 60  0001 C CNN "Part"
 F 5 "DigiKey" H 3650 8000 60  0001 C CNN "Provider"
@@ -558,12 +558,12 @@ Wire Wire Line
 Text Notes 5650 9100 0    60   ~ 0
 power plane
 $Comp
-L device:L L1
+L servo-sigma-48v-rescue:L-device L1
 U 1 1 5BA12B73
 P 7400 7450
 F 0 "L1" V 7590 7450 50  0000 C CNN
 F 1 "8.2uH" V 7499 7450 50  0000 C CNN
-F 2 "Inductors_SMD:L_Wuerth_WE-TPC-3816" H 7400 7450 50  0001 C CNN
+F 2 "Inductor_SMD:L_Wuerth_WE-TPC-3816" H 7400 7450 50  0001 C CNN
 F 3 "https://katalog.we-online.de/pbs/datasheet/744042008.pdf" H 7400 7450 50  0001 C CNN
 F 4 "732-1024-1-ND" V 7400 7450 50  0001 C CNN "Part"
 F 5 "DigiKey" V 7400 7450 50  0001 C CNN "Provider"
@@ -574,14 +574,14 @@ Wire Wire Line
 	7250 7450 6550 7450
 Connection ~ 6550 7450
 $Comp
-L device:R R?
+L servo-sigma-48v-rescue:R-device R?
 U 1 1 5BA27D2A
 P 7400 7650
 AR Path="/58BF599E/5BA27D2A" Ref="R?"  Part="1" 
 AR Path="/58BE27E6/5BA27D2A" Ref="R12"  Part="1" 
 F 0 "R12" V 7480 7650 50  0000 C CNN
 F 1 "47k" V 7400 7650 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 7330 7650 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 7330 7650 50  0001 C CNN
 F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 7400 7650 50  0001 C CNN
 F 4 "311-47KDCT-ND" V 7400 7650 60  0001 C CNN "Part"
 F 5 "DigiKey" V 7400 7650 60  0001 C CNN "Provider"
@@ -589,14 +589,14 @@ F 5 "DigiKey" V 7400 7650 60  0001 C CNN "Provider"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L device:R R?
+L servo-sigma-48v-rescue:R-device R?
 U 1 1 5BA2D520
 P 7400 7850
 AR Path="/58BF599E/5BA2D520" Ref="R?"  Part="1" 
 AR Path="/58BE27E6/5BA2D520" Ref="R13"  Part="1" 
 F 0 "R13" V 7480 7850 50  0000 C CNN
 F 1 "30k" V 7400 7850 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 7330 7850 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 7330 7850 50  0001 C CNN
 F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 7400 7850 50  0001 C CNN
 F 4 "311-30KDCT-ND" V 7400 7850 60  0001 C CNN "Part"
 F 5 "DigiKey" V 7400 7850 60  0001 C CNN "Provider"
@@ -619,14 +619,14 @@ Connection ~ 7800 7650
 Wire Wire Line
 	7800 7650 7800 7850
 $Comp
-L device:R R?
+L servo-sigma-48v-rescue:R-device R?
 U 1 1 5BA4402E
 P 7000 8400
 AR Path="/58BF599E/5BA4402E" Ref="R?"  Part="1" 
 AR Path="/58BE27E6/5BA4402E" Ref="R11"  Part="1" 
 F 0 "R11" V 7080 8400 50  0000 C CNN
 F 1 "2.7k" V 7000 8400 50  0000 C CNN
-F 2 "Resistors_SMD:R_0603" V 6930 8400 50  0001 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6930 8400 50  0001 C CNN
 F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 7000 8400 50  0001 C CNN
 F 4 "311-2.7KDCT-ND" V 7000 8400 60  0001 C CNN "Part"
 F 5 "DigiKey" V 7000 8400 60  0001 C CNN "Provider"
@@ -644,14 +644,14 @@ Connection ~ 7000 7850
 Wire Wire Line
 	7000 7850 7250 7850
 $Comp
-L device:C C?
+L servo-sigma-48v-rescue:C-device C?
 U 1 1 5BA6CF08
 P 7400 8100
 AR Path="/58BE2779/5BA6CF08" Ref="C?"  Part="1" 
 AR Path="/58BE27E6/5BA6CF08" Ref="C37"  Part="1" 
 F 0 "C37" V 7350 8200 50  0000 C CNN
 F 1 "820pF/50V/10%" V 7550 8100 50  0000 C CNN
-F 2 "Capacitors_SMD:C_0603" H 7438 7950 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 7438 7950 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2018/07/25/CL10B821KB8NNNC_1.pdf" H 7400 8100 50  0001 C CNN
 F 4 "1276-2117-1-ND" V 7400 8100 60  0001 C CNN "Part"
 F 5 "DigiKey" V 7400 8100 60  0001 C CNN "Provider"
@@ -675,12 +675,12 @@ Wire Wire Line
 Connection ~ 7000 8650
 Connection ~ 7800 9000
 $Comp
-L device:CP C38
+L servo-sigma-48v-rescue:CP-device C38
 U 1 1 5BA9F858
 P 8200 8200
 F 0 "C38" H 8225 8300 50  0000 L CNN
 F 1 "100uF" H 8225 8100 50  0000 L CNN
-F 2 "Capacitors_SMD:CP_Elec_6.3x7.7" H 8238 8050 50  0001 C CNN
+F 2 "Capacitor_SMD:CP_Elec_6.3x7.7" H 8238 8050 50  0001 C CNN
 F 3 "http://katalog.we-online.de/pbs/datasheet/865080545012.pdf" H 8200 8200 50  0001 C CNN
 F 4 "732-8511-1-ND" H 8200 8200 60  0001 C CNN "Part"
 F 5 "DigiKey" H 8200 8200 60  0001 C CNN "Provider"
@@ -697,12 +697,12 @@ Wire Wire Line
 Wire Wire Line
 	8200 9000 8200 8350
 $Comp
-L device:CP C6
+L servo-sigma-48v-rescue:CP-device C6
 U 1 1 5BAAD8C5
 P 3550 5150
 F 0 "C6" H 3575 5250 50  0000 L CNN
 F 1 "120uF" H 3575 5050 50  0000 L CNN
-F 2 "Capacitors_SMD:CP_Elec_10x10" H 3588 5000 50  0001 C CNN
+F 2 "Capacitor_SMD:CP_Elec_10x10" H 3588 5000 50  0001 C CNN
 F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 3550 5150 50  0001 C CNN
 F 4 "P19316CT-ND" H 3550 5150 60  0001 C CNN "Part"
 F 5 "DigiKey" H 3550 5150 60  0001 C CNN "Provider"
@@ -710,12 +710,12 @@ F 5 "DigiKey" H 3550 5150 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:CP C9
+L servo-sigma-48v-rescue:CP-device C9
 U 1 1 5BAAD939
 P 3850 5150
 F 0 "C9" H 3875 5250 50  0000 L CNN
 F 1 "120uF" H 3875 5050 50  0000 L CNN
-F 2 "Capacitors_SMD:CP_Elec_10x10" H 3888 5000 50  0001 C CNN
+F 2 "Capacitor_SMD:CP_Elec_10x10" H 3888 5000 50  0001 C CNN
 F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 3850 5150 50  0001 C CNN
 F 4 "P19316CT-ND" H 3850 5150 60  0001 C CNN "Part"
 F 5 "DigiKey" H 3850 5150 60  0001 C CNN "Provider"
@@ -749,12 +749,12 @@ F 3 "" H 11150 6950 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C C40
+L servo-sigma-48v-rescue:C-device C40
 U 1 1 5BAD953E
 P 11150 8200
 F 0 "C40" H 11000 8100 50  0000 L CNN
 F 1 "4.7uF 25V" H 10750 8300 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0805" H 11188 8050 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 11188 8050 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 11150 8200 50  0001 C CNN
 F 4 "1276-2415-1-ND" H 11150 8200 60  0001 C CNN "Part"
 F 5 "DigiKey" H 11150 8200 60  0001 C CNN "Provider"
@@ -762,12 +762,12 @@ F 5 "DigiKey" H 11150 8200 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L regul:TPS793333-EP U2
+L servo-sigma-48v-rescue:TPS793333-EP-regul U2
 U 1 1 5BAD9546
 P 9500 7550
 F 0 "U2" H 9500 7892 50  0000 C CNN
 F 1 "TPS70950" H 9500 7801 50  0000 C CNN
-F 2 "TO_SOT_Packages_SMD:SOT-23-5" H 9500 7875 50  0001 C CIN
+F 2 "Package_TO_SOT_SMD:SOT-23-5" H 9500 7875 50  0001 C CIN
 F 3 "http://www.ti.com/lit/ds/symlink/tps709.pdf" H 9500 7600 50  0001 C CNN
 F 4 "296-35483-1-ND" H 9500 7550 60  0001 C CNN "Part"
 F 5 "DigiKey" H 9500 7550 60  0001 C CNN "Provider"
@@ -776,12 +776,12 @@ F 5 "DigiKey" H 9500 7550 60  0001 C CNN "Provider"
 $EndComp
 NoConn ~ 9800 7550
 $Comp
-L device:C C39
+L servo-sigma-48v-rescue:C-device C39
 U 1 1 5BAD954F
 P 8750 8200
 F 0 "C39" H 8600 8100 50  0000 L CNN
 F 1 "1uF 100V" H 8350 8300 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0805" H 8788 8050 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 8788 8050 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 8750 8200 50  0001 C CNN
 F 4 "445-8887-1-ND" H 8750 8200 60  0001 C CNN "Part"
 F 5 "DigiKey" H 8750 8200 60  0001 C CNN "Provider"
@@ -844,12 +844,12 @@ F 3 "" H 14450 6950 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L device:C C42
+L servo-sigma-48v-rescue:C-device C42
 U 1 1 5BB7772F
 P 14450 8200
 F 0 "C42" H 14300 8100 50  0000 L CNN
 F 1 "4.7uF 25V" H 14050 8300 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0805" H 14488 8050 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 14488 8050 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 14450 8200 50  0001 C CNN
 F 4 "1276-2415-1-ND" H 14450 8200 60  0001 C CNN "Part"
 F 5 "DigiKey" H 14450 8200 60  0001 C CNN "Provider"
@@ -857,12 +857,12 @@ F 5 "DigiKey" H 14450 8200 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L regul:TPS793333-EP U8
+L servo-sigma-48v-rescue:TPS793333-EP-regul U8
 U 1 1 5BB77737
 P 12800 7550
 F 0 "U8" H 12800 7892 50  0000 C CNN
 F 1 "TPS70933" H 12800 7801 50  0000 C CNN
-F 2 "TO_SOT_Packages_SMD:SOT-23-5" H 12800 7875 50  0001 C CIN
+F 2 "Package_TO_SOT_SMD:SOT-23-5" H 12800 7875 50  0001 C CIN
 F 3 "http://www.ti.com/lit/ds/symlink/tps709.pdf" H 12800 7600 50  0001 C CNN
 F 4 "296-35483-1-ND" H 12800 7550 60  0001 C CNN "Part"
 F 5 "DigiKey" H 12800 7550 60  0001 C CNN "Provider"
@@ -871,12 +871,12 @@ F 5 "DigiKey" H 12800 7550 60  0001 C CNN "Provider"
 $EndComp
 NoConn ~ 13100 7550
 $Comp
-L device:C C41
+L servo-sigma-48v-rescue:C-device C41
 U 1 1 5BB77740
 P 12250 8200
 F 0 "C41" H 12100 8100 50  0000 L CNN
 F 1 "1uF 100V" H 11850 8300 50  0000 L CNN
-F 2 "Capacitors_SMD:C_0805" H 12288 8050 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 12288 8050 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 12250 8200 50  0001 C CNN
 F 4 "445-8887-1-ND" H 12250 8200 60  0001 C CNN "Part"
 F 5 "DigiKey" H 12250 8200 60  0001 C CNN "Provider"
@@ -930,7 +930,7 @@ F 3 "" H 12250 6950 50  0001 C CNN
 $EndComp
 Connection ~ 12250 7450
 $Comp
-L device:D_Schottky D3
+L servo-sigma-48v-rescue:D_Schottky-device D3
 U 1 1 5BC00502
 P 12250 7200
 F 0 "D3" H 12250 7300 50  0000 C CNN
@@ -947,7 +947,7 @@ Wire Wire Line
 Wire Wire Line
 	12250 6950 12250 7050
 $Comp
-L device:D_Schottky D2
+L servo-sigma-48v-rescue:D_Schottky-device D2
 U 1 1 5BC2471B
 P 11750 7200
 F 0 "D2" H 11750 7300 50  0000 C CNN
@@ -982,7 +982,7 @@ Wire Wire Line
 Wire Wire Line
 	2700 1150 1900 1150
 $Comp
-L conn:CONN_01X03 J3
+L servo-sigma-48v-rescue:CONN_01X03-conn J3
 U 1 1 5BC83965
 P 1700 1150
 F 0 "J3" H 1619 1465 50  0000 C CNN
@@ -995,12 +995,12 @@ F 5 "DigiKey" H 1700 1150 50  0001 C CNN "Provider"
 	-1   0    0    -1  
 $EndComp
 $Comp
-L conn:CONN_01X03_MALE J4
+L servo-sigma-48v-rescue:CONN_01X03_MALE-conn J4
 U 1 1 5BCC7E52
 P 1750 2100
 F 0 "J4" H 1856 2490 50  0000 C CNN
 F 1 "CONN_01X03_MALE" H 1856 2399 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x03_Pitch2.54mm" H 1750 2300 50  0001 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 1750 2300 50  0001 C CNN
 F 3 "" H 1750 2300 50  0001 C CNN
 F 4 "732-5316-ND" H 1750 2100 50  0001 C CNN "Part"
 F 5 "DigiKey" H 1750 2100 50  0001 C CNN "Provider"
@@ -1226,7 +1226,7 @@ F 3 "" H 3250 6950 50  0001 C CNN
 	-1   0    0    -1  
 $EndComp
 $Comp
-L device:D_Schottky D?
+L servo-sigma-48v-rescue:D_Schottky-device D?
 U 1 1 5BBD07BC
 P 6550 8400
 AR Path="/58BF664D/5BBD07BC" Ref="D?"  Part="1" 
