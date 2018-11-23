@@ -388,8 +388,8 @@ int32_t bldc_bootstrap(BLDC_TypeDef *bldc)
 			bldc->state = (bldc->state + 1) % 6;
 			if (bldc->state == 0) {
 				bldc->bootstrap_stage += 1;
-				if (bldc->bootstrap_stage < BOOTSTRAP_STAGES / 2)
-					bldc->bootstrap_stage += 1;
+//				if (bldc->bootstrap_stage < BOOTSTRAP_STAGES / 2)
+//					bldc->bootstrap_stage += 1;
 			}
 		}
 	}
