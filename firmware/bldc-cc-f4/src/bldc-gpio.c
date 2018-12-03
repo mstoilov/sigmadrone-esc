@@ -120,7 +120,9 @@ static void bldc_gpio_input_config()
 	 * Init USART pins
 	 */
 	bldc_gpio_config_alternate(USART_TX, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_7);
+#ifdef USART_RX
 	bldc_gpio_config_alternate(USART_RX, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_7);
+#endif
 }
 
 void bldc_gpio_write(GPIO_TypeDef *GPIOx, uint32_t PinMask, uint32_t value)

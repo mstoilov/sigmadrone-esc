@@ -91,6 +91,26 @@ void SysTick_Handler (void)
 #endif
 }
 
+#if _ESC_MODEL_SIGMASERVO_
+
+void EXTI2_IRQHandler(void)
+{
+	if (LL_EXTI_IsActiveFlag_0_31(LL_PINMASK(CURRENT_FAULT_PIN)) != RESET) {
+		LL_EXTI_ClearFlag_0_31(LL_PINMASK(CURRENT_FAULT_PIN));
+		bldc_current_fault_callback();
+	}
+}
+
+
+void EXTI4_IRQHandler(void)
+{
+	if (LL_EXTI_IsActiveFlag_0_31(LL_PINMASK(BTN_USER_PIN)) != RESET) {
+		LL_EXTI_ClearFlag_0_31(LL_PINMASK(BTN_USER_PIN));
+		bldc_user_button_callback();
+	}
+}
+#else
+
 void EXTI15_10_IRQHandler(void)
 {
 	if (LL_EXTI_IsActiveFlag_0_31(LL_PINMASK(BTN_USER_PIN)) != RESET) {
@@ -104,6 +124,9 @@ void EXTI15_10_IRQHandler(void)
 	}
 
 }
+
+
+#endif
 
 void TIM3_IRQHandler(void)
 {
