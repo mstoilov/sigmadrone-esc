@@ -21,8 +21,54 @@
 #define DEAD_TIME_NS				320
 #define ADC_SAMPLING_CYCLES			LL_ADC_SAMPLINGTIME_28CYCLES
 
-#undef _ESC_MODEL_ZEKENG_
-#ifdef _ESC_MODEL_ZEKENG_
+#define _ESC_MODEL_SIGMASERVO_ 1
+
+#if _ESC_MODEL_SIGMASERVO_
+
+
+#define USART_TX					PA_15
+//#define USART_RX					PB_3
+#define CURRENT_FAULT_PIN			PA_2
+
+#define PWM_AL						PB_13
+#define PWM_BL						PB_14
+#define PWM_CL						PB_15
+
+#define PIN_ADC1					PC_0
+#define PIN_ADC2					PC_1
+#define PIN_ADC3					PC_2
+#define PIN_ADC4					PA_0
+#define PIN_ADC5					PA_1
+
+#define CHANNEL_PHASE_A				LL_ADC_CHANNEL_10
+#define CHANNEL_PHASE_B				LL_ADC_CHANNEL_11
+#define CHANNEL_PHASE_C				LL_ADC_CHANNEL_12
+#define CHANNEL_CURRENT_ADC			LL_ADC_CHANNEL_0
+
+#define ADC_A						0
+#define ADC_B						1
+#define ADC_C						2
+
+#define LED_STATUS_PIN				PA_6
+#define LED_WARNING_PIN				PA_5
+
+#define PWM_AH						PA_8
+#define PWM_BH						PA_9
+#define PWM_CH						PA_10
+
+#define LED_STATUS_ACTIVE_LOW		ACTIVE_LOW_TRUE
+
+#define BTN_USER_PIN				PA_4
+#define BTN_USER_IRQ				EXTI4_IRQn
+#define BTN_USER_IRQ_PRIORITY		12
+
+#define PWM_INPUT_PIN				PB_4
+#define PWM_INPUT_AF				LL_GPIO_AF_2
+
+
+#else
+
+#if _ESC_MODEL_ZEKENG_
 
 #define USART_TX					PA_15
 #define USART_RX					PB_3
@@ -63,8 +109,6 @@
 #define PWM_BH						PA_9
 #define PWM_CH						PA_10
 
-
-
 #define LED_STATUS_ACTIVE_LOW		ACTIVE_LOW_TRUE
 
 #define BTN_USER_PIN				PC_13
@@ -73,6 +117,9 @@
 
 #define PWM_INPUT_PIN				PB_4
 #define PWM_INPUT_AF				LL_GPIO_AF_2
+
+#endif
+
 
 #define UART_BAUD_RATE				230400
 #define VOLTAGE_MCU_POWER			3300		/* Milli-Volts */

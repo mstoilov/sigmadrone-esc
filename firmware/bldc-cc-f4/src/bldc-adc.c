@@ -30,7 +30,6 @@ void bldc_adc_init(ADC_TypeDef *ADCx)
 	    LL_ADC_SetChannelSamplingTime(ADCx, CHANNEL_PHASE_A, ADC_SAMPLING_CYCLES);
 	    LL_ADC_SetChannelSamplingTime(ADCx, CHANNEL_PHASE_B, ADC_SAMPLING_CYCLES);
 	    LL_ADC_SetChannelSamplingTime(ADCx, CHANNEL_PHASE_C, ADC_SAMPLING_CYCLES);
-	    LL_ADC_SetChannelSamplingTime(ADCx, CHANNEL_CENTER, ADC_SAMPLING_CYCLES);
 	    LL_ADC_SetChannelSamplingTime(ADCx, CHANNEL_CURRENT_ADC, ADC_SAMPLING_CYCLES);
 
 //	    LL_ADC_INJ_SetTriggerSource(ADCx, LL_ADC_INJ_TRIG_EXT_TIM1_CH4);
