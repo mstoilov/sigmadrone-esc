@@ -34,9 +34,18 @@
  */
 
 /*
+ * Relocated interrupt vectors - 1K
+ */
+__relocated_vectors = ORIGIN(RAM) + LENGTH(RAM) - 1K;
+
+/*
  * The '__stack' definition is required by crt0, do not remove it.
  */
-__stack = ORIGIN(RAM) + LENGTH(RAM);
+ 
+ /* __stack = ORIGIN(RAM) + LENGTH(RAM);
+ */
+ 
+__stack = __relocated_vectors;
 
 _estack = __stack; 	/* STM specific definition */
 

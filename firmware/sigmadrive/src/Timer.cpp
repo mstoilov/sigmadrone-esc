@@ -51,6 +51,7 @@ Timer::sleep(ticks_t ticks)
 }
 
 // ----- SysTick_Handler() ----------------------------------------------------
+#if 0
 
 extern "C" void
 SysTick_Handler(void)
@@ -60,5 +61,6 @@ SysTick_Handler(void)
 #endif
   Timer::tick();
 }
+#endif
 
 // ----------------------------------------------------------------------------
