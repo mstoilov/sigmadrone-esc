@@ -11,13 +11,11 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 		uint32_t tx_stream,
 		uint32_t rx_stream,
 		uint32_t dma_channel,
-		uint32_t hwflowctrl,
-		uint32_t timeout
+		uint32_t hwflowctrl
 		)
 	: USARTx_(usart_device)
-	, DMAx_(dma_device)
-	, tx_stream_(tx_stream)
-	, rx_stream_(rx_stream)
+	, dma_tx_(dma_device, tx_stream, dma_channel, LL_DMA_DIRECTION_MEMORY_TO_PERIPH | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE)
+	, dma_rx_(dma_device, rx_stream, dma_channel, LL_DMA_DIRECTION_PERIPH_TO_MEMORY | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE)
 {
 	for (auto& pin : data_pins)
 		pin.Init();
@@ -63,6 +61,7 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 		throw std::runtime_error("Failed to init UART");
 	}
 
+#if 0
 	/*
 	 * Enable the DMA device
 	 */
@@ -83,7 +82,9 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 	 */
 	LL_DMA_ConfigTransfer(DMAx_, tx_stream, LL_DMA_DIRECTION_MEMORY_TO_PERIPH | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE);
 	LL_DMA_SetChannelSelection(DMAx_, tx_stream, dma_channel);
+#endif
 
+	dma_tx_.Callback_TC(this, &USART::CallbackTX_DmaTC);
 	Enable();
 }
 
@@ -102,29 +103,10 @@ void USART::IrqHandlerUSART(void)
 	}
 }
 
-void USART::IrqHandlerDMA(void)
+void USART::CallbackTX_DmaTC(void)
 {
-	if (LL_DMA_IsActiveFlag_DME7(DMA2)) {
-		LL_DMA_ClearFlag_DME7(DMA2);
-
-	}
-	if (LL_DMA_IsActiveFlag_FE7(DMA2)) {
-		LL_DMA_ClearFlag_FE7(DMA2);
-
-	}
-	if (LL_DMA_IsActiveFlag_HT7(DMA2)) {
-		LL_DMA_ClearFlag_HT7(DMA2);
-
-	}
-	if (LL_DMA_IsActiveFlag_TC7(DMA2)) {
-		LL_DMA_ClearFlag_TC7(DMA2);
-		transmitting_ = false;
-	}
-	if (LL_DMA_IsActiveFlag_TE7(DMA2)) {
-		LL_DMA_ClearFlag_TE7(DMA2);
-	}
+	transmitting_ = 0;
 }
-
 
 ssize_t USART::Write(const char* buf, size_t nbytes)
 {
@@ -142,17 +124,15 @@ ssize_t USART::Write(const char* buf, size_t nbytes)
 
 ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 {
-//	while (LL_DMA_IsEnabledStream(DMAx_, tx_stream_));
-//	LL_DMA_ClearFlag_TC7(DMA2);
+	while (transmitting_)
+		;
 
 	transmitting_ = true;
-	LL_DMA_EnableIT_TC(DMAx_, tx_stream_);
-	LL_DMA_ConfigAddresses(DMAx_, tx_stream_, (uint32_t)buf, LL_USART_DMA_GetRegAddr(USARTx_), LL_DMA_GetDataTransferDirection(DMAx_, tx_stream_));
-	LL_DMA_SetDataLength(DMAx_, tx_stream_, nbytes);
-	LL_USART_EnableDMAReq_TX(USARTx_);
-	LL_DMA_EnableStream(DMAx_, tx_stream_);
-
-	while (transmitting_);
+	dma_tx_.EnableIT_TC();
+	dma_tx_.ConfigAddresses((uint32_t)buf, LL_USART_DMA_GetRegAddr(USARTx_), dma_tx_.GetDataTransferDirection());
+	dma_tx_.SetDataLength(nbytes);
+	EnableDMAReq_TX();
+	dma_tx_.Enable();
 
 	return nbytes;
 }

@@ -43,6 +43,8 @@ public:
 	DMA_TypeDef* GetDevice() 									{ return DMAx_; }
 	uint32_t GetStream()										{ return stream_; }
 	uint32_t GetChannel()										{ return channel_; }
+	void EnableIrq();
+	void DisableIrq();
 
 	template<typename T>
 	void Callback_DME(T* tptr, void (T::*mptr)(void))
@@ -95,16 +97,26 @@ public:
 	}
 
 protected:
+	void IrqHandlerStream0();
+	void IrqHandlerStream1();
+	void IrqHandlerStream2();
+	void IrqHandlerStream3();
+	void IrqHandlerStream4();
+	void IrqHandlerStream5();
+	void IrqHandlerStream6();
+	void IrqHandlerStream7();
+
+protected:
 	DMA_TypeDef* DMAx_;
 	uint32_t stream_;
 	uint32_t channel_;
-	uint32_t id_;
+	uint32_t dma_num_;
 
-	std::function<void(void)> callback_DME_;
-	std::function<void(void)> callback_FE_;
-	std::function<void(void)> callback_HT_;
-	std::function<void(void)> callback_TC_;
-	std::function<void(void)> callback_TE_;
+	std::function<void(void)> callback_DME_ = [](void){};
+	std::function<void(void)> callback_FE_ = [](void){};
+	std::function<void(void)> callback_HT_ = [](void){};
+	std::function<void(void)> callback_TC_ = [](void){};
+	std::function<void(void)> callback_TE_ = [](void){};
 };
 
 #endif /* DMA_H_ */
