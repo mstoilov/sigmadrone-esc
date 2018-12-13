@@ -236,7 +236,7 @@ public:
 	uint32_t		GetAutoReloadValue()						{ return LL_TIM_GetAutoReload(TIMx_); }
 	uint32_t		GetCounterValue()							{ return LL_TIM_GetCounter(TIMx_); }
 	void			SetCounterValue(uint32_t value)				{ LL_TIM_SetCounter(TIMx_, value); }
-	uint32_t		GetCounterMaxValue()						{ return bsp_max_counter(TIMx_); }
+	uint32_t		GetCounterMaxValue()						{ return BspMaxCounter(TIMx_); }
 	void 			SetRepetionCounterValue(uint32_t value)		{ LL_TIM_SetRepetitionCounter(TIMx_, value); }
 	uint32_t		GetRepetitionCounterValue()					{ return LL_TIM_GetRepetitionCounter(TIMx_); }
 	void			GenerateEvent(EventGeneration event)		{ SET_BIT(TIMx_->EGR, event); }
@@ -283,8 +283,8 @@ protected:
 	void UpdatePrescaler(const Frequency& timer_clock);
 
 protected:
-	static uint32_t bsp_init_timer(TIM_TypeDef* TIMx);
-	static uint32_t bsp_max_counter(TIM_TypeDef* TIMx);
+	static uint32_t BspInitTimer(TIM_TypeDef* TIMx);
+	static uint32_t BspMaxCounter(TIM_TypeDef* TIMx);
 
 protected:
 	Frequency system_clock_;

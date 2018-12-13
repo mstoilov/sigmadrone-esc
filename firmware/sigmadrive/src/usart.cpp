@@ -20,7 +20,7 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 	, rx_stream_(rx_stream)
 {
 	for (auto& pin : data_pins)
-		pin.init();
+		pin.Init();
 
 	/*##-1- Configure the UART peripheral ######################################*/
 	/* Put the USART peripheral in the Asynchronous mode (UART Mode) */
@@ -42,19 +42,19 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 
 	if (usart_device == USART1) {
 		__USART1_CLK_ENABLE();
-		InterruptManager::instance().callback(USART1_IRQn, &USART::usart_irq_handler, this);
+		InterruptManager::instance().Callback(USART1_IRQn, &USART::IrqHandlerUSART, this);
 		NVIC_SetPriority(USART1_IRQn, 0);
 		NVIC_EnableIRQ(USART1_IRQn);
 		g_uart[1] = this;
 	} else if (usart_device == USART2) {
 		__USART2_CLK_ENABLE();
-		InterruptManager::instance().callback(USART2_IRQn, &USART::usart_irq_handler, this);
+		InterruptManager::instance().Callback(USART2_IRQn, &USART::IrqHandlerUSART, this);
 		NVIC_SetPriority(USART2_IRQn, 0);
 		NVIC_EnableIRQ(USART2_IRQn);
 		g_uart[2] = this;
 	} else if (usart_device == USART6) {
 		__USART6_CLK_ENABLE();
-		InterruptManager::instance().callback(USART6_IRQn, &USART::usart_irq_handler, this);
+		InterruptManager::instance().Callback(USART6_IRQn, &USART::IrqHandlerUSART, this);
 		NVIC_SetPriority(USART6_IRQn, 0);
 		NVIC_EnableIRQ(USART6_IRQn);
 		g_uart[6] = this;
@@ -74,7 +74,7 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 	/*
 	 * Configure NVIC for DMA transfer complete/error interrupts
 	 */
-	InterruptManager::instance().callback(DMA2_Stream7_IRQn, &USART::dma_irq_handler, this);
+	InterruptManager::instance().Callback(DMA2_Stream7_IRQn, &USART::IrqHandlerDMA, this);
 	NVIC_SetPriority(DMA2_Stream7_IRQn, 0);
 	NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
@@ -84,15 +84,15 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 	LL_DMA_ConfigTransfer(DMAx_, tx_stream, LL_DMA_DIRECTION_MEMORY_TO_PERIPH | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE);
 	LL_DMA_SetChannelSelection(DMAx_, tx_stream, dma_channel);
 
-	enable();
+	Enable();
 }
 
 USART::~USART()
 {
-	disable();
+	Disable();
 }
 
-void USART::usart_irq_handler(void)
+void USART::IrqHandlerUSART(void)
 {
 #if defined(DEBUG)
 	__DEBUG_BKPT();
@@ -102,7 +102,7 @@ void USART::usart_irq_handler(void)
 	}
 }
 
-void USART::dma_irq_handler(void)
+void USART::IrqHandlerDMA(void)
 {
 	if (LL_DMA_IsActiveFlag_DME7(DMA2)) {
 		LL_DMA_ClearFlag_DME7(DMA2);
@@ -126,7 +126,7 @@ void USART::dma_irq_handler(void)
 }
 
 
-ssize_t USART::write(const char* buf, size_t nbytes)
+ssize_t USART::Write(const char* buf, size_t nbytes)
 {
 	size_t i = 0;
 
@@ -140,7 +140,7 @@ ssize_t USART::write(const char* buf, size_t nbytes)
 }
 
 
-ssize_t USART::write_dma(const char* buf, size_t nbytes)
+ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 {
 //	while (LL_DMA_IsEnabledStream(DMAx_, tx_stream_));
 //	LL_DMA_ClearFlag_TC7(DMA2);

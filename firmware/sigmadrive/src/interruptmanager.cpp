@@ -25,19 +25,19 @@ void relocate_interrupt_table()
 	__DSB();
 }
 
-inline void interrupt_manager_vector_handler()
+inline void InterruptManageVectorHandler()
 {
 	uint32_t vector = __get_xPSR() & 0xFF;
 	InterruptManager::instance().vectors_[vector]();
 }
 
 extern "C"
-void vector_handler()
+void VectorHandlerC()
 {
-	interrupt_manager_vector_handler();
+	InterruptManageVectorHandler();
 }
 
-void InterruptManager::debug_brake_point()
+void InterruptManager::DebugBrakePoint()
 {
 #if defined(DEBUG)
 	__DEBUG_BKPT();
@@ -51,7 +51,7 @@ InterruptManager::InterruptManager()
 {
 	relocate_interrupt_table();
 	for (size_t i = 0; i < vectors_.size(); i++)
-		vectors_[i] = [](void){debug_brake_point();};
+		vectors_[i] = [](void){DebugBrakePoint();};
 }
 
 InterruptManager::~InterruptManager()
@@ -59,10 +59,10 @@ InterruptManager::~InterruptManager()
 	// TODO Auto-generated destructor stub
 }
 
-void InterruptManager::callback(unsigned int irq, const std::function<void(void)>& callback)
+void InterruptManager::Callback(unsigned int irq, const std::function<void(void)>& callback)
 {
 	vectors_[irq + 16] = callback;
 	volatile unsigned int* newtable = &__relocated_vectors;
-	newtable[irq + 16] = (uint32_t)vector_handler;
+	newtable[irq + 16] = (uint32_t)VectorHandlerC;
 }
 

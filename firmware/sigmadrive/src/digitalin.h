@@ -61,12 +61,12 @@ public:
 		, GPIOx_(LL_PORT(pin))
 		, callback_(callback)
 	{
-		clock_enable(LL_PORTNUM(pin));
+		EnableClock(LL_PORTNUM(pin));
 		LL_GPIO_SetPinMode(GPIOx_, pin_, LL_GPIO_MODE_INPUT);
 		LL_GPIO_SetPinPull(GPIOx_, pin_, pmode);
 		LL_EXTI_EnableIT_0_31(pin_);
 		if (imode != InterruptNone) {
-			extiline_enable(LL_PORTNUM(pin), LL_PINNUM(pin), irq_priority);
+			EXTILineEnable(LL_PORTNUM(pin), LL_PINNUM(pin), irq_priority);
 		}
 		if (imode == InterruptRising) {
 			LL_EXTI_EnableIT_0_31((0x1U << LL_PINNUM(pin)));
@@ -93,7 +93,7 @@ public:
 	 *    An integer representing the state of the input pin,
 	 *    0 for logical 0, 1 for logical 1
 	 */
-	uint32_t read()
+	uint32_t Read()
 	{
 		return LL_GPIO_IsInputPinSet(GPIOx_, pin_);
 	}
@@ -102,7 +102,7 @@ public:
 	 */
 	operator uint32_t()
 	{
-		return read();
+		return Read();
 	}
 
 	/** Attach a member function to call when a rising edge occurs on the input
@@ -113,7 +113,7 @@ public:
 
 #define USE_BIND
 	template<typename T>
-	void callback(T* object, void (T::*func)(void))
+	void Callback(T* object, void (T::*func)(void))
 	{
 #if defined(USE_BIND)
 		callback_ = std::bind(func, object);
@@ -122,16 +122,16 @@ public:
 #endif
 	}
 
-	void callback(const std::function<void(void)>& callback)
+	void Callback(const std::function<void(void)>& callback)
 	{
 		callback_ = callback;
 	}
 
-	static void vector_handler(size_t line);
-	static void vector_handlers(size_t begin, size_t size);
+	static void VectorHandler(size_t line);
+	static void VectorHandlers(size_t begin, size_t size);
 
 protected:
-	void clock_enable(unsigned int gpioport)
+	void EnableClock(unsigned int gpioport)
 	{
 		switch (gpioport) {
 		case 0:
@@ -151,7 +151,7 @@ protected:
 		};
 	}
 
-	void extiline_enable(uint32_t portnum, uint32_t linenum, uint32_t irq_priority);
+	void EXTILineEnable(uint32_t portnum, uint32_t linenum, uint32_t irq_priority);
 
 protected:
 	uint32_t pin_;

@@ -29,15 +29,15 @@ public:
 			);
 	virtual ~USART();
 
-	void enable(void)			{ LL_USART_Enable(USARTx_); }
-	void disable(void)			{ LL_USART_Disable(USARTx_); }
+	void Enable(void)			{ LL_USART_Enable(USARTx_); }
+	void Disable(void)			{ LL_USART_Disable(USARTx_); }
 
-	ssize_t write(const char* buf, size_t nbytes);
-	ssize_t write_dma(const char* buf, size_t nbytes);
+	ssize_t Write(const char* buf, size_t nbytes);
+	ssize_t WriteDMA(const char* buf, size_t nbytes);
 
 private:
-	void usart_irq_handler(void);
-	void dma_irq_handler(void);
+	void IrqHandlerUSART(void);
+	void IrqHandlerDMA(void);
 
 public:
 	USART_TypeDef* USARTx_;

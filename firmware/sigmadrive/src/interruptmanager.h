@@ -15,19 +15,19 @@ public:
 		return object;
 	}
 
-	void callback(unsigned int irq, const std::function<void(void)>& callback);
+	void Callback(unsigned int irq, const std::function<void(void)>& callback);
 
 	template<typename T>
-	void callback(unsigned int irq, void (T::*func)(void), T* object)
+	void Callback(unsigned int irq, void (T::*func)(void), T* object)
 	{
-		callback(irq, [=](void){(object->*func)();});
+		Callback(irq, [=](void){(object->*func)();});
 	}
 
 
 private:
 	InterruptManager();
-	static void debug_brake_point();
-	friend void interrupt_manager_vector_handler();
+	static void DebugBrakePoint();
+	friend void InterruptManageVectorHandler();
 
 private:
 	std::array<std::function<void(void)>, 16 + SPI5_IRQn> vectors_;

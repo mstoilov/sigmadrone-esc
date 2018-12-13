@@ -81,7 +81,7 @@ GPIOPin::~GPIOPin()
 {
 }
 
-void GPIOPin::init() const
+void GPIOPin::Init() const
 {
 	unsigned long portnum = (((unsigned long)gpio_port_) - GPIOA_BASE) / 0x0400;
 	switch (portnum) {
@@ -116,6 +116,6 @@ void GPIOPin::init() const
 	LL_GPIO_Init(gpio_port_, (LL_GPIO_InitTypeDef*)this);
 }
 
-void GPIOPin::cleanup() const
+void GPIOPin::CleanUp() const
 {
 }

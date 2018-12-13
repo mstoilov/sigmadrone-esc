@@ -35,9 +35,9 @@ HwTimer::HwTimer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequenc
 	, output_pins_(output_pins)
 {
 	for (auto& pin : output_pins_)
-		pin.init();
+		pin.Init();
 
-	id_ = bsp_init_timer(TIMx_);
+	id_ = BspInitTimer(TIMx_);
 	assert(id_);
 	g_timers[id_] = this;
 
@@ -129,7 +129,7 @@ void HwTimer::IrqHandlerDmaCh3()
 }
 
 
-uint32_t HwTimer::bsp_init_timer(TIM_TypeDef* TIMx)
+uint32_t HwTimer::BspInitTimer(TIM_TypeDef* TIMx)
 {
 	if (TIMx == TIM1) {
 		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM1);
@@ -243,7 +243,7 @@ void HwTimer::ClearDMAFlags(DMA_TypeDef *dma_device, uint32_t dma_stream)
 
 
 
-uint32_t HwTimer::bsp_max_counter(TIM_TypeDef* TIMx)
+uint32_t HwTimer::BspMaxCounter(TIM_TypeDef* TIMx)
 {
 	if (TIMx == TIM1) {
 		return 0xffff;

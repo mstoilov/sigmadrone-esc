@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 
 	uint32_t counter = 0;
 
-	btn_user.callback(&led_warn, &DigitalOut::toggle);
+	btn_user.Callback(&led_warn, &DigitalOut::Toggle);
 
 
 	// Send a greeting to the trace device (skipped on Release).
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
 	while (1) {
 		HAL_Delay(1000UL);
-		led_status.toggle();
+		led_status.Toggle();
 
 		printf("Counter: %lu\n", counter++);
 	}

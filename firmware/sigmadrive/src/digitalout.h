@@ -46,7 +46,7 @@ public:
 		, GPIOx_(LL_PORT(pin))
 		, amode_(amode)
 	{
-		clock_enable(LL_PORTNUM(pin));
+		EnableClock(LL_PORTNUM(pin));
 		LL_GPIO_SetPinMode(GPIOx_, pin_, LL_GPIO_MODE_OUTPUT);
 		LL_GPIO_SetPinPull(GPIOx_, pin_, pmode);
 		LL_GPIO_SetPinSpeed(GPIOx_, pin_, smode);
@@ -56,7 +56,7 @@ public:
 			LL_GPIO_SetAFPin_0_7(GPIOx_, pin_, smode);
 		else
 			LL_GPIO_SetAFPin_8_15(GPIOx_, pin_, smode);
-		write(value);
+		Write(value);
 	}
 
 	DigitalOut(const DigitalOut& rhs) = default;
@@ -70,7 +70,7 @@ public:
 	 *  @param value An integer specifying the pin output value,
 	 *      0 for logical 0, 1 (or any other non-zero value) for logical 1
 	 */
-	void write(uint32_t value)
+	void Write(uint32_t value)
 	{
 		if ((value ? 1 : 0) ^ amode_)
 			LL_GPIO_SetOutputPin(GPIOx_, pin_);
@@ -78,19 +78,19 @@ public:
 			LL_GPIO_ResetOutputPin(GPIOx_, pin_);
 	}
 
-	void on()
+	void On()
 	{
-		write(1);
+		Write(1);
 	}
 
-	void off()
+	void Off()
 	{
-		write(0);
+		Write(0);
 	}
 
 	/** Toggle the current output
 	 */
-	void toggle()
+	void Toggle()
 	{
 		LL_GPIO_TogglePin(GPIOx_, pin_);
 	}
@@ -101,7 +101,7 @@ public:
 	 *    an integer representing the output setting of the pin,
 	 *    0 for logical 0, 1 for logical 1
 	 */
-	uint32_t read()
+	uint32_t Read()
 	{
 		return (LL_GPIO_IsOutputPinSet(GPIOx_, pin_) ? 1 : 0) ^ amode_;
 	}
@@ -111,13 +111,13 @@ public:
 
 	DigitalOut& operator=(int value)
 	{
-		write(value);
+		Write(value);
 		return *this;
 	}
 
 	DigitalOut& operator=(DigitalOut& rhs)
 	{
-		write(rhs.read());
+		Write(rhs.Read());
 		return *this;
 	}
 
@@ -125,11 +125,11 @@ public:
 	 */
 	operator uint32_t()
 	{
-		return read();
+		return Read();
 	}
 
 protected:
-	void clock_enable(unsigned int gpioport)
+	void EnableClock(unsigned int gpioport)
 	{
 		switch (gpioport) {
 		case 0:

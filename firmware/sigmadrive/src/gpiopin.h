@@ -45,8 +45,8 @@ public:
 			);
 	~GPIOPin();
 
-	void init() const;
-	void cleanup() const;
+	void Init() const;
+	void CleanUp() const;
 public:
 	GPIO_TypeDef* gpio_port_;
 	uint16_t pinnum_;

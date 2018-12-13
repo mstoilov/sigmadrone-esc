@@ -62,7 +62,7 @@ extern "C" ssize_t _write(int fd __attribute__((unused)),
 #if defined(TRACE)
 	// STDOUT and STDERR are routed to the trace device
 	if (fd == 1 || fd == 2) {
-		usart.write_dma(buf, nbyte);
+		usart.WriteDMA(buf, nbyte);
 		return trace_write(buf, nbyte);
 	}
 #endif // TRACE
