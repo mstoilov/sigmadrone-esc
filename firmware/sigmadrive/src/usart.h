@@ -13,6 +13,7 @@
 
 #include "gpiopin.h"
 #include "pinnames.h"
+#include "interruptmanager.h"
 
 class USART {
 public:
@@ -30,14 +31,20 @@ public:
 
 	void enable(void)			{ LL_USART_Enable(USARTx_); }
 	void disable(void)			{ LL_USART_Disable(USARTx_); }
+
 	ssize_t write(const char* buf, size_t nbytes);
 	ssize_t write_dma(const char* buf, size_t nbytes);
+
+private:
+	void usart_irq_handler(void);
+	void dma_irq_handler(void);
 
 public:
 	USART_TypeDef* USARTx_;
 	DMA_TypeDef* DMAx_;
 	uint32_t tx_stream_;
 	uint32_t rx_stream_;
+	bool transmitting_ = 0;
 
 
 };

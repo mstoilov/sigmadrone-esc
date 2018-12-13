@@ -59,10 +59,10 @@ InterruptManager::~InterruptManager()
 	// TODO Auto-generated destructor stub
 }
 
-void InterruptManager::subscribe(unsigned int irq, const std::function<void(void)>& callback)
+void InterruptManager::callback(unsigned int irq, const std::function<void(void)>& callback)
 {
 	vectors_[irq + 16] = callback;
 	volatile unsigned int* newtable = &__relocated_vectors;
-	newtable[irq + 16] = (uint32_t)interrupt_manager_vector_handler;
+	newtable[irq + 16] = (uint32_t)vector_handler;
 }
 

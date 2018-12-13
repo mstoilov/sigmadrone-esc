@@ -1,10 +1,4 @@
-/*
- * usart.cpp
- *
- *  Created on: Dec 8, 2018
- *      Author: mstoilov
- */
-
+#include "cortexm/ExceptionHandlers.h"
 #include "usart.h"
 
 static USART* g_uart[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
@@ -48,16 +42,19 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 
 	if (usart_device == USART1) {
 		__USART1_CLK_ENABLE();
+		InterruptManager::instance().callback(USART1_IRQn, &USART::usart_irq_handler, this);
 		NVIC_SetPriority(USART1_IRQn, 0);
 		NVIC_EnableIRQ(USART1_IRQn);
 		g_uart[1] = this;
 	} else if (usart_device == USART2) {
 		__USART2_CLK_ENABLE();
+		InterruptManager::instance().callback(USART2_IRQn, &USART::usart_irq_handler, this);
 		NVIC_SetPriority(USART2_IRQn, 0);
 		NVIC_EnableIRQ(USART2_IRQn);
 		g_uart[2] = this;
 	} else if (usart_device == USART6) {
 		__USART6_CLK_ENABLE();
+		InterruptManager::instance().callback(USART6_IRQn, &USART::usart_irq_handler, this);
 		NVIC_SetPriority(USART6_IRQn, 0);
 		NVIC_EnableIRQ(USART6_IRQn);
 		g_uart[6] = this;
@@ -77,8 +74,9 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 	/*
 	 * Configure NVIC for DMA transfer complete/error interrupts
 	 */
-//	NVIC_SetPriority(DMA2_Stream7_IRQn, 0);
-//	NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+	InterruptManager::instance().callback(DMA2_Stream7_IRQn, &USART::dma_irq_handler, this);
+	NVIC_SetPriority(DMA2_Stream7_IRQn, 0);
+	NVIC_EnableIRQ(DMA2_Stream7_IRQn);
 
 	/*
 	 * Configure the DMA TX stream
@@ -92,6 +90,39 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 USART::~USART()
 {
 	disable();
+}
+
+void USART::usart_irq_handler(void)
+{
+#if defined(DEBUG)
+	__DEBUG_BKPT();
+#endif
+	while (1)
+	{
+	}
+}
+
+void USART::dma_irq_handler(void)
+{
+	if (LL_DMA_IsActiveFlag_DME7(DMA2)) {
+		LL_DMA_ClearFlag_DME7(DMA2);
+
+	}
+	if (LL_DMA_IsActiveFlag_FE7(DMA2)) {
+		LL_DMA_ClearFlag_FE7(DMA2);
+
+	}
+	if (LL_DMA_IsActiveFlag_HT7(DMA2)) {
+		LL_DMA_ClearFlag_HT7(DMA2);
+
+	}
+	if (LL_DMA_IsActiveFlag_TC7(DMA2)) {
+		LL_DMA_ClearFlag_TC7(DMA2);
+		transmitting_ = false;
+	}
+	if (LL_DMA_IsActiveFlag_TE7(DMA2)) {
+		LL_DMA_ClearFlag_TE7(DMA2);
+	}
 }
 
 
@@ -109,52 +140,19 @@ ssize_t USART::write(const char* buf, size_t nbytes)
 }
 
 
-static volatile uint32_t dma2_stream7_transmitting = 0;
-
-void DMA2_Stream7_TC_callback(void)
-{
-	dma2_stream7_transmitting = 0;
-}
-
-extern "C"
-void DMA2_Stream7_IRQHandler(void)
-{
-	if (LL_DMA_IsActiveFlag_DME7(DMA2)) {
-		LL_DMA_ClearFlag_DME7(DMA2);
-
-	}
-	if (LL_DMA_IsActiveFlag_FE7(DMA2)) {
-		LL_DMA_ClearFlag_FE7(DMA2);
-
-	}
-	if (LL_DMA_IsActiveFlag_HT7(DMA2)) {
-		LL_DMA_ClearFlag_HT7(DMA2);
-
-	}
-	if (LL_DMA_IsActiveFlag_TC7(DMA2)) {
-		LL_DMA_ClearFlag_TC7(DMA2);
-		DMA2_Stream7_TC_callback();
-	}
-	if (LL_DMA_IsActiveFlag_TE7(DMA2)) {
-		LL_DMA_ClearFlag_TE7(DMA2);
-	}
-}
-
-
-
 ssize_t USART::write_dma(const char* buf, size_t nbytes)
 {
-	while (LL_DMA_IsEnabledStream(DMAx_, tx_stream_));
-	LL_DMA_ClearFlag_TC7(DMA2);
+//	while (LL_DMA_IsEnabledStream(DMAx_, tx_stream_));
+//	LL_DMA_ClearFlag_TC7(DMA2);
 
-	dma2_stream7_transmitting = 1;
-//	LL_DMA_EnableIT_TC(DMAx_, tx_stream_);
+	transmitting_ = true;
+	LL_DMA_EnableIT_TC(DMAx_, tx_stream_);
 	LL_DMA_ConfigAddresses(DMAx_, tx_stream_, (uint32_t)buf, LL_USART_DMA_GetRegAddr(USARTx_), LL_DMA_GetDataTransferDirection(DMAx_, tx_stream_));
 	LL_DMA_SetDataLength(DMAx_, tx_stream_, nbytes);
 	LL_USART_EnableDMAReq_TX(USARTx_);
 	LL_DMA_EnableStream(DMAx_, tx_stream_);
 
-//	while (dma2_stream7_transmitting);
+	while (transmitting_);
 
 	return nbytes;
 }

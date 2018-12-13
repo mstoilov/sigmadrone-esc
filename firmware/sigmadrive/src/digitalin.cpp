@@ -46,97 +46,97 @@ void DigitalIn::extiline_enable(uint32_t portnum, uint32_t linenum, uint32_t irq
 			NVIC_EnableIRQ(EXTI0_IRQn);
 			NVIC_SetPriority(EXTI0_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE0;
-			InterruptManager::instance().subscribe(EXTI0_IRQn, [](void){vector_handler(0);});
+			InterruptManager::instance().callback(EXTI0_IRQn, [](void){vector_handler(0);});
 			break;
 		case 1:
 			NVIC_EnableIRQ(EXTI1_IRQn);
 			NVIC_SetPriority(EXTI1_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE1;
-			InterruptManager::instance().subscribe(EXTI1_IRQn, [](void){vector_handler(1);});
+			InterruptManager::instance().callback(EXTI1_IRQn, [](void){vector_handler(1);});
 			break;
 		case 2:
 			NVIC_EnableIRQ(EXTI2_IRQn);
 			NVIC_SetPriority(EXTI2_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE2;
-			InterruptManager::instance().subscribe(EXTI2_IRQn, [](void){vector_handler(2);});
+			InterruptManager::instance().callback(EXTI2_IRQn, [](void){vector_handler(2);});
 			break;
 		case 3:
 			NVIC_EnableIRQ(EXTI3_IRQn);
 			NVIC_SetPriority(EXTI3_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE3;
-			InterruptManager::instance().subscribe(EXTI3_IRQn, [](void){vector_handler(3);});
+			InterruptManager::instance().callback(EXTI3_IRQn, [](void){vector_handler(3);});
 			break;
 		case 4:
 			NVIC_EnableIRQ(EXTI4_IRQn);
 			NVIC_SetPriority(EXTI4_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE4;
-			InterruptManager::instance().subscribe(EXTI4_IRQn, [](void){vector_handler(4);});
+			InterruptManager::instance().callback(EXTI4_IRQn, [](void){vector_handler(4);});
 			break;
 		case 5:
 			NVIC_EnableIRQ(EXTI9_5_IRQn);
 			NVIC_SetPriority(EXTI9_5_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE5;
-			InterruptManager::instance().subscribe(EXTI9_5_IRQn, [](void){vector_handlers(5,5);});
+			InterruptManager::instance().callback(EXTI9_5_IRQn, [](void){vector_handlers(5,5);});
 			break;
 		case 6:
 			NVIC_EnableIRQ(EXTI9_5_IRQn);
 			NVIC_SetPriority(EXTI9_5_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE6;
-			InterruptManager::instance().subscribe(EXTI9_5_IRQn, [](void){vector_handlers(5,5);});
+			InterruptManager::instance().callback(EXTI9_5_IRQn, [](void){vector_handlers(5,5);});
 			break;
 		case 7:
 			NVIC_EnableIRQ(EXTI9_5_IRQn);
 			NVIC_SetPriority(EXTI9_5_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE7;
-			InterruptManager::instance().subscribe(EXTI9_5_IRQn, [](void){vector_handlers(5,5);});
+			InterruptManager::instance().callback(EXTI9_5_IRQn, [](void){vector_handlers(5,5);});
 			break;
 		case 8:
 			NVIC_EnableIRQ(EXTI9_5_IRQn);
 			NVIC_SetPriority(EXTI9_5_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE8;
-			InterruptManager::instance().subscribe(EXTI9_5_IRQn, [](void){vector_handlers(5,5);});
+			InterruptManager::instance().callback(EXTI9_5_IRQn, [](void){vector_handlers(5,5);});
 			break;
 		case 9:
 			NVIC_EnableIRQ(EXTI9_5_IRQn);
 			NVIC_SetPriority(EXTI9_5_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE9;
-			InterruptManager::instance().subscribe(EXTI9_5_IRQn, [](void){vector_handlers(5,5);});
+			InterruptManager::instance().callback(EXTI9_5_IRQn, [](void){vector_handlers(5,5);});
 			break;
 		case 10:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE10;
-			InterruptManager::instance().subscribe(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
+			InterruptManager::instance().callback(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
 			break;
 		case 11:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE11;
-			InterruptManager::instance().subscribe(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
+			InterruptManager::instance().callback(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
 			break;
 		case 12:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE12;
-			InterruptManager::instance().subscribe(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
+			InterruptManager::instance().callback(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
 			break;
 		case 13:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE13;
-			InterruptManager::instance().subscribe(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
+			InterruptManager::instance().callback(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
 			break;
 		case 14:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE14;
-			InterruptManager::instance().subscribe(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
+			InterruptManager::instance().callback(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
 			break;
 		case 15:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE15;
-			InterruptManager::instance().subscribe(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
+			InterruptManager::instance().callback(EXTI15_10_IRQn, [](void){vector_handlers(10,5);});
 			break;
 		default:
 			exti_line = 0;

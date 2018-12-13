@@ -14,10 +14,6 @@ DigitalOut led_warn(PA_5, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, Digi
 DigitalOut led_status(PA_6, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullNone, DigitalOut::ActiveLow, 0);
 DigitalIn btn_user(PA_4, DigitalIn::PullDefault, DigitalIn::InterruptFalling);
 
-void usr_btn_callback(void)
-{
-	led_warn.toggle();
-}
 
 int main(int argc, char* argv[])
 {
@@ -25,10 +21,8 @@ int main(int argc, char* argv[])
 
 	uint32_t counter = 0;
 
-//	btn_user.callback(&led_warn, &DigitalOut::toggle);
-//	btn_user.callback(usr_btn_callback);
+	btn_user.callback(&led_warn, &DigitalOut::toggle);
 
-	im.subscribe(EXTI4_IRQn, [](void){LL_EXTI_ClearFlag_0_31(1<<4);led_warn.toggle();});
 
 	// Send a greeting to the trace device (skipped on Release).
 	trace_puts("Hello ARM World!");

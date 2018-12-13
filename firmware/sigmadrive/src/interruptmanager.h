@@ -15,12 +15,12 @@ public:
 		return object;
 	}
 
-	void subscribe(unsigned int irq, const std::function<void(void)>& callback);
+	void callback(unsigned int irq, const std::function<void(void)>& callback);
 
 	template<typename T>
-	void subscribe(unsigned int irq, void (T::*callback)(void), T* object)
+	void callback(unsigned int irq, void (T::*func)(void), T* object)
 	{
-		subscribe(irq, [=](void){(object->*callback)();});
+		callback(irq, [=](void){(object->*func)();});
 	}
 
 
