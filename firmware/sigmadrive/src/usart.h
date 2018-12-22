@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include <vector>
+#include <array>
+#include <queue>
 #include <string>
 #include <stdexcept>
 
@@ -31,25 +33,32 @@ public:
 
 	void Enable(void)			{ LL_USART_Enable(USARTx_); }
 	void Disable(void)			{ LL_USART_Disable(USARTx_); }
+	void StartDmaRx();
+
+	ssize_t Write(const char* buf, size_t nbytes);
+	ssize_t WriteDMA(const char* buf, size_t nbytes);
+	ssize_t ReadDMA(char* buf, size_t nbytes);
+
+private:
 	void EnableDMAReq_TX(void)	{ LL_USART_EnableDMAReq_TX(USARTx_); }
 	void EnableDMAReq_RX(void)	{ LL_USART_EnableDMAReq_RX(USARTx_); }
 	void DisableDMAReq_TX(void)	{ LL_USART_DisableDMAReq_TX(USARTx_); }
 	void DisableDMAReq_RX(void)	{ LL_USART_DisableDMAReq_RX(USARTx_); }
 
-	ssize_t Write(const char* buf, size_t nbytes);
-	ssize_t WriteDMA(const char* buf, size_t nbytes);
-
-private:
 	void IrqHandlerUSART(void);
 	void CallbackTX_DmaTC(void);
+	void CallbackRX_DmaTC(void);
+
+	void FlushInputBuffer(void);
 
 public:
+	std::array<char, 256> output_buffer_;
+	std::array<char, 8> input_buffer_;
+	std::queue<char> input_queue_;
 	USART_TypeDef* USARTx_;
 	Dma dma_tx_;
 	Dma dma_rx_;
 	bool transmitting_ = 0;
-
-
 };
 
 #endif /* _USART_H_ */

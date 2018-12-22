@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include "diag/Trace.h"
 #include "cmsis_device.h"
@@ -6,6 +7,8 @@
 #include "interruptmanager.h"
 #include "digitalin.h"
 #include "digitalout.h"
+
+#include <iostream>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -37,11 +40,26 @@ int main(int argc, char* argv[])
 	// at high speed.
 	printf("System clock: %lu Hz\n", SystemCoreClock);
 
+	char buffer[128];
+	int ret = 0;
 	while (1) {
+		std::string tmp;
 		HAL_Delay(1000UL);
 		led_status.Toggle();
 
-		printf("Counter: %lu\n", counter++);
+//		printf("Counter: %lu\n", counter++);
+//		std::cerr << "Is this showing: " << counter << std::endl;
+
+		memset(buffer, 0, sizeof(buffer));
+		while ((ret = read(1, buffer, sizeof(buffer) - 1)) > 0) {
+			tmp += buffer;
+		}
+		if (tmp.size()) {
+			std::cout << tmp;
+			memset(buffer, 0, sizeof(buffer));
+
+		}
+
 	}
 }
 

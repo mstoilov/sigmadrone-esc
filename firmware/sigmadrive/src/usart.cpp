@@ -61,31 +61,10 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 		throw std::runtime_error("Failed to init UART");
 	}
 
-#if 0
-	/*
-	 * Enable the DMA device
-	 */
-	if (DMAx_ == DMA1)
-		LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
-	else if (DMAx_ == DMA2)
-		LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA2);
-
-	/*
-	 * Configure NVIC for DMA transfer complete/error interrupts
-	 */
-	InterruptManager::instance().Callback(DMA2_Stream7_IRQn, &USART::IrqHandlerDMA, this);
-	NVIC_SetPriority(DMA2_Stream7_IRQn, 0);
-	NVIC_EnableIRQ(DMA2_Stream7_IRQn);
-
-	/*
-	 * Configure the DMA TX stream
-	 */
-	LL_DMA_ConfigTransfer(DMAx_, tx_stream, LL_DMA_DIRECTION_MEMORY_TO_PERIPH | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE);
-	LL_DMA_SetChannelSelection(DMAx_, tx_stream, dma_channel);
-#endif
-
 	dma_tx_.Callback_TC(this, &USART::CallbackTX_DmaTC);
+	dma_rx_.Callback_TC(this, &USART::CallbackRX_DmaTC);
 	Enable();
+	StartDmaRx();
 }
 
 USART::~USART()
@@ -105,8 +84,40 @@ void USART::IrqHandlerUSART(void)
 
 void USART::CallbackTX_DmaTC(void)
 {
-	transmitting_ = 0;
+	transmitting_ = false;
 }
+
+void USART::FlushInputBuffer(void)
+{
+	size_t buffer_size = input_buffer_.size() - dma_rx_.GetDataLength();
+	for (size_t i = 0; i < buffer_size; i++) {
+		input_queue_.push(input_buffer_[i]);
+	}
+}
+
+void USART::CallbackRX_DmaTC(void)
+{
+	/*
+	 * The DMA is disabled now, so it is safe
+	 * to flush the input buffer into the queue
+	 */
+	FlushInputBuffer();
+
+	/*
+	 * Re-enable the DMA transfer.
+	 */
+	StartDmaRx();
+}
+
+void USART::StartDmaRx()
+{
+	dma_rx_.EnableIT_TC();
+	dma_rx_.ConfigAddresses(LL_USART_DMA_GetRegAddr(USARTx_), (uint32_t)input_buffer_.data(), dma_rx_.GetDataTransferDirection());
+	dma_rx_.SetDataLength(input_buffer_.size());
+	EnableDMAReq_RX();
+	dma_rx_.Enable();
+}
+
 
 ssize_t USART::Write(const char* buf, size_t nbytes)
 {
@@ -127,13 +138,29 @@ ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 	while (transmitting_)
 		;
 
+	size_t ret = std::min(nbytes, output_buffer_.size());
+	strncpy(output_buffer_.data(), buf, ret);
 	transmitting_ = true;
 	dma_tx_.EnableIT_TC();
-	dma_tx_.ConfigAddresses((uint32_t)buf, LL_USART_DMA_GetRegAddr(USARTx_), dma_tx_.GetDataTransferDirection());
-	dma_tx_.SetDataLength(nbytes);
+	dma_tx_.ConfigAddresses((uint32_t)output_buffer_.data(), LL_USART_DMA_GetRegAddr(USARTx_), dma_tx_.GetDataTransferDirection());
+	dma_tx_.SetDataLength(ret);
 	EnableDMAReq_TX();
 	dma_tx_.Enable();
+	return ret;
+}
 
-	return nbytes;
+
+ssize_t USART::ReadDMA(char* buf, size_t nbytes)
+{
+	size_t i = 0;
+	__disable_irq();
+	FlushInputBuffer();
+	__enable_irq();
+	StartDmaRx();
+	for (i = 0; i < nbytes && input_queue_.size() > 0; i++) {
+		buf[i] = input_queue_.front();
+		input_queue_.pop();
+	}
+	return i;
 }
 

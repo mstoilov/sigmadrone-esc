@@ -35,7 +35,8 @@
 #include "usart.h"
 
 USART usart({
-	{PA_15, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART1}},
+	{PA_15, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART1},
+	{PB_3, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART1}},
 	230400,
 	USART1);
 
@@ -59,13 +60,34 @@ extern "C" ssize_t _write(int fd __attribute__((unused)),
 		const char* buf __attribute__((unused)),
 		size_t nbyte __attribute__((unused)))
 {
-#if defined(TRACE)
+	size_t ret = 0;
+	ssize_t tmp = 0;
+
 	// STDOUT and STDERR are routed to the trace device
 	if (fd == 1 || fd == 2) {
-		usart.WriteDMA(buf, nbyte);
-		return trace_write(buf, nbyte);
-	}
+		ret = usart.WriteDMA(buf, nbyte);
+#if defined(TRACE)
+		nbyte = ret;
+		for (ret = 0; ret < nbyte; ret += tmp) {
+			if ((tmp = trace_write(buf, nbyte)) < 0)
+				return tmp;
+		}
 #endif // TRACE
+
+		return ret;
+	}
+
+	errno = ENOSYS;
+	return -1;
+}
+
+
+extern "C" int _read(int fd __attribute__((unused)),
+		char* ptr __attribute__((unused)), int len __attribute__((unused)))
+{
+	if (fd == 1 || fd == 2) {
+		return usart.ReadDMA(ptr, len);
+	}
 
 	errno = ENOSYS;
 	return -1;
