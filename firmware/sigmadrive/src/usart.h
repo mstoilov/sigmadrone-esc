@@ -61,7 +61,6 @@ public:
 	Dma dma_tx_;
 	Dma dma_rx_;
 	volatile size_t outputNDT = 0;
-	bool transmitting_ = 0;
 };
 
 #endif /* _USART_H_ */

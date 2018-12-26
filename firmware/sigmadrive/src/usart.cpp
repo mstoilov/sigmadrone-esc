@@ -86,8 +86,6 @@ void USART::CallbackTX_DmaTC(void)
 {
 	if (!dma_tx_.IsEnabled())
 		StartDmaTx();
-
-//	transmitting_ = false;
 }
 
 void USART::CallbackRX_DmaTC(void)
@@ -142,19 +140,6 @@ ssize_t USART::Write(const char* buf, size_t nbytes)
 
 ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 {
-//	while (transmitting_)
-//		   ;
-//
-//	size_t ret = std::min(nbytes, output_buffer_.size());
-//	strncpy(output_buffer_.data(), buf, ret);
-//	transmitting_ = true;
-//	dma_tx_.EnableIT_TC();
-//	dma_tx_.ConfigAddresses((uint32_t)output_buffer_.data(), LL_USART_DMA_GetRegAddr(USARTx_), dma_tx_.GetDataTransferDirection());
-//	dma_tx_.SetDataLength(ret);
-//	EnableDMAReq_TX();
-//	dma_tx_.Enable();
-//	return ret;
-
 	while (!output_queue_.space())
 		;
 	size_t i = 0;
