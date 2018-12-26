@@ -45,11 +45,6 @@ void Dma::ConfigAddresses(uint32_t srcAddress, uint32_t dstAddress, uint32_t dir
 	LL_DMA_ConfigAddresses(DMAx_, stream_, srcAddress, dstAddress, direction);
 }
 
-void Dma::SetDataLength(uint32_t nb)
-{
-	LL_DMA_SetDataLength(DMAx_, stream_, nb);
-}
-
 
 void Dma::IrqHandlerStream0()
 {

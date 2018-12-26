@@ -40,6 +40,8 @@ USART usart({
 	230400,
 	USART1);
 
+USART* ptrUsart1 = &usart;
+
 // ----------------------------------------------------------------------------
 
 // When using retargetted configurations, the standard write() system call,

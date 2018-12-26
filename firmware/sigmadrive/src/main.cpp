@@ -7,6 +7,7 @@
 #include "interruptmanager.h"
 #include "digitalin.h"
 #include "digitalout.h"
+#include "usart.h"
 
 #include <iostream>
 
@@ -17,6 +18,7 @@ DigitalOut led_warn(PA_5, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, Digi
 DigitalOut led_status(PA_6, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullNone, DigitalOut::ActiveLow, 0);
 DigitalIn btn_user(PA_4, DigitalIn::PullDefault, DigitalIn::InterruptFalling);
 
+extern USART* ptrUsart1;
 
 int main(int argc, char* argv[])
 {
@@ -44,15 +46,27 @@ int main(int argc, char* argv[])
 	int ret = 0;
 	while (1) {
 		std::string tmp;
-		HAL_Delay(1000UL);
+		HAL_Delay(10UL);
 		led_status.Toggle();
 
-//		printf("Counter: %lu\n", counter++);
-//		std::cerr << "Is this showing: " << counter << std::endl;
+//		printf("1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst: %lu\n", counter++);
+//		printf("1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst: %lu\n", counter++);
+//		printf("1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst: %lu\n", counter++);
+//		continue;
+
+//		uint32_t rxne = 0;//LL_USART_IsActiveFlag_RXNE(ptrUsart1->USARTx_);
+//		uint32_t ore = 0;//LL_USART_IsActiveFlag_ORE(ptrUsart1->USARTx_);
+//		printf("dma_rx.Enabled(): %s, SR: 0x%lx, RNE: %lu, ORE: %lu, counter: %d\n",
+//				ptrUsart1->IsEnable() ? "true" : "false",
+//				ptrUsart1->USARTx_->SR,
+//				ore,
+//				rxne,
+//				counter++);
 
 		memset(buffer, 0, sizeof(buffer));
 		while ((ret = read(1, buffer, sizeof(buffer) - 1)) > 0) {
 			tmp += buffer;
+			memset(buffer, 0, sizeof(buffer));
 		}
 		if (tmp.size()) {
 			std::cout << tmp;

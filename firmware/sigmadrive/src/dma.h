@@ -19,12 +19,13 @@ public:
 	virtual ~Dma();
 
 	void ConfigAddresses(uint32_t SrcAddress, uint32_t DstAddress, uint32_t Direction);
-	void SetDataLength(uint32_t nb);
+	void SetDataLength(uint32_t nb)								{ LL_DMA_SetDataLength(DMAx_, stream_, nb); }
 	uint32_t GetDataLength()									{ return LL_DMA_GetDataLength(DMAx_, stream_); }
 	uint32_t GetDataTransferDirection() 						{ return LL_DMA_GetDataTransferDirection(DMAx_, stream_); }
 	void SetDataTransferDirection(uint32_t direction)			{ LL_DMA_SetDataTransferDirection(DMAx_, stream_, direction); }
 	void Enable() 												{ LL_DMA_EnableStream(DMAx_, stream_); }
 	void Disable()												{ LL_DMA_DisableStream(DMAx_, stream_); }
+	bool IsEnabled()											{ return LL_DMA_IsEnabledStream(DMAx_, stream_); }
 	void EnableIT_DME()											{ LL_DMA_EnableIT_DME(DMAx_, stream_); }
 	void EnableIT_FE()											{ LL_DMA_EnableIT_FE(DMAx_, stream_); }
 	void EnableIT_HT()											{ LL_DMA_EnableIT_HT(DMAx_, stream_); }

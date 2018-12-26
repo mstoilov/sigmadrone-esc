@@ -61,6 +61,7 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 		throw std::runtime_error("Failed to init UART");
 	}
 
+	LL_USART_EnableIT_RXNE(USARTx_);
 	dma_tx_.Callback_TC(this, &USART::CallbackTX_DmaTC);
 	dma_rx_.Callback_TC(this, &USART::CallbackRX_DmaTC);
 	Enable();
@@ -74,35 +75,23 @@ USART::~USART()
 
 void USART::IrqHandlerUSART(void)
 {
-#if defined(DEBUG)
-	__DEBUG_BKPT();
-#endif
-	while (1)
-	{
-	}
+	if (LL_USART_IsActiveFlag_RXNE(USARTx_))
+		LL_USART_ClearFlag_RXNE(USARTx_);
+	if (LL_USART_IsActiveFlag_ORE(USARTx_))
+		LL_USART_ClearFlag_ORE(USARTx_);
+
 }
 
 void USART::CallbackTX_DmaTC(void)
 {
-	transmitting_ = false;
-}
+	if (!dma_tx_.IsEnabled())
+		StartDmaTx();
 
-void USART::FlushInputBuffer(void)
-{
-	size_t buffer_size = input_buffer_.size() - dma_rx_.GetDataLength();
-	for (size_t i = 0; i < buffer_size; i++) {
-		input_queue_.push(input_buffer_[i]);
-	}
+//	transmitting_ = false;
 }
 
 void USART::CallbackRX_DmaTC(void)
 {
-	/*
-	 * The DMA is disabled now, so it is safe
-	 * to flush the input buffer into the queue
-	 */
-	FlushInputBuffer();
-
 	/*
 	 * Re-enable the DMA transfer.
 	 */
@@ -111,11 +100,29 @@ void USART::CallbackRX_DmaTC(void)
 
 void USART::StartDmaRx()
 {
+	input_queue_.reset_wp(0);
 	dma_rx_.EnableIT_TC();
-	dma_rx_.ConfigAddresses(LL_USART_DMA_GetRegAddr(USARTx_), (uint32_t)input_buffer_.data(), dma_rx_.GetDataTransferDirection());
-	dma_rx_.SetDataLength(input_buffer_.size());
+	dma_rx_.ConfigAddresses(LL_USART_DMA_GetRegAddr(USARTx_), (uint32_t)input_queue_.get_write_ptr(), dma_rx_.GetDataTransferDirection());
+	dma_rx_.SetDataLength(input_queue_.capacity());
 	EnableDMAReq_RX();
 	dma_rx_.Enable();
+}
+
+void USART::StartDmaTx()
+{
+	size_t i = 0;
+	for (i = 0; i < output_buffer_.size() && output_queue_.size() > 0; i++) {
+		output_buffer_[i] = output_queue_.front();
+		output_queue_.pop();
+	}
+
+	if (i > 0) {
+		dma_tx_.EnableIT_TC();
+		dma_tx_.ConfigAddresses((uint32_t)output_buffer_.data(), LL_USART_DMA_GetRegAddr(USARTx_), dma_tx_.GetDataTransferDirection());
+		dma_tx_.SetDataLength(i);
+		EnableDMAReq_TX();
+		dma_tx_.Enable();
+	}
 }
 
 
@@ -135,32 +142,44 @@ ssize_t USART::Write(const char* buf, size_t nbytes)
 
 ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 {
-	while (transmitting_)
-		;
+//	while (transmitting_)
+//		   ;
+//
+//	size_t ret = std::min(nbytes, output_buffer_.size());
+//	strncpy(output_buffer_.data(), buf, ret);
+//	transmitting_ = true;
+//	dma_tx_.EnableIT_TC();
+//	dma_tx_.ConfigAddresses((uint32_t)output_buffer_.data(), LL_USART_DMA_GetRegAddr(USARTx_), dma_tx_.GetDataTransferDirection());
+//	dma_tx_.SetDataLength(ret);
+//	EnableDMAReq_TX();
+//	dma_tx_.Enable();
+//	return ret;
 
-	size_t ret = std::min(nbytes, output_buffer_.size());
-	strncpy(output_buffer_.data(), buf, ret);
-	transmitting_ = true;
-	dma_tx_.EnableIT_TC();
-	dma_tx_.ConfigAddresses((uint32_t)output_buffer_.data(), LL_USART_DMA_GetRegAddr(USARTx_), dma_tx_.GetDataTransferDirection());
-	dma_tx_.SetDataLength(ret);
-	EnableDMAReq_TX();
-	dma_tx_.Enable();
-	return ret;
+	while (!output_queue_.space())
+		;
+	size_t i = 0;
+	for (i = 0; i < nbytes && output_queue_.space(); i++) {
+		output_queue_.push(buf[i]);
+	}
+	if (i > 0 && !dma_tx_.IsEnabled()) {
+		StartDmaTx();
+	}
+	return i;
 }
 
 
 ssize_t USART::ReadDMA(char* buf, size_t nbytes)
 {
 	size_t i = 0;
+
 	__disable_irq();
-	FlushInputBuffer();
+	input_queue_.reset_wp(input_queue_.capacity() - dma_rx_.GetDataLength());
 	__enable_irq();
-	StartDmaRx();
+
 	for (i = 0; i < nbytes && input_queue_.size() > 0; i++) {
 		buf[i] = input_queue_.front();
 		input_queue_.pop();
 	}
+
 	return i;
 }
-

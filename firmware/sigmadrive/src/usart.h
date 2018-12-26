@@ -17,6 +17,7 @@
 #include "pinnames.h"
 #include "dma.h"
 #include "interruptmanager.h"
+#include "ring.h"
 
 class USART {
 public:
@@ -33,7 +34,9 @@ public:
 
 	void Enable(void)			{ LL_USART_Enable(USARTx_); }
 	void Disable(void)			{ LL_USART_Disable(USARTx_); }
+	bool IsEnable(void)			{ return LL_USART_IsEnabled(USARTx_) ? true : false; }
 	void StartDmaRx();
+	void StartDmaTx();
 
 	ssize_t Write(const char* buf, size_t nbytes);
 	ssize_t WriteDMA(const char* buf, size_t nbytes);
@@ -49,15 +52,15 @@ private:
 	void CallbackTX_DmaTC(void);
 	void CallbackRX_DmaTC(void);
 
-	void FlushInputBuffer(void);
 
 public:
-	std::array<char, 256> output_buffer_;
-	std::array<char, 8> input_buffer_;
-	std::queue<char> input_queue_;
+	std::array<char, 8> output_buffer_;
+	Ring<char, 8> output_queue_;
+	Ring<char, 128> input_queue_;
 	USART_TypeDef* USARTx_;
 	Dma dma_tx_;
 	Dma dma_rx_;
+	volatile size_t outputNDT = 0;
 	bool transmitting_ = 0;
 };
 
