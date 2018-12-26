@@ -54,7 +54,6 @@ private:
 
 
 public:
-	std::array<char, 8> output_buffer_;
 	Ring<char, 8> output_queue_;
 	Ring<char, 128> input_queue_;
 	USART_TypeDef* USARTx_;

@@ -54,14 +54,14 @@ int main(int argc, char* argv[])
 //		printf("1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst: %lu\n", counter++);
 //		continue;
 
-//		uint32_t rxne = 0;//LL_USART_IsActiveFlag_RXNE(ptrUsart1->USARTx_);
-//		uint32_t ore = 0;//LL_USART_IsActiveFlag_ORE(ptrUsart1->USARTx_);
-//		printf("dma_rx.Enabled(): %s, SR: 0x%lx, RNE: %lu, ORE: %lu, counter: %d\n",
-//				ptrUsart1->IsEnable() ? "true" : "false",
-//				ptrUsart1->USARTx_->SR,
-//				ore,
-//				rxne,
-//				counter++);
+		uint32_t rxne = 0;//LL_USART_IsActiveFlag_RXNE(ptrUsart1->USARTx_);
+		uint32_t ore = 0;//LL_USART_IsActiveFlag_ORE(ptrUsart1->USARTx_);
+		printf("dma_rx.Enabled(): %s, SR: 0x%lx, RNE: %lu, ORE: %lu, counter: %d\n",
+				ptrUsart1->IsEnable() ? "true" : "false",
+				ptrUsart1->USARTx_->SR,
+				ore,
+				rxne,
+				counter++);
 
 		memset(buffer, 0, sizeof(buffer));
 		while ((ret = read(1, buffer, sizeof(buffer) - 1)) > 0) {
