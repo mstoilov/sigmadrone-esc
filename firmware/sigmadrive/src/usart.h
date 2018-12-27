@@ -54,8 +54,8 @@ private:
 
 
 public:
-	Ring<char, 8> output_queue_;
-	Ring<char, 128> input_queue_;
+	Ring<char, 256> output_queue_;
+	Ring<char, 2048> input_queue_;
 	USART_TypeDef* USARTx_;
 	Dma dma_tx_;
 	Dma dma_rx_;

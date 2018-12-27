@@ -103,6 +103,7 @@ void USART::StartDmaRx()
 void USART::CallbackTX_DmaTC(void)
 {
 	output_queue_.read_update(outputNDT);
+	outputNDT = 0UL;
 	if (!dma_tx_.IsEnabled())
 		StartDmaTx();
 }
@@ -136,9 +137,10 @@ ssize_t USART::Write(const char* buf, size_t nbytes)
 
 ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 {
+	size_t i = 0;
+
 	while (!output_queue_.space())
 		;
-	size_t i = 0;
 	for (i = 0; i < nbytes && output_queue_.space(); i++) {
 		output_queue_.push(buf[i]);
 	}
