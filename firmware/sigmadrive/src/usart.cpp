@@ -26,7 +26,7 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 	 - Word Length = 8 Bits
 	 - Stop Bit = One Stop bit
 	 - Parity = None
-	 - BaudRate = 9600 baud
+	 - BaudRate = 230400 baud
 	 - Hardware flow control disabled (RTS and CTS signals) */
 	LL_USART_InitTypeDef Init;
 	Init.BaudRate = baudrate;
@@ -144,27 +144,26 @@ ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 	for (i = 0; i < nbytes && output_queue_.space(); i++) {
 		output_queue_.push(buf[i]);
 	}
-	__disable_irq();
 	if (i > 0 && !dma_tx_.IsEnabled()) {
 		StartDmaTx();
 	}
-	__enable_irq();
 	return i;
 }
 
 
 ssize_t USART::ReadDMA(char* buf, size_t nbytes)
 {
-	size_t i = 0;
-
 	__disable_irq();
+	/*
+	 * Update the write ptr according to the number of data elements transfered
+	 * from the DMA. Do the update with IRQ disabled as we are touching the
+	 * ring buffer wp_.
+	 */
 	input_queue_.reset_wp(input_queue_.capacity() - dma_rx_.GetDataLength());
 	__enable_irq();
 
-	for (i = 0; i < nbytes && input_queue_.size() > 0; i++) {
-		buf[i] = input_queue_.front();
-		input_queue_.pop();
-	}
-
+	size_t i = std::min(nbytes, input_queue_.read_size());
+	memcpy(buf, input_queue_.get_read_ptr(), i);
+	input_queue_.read_update(i);
 	return i;
 }
