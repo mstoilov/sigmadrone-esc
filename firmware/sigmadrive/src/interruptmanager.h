@@ -7,7 +7,6 @@
 #include <functional>
 
 
-
 class InterruptManager {
 public:
 	virtual ~InterruptManager() = default;
@@ -33,11 +32,7 @@ private:
 	friend void InterruptManageVectorHandler();
 
 private:
-#if USE_MULTICALLBACKS
-	std::array<std::vector<std::function<void(void)>>, 16 + SPI5_IRQn> vectors_;
-#else
 	std::array<std::function<void(void)>, 16 + SPI5_IRQn> vectors_;
-#endif
 };
 
 #endif /* _INTERRUPTMANAGER_H_ */
