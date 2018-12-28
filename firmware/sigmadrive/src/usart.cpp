@@ -15,7 +15,7 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 		)
 	: USARTx_(usart_device)
 	, dma_tx_(dma_device, tx_stream, dma_channel, LL_DMA_DIRECTION_MEMORY_TO_PERIPH | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE)
-	, dma_rx_(dma_device, rx_stream, dma_channel, LL_DMA_DIRECTION_PERIPH_TO_MEMORY | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE)
+	, dma_rx_(dma_device, rx_stream, dma_channel, LL_DMA_MODE_CIRCULAR | LL_DMA_DIRECTION_PERIPH_TO_MEMORY | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE)
 {
 	for (auto& pin : data_pins)
 		pin.Init();
@@ -36,7 +36,6 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 	Init.HardwareFlowControl = hwflowctrl;
 	Init.OverSampling = LL_USART_OVERSAMPLING_8;
 	Init.TransferDirection = LL_USART_DIRECTION_TX_RX;
-
 
 	if (usart_device == USART1) {
 		__USART1_CLK_ENABLE();
@@ -63,7 +62,6 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 
 	LL_USART_EnableIT_RXNE(USARTx_);
 	dma_tx_.Callback_TC(this, &USART::CallbackTX_DmaTC);
-	dma_rx_.Callback_TC(this, &USART::CallbackRX_DmaTC);
 	Enable();
 	StartDmaRx();
 }
@@ -75,26 +73,13 @@ USART::~USART()
 
 void USART::IrqHandlerUSART(void)
 {
-	if (LL_USART_IsActiveFlag_RXNE(USARTx_))
-		LL_USART_ClearFlag_RXNE(USARTx_);
-	if (LL_USART_IsActiveFlag_ORE(USARTx_))
-		LL_USART_ClearFlag_ORE(USARTx_);
-
-}
-
-void USART::CallbackRX_DmaTC(void)
-{
-	/*
-	 * Re-enable the DMA transfer.
-	 */
-	StartDmaRx();
+	LL_USART_ClearFlag_RXNE(USARTx_);
+	LL_USART_ClearFlag_ORE(USARTx_);
 }
 
 void USART::StartDmaRx()
 {
-	input_queue_.reset_wp(0);
-	dma_rx_.EnableIT_TC();
-	dma_rx_.ConfigAddresses(LL_USART_DMA_GetRegAddr(USARTx_), (uint32_t)input_queue_.get_write_ptr(), dma_rx_.GetDataTransferDirection());
+	dma_rx_.ConfigAddresses(LL_USART_DMA_GetRegAddr(USARTx_), (uint32_t)input_queue_.get_data_ptr(), dma_rx_.GetDataTransferDirection());
 	dma_rx_.SetDataLength(input_queue_.capacity());
 	EnableDMAReq_RX();
 	dma_rx_.Enable();
@@ -144,23 +129,22 @@ ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 	for (i = 0; i < nbytes && output_queue_.space(); i++) {
 		output_queue_.push(buf[i]);
 	}
+	__disable_irq();
 	if (i > 0 && !dma_tx_.IsEnabled()) {
 		StartDmaTx();
 	}
+	__enable_irq();
 	return i;
 }
 
 
 ssize_t USART::ReadDMA(char* buf, size_t nbytes)
 {
-	__disable_irq();
 	/*
 	 * Update the write ptr according to the number of data elements transfered
-	 * from the DMA. Do the update with IRQ disabled as we are touching the
-	 * ring buffer wp_.
+	 * from the DMA.
 	 */
 	input_queue_.reset_wp(input_queue_.capacity() - dma_rx_.GetDataLength());
-	__enable_irq();
 
 	size_t i = std::min(nbytes, input_queue_.read_size());
 	memcpy(buf, input_queue_.get_read_ptr(), i);

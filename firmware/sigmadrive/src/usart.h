@@ -50,8 +50,6 @@ private:
 
 	void IrqHandlerUSART(void);
 	void CallbackTX_DmaTC(void);
-	void CallbackRX_DmaTC(void);
-
 
 public:
 	Ring<char, 256> output_queue_;
