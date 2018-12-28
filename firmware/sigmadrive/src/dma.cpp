@@ -41,7 +41,10 @@ void Dma::ConfigAddresses(uint32_t srcAddress, uint32_t dstAddress, uint32_t dir
 void Dma::IrqHandlerStream0()
 {
 	DMA_TypeDef* DMAx = GetDevice();
-
+	if (LL_DMA_IsActiveFlag_TC0(DMAx)) {
+		LL_DMA_ClearFlag_TC0(DMAx);
+		IrqHandlerTC();
+	}
 	if (LL_DMA_IsActiveFlag_DME0(DMAx)) {
 		LL_DMA_ClearFlag_DME0(DMAx);
 		IrqHandlerDME();
@@ -54,10 +57,6 @@ void Dma::IrqHandlerStream0()
 		LL_DMA_ClearFlag_HT0(DMAx);
 		IrqHandlerHT();
 	}
-	if (LL_DMA_IsActiveFlag_TC0(DMAx)) {
-		LL_DMA_ClearFlag_TC0(DMAx);
-		IrqHandlerTC();
-	}
 	if (LL_DMA_IsActiveFlag_TE0(DMAx)) {
 		LL_DMA_ClearFlag_TE0(DMAx);
 		IrqHandlerTE();
@@ -67,6 +66,10 @@ void Dma::IrqHandlerStream0()
 void Dma::IrqHandlerStream1()
 {
 	DMA_TypeDef* DMAx = GetDevice();
+	if (LL_DMA_IsActiveFlag_TC1(DMAx)) {
+		LL_DMA_ClearFlag_TC1(DMAx);
+		IrqHandlerTC();
+	}
 	if (LL_DMA_IsActiveFlag_DME1(DMAx)) {
 		LL_DMA_ClearFlag_DME1(DMAx);
 		IrqHandlerDME();
@@ -79,10 +82,6 @@ void Dma::IrqHandlerStream1()
 		LL_DMA_ClearFlag_HT1(DMAx);
 		IrqHandlerHT();
 	}
-	if (LL_DMA_IsActiveFlag_TC1(DMAx)) {
-		LL_DMA_ClearFlag_TC1(DMAx);
-		IrqHandlerTC();
-	}
 	if (LL_DMA_IsActiveFlag_TE1(DMAx)) {
 		LL_DMA_ClearFlag_TE1(DMAx);
 		IrqHandlerTE();
@@ -92,6 +91,10 @@ void Dma::IrqHandlerStream1()
 void Dma::IrqHandlerStream2()
 {
 	DMA_TypeDef* DMAx = GetDevice();
+	if (LL_DMA_IsActiveFlag_TC2(DMAx)) {
+		LL_DMA_ClearFlag_TC2(DMAx);
+		IrqHandlerTC();
+	}
 	if (LL_DMA_IsActiveFlag_DME2(DMAx)) {
 		LL_DMA_ClearFlag_DME2(DMAx);
 		IrqHandlerDME();
@@ -104,10 +107,6 @@ void Dma::IrqHandlerStream2()
 		LL_DMA_ClearFlag_HT2(DMAx);
 		IrqHandlerHT();
 	}
-	if (LL_DMA_IsActiveFlag_TC2(DMAx)) {
-		LL_DMA_ClearFlag_TC2(DMAx);
-		IrqHandlerTC();
-	}
 	if (LL_DMA_IsActiveFlag_TE2(DMAx)) {
 		LL_DMA_ClearFlag_TE2(DMAx);
 		IrqHandlerTE();
@@ -117,6 +116,10 @@ void Dma::IrqHandlerStream2()
 void Dma::IrqHandlerStream3()
 {
 	DMA_TypeDef* DMAx = GetDevice();
+	if (LL_DMA_IsActiveFlag_TC3(DMAx)) {
+		LL_DMA_ClearFlag_TC3(DMAx);
+		IrqHandlerTC();
+	}
 	if (LL_DMA_IsActiveFlag_DME3(DMAx)) {
 		LL_DMA_ClearFlag_DME3(DMAx);
 		IrqHandlerDME();
@@ -129,10 +132,6 @@ void Dma::IrqHandlerStream3()
 		LL_DMA_ClearFlag_HT3(DMAx);
 		IrqHandlerHT();
 	}
-	if (LL_DMA_IsActiveFlag_TC3(DMAx)) {
-		LL_DMA_ClearFlag_TC3(DMAx);
-		IrqHandlerTC();
-	}
 	if (LL_DMA_IsActiveFlag_TE3(DMAx)) {
 		LL_DMA_ClearFlag_TE3(DMAx);
 		IrqHandlerTE();
@@ -142,6 +141,10 @@ void Dma::IrqHandlerStream3()
 void Dma::IrqHandlerStream4()
 {
 	DMA_TypeDef* DMAx = GetDevice();
+	if (LL_DMA_IsActiveFlag_TC4(DMAx)) {
+		LL_DMA_ClearFlag_TC4(DMAx);
+		IrqHandlerTC();
+	}
 	if (LL_DMA_IsActiveFlag_DME4(DMAx)) {
 		LL_DMA_ClearFlag_DME4(DMAx);
 		IrqHandlerDME();
@@ -154,10 +157,6 @@ void Dma::IrqHandlerStream4()
 		LL_DMA_ClearFlag_HT4(DMAx);
 		IrqHandlerHT();
 	}
-	if (LL_DMA_IsActiveFlag_TC4(DMAx)) {
-		LL_DMA_ClearFlag_TC4(DMAx);
-		IrqHandlerTC();
-	}
 	if (LL_DMA_IsActiveFlag_TE4(DMAx)) {
 		LL_DMA_ClearFlag_TE4(DMAx);
 		IrqHandlerTE();
@@ -167,6 +166,10 @@ void Dma::IrqHandlerStream4()
 void Dma::IrqHandlerStream5()
 {
 	DMA_TypeDef* DMAx = GetDevice();
+	if (LL_DMA_IsActiveFlag_TC5(DMAx)) {
+		LL_DMA_ClearFlag_TC5(DMAx);
+		IrqHandlerTC();
+	}
 	if (LL_DMA_IsActiveFlag_DME5(DMAx)) {
 		LL_DMA_ClearFlag_DME5(DMAx);
 		IrqHandlerDME();
@@ -179,10 +182,6 @@ void Dma::IrqHandlerStream5()
 		LL_DMA_ClearFlag_HT5(DMAx);
 		IrqHandlerHT();
 	}
-	if (LL_DMA_IsActiveFlag_TC5(DMAx)) {
-		LL_DMA_ClearFlag_TC5(DMAx);
-		IrqHandlerTC();
-	}
 	if (LL_DMA_IsActiveFlag_TE5(DMAx)) {
 		LL_DMA_ClearFlag_TE5(DMAx);
 		IrqHandlerTE();
@@ -192,6 +191,10 @@ void Dma::IrqHandlerStream5()
 void Dma::IrqHandlerStream6()
 {
 	DMA_TypeDef* DMAx = GetDevice();
+	if (LL_DMA_IsActiveFlag_TC6(DMAx)) {
+		LL_DMA_ClearFlag_TC6(DMAx);
+		IrqHandlerTC();
+	}
 	if (LL_DMA_IsActiveFlag_DME6(DMAx)) {
 		LL_DMA_ClearFlag_DME6(DMAx);
 		IrqHandlerDME();
@@ -204,10 +207,6 @@ void Dma::IrqHandlerStream6()
 		LL_DMA_ClearFlag_HT6(DMAx);
 		IrqHandlerHT();
 	}
-	if (LL_DMA_IsActiveFlag_TC6(DMAx)) {
-		LL_DMA_ClearFlag_TC6(DMAx);
-		IrqHandlerTC();
-	}
 	if (LL_DMA_IsActiveFlag_TE6(DMAx)) {
 		LL_DMA_ClearFlag_TE6(DMAx);
 		IrqHandlerTE();
@@ -217,6 +216,10 @@ void Dma::IrqHandlerStream6()
 void Dma::IrqHandlerStream7()
 {
 	DMA_TypeDef* DMAx = GetDevice();
+	if (LL_DMA_IsActiveFlag_TC7(DMAx)) {
+		LL_DMA_ClearFlag_TC7(DMAx);
+		IrqHandlerTC();
+	}
 	if (LL_DMA_IsActiveFlag_DME7(DMAx)) {
 		LL_DMA_ClearFlag_DME7(DMAx);
 		IrqHandlerDME();
@@ -228,10 +231,6 @@ void Dma::IrqHandlerStream7()
 	if (LL_DMA_IsActiveFlag_HT7(DMAx)) {
 		LL_DMA_ClearFlag_HT7(DMAx);
 		IrqHandlerHT();
-	}
-	if (LL_DMA_IsActiveFlag_TC7(DMAx)) {
-		LL_DMA_ClearFlag_TC7(DMAx);
-		IrqHandlerTC();
 	}
 	if (LL_DMA_IsActiveFlag_TE7(DMAx)) {
 		LL_DMA_ClearFlag_TE7(DMAx);
