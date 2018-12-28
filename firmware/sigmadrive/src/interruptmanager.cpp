@@ -27,8 +27,15 @@ void relocate_interrupt_table()
 
 inline void InterruptManageVectorHandler()
 {
+	InterruptManager IM = InterruptManager::instance();
 	uint32_t vector = __get_xPSR() & 0xFF;
-	InterruptManager::instance().vectors_[vector]();
+
+#if USE_MULTICALLBACKS
+	for (auto cb : IM.vectors_[vector])
+		cb();
+#else
+	IM.vectors_[vector]();
+#endif
 }
 
 extern "C"
@@ -50,13 +57,20 @@ void InterruptManager::DebugBrakePoint()
 InterruptManager::InterruptManager()
 {
 	relocate_interrupt_table();
+
+#ifndef USE_MULTICALLBACKS
 	for (size_t i = 0; i < vectors_.size(); i++)
 		vectors_[i] = [](void){DebugBrakePoint();};
+#endif
 }
 
 void InterruptManager::Callback(unsigned int irq, const std::function<void(void)>& callback)
 {
+#if USE_MULTICALLBACKS
+	vectors_[irq + 16].push_back(callback);
+#else
 	vectors_[irq + 16] = callback;
+#endif
 	volatile unsigned int* newtable = &__relocated_vectors;
 	newtable[irq + 16] = (uint32_t)VectorHandlerC;
 }

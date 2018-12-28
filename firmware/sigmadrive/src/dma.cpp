@@ -9,11 +9,6 @@
 #include "dma.h"
 #include "interruptmanager.h"
 
-static Dma *g_dmas[] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-						nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
-
-#define DMA_PTR_OFFSET(d, s) ((d - 1) * 8 + (s))
-
 
 Dma::Dma(DMA_TypeDef* DMAx, uint32_t stream, uint32_t channel, uint32_t config)
 	: DMAx_(DMAx)
@@ -28,7 +23,6 @@ Dma::Dma(DMA_TypeDef* DMAx, uint32_t stream, uint32_t channel, uint32_t config)
 		LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA2);
 		dma_num_ = 2;
 	}
-	g_dmas[DMA_PTR_OFFSET(dma_num_, stream_)] = this;
 	LL_DMA_ConfigTransfer(DMAx_, stream_, config);
 	LL_DMA_SetChannelSelection(DMAx_, stream_, channel_);
 	EnableIrq();
@@ -37,14 +31,12 @@ Dma::Dma(DMA_TypeDef* DMAx, uint32_t stream, uint32_t channel, uint32_t config)
 Dma::~Dma()
 {
 	DisableIrq();
-	g_dmas[(dma_num_ - 1) * 8 + stream_] = nullptr;
 }
 
 void Dma::ConfigAddresses(uint32_t srcAddress, uint32_t dstAddress, uint32_t direction)
 {
 	LL_DMA_ConfigAddresses(DMAx_, stream_, srcAddress, dstAddress, direction);
 }
-
 
 void Dma::IrqHandlerStream0()
 {
