@@ -3,11 +3,14 @@
 #define _INTERRUPTMANAGER_H_
 
 #include <array>
+#include <vector>
 #include <functional>
+
+
 
 class InterruptManager {
 public:
-	virtual ~InterruptManager();
+	virtual ~InterruptManager() = default;
 	static InterruptManager& instance()
 	{
 		static InterruptManager object;

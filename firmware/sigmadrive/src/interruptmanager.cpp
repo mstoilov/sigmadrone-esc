@@ -54,15 +54,9 @@ InterruptManager::InterruptManager()
 		vectors_[i] = [](void){DebugBrakePoint();};
 }
 
-InterruptManager::~InterruptManager()
-{
-	// TODO Auto-generated destructor stub
-}
-
 void InterruptManager::Callback(unsigned int irq, const std::function<void(void)>& callback)
 {
 	vectors_[irq + 16] = callback;
 	volatile unsigned int* newtable = &__relocated_vectors;
 	newtable[irq + 16] = (uint32_t)VectorHandlerC;
 }
-

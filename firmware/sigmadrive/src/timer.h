@@ -19,8 +19,8 @@
  *  Svetoslav Vassilev <svassilev@sigmadrone.org>
  */
 
-#ifndef _HWTIMER_H_
-#define _HWTIMER_H_
+#ifndef _TIMER_H_
+#define _TIMER_H_
 
 #include <stdint.h>
 #include <vector>
@@ -31,7 +31,7 @@
 #include "units.h"
 #include "functionptr.h"
 
-class HwTimer
+class Timer
 {
 public:
 	enum CounterMode {
@@ -188,7 +188,7 @@ public:
 		TriggerExternal			= LL_TIM_TS_ETRF,
 	};
 
-	HwTimer(TIM_TypeDef *TIMx,
+	Timer(TIM_TypeDef *TIMx,
 			const TimeSpan& timer_period,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
 			const std::vector<GPIOPin>& output_pins = {}
@@ -236,7 +236,7 @@ public:
 	uint32_t		GetAutoReloadValue()						{ return LL_TIM_GetAutoReload(TIMx_); }
 	uint32_t		GetCounterValue()							{ return LL_TIM_GetCounter(TIMx_); }
 	void			SetCounterValue(uint32_t value)				{ LL_TIM_SetCounter(TIMx_, value); }
-	uint32_t		GetCounterMaxValue()						{ return BspMaxCounter(TIMx_); }
+	uint32_t		GetCounterMaxValue()						{ return bsp_max_counter(TIMx_); }
 	void 			SetRepetionCounterValue(uint32_t value)		{ LL_TIM_SetRepetitionCounter(TIMx_, value); }
 	uint32_t		GetRepetitionCounterValue()					{ return LL_TIM_GetRepetitionCounter(TIMx_); }
 	void			GenerateEvent(EventGeneration event)		{ SET_BIT(TIMx_->EGR, event); }
@@ -251,7 +251,7 @@ public:
 	uint32_t		GetStatus()									{ return TIMx_->SR; }
 	void			SetDeadTime(uint32_t ns)					{ LL_TIM_OC_SetDeadTime(TIMx_, __LL_TIM_CALC_DEADTIME(80000000, LL_TIM_GetClockDivision(TIMx_), ns)); }
 	void			SetOCPeriod(Channel ch, const TimeSpan& period);
-	virtual ~HwTimer();
+	virtual ~Timer();
 	virtual void IrqHandlerDmaCh1();
 	virtual void IrqHandlerDmaCh2();
 	virtual void IrqHandlerDmaCh3();
@@ -283,8 +283,8 @@ protected:
 	void UpdatePrescaler(const Frequency& timer_clock);
 
 protected:
-	static uint32_t BspInitTimer(TIM_TypeDef* TIMx);
-	static uint32_t BspMaxCounter(TIM_TypeDef* TIMx);
+	static uint32_t bsp_init_timer(TIM_TypeDef* TIMx);
+	static uint32_t bsp_max_counter(TIM_TypeDef* TIMx);
 
 protected:
 	Frequency system_clock_;

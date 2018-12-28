@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
 
 		uint32_t rxne = 0;//LL_USART_IsActiveFlag_RXNE(ptrUsart1->USARTx_);
 		uint32_t ore = 0;//LL_USART_IsActiveFlag_ORE(ptrUsart1->USARTx_);
-		printf("dma_rx.Enabled(): %s, SR: 0x%lx, RNE: %lu, ORE: %lu, counter: %d\n",
+		printf("dma_rx.Enabled(): %s, SR: 0x%lx, RNE: %lu, ORE: %lu, counter: %lu\n",
 				ptrUsart1->IsEnable() ? "true" : "false",
 				ptrUsart1->USARTx_->SR,
 				ore,

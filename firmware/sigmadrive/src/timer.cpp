@@ -23,13 +23,13 @@
 #include "stm32f4xx_ll_bus.h"
 #include "stm32f4xx_ll_rcc.h"
 
-#include "hwtimer.h"
+#include "timer.h"
 
-static HwTimer* g_timers[] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+static Timer* g_timers[] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
 		nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
 
-HwTimer::HwTimer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& system_clock, const std::vector<GPIOPin>& output_pins)
+Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& system_clock, const std::vector<GPIOPin>& output_pins)
 	: TIMx_(TIMx)
 	, system_clock_(system_clock)
 	, output_pins_(output_pins)
@@ -37,7 +37,7 @@ HwTimer::HwTimer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequenc
 	for (auto& pin : output_pins_)
 		pin.Init();
 
-	id_ = BspInitTimer(TIMx_);
+	id_ = bsp_init_timer(TIMx_);
 	assert(id_);
 	g_timers[id_] = this;
 
@@ -48,30 +48,30 @@ HwTimer::HwTimer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequenc
 	EnableARRPreload();
 }
 
-HwTimer::~HwTimer()
+Timer::~Timer()
 {
 	g_timers[id_] = nullptr;
 }
 
-void HwTimer::Start()
+void Timer::Start()
 {
 	GenerateEvent(EventUpdate);
 	EnableCounter();
 }
 
-void HwTimer::Stop()
+void Timer::Stop()
 {
 	DisableCounter();
 	GenerateEvent(EventUpdate);
 }
 
 
-void HwTimer::SetOCPeriod(Channel ch, const TimeSpan& period)
+void Timer::SetOCPeriod(Channel ch, const TimeSpan& period)
 {
 	SetOCValue(ch, __LL_TIM_CALC_ARR(system_clock_.hertz(), GetPrescaler(), period.to_frequency().hertz()));
 }
 
-void HwTimer::SetOCValue(Channel ch, uint32_t value)
+void Timer::SetOCValue(Channel ch, uint32_t value)
 {
 	switch (ch) {
 	case CH1:
@@ -93,7 +93,7 @@ void HwTimer::SetOCValue(Channel ch, uint32_t value)
 	};
 }
 
-uint32_t HwTimer::GetOCValue(Channel ch)
+uint32_t Timer::GetOCValue(Channel ch)
 {
 	switch (ch) {
 		case CH1:
@@ -113,23 +113,23 @@ uint32_t HwTimer::GetOCValue(Channel ch)
 	return 0;
 }
 
-void HwTimer::IrqHandlerDmaCh1()
+void Timer::IrqHandlerDmaCh1()
 {
 
 }
 
-void HwTimer::IrqHandlerDmaCh2()
+void Timer::IrqHandlerDmaCh2()
 {
 
 }
 
-void HwTimer::IrqHandlerDmaCh3()
+void Timer::IrqHandlerDmaCh3()
 {
 
 }
 
 
-uint32_t HwTimer::BspInitTimer(TIM_TypeDef* TIMx)
+uint32_t Timer::bsp_init_timer(TIM_TypeDef* TIMx)
 {
 	if (TIMx == TIM1) {
 		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM1);
@@ -171,7 +171,7 @@ uint32_t HwTimer::BspInitTimer(TIM_TypeDef* TIMx)
 	return 0;
 }
 
-void HwTimer::UpdatePrescaler(const Frequency& timer_clock)
+void Timer::UpdatePrescaler(const Frequency& timer_clock)
 {
 	uint32_t max_counter = GetCounterMaxValue();
 	uint32_t psc = __LL_TIM_CALC_PSC(system_clock_.hertz(), timer_clock.hertz());
@@ -188,13 +188,13 @@ void HwTimer::UpdatePrescaler(const Frequency& timer_clock)
 	LL_TIM_SetPrescaler(TIMx_, psc);
 }
 
-uint32_t HwTimer::CalculateARR(uint32_t sysclk,  uint32_t psc, uint32_t freq)
+uint32_t Timer::CalculateARR(uint32_t sysclk,  uint32_t psc, uint32_t freq)
 {
 	uint32_t arr = __LL_TIM_CALC_ARR(sysclk, psc, freq);
 	return arr;
 }
 
-void HwTimer::ClearDMAFlags(DMA_TypeDef *dma_device, uint32_t dma_stream)
+void Timer::ClearDMAFlags(DMA_TypeDef *dma_device, uint32_t dma_stream)
 {
 	switch(dma_stream){
 	case LL_DMA_STREAM_0:
@@ -243,7 +243,7 @@ void HwTimer::ClearDMAFlags(DMA_TypeDef *dma_device, uint32_t dma_stream)
 
 
 
-uint32_t HwTimer::BspMaxCounter(TIM_TypeDef* TIMx)
+uint32_t Timer::bsp_max_counter(TIM_TypeDef* TIMx)
 {
 	if (TIMx == TIM1) {
 		return 0xffff;
@@ -261,55 +261,55 @@ uint32_t HwTimer::BspMaxCounter(TIM_TypeDef* TIMx)
 	return 0;
 }
 
-void HwTimer::IrqHandlerBreak()
+void Timer::IrqHandlerBreak()
 {
 }
 
-void HwTimer::IrqHandlerUpdate()
+void Timer::IrqHandlerUpdate()
 {
 }
 
-void HwTimer::IrqHandlerTrigger()
+void Timer::IrqHandlerTrigger()
 {
 }
 
-void HwTimer::IrqHandlerCOM()
+void Timer::IrqHandlerCOM()
 {
 }
 
-void HwTimer::IrqHandlerCC1()
+void Timer::IrqHandlerCC1()
 {
 }
 
-void HwTimer::IrqHandlerCC2()
+void Timer::IrqHandlerCC2()
 {
 }
 
-void HwTimer::IrqHandlerCC3()
+void Timer::IrqHandlerCC3()
 {
 }
 
-void HwTimer::IrqHandlerCC4()
+void Timer::IrqHandlerCC4()
 {
 }
 
-void HwTimer::IrqHandlerCC1Over()
+void Timer::IrqHandlerCC1Over()
 {
 }
 
-void HwTimer::IrqHandlerCC2Over()
+void Timer::IrqHandlerCC2Over()
 {
 }
 
-void HwTimer::IrqHandlerCC3Over()
+void Timer::IrqHandlerCC3Over()
 {
 }
 
-void HwTimer::IrqHandlerCC4Over()
+void Timer::IrqHandlerCC4Over()
 {
 }
 
-static void IrqHandler(HwTimer* timer)
+static void IrqHandler(Timer* timer)
 {
 	if (LL_TIM_IsActiveFlag_UPDATE(timer->TIMx_)) {
 		LL_TIM_ClearFlag_UPDATE(timer->TIMx_);
