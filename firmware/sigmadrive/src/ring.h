@@ -35,7 +35,7 @@ public:
 
 	T* get_read_ptr() { return &buffer_[rp_];	}
 	T* get_write_ptr() { return &buffer_[wp_]; 	}
-	T* get_buffer_ptr() { return &buffer_[0]; 	}
+	T* get_data_ptr() { return &buffer_[0]; 	}
 
 	void read_update(size_t size) {	rp_ = (rp_ + bufsize_ + size) % bufsize_;	}
 	void write_update(size_t size) { wp_ = (wp_ + bufsize_ + size) % bufsize_; }
