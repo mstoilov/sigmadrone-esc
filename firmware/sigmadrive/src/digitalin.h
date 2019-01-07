@@ -127,8 +127,7 @@ public:
 		callback_ = callback;
 	}
 
-	static void IrqHandler(size_t line);
-	static void IrqHandlers(size_t begin, size_t size);
+	void IrqHandler(size_t line);
 
 protected:
 	void EnableClock(unsigned int gpioport)

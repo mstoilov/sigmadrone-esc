@@ -1,9 +1,6 @@
 #include "cortexm/ExceptionHandlers.h"
 #include "usart.h"
 
-static USART* g_uart[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, };
-
-
 USART::USART(const std::vector<GPIOPin>& data_pins,
 		uint32_t baudrate,
 		USART_TypeDef* usart_device,
@@ -42,19 +39,16 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 		InterruptManager::instance().Callback(USART1_IRQn, &USART::IrqHandlerUSART, this);
 		NVIC_SetPriority(USART1_IRQn, 0);
 		NVIC_EnableIRQ(USART1_IRQn);
-		g_uart[1] = this;
 	} else if (usart_device == USART2) {
 		__USART2_CLK_ENABLE();
 		InterruptManager::instance().Callback(USART2_IRQn, &USART::IrqHandlerUSART, this);
 		NVIC_SetPriority(USART2_IRQn, 0);
 		NVIC_EnableIRQ(USART2_IRQn);
-		g_uart[2] = this;
 	} else if (usart_device == USART6) {
 		__USART6_CLK_ENABLE();
 		InterruptManager::instance().Callback(USART6_IRQn, &USART::IrqHandlerUSART, this);
 		NVIC_SetPriority(USART6_IRQn, 0);
 		NVIC_EnableIRQ(USART6_IRQn);
-		g_uart[6] = this;
 	}
 	if (LL_USART_Init(USARTx_, &Init) != SUCCESS) {
 		throw std::runtime_error("Failed to init UART");
