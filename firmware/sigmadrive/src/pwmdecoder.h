@@ -18,7 +18,6 @@
 
 class PWMDecoder: public Timer {
 public:
-	PWMDecoder();
 	using base = Timer;
 
 	PWMDecoder(

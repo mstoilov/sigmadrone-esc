@@ -154,6 +154,7 @@ void PWMSine::HandleUpdate()
 {
 	SineDriving();
 
+#if 0
 	if ((++counter_ % 32) == 0) {
 		printf("<%5lu> SWFREQ: %lu, OUTPUT PSC: %lu, OUTPUT_RELOAD: %lu, Repeat: %lu, Counter: %5lu, "
 				"OC1: %5lu, OC2: %5lu, OC3: %5lu, OC4: %5lu\n",
@@ -168,4 +169,5 @@ void PWMSine::HandleUpdate()
 				GetOCValue(Timer::CH3),
 				GetOCValue(Timer::CH4));
 	}
+#endif
 }

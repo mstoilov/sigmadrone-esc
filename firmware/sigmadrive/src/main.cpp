@@ -8,6 +8,7 @@
 #include "digitalin.h"
 #include "digitalout.h"
 #include "pwmdecoder.h"
+#include "quadraturedecoder.h"
 #include "pwmsine.h"
 #include "usart.h"
 
@@ -22,6 +23,12 @@ DigitalIn btn_user(PA_4, DigitalIn::PullDefault, DigitalIn::InterruptFalling);
 
 PWMDecoder pwm3(TIM3, TimeSpan::from_milliseconds(25), Frequency::from_hertz(SystemCoreClock), {
 		{PB_4, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_2}
+});
+
+
+QuadratureDecoder pwm4(TIM4,  65535, {
+		{PB_6, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_2},
+		{PB_7, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_2}
 });
 
 
@@ -57,6 +64,7 @@ int main(int argc, char* argv[])
 	printf("System clock: %lu Hz\n", SystemCoreClock);
 
 	pwm3.Start();
+	pwm4.Start();
 
 	pwm1.SetDutyCycle(0.07);
 	pwm1.SetRotationsPerSecond(Frequency::from_millihertz(800));
@@ -66,8 +74,9 @@ int main(int argc, char* argv[])
 		HAL_Delay(50UL);
 		led_status.Toggle();
 
-		std::cout << "PWM: " << pwm3.GetPulseLength().seconds_float() * 1000.0 << " mSec, (Pulse/Period): " << pwm3.GetPWMPulse() << " / " << pwm3.GetPWMPeriod() << std::endl;
+//		std::cout << "PWM: " << pwm3.GetPulseLength().seconds_float() * 1000.0 << " mSec, (Pulse/Period): " << pwm3.GetPWMPulse() << " / " << pwm3.GetPWMPeriod() << std::endl;
 
+		std::cout << "Counter: " << pwm4.GetCounterValue() << std::endl;
 
 	}
 }

@@ -178,6 +178,12 @@ public:
 		SlaveTrigger			= LL_TIM_SLAVEMODE_TRIGGER,
 	};
 
+	enum EncoderMode {
+		EncoderModeTI1 = LL_TIM_ENCODERMODE_X2_TI1,
+		EncoderModeTI2 = LL_TIM_ENCODERMODE_X2_TI2,
+		EncoderModeTI12 = LL_TIM_ENCODERMODE_X4_TI12,
+	};
+
 	enum TriggerInput {
 		TriggerInternal0		= LL_TIM_TS_ITR0,
 		TriggerInternal1		= LL_TIM_TS_ITR1,
@@ -192,7 +198,7 @@ public:
 	Timer(TIM_TypeDef *TIMx,
 			const TimeSpan& timer_period,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
-			const std::vector<GPIOPin>& output_pins = {}
+			const std::vector<GPIOPin>& pins = {}
 	);
 
 	void			SetICActiveInput(Channel ch, ActiveInput ai)	{ LL_TIM_IC_SetActiveInput(TIMx_, ch, ai); }
@@ -202,6 +208,7 @@ public:
 	uint32_t		GetICValue(Channel ch)						{ return GetOCValue(ch); }
 	void			SetOCValue(Channel ch, uint32_t value);
 	uint32_t		GetOCValue(Channel ch);
+	void			SetEncoderMode(EncoderMode mode)			{ LL_TIM_SetEncoderMode(TIMx_, mode); }
 	void			SetSlaveMode(SlaveMode mode)				{ LL_TIM_SetSlaveMode(TIMx_, mode); }
 	void			SetTriggerInput(TriggerInput trigger)		{ LL_TIM_SetTriggerInput(TIMx_, trigger); }
 	void			SetTriggerOutput(TriggerOutput trigger)		{ LL_TIM_SetTriggerOutput(TIMx_, trigger); }
@@ -223,6 +230,7 @@ public:
 	OCMode 			GetOCMode(Channel ch)						{ return static_cast<OCMode>(LL_TIM_OC_GetMode(TIMx_, ch)); }
 	void 			SetCounterMode(CounterMode mode)			{ LL_TIM_SetCounterMode(TIMx_, mode);}
 	uint32_t		GetPrescaler()								{ return LL_TIM_GetPrescaler(TIMx_); }
+	void			SetPrescaler(uint32_t psc)					{ LL_TIM_SetPrescaler(TIMx_, psc); }
 	void			SetClock(const Frequency& frequency)		{ UpdatePrescaler(frequency); }
 	void			EnableARRPreload()							{ LL_TIM_EnableARRPreload(TIMx_); }
 	void			DisableARRPreload()							{ LL_TIM_DisableARRPreload(TIMx_); }
@@ -250,7 +258,9 @@ public:
 	Frequency 		GetSystemClock()							{ return system_clock_; }
 	uint32_t 		GetId()										{ return id_; }
 	uint32_t		GetStatus()									{ return TIMx_->SR; }
-	void			SetDeadTime(uint32_t ns)					{ LL_TIM_OC_SetDeadTime(TIMx_, __LL_TIM_CALC_DEADTIME(80000000, LL_TIM_GetClockDivision(TIMx_), ns)); }
+	void			SetClockDivision(uint32_t value)			{ LL_TIM_SetClockDivision(TIMx_, value); }
+	uint32_t		GetClockDivision()							{ return LL_TIM_GetClockDivision(TIMx_); }
+	void			SetDeadTime(uint32_t ns)					{ LL_TIM_OC_SetDeadTime(TIMx_, __LL_TIM_CALC_DEADTIME(80000000, GetClockDivision(), ns)); }
 	void			SetOCPeriod(Channel ch, const TimeSpan& period);
 	virtual ~Timer();
 	virtual void HandleBreak();

@@ -26,10 +26,6 @@
 #include "interruptmanager.h"
 #include "timer.h"
 
-//static Timer* g_timers[] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-//		nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
-
-
 Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& system_clock, const std::vector<GPIOPin>& pins)
 	: TIMx_(TIMx)
 	, system_clock_(system_clock)
@@ -51,7 +47,6 @@ Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& s
 
 Timer::~Timer()
 {
-//	g_timers[id_] = nullptr;
 }
 
 void Timer::Start()
