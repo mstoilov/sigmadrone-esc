@@ -136,8 +136,8 @@ uint32_t Timer::bsp_init_timer(TIM_TypeDef* TIMx)
 		/*
 		 * TIM1_BRK and TIM9_IRQn are shared. Chain the old handler to the end of the new one.
 		 */
-		auto old_handler_BRK = IM.GetIrqHandler(TIM1_BRK_TIM9_IRQn);
-		IM.Callback(TIM1_BRK_TIM9_IRQn, [=](void){IrqHandlerBRK(); old_handler_BRK();});
+		auto OldIrqHandler_BRK = IM.GetIrqHandler(TIM1_BRK_TIM9_IRQn);
+		IM.Callback(TIM1_BRK_TIM9_IRQn, [=](void){IrqHandlerBRK(); OldIrqHandler_BRK();});
 
 		return 1;
 	} else if (TIMx == TIM2) {
@@ -172,8 +172,8 @@ uint32_t Timer::bsp_init_timer(TIM_TypeDef* TIMx)
 		/*
 		 * TIM1_BRK and TIM9_IRQn are shared. Chain the old handler to the end of the new one.
 		 */
-		auto old_handler = IM.GetIrqHandler(TIM1_BRK_TIM9_IRQn);
-		IM.Callback(TIM1_BRK_TIM9_IRQn, [=](void){IrqHandler(); old_handler();});
+		auto OldIrqHandler = IM.GetIrqHandler(TIM1_BRK_TIM9_IRQn);
+		IM.Callback(TIM1_BRK_TIM9_IRQn, [=](void){IrqHandler(); OldIrqHandler();});
 		return 9;
 	}
 	return 0;
