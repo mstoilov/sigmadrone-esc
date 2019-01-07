@@ -7,6 +7,8 @@
 #include "interruptmanager.h"
 #include "digitalin.h"
 #include "digitalout.h"
+#include "pwmdecoder.h"
+#include "pwmsine.h"
 #include "usart.h"
 
 #include <iostream>
@@ -18,61 +20,54 @@ DigitalOut led_warn(PA_5, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, Digi
 DigitalOut led_status(PA_6, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullNone, DigitalOut::ActiveLow, 0);
 DigitalIn btn_user(PA_4, DigitalIn::PullDefault, DigitalIn::InterruptFalling);
 
+PWMDecoder pwm3(TIM3, TimeSpan::from_milliseconds(25), Frequency::from_hertz(SystemCoreClock), {
+		{PB_4, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_2}
+});
+
+
+PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), {
+		{PA_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PA_9,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PA_10, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PB_13,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PB_14,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PB_15,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+});
+
 extern USART* ptrUsart1;
+
+void pwm1_toggle()
+{
+	led_warn.Toggle();
+	if (led_warn.Read()) {
+		pwm1.Start();
+	} else {
+		pwm1.Stop();
+	}
+}
 
 int main(int argc, char* argv[])
 {
 	InterruptManager& im = InterruptManager::instance();
 
-	uint32_t counter = 0;
-
-	btn_user.Callback(&led_warn, &DigitalOut::Toggle);
-
-
-	// Send a greeting to the trace device (skipped on Release).
-	trace_puts("Hello ARM World!");
-
-	// The standard output and the standard error should be forwarded to
-	// the trace device. For this to work, a redirection in _write.c is
-	// required.
-	puts("Standard output message.");
-	fprintf(stderr, "Standard error message.\n");
+	btn_user.Callback(pwm1_toggle);
 
 	// At this stage the system clock should have already been configured
 	// at high speed.
 	printf("System clock: %lu Hz\n", SystemCoreClock);
 
-	char buffer[128];
-	int ret = 0;
+	pwm3.Start();
+
+	pwm1.SetDutyCycle(0.07);
+	pwm1.SetRotationsPerSecond(Frequency::from_millihertz(800));
+
 	while (1) {
 		std::string tmp;
-		HAL_Delay(10UL);
+		HAL_Delay(50UL);
 		led_status.Toggle();
 
-//		printf("1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst: %lu\n", counter++);
-//		printf("1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst: %lu\n", counter++);
-//		printf("1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst1234567890abcdefghijklmnopqrst: %lu\n", counter++);
-//		continue;
+		std::cout << "PWM: " << pwm3.GetPulseLength().seconds_float() * 1000.0 << " mSec, (Pulse/Period): " << pwm3.GetPWMPulse() << " / " << pwm3.GetPWMPeriod() << std::endl;
 
-		uint32_t rxne = 0;//LL_USART_IsActiveFlag_RXNE(ptrUsart1->USARTx_);
-		uint32_t ore = 0;//LL_USART_IsActiveFlag_ORE(ptrUsart1->USARTx_);
-		printf("dma_rx.Enabled(): %s, SR: 0x%lx, RNE: %lu, ORE: %lu, counter: %lu\n",
-				ptrUsart1->IsEnable() ? "true" : "false",
-				ptrUsart1->USARTx_->SR,
-				ore,
-				rxne,
-				counter++);
-
-		memset(buffer, 0, sizeof(buffer));
-		while ((ret = read(1, buffer, sizeof(buffer) - 1)) > 0) {
-			tmp += buffer;
-			memset(buffer, 0, sizeof(buffer));
-		}
-		if (tmp.size()) {
-			std::cout << tmp;
-			memset(buffer, 0, sizeof(buffer));
-
-		}
 
 	}
 }

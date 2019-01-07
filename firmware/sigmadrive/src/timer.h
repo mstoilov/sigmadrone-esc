@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <functional>
 #include "stm32f411xe.h"
 #include "stm32f4xx_ll_tim.h"
 #include "stm32f4xx_ll_dma.h"
@@ -252,29 +253,23 @@ public:
 	void			SetDeadTime(uint32_t ns)					{ LL_TIM_OC_SetDeadTime(TIMx_, __LL_TIM_CALC_DEADTIME(80000000, LL_TIM_GetClockDivision(TIMx_), ns)); }
 	void			SetOCPeriod(Channel ch, const TimeSpan& period);
 	virtual ~Timer();
-	virtual void IrqHandlerDmaCh1();
-	virtual void IrqHandlerDmaCh2();
-	virtual void IrqHandlerDmaCh3();
-
-	virtual void IrqHandlerBreak();
-	virtual void IrqHandlerUpdate();
-	virtual void IrqHandlerTrigger();
-	virtual void IrqHandlerCOM();
-	virtual void IrqHandlerCC1();
-	virtual void IrqHandlerCC2();
-	virtual void IrqHandlerCC3();
-	virtual void IrqHandlerCC4();
-	virtual void IrqHandlerCC1Over();
-	virtual void IrqHandlerCC2Over();
-	virtual void IrqHandlerCC3Over();
-	virtual void IrqHandlerCC4Over();
-
+	virtual void HandleBreak();
+	virtual void HandleUpdate();
+	virtual void HandleTrigger();
+	virtual void HandleCOM();
+	virtual void HandleCC1();
+	virtual void HandleCC2();
+	virtual void HandleCC3();
+	virtual void HandleCC4();
+	virtual void HandleCC1Over();
+	virtual void HandleCC2Over();
+	virtual void HandleCC3Over();
+	virtual void HandleCC4Over();
 
 	virtual void Start();
 	virtual void Stop();
 
 	static uint32_t CalculateARR(uint32_t sysclk,  uint32_t psc, uint32_t freq);
-	void ClearDMAFlags(DMA_TypeDef *dma_device, uint32_t dma_stream);
 
 public:
 	TIM_TypeDef *TIMx_;
@@ -283,29 +278,33 @@ protected:
 	void UpdatePrescaler(const Frequency& timer_clock);
 
 protected:
-	static uint32_t bsp_init_timer(TIM_TypeDef* TIMx);
+	uint32_t bsp_init_timer(TIM_TypeDef* TIMx);
 	static uint32_t bsp_max_counter(TIM_TypeDef* TIMx);
+
+	void IrqHandlerUP();
+	void IrqHandlerBRK();
+	void IrqHandlerTRG_COM();
+	void IrqHandlerCC();
+	void IrqHandler();
 
 protected:
 	Frequency system_clock_;
-	std::vector<GPIOPin> output_pins_;
+	std::vector<GPIOPin> pins_;
 	uint32_t id_;
 
 public:
-	FunctionPointer callback_Break_;
-	FunctionPointer callback_Update_;
-	FunctionPointer callback_Trigger_;
-	FunctionPointer callback_COM_;
-	FunctionPointer callback_CC1_;
-	FunctionPointer callback_CC2_;
-	FunctionPointer callback_CC3_;
-	FunctionPointer callback_CC4_;
-	FunctionPointer callback_CC1Over_;
-	FunctionPointer callback_CC2Over_;
-	FunctionPointer callback_CC3Over_;
-	FunctionPointer callback_CC4Over_;
-
-
+	std::function<void(void)> callback_Break_ = [](){};
+	std::function<void(void)> callback_Update_ = [](){};
+	std::function<void(void)> callback_Trigger_ = [](){};
+	std::function<void(void)> callback_COM_ = [](){};
+	std::function<void(void)> callback_CC1_ = [](){};
+	std::function<void(void)> callback_CC2_ = [](){};
+	std::function<void(void)> callback_CC3_ = [](){};
+	std::function<void(void)> callback_CC4_ = [](){};
+	std::function<void(void)> callback_CC1Over_ = [](){};
+	std::function<void(void)> callback_CC2Over_ = [](){};
+	std::function<void(void)> callback_CC3Over_ = [](){};
+	std::function<void(void)> callback_CC4Over_ = [](){};
 };
 
 #endif

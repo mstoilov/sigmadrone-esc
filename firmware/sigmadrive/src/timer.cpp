@@ -23,23 +23,24 @@
 #include "stm32f4xx_ll_bus.h"
 #include "stm32f4xx_ll_rcc.h"
 
+#include "interruptmanager.h"
 #include "timer.h"
 
-static Timer* g_timers[] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-		nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+//static Timer* g_timers[] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+//		nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
 
 
-Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& system_clock, const std::vector<GPIOPin>& output_pins)
+Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& system_clock, const std::vector<GPIOPin>& pins)
 	: TIMx_(TIMx)
 	, system_clock_(system_clock)
-	, output_pins_(output_pins)
+	, pins_(pins)
 {
-	for (auto& pin : output_pins_)
+	for (auto& pin : pins_)
 		pin.Init();
 
 	id_ = bsp_init_timer(TIMx_);
 	assert(id_);
-	g_timers[id_] = this;
+//	g_timers[id_] = this;
 
 	SetClock(Frequency::from_timespan(timer_period + timer_period / 8) * GetCounterMaxValue());
 	SetAutoReloadPeriod(timer_period);
@@ -50,7 +51,7 @@ Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& s
 
 Timer::~Timer()
 {
-	g_timers[id_] = nullptr;
+//	g_timers[id_] = nullptr;
 }
 
 void Timer::Start()
@@ -113,59 +114,66 @@ uint32_t Timer::GetOCValue(Channel ch)
 	return 0;
 }
 
-void Timer::IrqHandlerDmaCh1()
-{
-
-}
-
-void Timer::IrqHandlerDmaCh2()
-{
-
-}
-
-void Timer::IrqHandlerDmaCh3()
-{
-
-}
-
 
 uint32_t Timer::bsp_init_timer(TIM_TypeDef* TIMx)
 {
+	InterruptManager& IM = InterruptManager::instance();
 	if (TIMx == TIM1) {
 		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM1);
 		NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 8);
 		NVIC_SetPriority(TIM1_TRG_COM_TIM11_IRQn, 8);
 		NVIC_SetPriority(TIM1_CC_IRQn, 8);
+		NVIC_SetPriority(TIM1_BRK_TIM9_IRQn, 8);
 		NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
 		NVIC_EnableIRQ(TIM1_TRG_COM_TIM11_IRQn);
 		NVIC_EnableIRQ(TIM1_CC_IRQn);
-		NVIC_SetPriority(TIM1_BRK_TIM9_IRQn, 8);
 		NVIC_EnableIRQ(TIM1_BRK_TIM9_IRQn);
+
+		IM.Callback(TIM1_UP_TIM10_IRQn, [=](void){IrqHandlerUP();});
+		IM.Callback(TIM1_TRG_COM_TIM11_IRQn, [=](void){IrqHandlerTRG_COM();});
+		IM.Callback(TIM1_CC_IRQn, [=](void){IrqHandlerCC();});
+
+		/*
+		 * TIM1_BRK and TIM9_IRQn are shared. Chain the old handler to the end of the new one.
+		 */
+		auto old_handler_BRK = IM.GetIrqHandler(TIM1_BRK_TIM9_IRQn);
+		IM.Callback(TIM1_BRK_TIM9_IRQn, [=](void){IrqHandlerBRK(); old_handler_BRK();});
+
 		return 1;
 	} else if (TIMx == TIM2) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
 		NVIC_SetPriority(TIM2_IRQn, 8);
 		NVIC_EnableIRQ(TIM2_IRQn);
+		IM.Callback(TIM2_IRQn, [=](void){IrqHandler();});
 		return 2;
 	} else if (TIMx == TIM3) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
 		NVIC_SetPriority(TIM3_IRQn, 8);
 		NVIC_EnableIRQ(TIM3_IRQn);
+		IM.Callback(TIM3_IRQn, [=](void){IrqHandler();});
 		return 3;
 	} else if (TIMx == TIM4) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM4);
 		NVIC_SetPriority(TIM4_IRQn, 8);
 		NVIC_EnableIRQ(TIM4_IRQn);
+		IM.Callback(TIM4_IRQn, [=](void){IrqHandler();});
 		return 4;
 	} else if (TIMx == TIM5) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM5);
 		NVIC_SetPriority(TIM5_IRQn, 8);
 		NVIC_EnableIRQ(TIM5_IRQn);
+		IM.Callback(TIM5_IRQn, [=](void){IrqHandler();});
 		return 5;
 	} else if (TIMx == TIM9) {
 		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM9);
 		NVIC_SetPriority(TIM1_BRK_TIM9_IRQn, 8);
 		NVIC_EnableIRQ(TIM1_BRK_TIM9_IRQn);
+
+		/*
+		 * TIM1_BRK and TIM9_IRQn are shared. Chain the old handler to the end of the new one.
+		 */
+		auto old_handler = IM.GetIrqHandler(TIM1_BRK_TIM9_IRQn);
+		IM.Callback(TIM1_BRK_TIM9_IRQn, [=](void){IrqHandler(); old_handler();});
 		return 9;
 	}
 	return 0;
@@ -194,55 +202,6 @@ uint32_t Timer::CalculateARR(uint32_t sysclk,  uint32_t psc, uint32_t freq)
 	return arr;
 }
 
-void Timer::ClearDMAFlags(DMA_TypeDef *dma_device, uint32_t dma_stream)
-{
-	switch(dma_stream){
-	case LL_DMA_STREAM_0:
-		LL_DMA_ClearFlag_TC0(dma_device);
-		LL_DMA_ClearFlag_TE0(dma_device);
-		LL_DMA_ClearFlag_HT0(dma_device);
-		break;
-	case LL_DMA_STREAM_1:
-		LL_DMA_ClearFlag_TC1(dma_device);
-		LL_DMA_ClearFlag_TE1(dma_device);
-		LL_DMA_ClearFlag_HT1(dma_device);
-		break;
-	case LL_DMA_STREAM_2:
-		LL_DMA_ClearFlag_TC2(dma_device);
-		LL_DMA_ClearFlag_TE2(dma_device);
-		LL_DMA_ClearFlag_HT2(dma_device);
-		break;
-	case LL_DMA_STREAM_3:
-		LL_DMA_ClearFlag_TC3(dma_device);
-		LL_DMA_ClearFlag_TE3(dma_device);
-		LL_DMA_ClearFlag_HT3(dma_device);
-		break;
-	case LL_DMA_STREAM_4:
-		LL_DMA_ClearFlag_TC4(dma_device);
-		LL_DMA_ClearFlag_TE4(dma_device);
-		LL_DMA_ClearFlag_HT4(dma_device);
-		break;
-	case LL_DMA_STREAM_5:
-		LL_DMA_ClearFlag_TC5(dma_device);
-		LL_DMA_ClearFlag_TE5(dma_device);
-		LL_DMA_ClearFlag_HT5(dma_device);
-		break;
-	case LL_DMA_STREAM_6:
-		LL_DMA_ClearFlag_TC6(dma_device);
-		LL_DMA_ClearFlag_TE6(dma_device);
-		LL_DMA_ClearFlag_HT6(dma_device);
-		break;
-	case LL_DMA_STREAM_7:
-		LL_DMA_ClearFlag_TC7(dma_device);
-		LL_DMA_ClearFlag_TE7(dma_device);
-		LL_DMA_ClearFlag_HT7(dma_device);
-		break;
-	}
-
-}
-
-
-
 uint32_t Timer::bsp_max_counter(TIM_TypeDef* TIMx)
 {
 	if (TIMx == TIM1) {
@@ -261,119 +220,143 @@ uint32_t Timer::bsp_max_counter(TIM_TypeDef* TIMx)
 	return 0;
 }
 
-void Timer::IrqHandlerBreak()
+void Timer::HandleBreak()
 {
 }
 
-void Timer::IrqHandlerUpdate()
+void Timer::HandleUpdate()
 {
 }
 
-void Timer::IrqHandlerTrigger()
+void Timer::HandleTrigger()
 {
 }
 
-void Timer::IrqHandlerCOM()
+void Timer::HandleCOM()
 {
 }
 
-void Timer::IrqHandlerCC1()
+void Timer::HandleCC1()
 {
 }
 
-void Timer::IrqHandlerCC2()
+void Timer::HandleCC2()
 {
 }
 
-void Timer::IrqHandlerCC3()
+void Timer::HandleCC3()
 {
 }
 
-void Timer::IrqHandlerCC4()
+void Timer::HandleCC4()
 {
 }
 
-void Timer::IrqHandlerCC1Over()
+void Timer::HandleCC1Over()
 {
 }
 
-void Timer::IrqHandlerCC2Over()
+void Timer::HandleCC2Over()
 {
 }
 
-void Timer::IrqHandlerCC3Over()
+void Timer::HandleCC3Over()
 {
 }
 
-void Timer::IrqHandlerCC4Over()
+void Timer::HandleCC4Over()
 {
 }
 
-static void IrqHandler(Timer* timer)
+void Timer::IrqHandlerUP()
 {
-	if (LL_TIM_IsActiveFlag_UPDATE(timer->TIMx_)) {
-		LL_TIM_ClearFlag_UPDATE(timer->TIMx_);
-		timer->IrqHandlerUpdate();
-		timer->callback_Update_.call();
+	if (LL_TIM_IsActiveFlag_UPDATE(TIMx_)) {
+		LL_TIM_ClearFlag_UPDATE(TIMx_);
+		HandleUpdate();
+		callback_Update_();
 	}
-	if (LL_TIM_IsActiveFlag_COM(timer->TIMx_)) {
-		LL_TIM_ClearFlag_COM(timer->TIMx_);
-		timer->IrqHandlerCOM();
-		timer->callback_COM_.call();
-	}
-	if (LL_TIM_IsActiveFlag_CC1(timer->TIMx_)) {
-		LL_TIM_ClearFlag_CC1(timer->TIMx_);
-		timer->IrqHandlerCC1();
-		timer->callback_CC1_.call();
-	}
-	if (LL_TIM_IsActiveFlag_CC2(timer->TIMx_)) {
-		LL_TIM_ClearFlag_CC2(timer->TIMx_);
-		timer->IrqHandlerCC2();
-		timer->callback_CC2_.call();
-	}
-	if (LL_TIM_IsActiveFlag_CC3(timer->TIMx_)) {
-		LL_TIM_ClearFlag_CC3(timer->TIMx_);
-		timer->IrqHandlerCC3();
-		timer->callback_CC3_.call();
-	}
-	if (LL_TIM_IsActiveFlag_CC4(timer->TIMx_)) {
-		LL_TIM_ClearFlag_CC4(timer->TIMx_);
-		timer->IrqHandlerCC4();
-		timer->callback_CC4_.call();
-	}
-	if (LL_TIM_IsActiveFlag_TRIG(timer->TIMx_)) {
-		LL_TIM_ClearFlag_TRIG(timer->TIMx_);
-		timer->IrqHandlerTrigger();
-		timer->callback_Trigger_.call();
-	}
-	if (LL_TIM_IsActiveFlag_BRK(timer->TIMx_)) {
-		LL_TIM_ClearFlag_BRK(timer->TIMx_);
-		timer->IrqHandlerBreak();
-		timer->callback_Break_.call();
 
-	}
-	if (LL_TIM_IsActiveFlag_CC1OVR(timer->TIMx_)) {
-		LL_TIM_ClearFlag_CC1OVR(timer->TIMx_);
-		timer->IrqHandlerCC1Over();
-		timer->callback_CC1Over_.call();
-	}
-	if (LL_TIM_IsActiveFlag_CC2OVR(timer->TIMx_)) {
-		LL_TIM_ClearFlag_CC2OVR(timer->TIMx_);
-		timer->IrqHandlerCC2Over();
-		timer->callback_CC2Over_.call();
-	}
-	if (LL_TIM_IsActiveFlag_CC3OVR(timer->TIMx_)) {
-		LL_TIM_ClearFlag_CC3OVR(timer->TIMx_);
-		timer->IrqHandlerCC3Over();
-		timer->callback_CC3Over_.call();
-	}
-	if (LL_TIM_IsActiveFlag_CC4OVR(timer->TIMx_)) {
-		LL_TIM_ClearFlag_CC4OVR(timer->TIMx_);
-		timer->IrqHandlerCC4Over();
-		timer->callback_CC4Over_.call();
+}
+
+void Timer::IrqHandlerBRK()
+{
+	if (LL_TIM_IsActiveFlag_BRK(TIMx_)) {
+		LL_TIM_ClearFlag_BRK(TIMx_);
+		HandleBreak();
+		callback_Break_();
 	}
 }
 
+void Timer::IrqHandlerTRG_COM()
+{
+	if (LL_TIM_IsActiveFlag_TRIG(TIMx_)) {
+		LL_TIM_ClearFlag_TRIG(TIMx_);
+		HandleTrigger();
+		callback_Trigger_();
+	}
+	if (LL_TIM_IsActiveFlag_COM(TIMx_)) {
+		LL_TIM_ClearFlag_COM(TIMx_);
+		HandleCOM();
+		callback_COM_();
+	}
+}
+
+void Timer::IrqHandlerCC()
+{
+	if (LL_TIM_IsActiveFlag_CC1(TIMx_)) {
+		LL_TIM_ClearFlag_CC1(TIMx_);
+		HandleCC1();
+		callback_CC1_();
+	}
+	if (LL_TIM_IsActiveFlag_CC2(TIMx_)) {
+		LL_TIM_ClearFlag_CC2(TIMx_);
+		HandleCC2();
+		callback_CC2_();
+	}
+	if (LL_TIM_IsActiveFlag_CC3(TIMx_)) {
+		LL_TIM_ClearFlag_CC3(TIMx_);
+		HandleCC3();
+		callback_CC3_();
+	}
+	if (LL_TIM_IsActiveFlag_CC4(TIMx_)) {
+		LL_TIM_ClearFlag_CC4(TIMx_);
+		HandleCC4();
+		callback_CC4_();
+	}
+	if (LL_TIM_IsActiveFlag_CC1OVR(TIMx_)) {
+		LL_TIM_ClearFlag_CC1OVR(TIMx_);
+		HandleCC1Over();
+		callback_CC1Over_();
+	}
+	if (LL_TIM_IsActiveFlag_CC2OVR(TIMx_)) {
+		LL_TIM_ClearFlag_CC2OVR(TIMx_);
+		HandleCC2Over();
+		callback_CC2Over_();
+	}
+	if (LL_TIM_IsActiveFlag_CC3OVR(TIMx_)) {
+		LL_TIM_ClearFlag_CC3OVR(TIMx_);
+		HandleCC3Over();
+		callback_CC3Over_();
+	}
+	if (LL_TIM_IsActiveFlag_CC4OVR(TIMx_)) {
+		LL_TIM_ClearFlag_CC4OVR(TIMx_);
+		HandleCC4Over();
+		callback_CC4Over_();
+	}
+
+
+}
+
+
+void Timer::IrqHandler()
+{
+	IrqHandlerUP();
+	IrqHandlerBRK();
+	IrqHandlerTRG_COM();
+	IrqHandlerCC();
+}
+
+#if 0
 extern "C" void TIM1_UP_TIM10_IRQHandler(void)
 {
 	if (g_timers[1])
@@ -422,4 +405,4 @@ extern "C" void TIM4_IRQHandler(void)
 		IrqHandler(g_timers[4]);
 }
 
-
+#endif

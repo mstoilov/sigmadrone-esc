@@ -127,8 +127,8 @@ public:
 		callback_ = callback;
 	}
 
-	static void VectorHandler(size_t line);
-	static void VectorHandlers(size_t begin, size_t size);
+	static void IrqHandler(size_t line);
+	static void IrqHandlers(size_t begin, size_t size);
 
 protected:
 	void EnableClock(unsigned int gpioport)

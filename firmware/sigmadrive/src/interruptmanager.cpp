@@ -5,6 +5,7 @@
  *      Author: mstoilov
  */
 
+#include <iostream>
 #include <cmsis_device.h>
 #include "cortexm/ExceptionHandlers.h"
 #include "interruptmanager.h"
@@ -28,8 +29,7 @@ void relocate_interrupt_table()
 inline void InterruptManageVectorHandler()
 {
 	uint32_t vector = __get_xPSR() & 0xFF;
-	InterruptManager& im = InterruptManager::instance();
-	im.vectors_[vector]();
+	InterruptManager::instance().vectors_[vector]();
 }
 
 extern "C"
@@ -38,21 +38,11 @@ void VectorHandlerC()
 	InterruptManageVectorHandler();
 }
 
-void InterruptManager::DebugBrakePoint()
-{
-#if defined(DEBUG)
-	__DEBUG_BKPT();
-#endif
-	while (1)
-	{
-	}
-}
-
 InterruptManager::InterruptManager()
 {
 	relocate_interrupt_table();
 	for (size_t i = 0; i < vectors_.size(); i++)
-		vectors_[i] = [](void){DebugBrakePoint();};
+		vectors_[i] = [](void){};
 }
 
 void InterruptManager::Callback(unsigned int irq, const std::function<void(void)>& callback)

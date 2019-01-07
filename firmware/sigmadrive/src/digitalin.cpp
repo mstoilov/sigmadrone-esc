@@ -6,7 +6,7 @@ static DigitalIn* g_interrupt[16] = {
 		nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, };
 
 
-void DigitalIn::VectorHandler(size_t line)
+void DigitalIn::IrqHandler(size_t line)
 {
 	/* Manage Flags */
 	uint32_t exti_line = 1 << line;
@@ -18,10 +18,10 @@ void DigitalIn::VectorHandler(size_t line)
 	}
 }
 
-void DigitalIn::VectorHandlers(size_t begin, size_t size)
+void DigitalIn::IrqHandlers(size_t begin, size_t size)
 {
 	for (size_t i = begin; i < size; i++)
-		VectorHandler(i);
+		IrqHandler(i);
 }
 
 
@@ -46,97 +46,97 @@ void DigitalIn::EXTILineEnable(uint32_t portnum, uint32_t linenum, uint32_t irq_
 			NVIC_EnableIRQ(EXTI0_IRQn);
 			NVIC_SetPriority(EXTI0_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE0;
-			InterruptManager::instance().Callback(EXTI0_IRQn, [](void){VectorHandler(0);});
+			InterruptManager::instance().Callback(EXTI0_IRQn, [](void){IrqHandler(0);});
 			break;
 		case 1:
 			NVIC_EnableIRQ(EXTI1_IRQn);
 			NVIC_SetPriority(EXTI1_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE1;
-			InterruptManager::instance().Callback(EXTI1_IRQn, [](void){VectorHandler(1);});
+			InterruptManager::instance().Callback(EXTI1_IRQn, [](void){IrqHandler(1);});
 			break;
 		case 2:
 			NVIC_EnableIRQ(EXTI2_IRQn);
 			NVIC_SetPriority(EXTI2_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE2;
-			InterruptManager::instance().Callback(EXTI2_IRQn, [](void){VectorHandler(2);});
+			InterruptManager::instance().Callback(EXTI2_IRQn, [](void){IrqHandler(2);});
 			break;
 		case 3:
 			NVIC_EnableIRQ(EXTI3_IRQn);
 			NVIC_SetPriority(EXTI3_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE3;
-			InterruptManager::instance().Callback(EXTI3_IRQn, [](void){VectorHandler(3);});
+			InterruptManager::instance().Callback(EXTI3_IRQn, [](void){IrqHandler(3);});
 			break;
 		case 4:
 			NVIC_EnableIRQ(EXTI4_IRQn);
 			NVIC_SetPriority(EXTI4_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE4;
-			InterruptManager::instance().Callback(EXTI4_IRQn, [](void){VectorHandler(4);});
+			InterruptManager::instance().Callback(EXTI4_IRQn, [=](void){IrqHandler(4);});
 			break;
 		case 5:
 			NVIC_EnableIRQ(EXTI9_5_IRQn);
 			NVIC_SetPriority(EXTI9_5_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE5;
-			InterruptManager::instance().Callback(EXTI9_5_IRQn, [](void){VectorHandlers(5,5);});
+			InterruptManager::instance().Callback(EXTI9_5_IRQn, [](void){IrqHandlers(5,5);});
 			break;
 		case 6:
 			NVIC_EnableIRQ(EXTI9_5_IRQn);
 			NVIC_SetPriority(EXTI9_5_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE6;
-			InterruptManager::instance().Callback(EXTI9_5_IRQn, [](void){VectorHandlers(5,5);});
+			InterruptManager::instance().Callback(EXTI9_5_IRQn, [](void){IrqHandlers(5,5);});
 			break;
 		case 7:
 			NVIC_EnableIRQ(EXTI9_5_IRQn);
 			NVIC_SetPriority(EXTI9_5_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE7;
-			InterruptManager::instance().Callback(EXTI9_5_IRQn, [](void){VectorHandlers(5,5);});
+			InterruptManager::instance().Callback(EXTI9_5_IRQn, [](void){IrqHandlers(5,5);});
 			break;
 		case 8:
 			NVIC_EnableIRQ(EXTI9_5_IRQn);
 			NVIC_SetPriority(EXTI9_5_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE8;
-			InterruptManager::instance().Callback(EXTI9_5_IRQn, [](void){VectorHandlers(5,5);});
+			InterruptManager::instance().Callback(EXTI9_5_IRQn, [](void){IrqHandlers(5,5);});
 			break;
 		case 9:
 			NVIC_EnableIRQ(EXTI9_5_IRQn);
 			NVIC_SetPriority(EXTI9_5_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE9;
-			InterruptManager::instance().Callback(EXTI9_5_IRQn, [](void){VectorHandlers(5,5);});
+			InterruptManager::instance().Callback(EXTI9_5_IRQn, [](void){IrqHandlers(5,5);});
 			break;
 		case 10:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE10;
-			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){VectorHandlers(10,5);});
+			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){IrqHandlers(10,5);});
 			break;
 		case 11:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE11;
-			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){VectorHandlers(10,5);});
+			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){IrqHandlers(10,5);});
 			break;
 		case 12:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE12;
-			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){VectorHandlers(10,5);});
+			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){IrqHandlers(10,5);});
 			break;
 		case 13:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE13;
-			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){VectorHandlers(10,5);});
+			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){IrqHandlers(10,5);});
 			break;
 		case 14:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE14;
-			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){VectorHandlers(10,5);});
+			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){IrqHandlers(10,5);});
 			break;
 		case 15:
 			NVIC_EnableIRQ(EXTI15_10_IRQn);
 			NVIC_SetPriority(EXTI15_10_IRQn, irq_priority);
 			exti_line = LL_SYSCFG_EXTI_LINE15;
-			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){VectorHandlers(10,5);});
+			InterruptManager::instance().Callback(EXTI15_10_IRQn, [](void){IrqHandlers(10,5);});
 			break;
 		default:
 			exti_line = 0;

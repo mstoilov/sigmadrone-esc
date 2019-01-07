@@ -25,10 +25,13 @@ public:
 		Callback(irq, [=](void){(object->*func)();});
 	}
 
+	std::function<void(void)> GetIrqHandler(unsigned int irq)
+	{
+		return vectors_[16 + irq];
+	}
 
 private:
 	InterruptManager();
-	static void DebugBrakePoint();
 	friend void InterruptManageVectorHandler();
 
 private:
