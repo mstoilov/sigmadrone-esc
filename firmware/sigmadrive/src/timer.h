@@ -30,7 +30,6 @@
 #include "stm32f4xx_ll_dma.h"
 #include "gpiopin.h"
 #include "units.h"
-#include "functionptr.h"
 
 class Timer
 {

@@ -1,3 +1,4 @@
+#include <string.h>
 #include "cortexm/ExceptionHandlers.h"
 #include "usart.h"
 

@@ -13,7 +13,6 @@
 #include <functional>
 #include "timer.h"
 #include "gpiopin.h"
-#include "functionptr.h"
 
 
 class PWMDecoder: public Timer {
