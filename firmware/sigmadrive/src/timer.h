@@ -194,6 +194,11 @@ public:
 		TriggerExternal			= LL_TIM_TS_ETRF,
 	};
 
+	enum UpdateSource {
+		UpdateSourceRegular = LL_TIM_UPDATESOURCE_REGULAR,
+		UpdateSourceCounter = LL_TIM_UPDATESOURCE_COUNTER,
+	};
+
 	Timer(TIM_TypeDef *TIMx,
 			const TimeSpan& timer_period,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
@@ -231,6 +236,10 @@ public:
 	uint32_t		GetPrescaler()								{ return LL_TIM_GetPrescaler(TIMx_); }
 	void			SetPrescaler(uint32_t psc)					{ LL_TIM_SetPrescaler(TIMx_, psc); }
 	void			SetClock(const Frequency& frequency)		{ UpdatePrescaler(frequency); }
+	void			SetUpdateSource(UpdateSource source)		{ LL_TIM_SetUpdateSource(TIMx_, source); }
+	UpdateSource	GetUpdateSource()							{ return static_cast<UpdateSource>(LL_TIM_GetUpdateSource(TIMx_));}
+	void			EnableUpdateEvent()							{ LL_TIM_EnableUpdateEvent(TIMx_); }
+	void			DisableUpdateEvent()						{ LL_TIM_DisableUpdateEvent(TIMx_); }
 	void			EnableARRPreload()							{ LL_TIM_EnableARRPreload(TIMx_); }
 	void			DisableARRPreload()							{ LL_TIM_DisableARRPreload(TIMx_); }
 	void			OCEnablePreload(Channel ch)					{ LL_TIM_OC_EnablePreload(TIMx_, ch); }

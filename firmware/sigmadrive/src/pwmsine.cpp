@@ -1,5 +1,6 @@
+#include <iostream>
 #include "pwmsine.h"
-
+#include "adc.h"
 
 #define UH_PIN		PA_8
 #define UL_PIN		PA_7
@@ -10,37 +11,24 @@
 #define WH_PIN		PA_10
 #define WL_PIN		PB_1
 
+extern Adc *p_adc;
 
-PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequency& system_clock, const std::vector<GPIOPin>& pins)
+PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequency& system_clock, OCMode pwm_mode, const std::vector<GPIOPin>& pins)
 	: Timer(TIMx, (switching_freq + switching_freq / 8).period(), system_clock, pins)
 	, switching_freq_(switching_freq)
 	, state_(0UL)
+	, pwm_mode_(pwm_mode)
 {
 	SetAutoReloadPeriod(switching_freq_.period());
 
-	SetOCMode(CH1, PWM1);
-	SetOCMode(CH2, PWM1);
-	SetOCMode(CH3, PWM1);
-
-	SetOCPolarity(CH1, High);
-	SetOCPolarity(CH2, High);
-	SetOCPolarity(CH3, High);
-	SetOCPolarity(CH1N, Low);
-	SetOCPolarity(CH2N, Low);
-	SetOCPolarity(CH3N, Low);
-
-
 	SetDeadTime(30);
 
-	EnableChannel(CH1);
-	EnableChannel(CH1N);
-	EnableChannel(CH2);
-	EnableChannel(CH2N);
-	EnableChannel(CH3);
-	EnableChannel(CH3N);
+//	CCEnablePreload();
+	EnableARRPreload();
 
-	EnableOutputs();
 	GenerateEvent(EventUpdate);
+
+	SetTriggerOutput(TrigUpdate);
 
 }
 
@@ -51,22 +39,41 @@ PWMSine::~PWMSine()
 
 void PWMSine::Start()
 {
-	SetOCMode(CH1, PWM1);
-	SetOCMode(CH2, PWM1);
-	SetOCMode(CH3, PWM1);
+	SetOCMode(CH1, pwm_mode_);
+	SetOCMode(CH2, pwm_mode_);
+	SetOCMode(CH3, pwm_mode_);
+
+	SetOCPolarity(CH1, High);
+	SetOCPolarity(CH2, High);
+	SetOCPolarity(CH3, High);
+	SetOCPolarity(CH1N, Low);
+	SetOCPolarity(CH2N, Low);
+	SetOCPolarity(CH3N, Low);
+
 	EnableChannel(CH1);
-	EnableChannel(CH1N);
 	EnableChannel(CH2);
-	EnableChannel(CH2N);
 	EnableChannel(CH3);
+	EnableChannel(CH1N);
+	EnableChannel(CH2N);
 	EnableChannel(CH3N);
 
 	EnableInterrupt(InterruptUpdate);
+	EnableOutputs();
 	base::Start();
 }
 
 void PWMSine::Stop()
 {
+	DisableOutputs();
+
+	SetOCMode(CH1, ForcedInactive);
+	SetOCMode(CH2, ForcedInactive);
+	SetOCMode(CH3, ForcedInactive);
+
+	SetOCPeriod(CH1, 0);
+	SetOCPeriod(CH2, 0);
+	SetOCPeriod(CH3, 0);
+
 	DisableInterrupt(InterruptUpdate);
 	base::Stop();
 	GenerateEvent(base::EventUpdate);
@@ -78,13 +85,6 @@ void PWMSine::Stop()
 	DisableChannel(CH3);
 	DisableChannel(CH3N);
 
-	SetOCPeriod(CH1, 0);
-	SetOCPeriod(CH2, 0);
-	SetOCPeriod(CH3, 0);
-
-	SetOCMode(CH1, ForcedInactive);
-	SetOCMode(CH2, ForcedInactive);
-	SetOCMode(CH3, ForcedInactive);
 }
 
 void PWMSine::Toggle()
@@ -145,17 +145,26 @@ void PWMSine::SetRotationsPerSecond(const Frequency& f)
 void PWMSine::SineDriving()
 {
 	state_ = (state_ + 1) % SINE_STATES;
+
+#if 1
 	SetOCPeriod(CH1, sine_duty_[(state_ + 0 * SINE_STATES / 3) % SINE_STATES ]);
 	SetOCPeriod(CH2, sine_duty_[(state_ + 1 * SINE_STATES / 3) % SINE_STATES ]);
 	SetOCPeriod(CH3, sine_duty_[(state_ + 2 * SINE_STATES / 3) % SINE_STATES ]);
+#else
+	SetOCPeriod(CH1, duty_ / 2);
+	SetOCPeriod(CH2, duty_ );
+	SetOCPeriod(CH3, duty_ );
+#endif
 }
 
 void PWMSine::HandleUpdate()
 {
 	SineDriving();
 
+	if ((++counter_ % 64) == 0) {
+		printf("%7ld %7ld %7ld (%7ld)\n", p_adc->injdata_[0], p_adc->injdata_[1], - (p_adc->injdata_[0] + p_adc->injdata_[1]), p_adc->injdata_[2]);
 #if 0
-	if ((++counter_ % 32) == 0) {
+
 		printf("<%5lu> SWFREQ: %lu, OUTPUT PSC: %lu, OUTPUT_RELOAD: %lu, Repeat: %lu, Counter: %5lu, "
 				"OC1: %5lu, OC2: %5lu, OC3: %5lu, OC4: %5lu\n",
 				counter_,
@@ -168,6 +177,7 @@ void PWMSine::HandleUpdate()
 				GetOCValue(Timer::CH2),
 				GetOCValue(Timer::CH3),
 				GetOCValue(Timer::CH4));
-	}
 #endif
+
+	}
 }

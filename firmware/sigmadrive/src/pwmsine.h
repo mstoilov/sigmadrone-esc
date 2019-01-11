@@ -32,12 +32,13 @@ class PWMSine : public Timer
 public:
 	using base = Timer;
 
-	static constexpr unsigned int SINE_STATES = 1200;
+	static constexpr unsigned int SINE_STATES = 1024;
 
 	PWMSine(
 			TIM_TypeDef *TIMx,
 			const Frequency& switching_freq,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
+			OCMode pwm_mode = PWM1,
 			const std::vector<GPIOPin>& output_pins = {}
 	);
 	virtual ~PWMSine();
@@ -58,6 +59,7 @@ public:
 	TimeSpan duty_;
 	TimeSpan sine_duty_[SINE_STATES];
 	uint32_t counter_ = 0;
+	OCMode pwm_mode_;
 };
 
 #endif

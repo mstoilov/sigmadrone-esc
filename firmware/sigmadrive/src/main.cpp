@@ -10,6 +10,8 @@
 #include "pwmdecoder.h"
 #include "quadraturedecoder.h"
 #include "pwmsine.h"
+#include "trigger.h"
+#include "adc.h"
 #include "usart.h"
 
 #include <iostream>
@@ -32,7 +34,7 @@ QuadratureDecoder pwm4(TIM4,  65535, {
 });
 
 
-PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), {
+PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::PWM1, {
 		{PA_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 		{PA_9,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 		{PA_10, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
@@ -40,6 +42,16 @@ PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCor
 		{PB_14,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 		{PB_15,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 });
+
+Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(17000), Frequency::from_hertz(SystemCoreClock));
+Adc adc(ADC1, {
+		{PC_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PC_4,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PC_5,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PA_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+});
+
+Adc *p_adc = &adc;
 
 extern USART* ptrUsart1;
 
@@ -65,9 +77,10 @@ int main(int argc, char* argv[])
 
 	pwm3.Start();
 	pwm4.Start();
+	adc.Start();
 
-	pwm1.SetDutyCycle(0.07);
-	pwm1.SetRotationsPerSecond(Frequency::from_millihertz(800));
+	pwm1.SetDutyCycle(0.2);
+	pwm1.SetRotationsPerSecond(Frequency::from_millihertz(1800));
 
 	while (1) {
 		std::string tmp;
@@ -76,7 +89,9 @@ int main(int argc, char* argv[])
 
 //		std::cout << "PWM: " << pwm3.GetPulseLength().seconds_float() * 1000.0 << " mSec, (Pulse/Period): " << pwm3.GetPWMPulse() << " / " << pwm3.GetPWMPeriod() << std::endl;
 
-		std::cout << "Counter: " << pwm4.GetCounterValue() << std::endl;
+//		std::cout << "Counter: " << pwm4.GetCounterValue() << std::endl;
+
+//		std::cout << adc.injdata_[0] << ", "  << adc.injdata_[1] << ", "  << adc.injdata_[2] << ", " << std::endl;
 
 	}
 }

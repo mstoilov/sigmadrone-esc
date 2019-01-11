@@ -38,6 +38,7 @@ Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& s
 	assert(id_);
 //	g_timers[id_] = this;
 
+	DisableOutputs();
 	SetClock(Frequency::from_timespan(timer_period + timer_period / 8) * GetCounterMaxValue());
 	SetAutoReloadPeriod(timer_period);
 	SetCounterValue(0UL);
