@@ -43,7 +43,7 @@ public:
 	DMA_TypeDef* GetDevice() 									{ return DMAx_; }
 	uint32_t GetStream()										{ return stream_; }
 	uint32_t GetChannel()										{ return channel_; }
-	void EnableIrq();
+	void EnableIrq(uint32_t priority = 0);
 	void DisableIrq();
 
 	template<typename T>

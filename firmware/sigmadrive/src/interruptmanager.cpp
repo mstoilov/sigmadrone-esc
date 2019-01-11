@@ -45,7 +45,19 @@ InterruptManager::InterruptManager()
 		vectors_[i] = [](void){};
 }
 
-void InterruptManager::Callback(unsigned int irq, const std::function<void(void)>& callback)
+void InterruptManager::EnableIRQ(IRQn_Type irq, uint32_t priority)
+{
+	NVIC_SetPriority(irq, priority);
+	NVIC_EnableIRQ(irq);
+}
+
+void InterruptManager::DisableIRQ(IRQn_Type irq)
+{
+	NVIC_DisableIRQ(irq);
+}
+
+
+void InterruptManager::Callback(IRQn_Type irq, const std::function<void(void)>& callback)
 {
 	vectors_[irq + 16] = callback;
 	volatile unsigned int* newtable = &__relocated_vectors;

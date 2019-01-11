@@ -17,10 +17,25 @@ public:
 		return object;
 	}
 
-	void Callback(unsigned int irq, const std::function<void(void)>& callback);
+	void DisableIRQ(IRQn_Type irq);
+	void EnableIRQ(IRQn_Type irq, uint32_t priority);
+	void Callback_EnableIRQ(IRQn_Type irq, uint32_t priority, const std::function<void(void)>& callback)
+	{
+		Callback(irq, callback);
+		EnableIRQ(irq, priority);
+	}
 
 	template<typename T>
-	void Callback(unsigned int irq, void (T::*func)(void), T* object)
+	void Callback_EnableIRQ(IRQn_Type irq, uint32_t priority, void (T::*func)(void), T* object)
+	{
+		Callback(irq, func, object);
+		EnableIRQ(irq, priority);
+	}
+
+	void Callback(IRQn_Type irq, const std::function<void(void)>& callback);
+
+	template<typename T>
+	void Callback(IRQn_Type irq, void (T::*func)(void), T* object)
 	{
 		Callback(irq, [=](void){(object->*func)();});
 	}

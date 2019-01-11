@@ -37,19 +37,13 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 
 	if (usart_device == USART1) {
 		__USART1_CLK_ENABLE();
-		InterruptManager::instance().Callback(USART1_IRQn, &USART::IrqHandlerUSART, this);
-		NVIC_SetPriority(USART1_IRQn, 0);
-		NVIC_EnableIRQ(USART1_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(USART1_IRQn, 0, &USART::IrqHandlerUSART, this);
 	} else if (usart_device == USART2) {
 		__USART2_CLK_ENABLE();
-		InterruptManager::instance().Callback(USART2_IRQn, &USART::IrqHandlerUSART, this);
-		NVIC_SetPriority(USART2_IRQn, 0);
-		NVIC_EnableIRQ(USART2_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(USART2_IRQn, 0, &USART::IrqHandlerUSART, this);
 	} else if (usart_device == USART6) {
 		__USART6_CLK_ENABLE();
-		InterruptManager::instance().Callback(USART6_IRQn, &USART::IrqHandlerUSART, this);
-		NVIC_SetPriority(USART6_IRQn, 0);
-		NVIC_EnableIRQ(USART6_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(USART6_IRQn, 0, &USART::IrqHandlerUSART, this);
 	}
 	if (LL_USART_Init(USARTx_, &Init) != SUCCESS) {
 		throw std::runtime_error("Failed to init UART");

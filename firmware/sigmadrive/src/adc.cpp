@@ -12,9 +12,7 @@ Adc::Adc(ADC_TypeDef* ADCx, const std::vector<GPIOPin>& pins)
 
 	LL_ADC_SetCommonClock(__LL_ADC_COMMON_INSTANCE(ADCx_), LL_ADC_CLOCK_SYNC_PCLK_DIV2);
 
-	NVIC_SetPriority(ADC_IRQn, 0);
-	NVIC_EnableIRQ(ADC_IRQn);
-	InterruptManager::instance().Callback(ADC_IRQn, &Adc::IRQHandler, this);
+	InterruptManager::instance().Callback_EnableIRQ(ADC_IRQn, 0, &Adc::IRQHandler, this);
 
 	InitCurrentFeedback();
 }

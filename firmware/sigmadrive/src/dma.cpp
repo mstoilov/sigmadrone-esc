@@ -239,73 +239,41 @@ void Dma::IrqHandlerStream7()
 }
 
 
-void Dma::EnableIrq()
+void Dma::EnableIrq(uint32_t priority)
 {
 	uint32_t stream = GetStream();
 	if (dma_num_ == 1 && stream == 0) {
-		InterruptManager::instance().Callback(DMA1_Stream0_IRQn, [=](void){IrqHandlerStream0();});
-		NVIC_SetPriority(DMA1_Stream0_IRQn, 0);
-		NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA1_Stream0_IRQn, priority, [=](void){IrqHandlerStream0();});
 	} else if (dma_num_ == 1 && stream == 1) {
-		InterruptManager::instance().Callback(DMA1_Stream1_IRQn, [=](void){IrqHandlerStream1();});
-		NVIC_SetPriority(DMA1_Stream1_IRQn, 0);
-		NVIC_EnableIRQ(DMA1_Stream1_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA1_Stream1_IRQn, priority, [=](void){IrqHandlerStream1();});
 	} else if (dma_num_ == 1 && stream == 2) {
-		InterruptManager::instance().Callback(DMA1_Stream2_IRQn, [=](void){IrqHandlerStream2();});
-		NVIC_SetPriority(DMA1_Stream2_IRQn, 0);
-		NVIC_EnableIRQ(DMA1_Stream2_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA1_Stream2_IRQn, priority, [=](void){IrqHandlerStream2();});
 	} else if (dma_num_ == 1 && stream == 3) {
-		InterruptManager::instance().Callback(DMA1_Stream3_IRQn, [=](void){IrqHandlerStream3();});
-		NVIC_SetPriority(DMA1_Stream3_IRQn, 0);
-		NVIC_EnableIRQ(DMA1_Stream3_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA1_Stream3_IRQn, priority, [=](void){IrqHandlerStream3();});
 	} else if (dma_num_ == 1 && stream == 4) {
-		InterruptManager::instance().Callback(DMA1_Stream4_IRQn, [=](void){IrqHandlerStream4();});
-		NVIC_SetPriority(DMA1_Stream4_IRQn, 0);
-		NVIC_EnableIRQ(DMA1_Stream4_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA1_Stream4_IRQn, priority, [=](void){IrqHandlerStream4();});
 	} else if (dma_num_ == 1 && stream == 5) {
-		InterruptManager::instance().Callback(DMA1_Stream5_IRQn, [=](void){IrqHandlerStream5();});
-		NVIC_SetPriority(DMA1_Stream5_IRQn, 0);
-		NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA1_Stream5_IRQn, priority, [=](void){IrqHandlerStream5();});
 	} else if (dma_num_ == 1 && stream == 6) {
-		InterruptManager::instance().Callback(DMA1_Stream6_IRQn, [=](void){IrqHandlerStream6();});
-		NVIC_SetPriority(DMA1_Stream6_IRQn, 0);
-		NVIC_EnableIRQ(DMA1_Stream6_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA1_Stream6_IRQn, priority, [=](void){IrqHandlerStream6();});
 	} else if (dma_num_ == 1 && stream == 7) {
-		InterruptManager::instance().Callback(DMA1_Stream7_IRQn, [=](void){IrqHandlerStream7();});
-		NVIC_SetPriority(DMA1_Stream7_IRQn, 0);
-		NVIC_EnableIRQ(DMA1_Stream7_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA1_Stream7_IRQn, priority, [=](void){IrqHandlerStream7();});
 	} else if (dma_num_ == 2 && stream == 0) {
-		InterruptManager::instance().Callback(DMA2_Stream0_IRQn, [=](void){IrqHandlerStream0();});
-		NVIC_SetPriority(DMA2_Stream0_IRQn, 0);
-		NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA2_Stream0_IRQn, priority, [=](void){IrqHandlerStream0();});
 	} else if (dma_num_ == 2 && stream == 1) {
-		InterruptManager::instance().Callback(DMA2_Stream1_IRQn, [=](void){IrqHandlerStream1();});
-		NVIC_SetPriority(DMA2_Stream1_IRQn, 0);
-		NVIC_EnableIRQ(DMA2_Stream1_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA2_Stream1_IRQn, priority, [=](void){IrqHandlerStream1();});
 	} else if (dma_num_ == 2 && stream == 2) {
-		InterruptManager::instance().Callback(DMA2_Stream2_IRQn, [=](void){IrqHandlerStream2();});
-		NVIC_SetPriority(DMA2_Stream2_IRQn, 0);
-		NVIC_EnableIRQ(DMA2_Stream2_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA2_Stream2_IRQn, priority, [=](void){IrqHandlerStream2();});
 	} else if (dma_num_ == 2 && stream == 3) {
-		InterruptManager::instance().Callback(DMA2_Stream3_IRQn, [=](void){IrqHandlerStream3();});
-		NVIC_SetPriority(DMA2_Stream3_IRQn, 0);
-		NVIC_EnableIRQ(DMA2_Stream3_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA2_Stream3_IRQn, priority, [=](void){IrqHandlerStream3();});
 	} else if (dma_num_ == 2 && stream == 4) {
-		InterruptManager::instance().Callback(DMA2_Stream4_IRQn, [=](void){IrqHandlerStream4();});
-		NVIC_SetPriority(DMA2_Stream4_IRQn, 0);
-		NVIC_EnableIRQ(DMA2_Stream4_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA2_Stream4_IRQn, priority, [=](void){IrqHandlerStream4();});
 	} else if (dma_num_ == 2 && stream == 5) {
-		InterruptManager::instance().Callback(DMA2_Stream5_IRQn, [=](void){IrqHandlerStream5();});
-		NVIC_SetPriority(DMA2_Stream5_IRQn, 0);
-		NVIC_EnableIRQ(DMA2_Stream5_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA2_Stream5_IRQn, priority, [=](void){IrqHandlerStream5();});
 	} else if (dma_num_ == 2 && stream == 6) {
-		InterruptManager::instance().Callback(DMA2_Stream6_IRQn, [=](void){IrqHandlerStream6();});
-		NVIC_SetPriority(DMA2_Stream6_IRQn, 0);
-		NVIC_EnableIRQ(DMA2_Stream6_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA2_Stream6_IRQn, priority, [=](void){IrqHandlerStream6();});
 	} else if (dma_num_ == 2 && stream == 7) {
-		InterruptManager::instance().Callback(DMA2_Stream7_IRQn, [=](void){IrqHandlerStream7();});
-		NVIC_SetPriority(DMA2_Stream7_IRQn, 0);
-		NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(DMA2_Stream7_IRQn, priority, [=](void){IrqHandlerStream7();});
 	}
 }
 

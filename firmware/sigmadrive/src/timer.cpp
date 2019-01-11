@@ -116,60 +116,42 @@ uint32_t Timer::bsp_init_timer(TIM_TypeDef* TIMx)
 	InterruptManager& IM = InterruptManager::instance();
 	if (TIMx == TIM1) {
 		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM1);
-		NVIC_SetPriority(TIM1_UP_TIM10_IRQn, 8);
-		NVIC_SetPriority(TIM1_TRG_COM_TIM11_IRQn, 8);
-		NVIC_SetPriority(TIM1_CC_IRQn, 8);
-		NVIC_SetPriority(TIM1_BRK_TIM9_IRQn, 8);
-		NVIC_EnableIRQ(TIM1_UP_TIM10_IRQn);
-		NVIC_EnableIRQ(TIM1_TRG_COM_TIM11_IRQn);
-		NVIC_EnableIRQ(TIM1_CC_IRQn);
-		NVIC_EnableIRQ(TIM1_BRK_TIM9_IRQn);
-
-		IM.Callback(TIM1_UP_TIM10_IRQn, [=](void){IrqHandlerUP();});
-		IM.Callback(TIM1_TRG_COM_TIM11_IRQn, [=](void){IrqHandlerTRG_COM();});
-		IM.Callback(TIM1_CC_IRQn, [=](void){IrqHandlerCC();});
+		IM.Callback_EnableIRQ(TIM1_UP_TIM10_IRQn, 8, [=](void){IrqHandlerUP();});
+		IM.Callback_EnableIRQ(TIM1_TRG_COM_TIM11_IRQn, 8, [=](void){IrqHandlerTRG_COM();});
+		IM.Callback_EnableIRQ(TIM1_CC_IRQn, 8, [=](void){IrqHandlerCC();});
 
 		/*
 		 * TIM1_BRK and TIM9_IRQn are shared. Chain the old handler to the end of the new one.
 		 */
 		auto OldIrqHandler_BRK = IM.GetIrqHandler(TIM1_BRK_TIM9_IRQn);
-		IM.Callback(TIM1_BRK_TIM9_IRQn, [=](void){IrqHandlerBRK(); OldIrqHandler_BRK();});
+		IM.Callback_EnableIRQ(TIM1_BRK_TIM9_IRQn, 8, [=](void){IrqHandlerBRK(); OldIrqHandler_BRK();});
 
 		return 1;
 	} else if (TIMx == TIM2) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
-		NVIC_SetPriority(TIM2_IRQn, 8);
-		NVIC_EnableIRQ(TIM2_IRQn);
-		IM.Callback(TIM2_IRQn, [=](void){IrqHandler();});
+
+		IM.Callback_EnableIRQ(TIM2_IRQn, 8, [=](void){IrqHandler();});
 		return 2;
 	} else if (TIMx == TIM3) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
-		NVIC_SetPriority(TIM3_IRQn, 8);
-		NVIC_EnableIRQ(TIM3_IRQn);
-		IM.Callback(TIM3_IRQn, [=](void){IrqHandler();});
+		IM.Callback_EnableIRQ(TIM3_IRQn, 8, [=](void){IrqHandler();});
 		return 3;
 	} else if (TIMx == TIM4) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM4);
-		NVIC_SetPriority(TIM4_IRQn, 8);
-		NVIC_EnableIRQ(TIM4_IRQn);
-		IM.Callback(TIM4_IRQn, [=](void){IrqHandler();});
+		IM.Callback_EnableIRQ(TIM4_IRQn, 8, [=](void){IrqHandler();});
 		return 4;
 	} else if (TIMx == TIM5) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM5);
-		NVIC_SetPriority(TIM5_IRQn, 8);
-		NVIC_EnableIRQ(TIM5_IRQn);
-		IM.Callback(TIM5_IRQn, [=](void){IrqHandler();});
+		IM.Callback_EnableIRQ(TIM5_IRQn, 8, [=](void){IrqHandler();});
 		return 5;
 	} else if (TIMx == TIM9) {
 		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM9);
-		NVIC_SetPriority(TIM1_BRK_TIM9_IRQn, 8);
-		NVIC_EnableIRQ(TIM1_BRK_TIM9_IRQn);
 
 		/*
 		 * TIM1_BRK and TIM9_IRQn are shared. Chain the old handler to the end of the new one.
 		 */
 		auto OldIrqHandler = IM.GetIrqHandler(TIM1_BRK_TIM9_IRQn);
-		IM.Callback(TIM1_BRK_TIM9_IRQn, [=](void){IrqHandler(); OldIrqHandler();});
+		IM.Callback_EnableIRQ(TIM1_BRK_TIM9_IRQn, 8, [=](void){IrqHandler(); OldIrqHandler();});
 		return 9;
 	}
 	return 0;
