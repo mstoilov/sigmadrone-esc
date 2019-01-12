@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <algorithm>
 #include "diag/Trace.h"
 #include "cmsis_device.h"
 
@@ -18,6 +19,12 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+
+#define CURRENT_FB_A	LL_ADC_CHANNEL_13
+#define CURRENT_FB_B	LL_ADC_CHANNEL_14
+#define CURRENT_FB_C	LL_ADC_CHANNEL_15
+#define CURRENT_FB_R	LL_ADC_CHANNEL_4
+
 
 DigitalOut led_warn(PA_5, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullDown, DigitalOut::ActiveDefault, 0);
 DigitalOut led_status(PA_6, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullNone, DigitalOut::ActiveLow, 0);
@@ -44,14 +51,15 @@ PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCor
 });
 
 Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(17000), Frequency::from_hertz(SystemCoreClock));
-Adc adc(ADC1, {
+Adc adc(ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_3CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, {
 		{PC_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		{PC_4,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		{PC_5,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
-		{PA_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
-});
+		{PA_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},},
+		{
+				CURRENT_FB_A, CURRENT_FB_B, CURRENT_FB_C, CURRENT_FB_R,
+		});
 
-Adc *p_adc = &adc;
 
 extern USART* ptrUsart1;
 
@@ -62,6 +70,16 @@ void pwm1_toggle()
 		pwm1.Start();
 	} else {
 		pwm1.Stop();
+	}
+}
+
+void CallbackJeos(int32_t* data, size_t size)
+{
+	static size_t counter = 0;
+
+	if ((counter++ % 64) == 0) {
+		std::for_each(data, data + size, [](int32_t& a){a = 3300/2 - a;});
+		printf("JeosCallback: %7ld %7ld %7ld (%7ld)\n", data[0], data[1], data[2], data[0] + data[1] + data[2]);
 	}
 }
 
@@ -77,9 +95,11 @@ int main(int argc, char* argv[])
 
 	pwm3.Start();
 	pwm4.Start();
+
+	adc.CallbackJEOS(CallbackJeos);
 	adc.Start();
 
-	pwm1.SetDutyCycle(0.2);
+	pwm1.SetDutyCycle(0.15);
 	pwm1.SetRotationsPerSecond(Frequency::from_millihertz(1800));
 
 	while (1) {

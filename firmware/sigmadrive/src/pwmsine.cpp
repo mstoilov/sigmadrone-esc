@@ -162,7 +162,6 @@ void PWMSine::HandleUpdate()
 	SineDriving();
 
 	if ((++counter_ % 64) == 0) {
-		printf("%7ld %7ld %7ld (%7ld)\n", p_adc->injdata_[0], p_adc->injdata_[1], - (p_adc->injdata_[0] + p_adc->injdata_[1]), p_adc->injdata_[2]);
 #if 0
 
 		printf("<%5lu> SWFREQ: %lu, OUTPUT PSC: %lu, OUTPUT_RELOAD: %lu, Repeat: %lu, Counter: %5lu, "

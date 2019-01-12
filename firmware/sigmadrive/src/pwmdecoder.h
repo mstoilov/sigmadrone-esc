@@ -39,21 +39,20 @@ public:
 	 *  @param mptr pointer to the member function to be called
 	 */
 	template<typename T>
-	void callback(T* tptr, void (T::*mptr)(void))
+	void Callback_PWMCC(T* tptr, void (T::*mptr)(uint32_t, uint32_t))
 	{
-		if (tptr && mptr)
-			callback_ = [=](void){(tptr->*mptr)();};
+		callback_PWMCC_ = [=](uint32_t pulse, uint32_t period){(tptr->*mptr)(pulse, period);};
 	}
 
-	void callback(const std::function<void(void)>& callback)
+	void Callback_PWMCC(const std::function<void(uint32_t, uint32_t)>& callback)
 	{
-		callback_ = callback;
+		callback_PWMCC_ = callback;
 	}
 
 protected:
 	uint32_t pwm_pulse_;
 	uint32_t pwm_period_;
-	std::function<void(void)> callback_ = [](){};
+	std::function<void(uint32_t, uint32_t)> callback_PWMCC_ = [](uint32_t, uint32_t){};
 };
 
 

@@ -41,9 +41,11 @@ PWMDecoder::~PWMDecoder()
 
 void PWMDecoder::HandleCC1()
 {
+	__disable_irq();
 	pwm_period_ = GetICValue(CH1);
 	pwm_pulse_ = GetICValue(CH2);
-	callback_();
+	__enable_irq();
+	callback_PWMCC_(pwm_pulse_, pwm_period_);
 }
 
 void PWMDecoder::Start()
