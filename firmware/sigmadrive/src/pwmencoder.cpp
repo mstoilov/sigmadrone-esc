@@ -26,7 +26,7 @@
 
 #define USE_IHM08M1
 PWMEncoder::PWMEncoder(TIM_TypeDef *TIMx, const TimeSpan& pwm_period, const Frequency& system_clock, const std::vector<GPIOPin>& output_pins)
-	: Timer(TIMx, pwm_period, system_clock, output_pins)
+	: Timer(TIMx, pwm_period, system_clock, 0, output_pins)
 	, period_(pwm_period)
 	, state_(0UL)
 #ifdef USE_IHM08M1

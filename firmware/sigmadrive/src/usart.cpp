@@ -9,11 +9,12 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 		uint32_t tx_stream,
 		uint32_t rx_stream,
 		uint32_t dma_channel,
-		uint32_t hwflowctrl
+		uint32_t hwflowctrl,
+		uint32_t irq_priority
 		)
 	: USARTx_(usart_device)
-	, dma_tx_(dma_device, tx_stream, dma_channel, LL_DMA_DIRECTION_MEMORY_TO_PERIPH | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE)
-	, dma_rx_(dma_device, rx_stream, dma_channel, LL_DMA_MODE_CIRCULAR | LL_DMA_DIRECTION_PERIPH_TO_MEMORY | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE)
+	, dma_tx_(dma_device, tx_stream, dma_channel, LL_DMA_DIRECTION_MEMORY_TO_PERIPH | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE, irq_priority)
+	, dma_rx_(dma_device, rx_stream, dma_channel, LL_DMA_MODE_CIRCULAR | LL_DMA_DIRECTION_PERIPH_TO_MEMORY | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE, irq_priority)
 {
 	for (auto& pin : data_pins)
 		pin.Init();
@@ -37,13 +38,13 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 
 	if (usart_device == USART1) {
 		__USART1_CLK_ENABLE();
-		InterruptManager::instance().Callback_EnableIRQ(USART1_IRQn, 0, &USART::IrqHandlerUSART, this);
+		InterruptManager::instance().Callback_EnableIRQ(USART1_IRQn, irq_priority, &USART::IrqHandlerUSART, this);
 	} else if (usart_device == USART2) {
 		__USART2_CLK_ENABLE();
-		InterruptManager::instance().Callback_EnableIRQ(USART2_IRQn, 0, &USART::IrqHandlerUSART, this);
+		InterruptManager::instance().Callback_EnableIRQ(USART2_IRQn, irq_priority, &USART::IrqHandlerUSART, this);
 	} else if (usart_device == USART6) {
 		__USART6_CLK_ENABLE();
-		InterruptManager::instance().Callback_EnableIRQ(USART6_IRQn, 0, &USART::IrqHandlerUSART, this);
+		InterruptManager::instance().Callback_EnableIRQ(USART6_IRQn, irq_priority, &USART::IrqHandlerUSART, this);
 	}
 	if (LL_USART_Init(USARTx_, &Init) != SUCCESS) {
 		throw std::runtime_error("Failed to init UART");
@@ -112,6 +113,10 @@ ssize_t USART::Write(const char* buf, size_t nbytes)
 ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 {
 	size_t i = 0;
+
+
+	if (!output_queue_.space())
+		return nbytes;
 
 	while (!output_queue_.space())
 		;

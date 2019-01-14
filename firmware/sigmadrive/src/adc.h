@@ -13,6 +13,7 @@ public:
 			uint32_t resolution = LL_ADC_RESOLUTION_12B,
 			uint32_t samplingTime = LL_ADC_SAMPLINGTIME_3CYCLES,
 			uint32_t injectedTrigger = LL_ADC_INJ_TRIG_SOFTWARE,
+			uint32_t irq_priority = 0,
 			const std::vector<GPIOPin>& pins = {},
 			const std::vector<uint32_t>& injChannels = {});
 	virtual ~Adc();
@@ -21,9 +22,9 @@ public:
 	void SetInjectedTrigger(uint32_t trigger);
 
 	template<typename T>
-	void Callback_PWMCC(T* tptr, void (T::*mptr)(uint32_t*, uint32_t))
+	void CallbackJEOS(T* tptr, void (T::*mptr)(int32_t*, size_t))
 	{
-		callback_JEOS_ = [=](uint32_t* data, uint32_t size){(tptr->*mptr)(data, size);};
+		callback_JEOS_ = [=](int32_t* data, size_t size){(tptr->*mptr)(data, size);};
 	}
 
 	void CallbackJEOS(const std::function<void(int32_t*, size_t)>& callback)

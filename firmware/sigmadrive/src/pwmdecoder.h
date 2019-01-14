@@ -23,6 +23,7 @@ public:
 			TIM_TypeDef *TIMx,
 			const TimeSpan& pwm_period,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
+			uint32_t irq_priority = 0,
 			const std::vector<GPIOPin>& output_pins = {}
 	);
 	virtual ~PWMDecoder();

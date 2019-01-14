@@ -1,7 +1,7 @@
 #include "quadraturedecoder.h"
 
-QuadratureDecoder::QuadratureDecoder(TIM_TypeDef *TIMx,	uint32_t counter_max, const std::vector<GPIOPin>& pins)
-	: Timer(TIMx, TimeSpan(0), Frequency::from_hertz(SystemCoreClock), pins)
+QuadratureDecoder::QuadratureDecoder(TIM_TypeDef *TIMx,	uint32_t counter_max, uint32_t irq_priority, const std::vector<GPIOPin>& pins)
+	: Timer(TIMx, TimeSpan(0), Frequency::from_hertz(SystemCoreClock), irq_priority, pins)
 {
 	SetAutoReloadValue(counter_max);
 	SetPrescaler(0);

@@ -202,6 +202,7 @@ public:
 	Timer(TIM_TypeDef *TIMx,
 			const TimeSpan& timer_period,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
+			uint32_t irq_priority = 0,
 			const std::vector<GPIOPin>& pins = {}
 	);
 
@@ -242,11 +243,11 @@ public:
 	void			DisableUpdateEvent()						{ LL_TIM_DisableUpdateEvent(TIMx_); }
 	void			EnableARRPreload()							{ LL_TIM_EnableARRPreload(TIMx_); }
 	void			DisableARRPreload()							{ LL_TIM_DisableARRPreload(TIMx_); }
-	void			OCEnablePreload(Channel ch)					{ LL_TIM_OC_EnablePreload(TIMx_, ch); }
-	void			OCDisablePreload(Channel ch)				{ LL_TIM_OC_DisablePreload(TIMx_, ch); }
-	bool			OCIsEnabledPreload(Channel ch)				{ return LL_TIM_OC_IsEnabledPreload(TIMx_, ch) ? true : false; }
-	void			CCEnablePreload()							{ LL_TIM_CC_EnablePreload(TIMx_); }
-	void			CCDisablePreload()							{ LL_TIM_CC_DisablePreload(TIMx_); }
+	void			EnableCCPreload()							{ LL_TIM_CC_EnablePreload(TIMx_); }
+	void			DisableCCPreload()							{ LL_TIM_CC_DisablePreload(TIMx_); }
+	void			EnableOCPreload(Channel ch)					{ LL_TIM_OC_EnablePreload(TIMx_, ch); }
+	void			DisableOCPreload(Channel ch)				{ LL_TIM_OC_DisablePreload(TIMx_, ch); }
+	bool			IsEnabledOCPreload(Channel ch)				{ return LL_TIM_OC_IsEnabledPreload(TIMx_, ch) ? true : false; }
 	void 			SetAutoReloadValue(uint32_t value)			{ LL_TIM_SetAutoReload(TIMx_, value); }
 	void 			SetAutoReloadPeriod(const TimeSpan& period)	{ SetAutoReloadValue(__LL_TIM_CALC_ARR(system_clock_.hertz(), GetPrescaler(), period.to_frequency().hertz())); }
 	TimeSpan		GetAutoReloadPeriod()						{ return GetClock().period() * GetAutoReloadValue(); }
@@ -296,7 +297,7 @@ protected:
 	void UpdatePrescaler(const Frequency& timer_clock);
 
 protected:
-	uint32_t bsp_init_timer(TIM_TypeDef* TIMx);
+	uint32_t bsp_init_timer(TIM_TypeDef* TIMx, uint32_t irq_priority);
 	static uint32_t bsp_max_counter(TIM_TypeDef* TIMx);
 
 	void IrqHandlerUP();

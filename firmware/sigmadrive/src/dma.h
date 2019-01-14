@@ -14,7 +14,7 @@
 
 class Dma {
 public:
-	Dma(DMA_TypeDef* DMAx, uint32_t stream, uint32_t channel, uint32_t config);
+	Dma(DMA_TypeDef* DMAx, uint32_t stream, uint32_t channel, uint32_t config, uint32_t irq_priority);
 	virtual ~Dma();
 
 	void ConfigAddresses(uint32_t SrcAddress, uint32_t DstAddress, uint32_t Direction);
@@ -43,7 +43,7 @@ public:
 	DMA_TypeDef* GetDevice() 									{ return DMAx_; }
 	uint32_t GetStream()										{ return stream_; }
 	uint32_t GetChannel()										{ return channel_; }
-	void EnableIrq(uint32_t priority = 0);
+	void EnableIrq(uint32_t priority);
 	void DisableIrq();
 
 	template<typename T>

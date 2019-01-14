@@ -39,6 +39,7 @@ public:
 			const Frequency& switching_freq,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
 			OCMode pwm_mode = PWM1,
+			uint32_t irq_priority = 0,
 			const std::vector<GPIOPin>& output_pins = {}
 	);
 	virtual ~PWMSine();

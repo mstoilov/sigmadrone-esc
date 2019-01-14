@@ -20,7 +20,7 @@ Trigger::Trigger(
 	LL_TIM_SetOnePulseMode(TIMx, LL_TIM_ONEPULSEMODE_SINGLE);
 	SetOCValue(ch, GetAutoReloadValue());
 	EnableChannel(ch);
-	CCEnablePreload();
+	EnableCCPreload();
 	EnableARRPreload();
 	GenerateEvent(EventUpdate);
 }

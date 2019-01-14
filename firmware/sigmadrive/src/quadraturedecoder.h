@@ -15,6 +15,7 @@ public:
 	QuadratureDecoder(
 			TIM_TypeDef *TIMx,
 			uint32_t counter_max,
+			uint32_t irq_priority = 0,
 			const std::vector<GPIOPin>& pins = {}
 	);
 	virtual ~QuadratureDecoder();

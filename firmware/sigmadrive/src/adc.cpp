@@ -7,6 +7,7 @@ Adc::Adc(ADC_TypeDef* ADCx,
 		uint32_t resolution,
 		uint32_t samplingTime,
 		uint32_t injectedTrigger,
+		uint32_t irq_priority,
 		const std::vector<GPIOPin>& pins,
 		const std::vector<uint32_t>& injChannels)
 	: ADCx_(ADCx)
@@ -20,7 +21,7 @@ Adc::Adc(ADC_TypeDef* ADCx,
 
 	LL_ADC_SetCommonClock(__LL_ADC_COMMON_INSTANCE(ADCx_), LL_ADC_CLOCK_SYNC_PCLK_DIV2);
 
-	InterruptManager::instance().Callback_EnableIRQ(ADC_IRQn, 0, &Adc::IRQHandler, this);
+	InterruptManager::instance().Callback_EnableIRQ(ADC_IRQn, irq_priority, &Adc::IRQHandler, this);
 
 	InitInjectedChannels(resolution, samplingTime, injChannels);
 	SetInjectedTrigger(injectedTrigger);

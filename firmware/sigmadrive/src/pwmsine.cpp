@@ -13,8 +13,8 @@
 
 extern Adc *p_adc;
 
-PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequency& system_clock, OCMode pwm_mode, const std::vector<GPIOPin>& pins)
-	: Timer(TIMx, (switching_freq + switching_freq / 8).period(), system_clock, pins)
+PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequency& system_clock, OCMode pwm_mode, uint32_t irq_priority, const std::vector<GPIOPin>& pins)
+	: Timer(TIMx, (switching_freq + switching_freq / 8).period(), system_clock, irq_priority, pins)
 	, switching_freq_(switching_freq)
 	, state_(0UL)
 	, pwm_mode_(pwm_mode)

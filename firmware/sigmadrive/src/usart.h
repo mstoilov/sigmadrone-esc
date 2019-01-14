@@ -28,7 +28,8 @@ public:
 			uint32_t tx_stream = LL_DMA_STREAM_7,
 			uint32_t rx_stream = LL_DMA_STREAM_5,
 			uint32_t dma_channel = LL_DMA_CHANNEL_4,
-			uint32_t hwflowctrl = LL_USART_HWCONTROL_NONE
+			uint32_t hwflowctrl = LL_USART_HWCONTROL_NONE,
+			uint32_t irq_priority = 0
 			);
 	virtual ~USART();
 

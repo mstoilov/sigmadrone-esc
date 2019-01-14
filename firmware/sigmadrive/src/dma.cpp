@@ -10,7 +10,7 @@
 #include "interruptmanager.h"
 
 
-Dma::Dma(DMA_TypeDef* DMAx, uint32_t stream, uint32_t channel, uint32_t config)
+Dma::Dma(DMA_TypeDef* DMAx, uint32_t stream, uint32_t channel, uint32_t config, uint32_t irq_priority)
 	: DMAx_(DMAx)
 	, stream_(stream)
 	, channel_(channel)
@@ -25,7 +25,7 @@ Dma::Dma(DMA_TypeDef* DMAx, uint32_t stream, uint32_t channel, uint32_t config)
 	}
 	LL_DMA_ConfigTransfer(DMAx_, stream_, config);
 	LL_DMA_SetChannelSelection(DMAx_, stream_, channel_);
-	EnableIrq();
+	EnableIrq(irq_priority);
 }
 
 Dma::~Dma()

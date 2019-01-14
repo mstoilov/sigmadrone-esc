@@ -26,7 +26,7 @@
 #include "interruptmanager.h"
 #include "timer.h"
 
-Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& system_clock, const std::vector<GPIOPin>& pins)
+Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& system_clock, uint32_t irq_priority, const std::vector<GPIOPin>& pins)
 	: TIMx_(TIMx)
 	, system_clock_(system_clock)
 	, pins_(pins)
@@ -34,7 +34,7 @@ Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& s
 	for (auto& pin : pins_)
 		pin.Init();
 
-	id_ = bsp_init_timer(TIMx_);
+	id_ = bsp_init_timer(TIMx_, irq_priority);
 	assert(id_);
 //	g_timers[id_] = this;
 
@@ -111,38 +111,38 @@ uint32_t Timer::GetOCValue(Channel ch)
 }
 
 
-uint32_t Timer::bsp_init_timer(TIM_TypeDef* TIMx)
+uint32_t Timer::bsp_init_timer(TIM_TypeDef* TIMx, uint32_t irq_priority)
 {
 	InterruptManager& IM = InterruptManager::instance();
 	if (TIMx == TIM1) {
 		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM1);
-		IM.Callback_EnableIRQ(TIM1_UP_TIM10_IRQn, 8, [=](void){IrqHandlerUP();});
-		IM.Callback_EnableIRQ(TIM1_TRG_COM_TIM11_IRQn, 8, [=](void){IrqHandlerTRG_COM();});
-		IM.Callback_EnableIRQ(TIM1_CC_IRQn, 8, [=](void){IrqHandlerCC();});
+		IM.Callback_EnableIRQ(TIM1_UP_TIM10_IRQn, irq_priority, [=](void){IrqHandlerUP();});
+		IM.Callback_EnableIRQ(TIM1_TRG_COM_TIM11_IRQn, irq_priority, [=](void){IrqHandlerTRG_COM();});
+		IM.Callback_EnableIRQ(TIM1_CC_IRQn, irq_priority, [=](void){IrqHandlerCC();});
 
 		/*
 		 * TIM1_BRK and TIM9_IRQn are shared. Chain the old handler to the end of the new one.
 		 */
 		auto OldIrqHandler_BRK = IM.GetIrqHandler(TIM1_BRK_TIM9_IRQn);
-		IM.Callback_EnableIRQ(TIM1_BRK_TIM9_IRQn, 8, [=](void){IrqHandlerBRK(); OldIrqHandler_BRK();});
+		IM.Callback_EnableIRQ(TIM1_BRK_TIM9_IRQn, irq_priority, [=](void){IrqHandlerBRK(); OldIrqHandler_BRK();});
 
 		return 1;
 	} else if (TIMx == TIM2) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
 
-		IM.Callback_EnableIRQ(TIM2_IRQn, 8, [=](void){IrqHandler();});
+		IM.Callback_EnableIRQ(TIM2_IRQn, irq_priority, [=](void){IrqHandler();});
 		return 2;
 	} else if (TIMx == TIM3) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
-		IM.Callback_EnableIRQ(TIM3_IRQn, 8, [=](void){IrqHandler();});
+		IM.Callback_EnableIRQ(TIM3_IRQn, irq_priority, [=](void){IrqHandler();});
 		return 3;
 	} else if (TIMx == TIM4) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM4);
-		IM.Callback_EnableIRQ(TIM4_IRQn, 8, [=](void){IrqHandler();});
+		IM.Callback_EnableIRQ(TIM4_IRQn, irq_priority, [=](void){IrqHandler();});
 		return 4;
 	} else if (TIMx == TIM5) {
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM5);
-		IM.Callback_EnableIRQ(TIM5_IRQn, 8, [=](void){IrqHandler();});
+		IM.Callback_EnableIRQ(TIM5_IRQn, irq_priority, [=](void){IrqHandler();});
 		return 5;
 	} else if (TIMx == TIM9) {
 		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM9);
@@ -151,7 +151,7 @@ uint32_t Timer::bsp_init_timer(TIM_TypeDef* TIMx)
 		 * TIM1_BRK and TIM9_IRQn are shared. Chain the old handler to the end of the new one.
 		 */
 		auto OldIrqHandler = IM.GetIrqHandler(TIM1_BRK_TIM9_IRQn);
-		IM.Callback_EnableIRQ(TIM1_BRK_TIM9_IRQn, 8, [=](void){IrqHandler(); OldIrqHandler();});
+		IM.Callback_EnableIRQ(TIM1_BRK_TIM9_IRQn, irq_priority, [=](void){IrqHandler(); OldIrqHandler();});
 		return 9;
 	}
 	return 0;
