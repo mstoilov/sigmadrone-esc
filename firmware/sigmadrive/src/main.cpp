@@ -69,7 +69,7 @@ Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(750), Frequency::from_hertz
 
 
 #else
-PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::PWM1, 0, {
+PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::PWM2, 0, {
 		{PA_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 		{PA_9,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 		{PA_10, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
@@ -97,12 +97,7 @@ extern USART* ptrUsart1;
 
 void pwm1_toggle()
 {
-	led_warn.Toggle();
-	if (led_warn.Read()) {
-		pwm1.Start();
-	} else {
-		pwm1.Stop();
-	}
+	pwm1.Toggle();
 }
 
 void CallbackJeos(int32_t* data, size_t size)
@@ -133,11 +128,11 @@ int main(int argc, char* argv[])
 
 
 #ifdef USE_6STEP
-	pwm1.SetDutyCycle(0.30);
+	pwm1.SetThrottle(0.35);
 	adc.CallbackJEOS(&pwm1, &PWM6Step::CallbackJEOS);
 #else
 	pwm1.SetRotationsPerSecond(Frequency::from_millihertz(1800));
-	pwm1.SetDutyCycle(0.15);
+	pwm1.SetThrottle(0.15);
 #endif
 
 	PWM6Step::LogEntry log;
@@ -146,19 +141,25 @@ int main(int argc, char* argv[])
 		std::string tmp;
 		HAL_Delay(50UL);
 		led_status.Toggle();
+		led_warn.Write(pwm1.IsEnabledCounter());
+
 
 #ifdef USE_6STEP
 		if (pwm1.log_entry_.serial_ != log.serial_) {
 			__disable_irq();
 			log = pwm1.log_entry_;
 			__enable_irq();
-			printf("%1lu: slp: %7ld, incpt: %5ld, ibemf: %5ld, zero_c: %3ld (%3ld) %2d->[%6ld %6ld %6ld ] %2d->[%6ld %6ld %6ld]\n",
+
+			uint32_t hz = (uint32_t) (pwm1.GetSwitchingFrequency() / log.last_counter_ / PWM6Step::MECHANICAL_DEGREES_RATIO / PWM6Step::SINE_STATES).hertz();
+
+			printf("%1lu: Speed: %5lu, slp: %7ld, incpt: %5ld, ibemf: %5ld, zero_c: %3ld (%3ld) %2d->[%6ld %6ld %6ld ] %2d->[%6ld %6ld %6ld]\n",
 					log.state_,
+					hz,
 					log.bemf_mslope_,
 					log.bemf_intercept_,
 					log.integral_bemf_,
 					log.zero_crossing_,
-					log.counter_,
+					log.last_counter_,
 					pwm1.adc_data_counter1,
 					log.adc_data1_[0],
 					log.adc_data1_[1],
@@ -170,6 +171,11 @@ int main(int argc, char* argv[])
 			);
 
 		}
+
+		pwm1.SetThrottle(pwm3.GetPulseLength().seconds_float() * 1000.0 - 0.7);
+
+
+
 #endif
 
 //		std::cout << "Counter: " << pwm1.GetCounterValue() << std::endl;

@@ -23,17 +23,20 @@ public:
 
 	static constexpr unsigned int SINE_STATES = 6;
 	static constexpr unsigned int MAX_HERTZ = 150;
-	static constexpr unsigned int MIN_MILLIHERTZ = 3000;
+	static constexpr unsigned int MIN_MILLIHERTZ = 1300;
 	static constexpr unsigned int MECHANICAL_DEGREES_RATIO = 8;
 	static constexpr unsigned int BEMF_INTEGRAL_THRESHOLD = 3300;
 	static constexpr unsigned int ADC_A = 0;
 	static constexpr unsigned int ADC_B = 1;
 	static constexpr unsigned int ADC_C = 2;
-	static constexpr float MAX_THROTTLE = 0.8;
+	static constexpr float MAX_THROTTLE = 0.55;
+	static constexpr float MIN_THROTTLE = 0.35;
 	static constexpr unsigned int adc_data_counter1 = 1;
 	static constexpr unsigned int adc_data_counter2 = 5;
 	static constexpr unsigned int adc_data_size = 3;
-	static constexpr unsigned int MAX_BEMF_BUFFER = 20;
+	static constexpr unsigned int SINE_SAMPLES = 144;
+	static constexpr unsigned int BOOTSTRAP_STAGES = 30;
+	static constexpr unsigned int BOOTSTRAP_DELAY = 5000; /* switching cycles */
 
 	struct BemfMeasurement {
 		int32_t bemf = 0;
@@ -42,14 +45,24 @@ public:
 
 	enum JeosState {
 		JEOS_STATE_MEASUREMENT1 = 0,
-		JEOS_STATE_MEASUREMENT2 = 1,
-		JEOS_STATE_ZERODETECTED = 2,
+		JEOS_STATE_MEASUREMENT2,
+		JEOS_STATE_ZERODETECTED,
+		JEOS_STATE_BOOTSTRAP_INIT,
+		JEOS_STATE_BOOTSTRAP,
+	};
+
+	struct BootStrap {
+		uint32_t delay_counter = 0;
+		uint32_t com_counter_ = 0;
+		uint32_t stage_counter = 0;
+		uint32_t rev_counter_ = 0;
+
 	};
 
 	struct LogEntry {
 		uint32_t serial_ = 0;
 		uint32_t state_ = 0;
-		uint32_t counter_ = 0;
+		uint32_t last_counter_ = 0;
 		uint32_t log_counter_ = 0;
 		int32_t	bemf_mslope_ = 0;
 		int32_t	bemf_intercept_ = 0;
@@ -77,7 +90,7 @@ public:
 
 	void SetupChannels(uint32_t state);
 	float GetDutyCycle();
-	void SetDutyCycle(float percent);
+	void SetThrottle(float percent);
 	void SetDutyPeriod(const TimeSpan& period);
 	Frequency GetSwitchingFrequency();
 	void Toggle();
@@ -87,6 +100,7 @@ public:
 	void GenerateComEvent();
 	void LogComEvent();
 	void SetJeosState(JeosState state);
+	bool Bootstrap();
 
 	template<typename T>
 	void CallbackCOM(T* tptr, void (T::*mptr)(void))
@@ -108,17 +122,21 @@ public:
 	TimeSpan duty_;
 	uint32_t state_ = 0;
 	JeosState jeos_state_ = JEOS_STATE_MEASUREMENT1;
+	uint32_t last_counter_ = 0;
 	uint32_t counter_ = 0;
 	uint32_t log_counter_ = 0;
 	int32_t	bemf_mslope_ = 0;
 	int32_t	bemf_intercept_ = 0;
 	int32_t zero_crossing_ = 0;
 	int32_t integral_bemf_ = 0;
+	uint64_t jiffies_ = 0;
 	BemfMeasurement msr_[2];
 	int32_t adc_data1_[adc_data_size];
 	int32_t adc_data2_[adc_data_size];
 	LogEntry log_entry_;
+	BootStrap boots_;
 	std::function<void(void)> callback_COM_ = [](){};
+	float bootstrap_sine_[SINE_SAMPLES];
 
 };
 

@@ -26,6 +26,12 @@ PWM6Step::PWM6Step(TIM_TypeDef *TIMx,
 	, com_cycles_max_(GetSwitchingFrequency()/Frequency::from_millihertz(MIN_MILLIHERTZ * SINE_STATES * MECHANICAL_DEGREES_RATIO))
 {
 	/*
+	 * init sine samples
+	 */
+	for (size_t i = 0; i < SINE_SAMPLES; i++)
+		bootstrap_sine_[i] = (1.0 + std::sin(1.0 * M_PI / 2.0 + i * 2.0 * M_PI / SINE_SAMPLES)) / 2.0;
+
+	/*
 	 * Disable all OC channels
 	 */
 	DisableCCPreload();
@@ -71,8 +77,11 @@ void PWM6Step::Start()
 	DisableChannel(CH1 | CH2 | CH3 | CH1N | CH2N | CH3N);
 	EnableARRPreload();
 	EnableOutputs();
+//	DisableOutputs();
+
+	SetJeosState(JEOS_STATE_BOOTSTRAP_INIT);
 	EnableCounter();
-	GenerateComEvent();
+
 }
 
 void PWM6Step::Stop()
@@ -94,14 +103,11 @@ void PWM6Step::Toggle()
 void PWM6Step::SetDutyPeriod(const TimeSpan& period)
 {
 	duty_ = period;
-	SetOCPeriod(CH1, duty_);
-	SetOCPeriod(CH2, duty_);
-	SetOCPeriod(CH3, duty_);
 }
 
-void PWM6Step::SetDutyCycle(float percent)
+void PWM6Step::SetThrottle(float percent)
 {
-	percent = std::max(std::min(percent, (float)MAX_THROTTLE), (float)0);
+	percent = std::max(std::min(percent, (float)MAX_THROTTLE), (float)MIN_THROTTLE);
 	SetDutyPeriod(GetSwitchingFrequency().period() * percent);
 }
 
@@ -198,9 +204,72 @@ void PWM6Step::SetJeosState(JeosState state)
 	jeos_state_ = state;
 }
 
+bool PWM6Step::Bootstrap()
+{
+	uint32_t com_cycles = com_cycles_max_ / (boots_.stage_counter + 1);
+	float bootstrap_throttle = 0.1 + 1.2f * boots_.stage_counter / 100.0;
+
+	if (boots_.delay_counter < BOOTSTRAP_DELAY) {
+		boots_.delay_counter++;
+		DisableCCPreload();
+		SetupChannels(state_);
+		uint32_t arr = GetAutoReloadValue();
+		SetOCValue(CH1, arr * 0.35 * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
+		SetOCValue(CH2, arr * 0.35 * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
+		SetOCValue(CH3, arr * 0.35 * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
+		EnableCCPreload();
+		return false;
+	}
+
+	if (counter_++ > com_cycles) {
+		boots_.com_counter_++;
+
+		if ((boots_.com_counter_ % SINE_STATES) == 0) {
+			boots_.rev_counter_++;
+			if (1 || boots_.rev_counter_ % 1 == 0) {
+				if (boots_.stage_counter < BOOTSTRAP_STAGES) {
+					boots_.stage_counter++;
+				} else {
+//					Stop();
+				}
+			}
+		}
+
+		if (boots_.stage_counter == BOOTSTRAP_STAGES && state_ == 0) {
+			SetThrottle(MIN_THROTTLE);
+			state_ = 2;
+			SetupChannels(state_);
+			GenerateComEvent();
+			return true;
+		}
+		state_ = (state_ + 1) % 6;
+		last_counter_ = counter_;
+		counter_ = 0;
+	}
+
+	DisableCCPreload();
+	uint32_t sine_driving_state = SINE_SAMPLES * (state_ * com_cycles + counter_) / (com_cycles * 6);
+	uint32_t arr = GetAutoReloadValue();
+	uint32_t i1 = (sine_driving_state + SINE_SAMPLES * 0 / 3) % SINE_SAMPLES;
+	uint32_t i2 = (sine_driving_state + SINE_SAMPLES * 2 / 3) % SINE_SAMPLES;
+	uint32_t i3 = (sine_driving_state + SINE_SAMPLES * 1 / 3) % SINE_SAMPLES;
+	uint32_t c1 = bootstrap_sine_[i1] * arr * bootstrap_throttle;
+	uint32_t c2 = bootstrap_sine_[i2] * arr * bootstrap_throttle;
+	uint32_t c3 = bootstrap_sine_[i3] * arr * bootstrap_throttle;
+	SetOCValue(CH1, c1);
+	SetOCValue(CH2, c2);
+	SetOCValue(CH3, c3);
+	EnableChannel(CH1 | CH2 | CH3 | CH1N | CH2N| CH3N);
+	EnableCCPreload();
+
+	return false;
+}
+
 void PWM6Step::CallbackJEOS(int32_t *injdata, size_t size)
 {
 	assert(size >= 3);
+
+	jiffies_++;
 
 	std::for_each(injdata, injdata + size, [](auto &a){ a = a * (47000/4700);});
 
@@ -241,15 +310,26 @@ void PWM6Step::CallbackJEOS(int32_t *injdata, size_t size)
 			SetJeosState(JEOS_STATE_ZERODETECTED);
 		}
 		break;
+
 	case JEOS_STATE_ZERODETECTED:
 		integral_bemf_ += bemf;
 		if ((abs(integral_bemf_) > (long)BEMF_INTEGRAL_THRESHOLD)) {
 			GenerateComEvent();
 		}
 		break;
+
+	case JEOS_STATE_BOOTSTRAP_INIT:
+		boots_ = BootStrap();
+		SetJeosState(JEOS_STATE_BOOTSTRAP);
+		break;
+	case JEOS_STATE_BOOTSTRAP:
+		if (Bootstrap())
+			SetJeosState(JEOS_STATE_MEASUREMENT1);
+		return;
 	}
-	if (counter_++ > com_cycles_max_)
+	if (counter_++ > com_cycles_max_) {
 		GenerateComEvent();
+	}
 
 }
 
@@ -260,7 +340,12 @@ void PWM6Step::GenerateComEvent()
 	callback_COM_();
 	LogComEvent();
 
+	SetOCPeriod(CH1, duty_);
+	SetOCPeriod(CH2, duty_);
+	SetOCPeriod(CH3, duty_);
+
 	SetJeosState(JEOS_STATE_MEASUREMENT1);
+	last_counter_ = counter_;
 	zero_crossing_ = 0UL;
 	integral_bemf_ = 0UL;
 	counter_ = 0UL;
@@ -274,14 +359,14 @@ void PWM6Step::GenerateComEvent()
 void PWM6Step::LogComEvent()
 {
 	if ((log_counter_++ % 145) == 0) {
-		std::copy(adc_data1_, adc_data1_ + adc_data_size, log_entry_.adc_data1_);
-		std::copy(adc_data2_, adc_data2_ + adc_data_size, log_entry_.adc_data2_);
+//		std::copy(adc_data1_, adc_data1_ + adc_data_size, log_entry_.adc_data1_);
+//		std::copy(adc_data2_, adc_data2_ + adc_data_size, log_entry_.adc_data2_);
 		log_entry_.state_ = state_;
 		log_entry_.bemf_intercept_ = bemf_intercept_;
 		log_entry_.bemf_mslope_ = bemf_mslope_;
 		log_entry_.zero_crossing_ = zero_crossing_;
 		log_entry_.integral_bemf_ = integral_bemf_;
-		log_entry_.counter_ = counter_;
+		log_entry_.last_counter_ = last_counter_;
 		log_entry_.serial_++;
 	}
 
