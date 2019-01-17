@@ -110,6 +110,16 @@ void CallbackJeos(int32_t* data, size_t size)
 	}
 }
 
+void CallbackPWMCC(uint32_t pulse, uint32_t period)
+{
+	float throttle = pwm3.GetPulseLength().seconds_float() * 1000.0 - 0.7;
+	pwm1.SetThrottle(throttle);
+	if (!pwm1.IsEnabledCounter() && throttle > PWM6Step::MIN_THROTTLE)
+		pwm1.Start();
+	if (pwm1.IsEnabledCounter() && throttle < PWM6Step::MIN_THROTTLE)
+		pwm1.Stop();
+}
+
 int main(int argc, char* argv[])
 {
 	InterruptManager& im = InterruptManager::instance();
@@ -119,6 +129,8 @@ int main(int argc, char* argv[])
 	// At this stage the system clock should have already been configured
 	// at high speed.
 	printf("System clock: %lu Hz\n", SystemCoreClock);
+
+	pwm3.Callback_PWMCC(CallbackPWMCC);
 
 	pwm3.Start();
 	pwm4.Start();

@@ -80,6 +80,8 @@ void PWM6Step::Start()
 //	DisableOutputs();
 
 	SetJeosState(JEOS_STATE_BOOTSTRAP_INIT);
+	SetJeosState(JEOS_STATE_MEASUREMENT1);
+	bootstrap_coundown_ = 20;
 	EnableCounter();
 
 }
@@ -206,8 +208,8 @@ void PWM6Step::SetJeosState(JeosState state)
 
 bool PWM6Step::Bootstrap()
 {
-	uint32_t com_cycles = com_cycles_max_ / (boots_.stage_counter + 1);
-	float bootstrap_throttle = 0.1 + 1.2f * boots_.stage_counter / 100.0;
+	uint32_t com_cycles = com_cycles_max_ / (boots_.elrev_counter + 1);
+	float bootstrap_throttle = 0.1 + 1.2f * boots_.elrev_counter / 100.0;
 
 	if (boots_.delay_counter < BOOTSTRAP_DELAY) {
 		boots_.delay_counter++;
@@ -225,17 +227,14 @@ bool PWM6Step::Bootstrap()
 		boots_.com_counter_++;
 
 		if ((boots_.com_counter_ % SINE_STATES) == 0) {
-			boots_.rev_counter_++;
-			if (1 || boots_.rev_counter_ % 1 == 0) {
-				if (boots_.stage_counter < BOOTSTRAP_STAGES) {
-					boots_.stage_counter++;
-				} else {
+			if (boots_.elrev_counter < BOOTSTRAP_STAGES) {
+				boots_.elrev_counter++;
+			} else {
 //					Stop();
-				}
 			}
 		}
 
-		if (boots_.stage_counter == BOOTSTRAP_STAGES && state_ == 0) {
+		if (boots_.elrev_counter == BOOTSTRAP_STAGES && state_ == 0) {
 			SetThrottle(MIN_THROTTLE);
 			state_ = 2;
 			SetupChannels(state_);
@@ -320,6 +319,8 @@ void PWM6Step::CallbackJEOS(int32_t *injdata, size_t size)
 
 	case JEOS_STATE_BOOTSTRAP_INIT:
 		boots_ = BootStrap();
+		counter_ = 0;
+		state_ = 0;
 		SetJeosState(JEOS_STATE_BOOTSTRAP);
 		break;
 	case JEOS_STATE_BOOTSTRAP:
@@ -327,10 +328,16 @@ void PWM6Step::CallbackJEOS(int32_t *injdata, size_t size)
 			SetJeosState(JEOS_STATE_MEASUREMENT1);
 		return;
 	}
-	if (counter_++ > com_cycles_max_) {
-		GenerateComEvent();
-	}
 
+	if (counter_++ > com_cycles_max_ / 10) {
+		if (--bootstrap_coundown_ == 0) {
+			SetJeosState(JEOS_STATE_BOOTSTRAP_INIT);
+			bootstrap_coundown_ = 20;
+		} else {
+			GenerateComEvent();
+			return;
+		}
+	}
 }
 
 void PWM6Step::GenerateComEvent()

@@ -23,13 +23,13 @@ public:
 
 	static constexpr unsigned int SINE_STATES = 6;
 	static constexpr unsigned int MAX_HERTZ = 150;
-	static constexpr unsigned int MIN_MILLIHERTZ = 1300;
+	static constexpr unsigned int MIN_MILLIHERTZ = 1100;
 	static constexpr unsigned int MECHANICAL_DEGREES_RATIO = 8;
 	static constexpr unsigned int BEMF_INTEGRAL_THRESHOLD = 3300;
 	static constexpr unsigned int ADC_A = 0;
 	static constexpr unsigned int ADC_B = 1;
 	static constexpr unsigned int ADC_C = 2;
-	static constexpr float MAX_THROTTLE = 0.55;
+	static constexpr float MAX_THROTTLE = 0.65;
 	static constexpr float MIN_THROTTLE = 0.35;
 	static constexpr unsigned int adc_data_counter1 = 1;
 	static constexpr unsigned int adc_data_counter2 = 5;
@@ -37,6 +37,7 @@ public:
 	static constexpr unsigned int SINE_SAMPLES = 144;
 	static constexpr unsigned int BOOTSTRAP_STAGES = 30;
 	static constexpr unsigned int BOOTSTRAP_DELAY = 5000; /* switching cycles */
+	static constexpr unsigned int BOOTSTRAP_COUNTDOWN = 20; /* switching cycles */
 
 	struct BemfMeasurement {
 		int32_t bemf = 0;
@@ -54,7 +55,7 @@ public:
 	struct BootStrap {
 		uint32_t delay_counter = 0;
 		uint32_t com_counter_ = 0;
-		uint32_t stage_counter = 0;
+		uint32_t elrev_counter = 0;
 		uint32_t rev_counter_ = 0;
 
 	};
@@ -123,7 +124,9 @@ public:
 	uint32_t state_ = 0;
 	JeosState jeos_state_ = JEOS_STATE_MEASUREMENT1;
 	uint32_t last_counter_ = 0;
+	uint32_t bootstrap_coundown_ = 0;
 	uint32_t counter_ = 0;
+	uint32_t missed_coms_counter_ = 0;
 	uint32_t log_counter_ = 0;
 	int32_t	bemf_mslope_ = 0;
 	int32_t	bemf_intercept_ = 0;
