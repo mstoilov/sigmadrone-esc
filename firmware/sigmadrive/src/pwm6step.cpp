@@ -235,10 +235,12 @@ bool PWM6Step::Bootstrap()
 		}
 
 		if (boots_.elrev_counter == BOOTSTRAP_STAGES && state_ == 0) {
-			SetThrottle(MIN_THROTTLE);
+			DisableCCPreload();
+			SetThrottle(0.15);
+			counter_ = 0;
 			state_ = 2;
 			SetupChannels(state_);
-			GenerateComEvent();
+			EnableCCPreload();
 			return true;
 		}
 		state_ = (state_ + 1) % 6;
