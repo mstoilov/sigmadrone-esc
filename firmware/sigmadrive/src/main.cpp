@@ -5,6 +5,10 @@
 #include "diag/Trace.h"
 #include "cmsis_device.h"
 
+#include "cortexm/ExceptionHandlers.h"
+#include "arm/semihosting.h"
+
+
 #include "interruptmanager.h"
 #include "digitalin.h"
 #include "digitalout.h"
@@ -34,17 +38,19 @@
 DigitalOut led_warn(PA_5, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullDown, DigitalOut::ActiveDefault, 0);
 DigitalOut led_status(PA_6, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullNone, DigitalOut::ActiveLow, 0);
 DigitalIn btn_user(PA_4, DigitalIn::PullDefault, DigitalIn::InterruptFalling);
+DigitalIn encoder_z(PB_5, DigitalIn::PullDown, DigitalIn::InterruptRising);
 
 PWMDecoder pwm3(TIM3, TimeSpan::from_milliseconds(25), Frequency::from_hertz(SystemCoreClock), 0, {
 		{PB_4, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_2}
 });
 
 
-QuadratureDecoder pwm4(TIM4,  65535, 0, {
+QuadratureDecoder pwm4(TIM4,  2048*4, 0, {
 		{PB_6, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_2},
 		{PB_7, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_2}
 });
 
+QuadratureDecoder *p_encoder = &pwm4;
 
 #define USE_6STEP
 #ifdef USE_6STEP
@@ -91,6 +97,11 @@ Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(17000), Frequency::from_her
 
 #endif
 
+void emergency_stop()
+{
+	pwm1.DisableOutputs();
+	pwm1.DisableCounter();
+}
 
 
 extern USART* ptrUsart1;
@@ -132,6 +143,9 @@ int main(int argc, char* argv[])
 
 	pwm3.Callback_PWMCC(CallbackPWMCC);
 
+	encoder_z.Callback([&](){ pwm4.ResetPosition(0); });
+
+
 	pwm3.Start();
 	pwm4.Start();
 
@@ -151,7 +165,7 @@ int main(int argc, char* argv[])
 
 	while (1) {
 		std::string tmp;
-		HAL_Delay(50UL);
+//		HAL_Delay(50UL);
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 
@@ -164,7 +178,7 @@ int main(int argc, char* argv[])
 
 			uint32_t hz = (uint32_t) (pwm1.GetSwitchingFrequency() / log.last_counter_ / PWM6Step::MECHANICAL_DEGREES_RATIO / PWM6Step::SINE_STATES).hertz();
 
-			printf("%1lu: Speed: %5lu, slp: %7ld, incpt: %5ld, ibemf: %5ld, zero_c: %3ld (%3ld) %2d->[%6ld %6ld %6ld ] %2d->[%6ld %6ld %6ld]\n",
+			printf("%1lu: Speed: %5lu, slp: %7ld, incpt: %5ld, ibemf: %5ld, zero_c: %3ld (%3ld), %2d->[%6ld %6ld %6ld ] %2d->[%6ld %6ld %6ld]\n",
 					log.state_,
 					hz,
 					log.bemf_mslope_,
@@ -208,6 +222,54 @@ extern "C" void SysTick_Handler(void)
 #endif
 }
 
+extern "C" void
+HardFault_Handler_C (ExceptionStackFrame* frame __attribute__((unused)),
+                     uint32_t lr __attribute__((unused)))
+{
+	emergency_stop();
+
+
+
+#if defined(TRACE)
+  uint32_t mmfar = SCB->MMFAR; // MemManage Fault Address
+  uint32_t bfar = SCB->BFAR; // Bus Fault Address
+  uint32_t cfsr = SCB->CFSR; // Configurable Fault Status Registers
+#endif
+
+#if defined(OS_USE_SEMIHOSTING) || defined(OS_USE_TRACE_SEMIHOSTING_STDOUT) || defined(OS_USE_TRACE_SEMIHOSTING_DEBUG)
+
+  // If the BKPT instruction is executed with C_DEBUGEN == 0 and MON_EN == 0,
+  // it will cause the processor to enter a HardFault exception, with DEBUGEVT
+  // in the Hard Fault Status register (HFSR) set to 1, and BKPT in the
+  // Debug Fault Status register (DFSR) also set to 1.
+
+  if (((SCB->DFSR & SCB_DFSR_BKPT_Msk) != 0)
+      && ((SCB->HFSR & SCB_HFSR_DEBUGEVT_Msk) != 0))
+    {
+      if (isSemihosting (frame, 0xBE00 + (AngelSWI & 0xFF)))
+        {
+          // Clear the exception cause in exception status.
+          SCB->HFSR = SCB_HFSR_DEBUGEVT_Msk;
+
+          // Continue after the BKPT
+          return;
+        }
+    }
+
+#endif
+
+#if defined(TRACE)
+  trace_printf ("[HardFault]\n");
+  dumpExceptionStack (frame, cfsr, mmfar, bfar, lr);
+#endif // defined(TRACE)
+
+#if defined(DEBUG)
+  __DEBUG_BKPT();
+#endif
+  while (1)
+    {
+    }
+}
 
 #pragma GCC diagnostic pop
 
