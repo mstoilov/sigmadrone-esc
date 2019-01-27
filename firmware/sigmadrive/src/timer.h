@@ -199,6 +199,11 @@ public:
 		UpdateSourceCounter = LL_TIM_UPDATESOURCE_COUNTER,
 	};
 
+	enum CountDirction {
+		CountDirectionUp = LL_TIM_COUNTERDIRECTION_UP,
+		CountDirectionDown = LL_TIM_COUNTERDIRECTION_DOWN,
+	};
+
 	Timer(TIM_TypeDef *TIMx,
 			const TimeSpan& timer_period,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
@@ -253,6 +258,7 @@ public:
 	TimeSpan		GetAutoReloadPeriod()						{ return GetClock().period() * GetAutoReloadValue(); }
 	uint32_t		GetAutoReloadValue()						{ return LL_TIM_GetAutoReload(TIMx_); }
 	uint32_t		GetCounterValue()							{ return LL_TIM_GetCounter(TIMx_); }
+	CountDirction	GetDirection()								{ return static_cast<CountDirction>(LL_TIM_GetDirection(TIMx_)); }
 	void			SetCounterValue(uint32_t value)				{ LL_TIM_SetCounter(TIMx_, value); }
 	uint32_t		GetCounterMaxValue()						{ return bsp_max_counter(TIMx_); }
 	void 			SetRepetionCounterValue(uint32_t value)		{ LL_TIM_SetRepetitionCounter(TIMx_, value); }
@@ -289,6 +295,45 @@ public:
 	virtual void Stop();
 
 	static uint32_t CalculateARR(uint32_t sysclk,  uint32_t psc, uint32_t freq);
+
+	template<typename T>
+	void Callback_Break(T* object, void (T::*func)(void))			{ callback_Break_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_Update(T* object, void (T::*func)(void))			{ callback_Update_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_Trigger(T* object, void (T::*func)(void))			{ callback_Trigger_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_COM(T* object, void (T::*func)(void))				{ callback_COM_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_CC1(T* object, void (T::*func)(void))				{ callback_CC1_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_CC2(T* object, void (T::*func)(void))				{ callback_CC2_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_CC3(T* object, void (T::*func)(void))				{ callback_CC3_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_CC4(T* object, void (T::*func)(void))				{ callback_CC4_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_CC1Over(T* object, void (T::*func)(void))			{ callback_CC1Over_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_CC2Over(T* object, void (T::*func)(void))			{ callback_CC2Over_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_CC3Over(T* object, void (T::*func)(void))			{ callback_CC3Over_ = [=](void){(object->*func)();}; }
+	template<typename T>
+	void Callback_CC4Over(T* object, void (T::*func)(void))			{ callback_CC4Over_ = [=](void){(object->*func)();}; }
+
+	void Callback_Break(const std::function<void(void)>& callback)	{ callback_Break_ = callback;	}
+	void Callback_Update(const std::function<void(void)>& callback)	{ callback_Update_ = callback;	}
+	void Callback_Trigger(const std::function<void(void)>& callback){ callback_Trigger_ = callback;	}
+	void Callback_COM(const std::function<void(void)>& callback)	{ callback_COM_ = callback;	}
+	void Callback_CC1(const std::function<void(void)>& callback)	{ callback_CC1_ = callback;	}
+	void Callback_CC2(const std::function<void(void)>& callback)	{ callback_CC2_ = callback;	}
+	void Callback_CC3(const std::function<void(void)>& callback)	{ callback_CC3_ = callback;	}
+	void Callback_CC4(const std::function<void(void)>& callback)	{ callback_CC4_ = callback;	}
+	void Callback_CC1Over(const std::function<void(void)>& callback){ callback_CC1Over_ = callback;	}
+	void Callback_CC2Over(const std::function<void(void)>& callback){ callback_CC2Over_ = callback;	}
+	void Callback_CC3Over(const std::function<void(void)>& callback){ callback_CC3Over_ = callback;	}
+	void Callback_CC4Over(const std::function<void(void)>& callback){ callback_CC4Over_ = callback;	}
+
 
 public:
 	TIM_TypeDef *TIMx_;

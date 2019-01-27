@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include "timer.h"
+#include "digitalin.h"
 #include "gpiopin.h"
 
 
@@ -18,9 +19,16 @@ public:
 			uint32_t irq_priority = 0,
 			const std::vector<GPIOPin>& pins = {}
 	);
+
 	virtual ~QuadratureDecoder();
 
 	void Start();
+
+	uint32_t GetPosition();
+	void ResetPosition(uint32_t position);
+
+protected:
+	uint32_t counter_max_;
 };
 
 #endif
