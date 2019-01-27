@@ -209,7 +209,7 @@ void PWM6Step::SetJeosState(JeosState state)
 bool PWM6Step::Bootstrap()
 {
 	uint32_t com_cycles = com_cycles_max_ / (boots_.elrev_counter + 1);
-	float bootstrap_throttle = 0.1 + 1.2f * boots_.elrev_counter / 100.0;
+	float bootstrap_throttle = 0.1 + 0.80f * boots_.elrev_counter / 100.0;
 
 	if (boots_.delay_counter < BOOTSTRAP_DELAY) {
 		boots_.delay_counter++;
@@ -226,21 +226,26 @@ bool PWM6Step::Bootstrap()
 	if (counter_++ > com_cycles) {
 		boots_.com_counter_++;
 
-		if ((boots_.com_counter_ % SINE_STATES) == 0) {
+		if ((boots_.com_counter_ % (SINE_STATES * 3 / 2)) == 0) {
 			if (boots_.elrev_counter < BOOTSTRAP_STAGES) {
 				boots_.elrev_counter++;
-			} else {
-//					Stop();
 			}
 		}
 
 		if (boots_.elrev_counter == BOOTSTRAP_STAGES && state_ == 0) {
 			DisableCCPreload();
-			SetThrottle(0.15);
+			DisableOutputs();
+			DisableChannel(CH1 | CH2 | CH3 | CH1N | CH2N| CH3N);
+			uint32_t arr = GetAutoReloadValue();
+			SetOCValue(CH1, arr * 20 / 100);
+			SetOCValue(CH2, arr * 20 / 100);
+			SetOCValue(CH3, arr * 20 / 100);
 			counter_ = 0;
 			state_ = 2;
 			SetupChannels(state_);
+			EnableOutputs();
 			EnableCCPreload();
+			SetupChannels((state_ + 1) % 6);
 			return true;
 		}
 		state_ = (state_ + 1) % 6;

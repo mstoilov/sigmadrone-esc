@@ -35,7 +35,7 @@ public:
 	static constexpr unsigned int adc_data_counter2 = 5;
 	static constexpr unsigned int adc_data_size = 3;
 	static constexpr unsigned int SINE_SAMPLES = 144;
-	static constexpr unsigned int BOOTSTRAP_STAGES = 30;
+	static constexpr unsigned int BOOTSTRAP_STAGES = 28;
 	static constexpr unsigned int BOOTSTRAP_DELAY = 5000; /* switching cycles */
 	static constexpr unsigned int BOOTSTRAP_COUNTDOWN = 20; /* switching cycles */
 
