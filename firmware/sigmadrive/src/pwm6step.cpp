@@ -275,8 +275,6 @@ void PWM6Step::CallbackJEOS(int32_t *injdata, size_t size)
 {
 	assert(size >= 3);
 
-	jiffies_++;
-
 	std::for_each(injdata, injdata + size, [](auto &a){ a = a * (47000/4700);});
 
 	if (counter_ == adc_data_counter1)

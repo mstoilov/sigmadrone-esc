@@ -132,7 +132,6 @@ public:
 	int32_t	bemf_intercept_ = 0;
 	int32_t zero_crossing_ = 0;
 	int32_t integral_bemf_ = 0;
-	uint64_t jiffies_ = 0;
 	BemfMeasurement msr_[2];
 	int32_t adc_data1_[adc_data_size];
 	int32_t adc_data2_[adc_data_size];
