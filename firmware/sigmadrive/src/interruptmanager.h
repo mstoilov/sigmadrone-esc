@@ -45,6 +45,8 @@ public:
 		return vectors_[16 + irq];
 	}
 
+	void VectorHandler(IRQn_Type irq, void (*VectorHandlerC)(void));
+
 private:
 	InterruptManager();
 	friend void InterruptManageVectorHandler();

@@ -45,13 +45,14 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.306827555" name="Build command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.make" useByScannerDiscovery="false" value="make" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.1558613739" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm" useByScannerDiscovery="false" value="rm" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.1477628121" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" useByScannerDiscovery="false" value="962691777" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.777566440" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.fpv4spd16" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.777566440" name="FPU Type" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.fpv4spd16" valueType="enumerated"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.1258164962" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
 							<builder buildPath="${workspace_loc:/sigmadrive}/Debug" id="ilg.gnuarmeclipse.managedbuild.cross.builder.2055950921" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="ilg.gnuarmeclipse.managedbuild.cross.builder"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.299097489" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1351922191" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.2146101763" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;../inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;../freertos/portable/GCC/ARM_CM4F&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../freertos/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc/cmsis&quot;"/>
@@ -72,6 +73,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.667962907" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1324226246" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;../inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;../freertos/portable/GCC/ARM_CM4F&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../freertos/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc/cmsis&quot;"/>
@@ -92,6 +94,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1925600836" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.147652899" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;../inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;../freertos/portable/GCC/ARM_CM4F&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../freertos/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc/cmsis&quot;"/>
@@ -278,6 +281,7 @@
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1473208004" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1637453338" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;../inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;../freertos/portable/GCC/ARM_CM4F&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../freertos/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc/cmsis&quot;"/>
@@ -298,6 +302,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.334320344" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.526105235" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;../inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;../freertos/portable/GCC/ARM_CM4F&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../freertos/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc/cmsis&quot;"/>
@@ -318,6 +323,7 @@
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1479823408" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.11778172" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;../inc&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;../freertos/portable/GCC/ARM_CM4F&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../freertos/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;../system/inc/cmsis&quot;"/>

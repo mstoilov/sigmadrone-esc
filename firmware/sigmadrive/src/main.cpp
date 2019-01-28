@@ -131,10 +131,13 @@ void CallbackPWMCC(uint32_t pulse, uint32_t period)
 		pwm1.Stop();
 }
 
-int main(int argc, char* argv[])
-{
-	InterruptManager& im = InterruptManager::instance();
 
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "task.h"
+
+void main_task(void *pvParameters)
+{
 	btn_user.Callback(pwm1_toggle);
 
 	// At this stage the system clock should have already been configured
@@ -212,15 +215,43 @@ int main(int argc, char* argv[])
 //		std::cout << adc.injdata_[0] << ", "  << adc.injdata_[1] << ", "  << adc.injdata_[2] << ", " << std::endl;
 
 	}
+
 }
 
-
-extern "C" void SysTick_Handler(void)
+int main(int argc, char* argv[])
 {
-#if defined(USE_HAL_DRIVER)
-	HAL_IncTick();
+	InterruptManager& im = InterruptManager::instance();
+
+	TaskHandle_t main_task_handle = 0;
+
+	vTaskSuspendAll();
+
+	/* Create tasks */
+	xTaskCreate(
+			main_task, /* Function pointer */
+			"main_task", /* Task name - for debugging only*/
+			4 * configMINIMAL_STACK_SIZE, /* Stack depth in words */
+			(void*) NULL, /* Pointer to tasks arguments (parameter) */
+			tskIDLE_PRIORITY + 3UL, /* Task priority*/
+			&main_task_handle /* Task handle */
+	);
+
+	im.VectorHandler(SVCall_IRQn, vPortSVCHandler);
+	im.VectorHandler(PendSV_IRQn, xPortPendSVHandler);
+	im.VectorHandler(SysTick_IRQn, xPortSysTickHandler);
+
+	xTaskResumeAll();
+
+	vTaskStartScheduler();
+	vTaskSuspendAll();
+
+#if defined(DEBUG)
+  __DEBUG_BKPT();
 #endif
+	while(1) {
+	}
 }
+
 
 extern "C" void
 HardFault_Handler_C (ExceptionStackFrame* frame __attribute__((unused)),

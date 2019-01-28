@@ -63,3 +63,10 @@ void InterruptManager::Callback(IRQn_Type irq, const std::function<void(void)>& 
 	volatile unsigned int* newtable = &__relocated_vectors;
 	newtable[irq + 16] = (uint32_t)VectorHandlerC;
 }
+
+void InterruptManager::VectorHandler(IRQn_Type irq, void (*VectorHandlerC)(void))
+{
+	volatile unsigned int* newtable = &__relocated_vectors;
+	newtable[irq + 16] = (uint32_t)VectorHandlerC;
+}
+

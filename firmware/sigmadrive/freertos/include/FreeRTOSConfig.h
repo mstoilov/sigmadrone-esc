@@ -42,7 +42,7 @@
  *----------------------------------------------------------*/
 
 /* Ensure stdint is only used by the compiler, and not the assembler. */
-#ifdef __ICCARM__
+#if defined(__ICCARM__) || defined(__CC_ARM) || defined(__GNUC__)
 	#include <stdint.h>
 	extern uint32_t SystemCoreClock;
 #endif
@@ -50,16 +50,14 @@
 extern char _Heap_Begin; // Defined by the linker.
 extern char _Heap_Limit; // Defined by the linker.
 
-extern uint32_t SystemCoreClock;
-
 #define configUSE_PREEMPTION			1
 #define configUSE_IDLE_HOOK				1
 #define configUSE_TICK_HOOK				1
 #define configCPU_CLOCK_HZ				( SystemCoreClock )
 #define configTICK_RATE_HZ				( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES			( 5 )
-#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 130 )
-#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 75 * 1024 ) )
+#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 256 )
+#define configTOTAL_HEAP_SIZE			( ( size_t ) ( &_Heap_Limit - &_Heap_Begin ) )
 #define configMAX_TASK_NAME_LEN			( 10 )
 #define configUSE_TRACE_FACILITY		1
 #define configUSE_16_BIT_TICKS			0
@@ -72,6 +70,9 @@ extern uint32_t SystemCoreClock;
 #define configUSE_APPLICATION_TASK_TAG	0
 #define configUSE_COUNTING_SEMAPHORES	1
 #define configGENERATE_RUN_TIME_STATS	0
+#define configUSE_TRACE_FACILITY        1
+#define configUSE_STATS_FORMATTING_FUNCTIONS 1
+#define configUSE_NEWLIB_REENTRANT      1
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 		0
@@ -124,9 +125,23 @@ header file. */
 	
 /* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS
 standard names. */
-#define vPortSVCHandler SVC_Handler
-#define xPortPendSVHandler PendSV_Handler
-#define xPortSysTickHandler SysTick_Handler
+
+
+#define vPortSVCHandler RTOS_SVC_Handler
+#define xPortPendSVHandler RTOS_PendSV_Handler
+#define xPortSysTickHandler RTOS_SysTick_Handler
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void vPortSVCHandler( void );
+void xPortPendSVHandler( void );
+void xPortSysTickHandler( void );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FREERTOS_CONFIG_H */
 
