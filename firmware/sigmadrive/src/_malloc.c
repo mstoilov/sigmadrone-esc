@@ -18,18 +18,18 @@
  *  Martin Stoilov <martin@sigmadrone.org>
  *  Svetoslav Vassilev <svassilev@sigmadrone.org>
  */
-#include "FreeRTOS.h"
+#include "cmsis_device.h"
 
 struct _reent;
 
 void __malloc_lock(struct _reent* r)
 {
 	(void)r;
-	vPortEnterCritical();
+	__disable_irq();
 }
 
 void __malloc_unlock(struct _reent* r)
 {
 	(void)r;
-	vPortExitCritical();
+	__enable_irq();
 }
