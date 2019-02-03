@@ -168,7 +168,7 @@ void main_task(void *pvParameters)
 
 	while (1) {
 		std::string tmp;
-//		HAL_Delay(50UL);
+		HAL_Delay(50UL);
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 

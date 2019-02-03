@@ -21,8 +21,6 @@ QuadratureDecoder::QuadratureDecoder(TIM_TypeDef *TIMx,	uint32_t counter_max, ui
 	SetICFilter(CH2, FilterDiv1);
 	SetICPrescaler(CH2, PrescalerDiv1);
 	SetICPolarity(CH2, PolarityFalling);
-
-	EnableInterrupt(Timer::InterruptCC1);
 }
 
 QuadratureDecoder::~QuadratureDecoder()
