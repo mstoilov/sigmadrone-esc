@@ -33,6 +33,8 @@ public:
 	using base = Timer;
 
 	static constexpr unsigned int SINE_STATES = 1024;
+	static constexpr float MAX_THROTTLE = 0.35;
+	static constexpr float MIN_THROTTLE = 0.00;
 
 	PWMSine(
 			TIM_TypeDef *TIMx,
@@ -48,7 +50,7 @@ public:
 	virtual void Stop() override;
 	void SineDriving();
 	float GetDutyCycle();
-	void SetDutyCycle(float percent);
+	void SetThrottle(float percent);
 	void SetDutyPeriod(const TimeSpan& period);
 	void SetRotationsPerSecond(const Frequency& f);
 	Frequency GetSwitchingFrequency();

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <iostream>
 #include <algorithm>
 #include "diag/Trace.h"
 #include "cmsis_device.h"
@@ -8,6 +9,9 @@
 #include "cortexm/ExceptionHandlers.h"
 #include "arm/semihosting.h"
 
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "task.h"
 
 #include "interruptmanager.h"
 #include "digitalin.h"
@@ -20,7 +24,6 @@
 #include "adc.h"
 #include "usart.h"
 
-#include <iostream>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -52,7 +55,7 @@ QuadratureDecoder pwm4(TIM4,  2048*4, 0, {
 
 QuadratureDecoder *p_encoder = &pwm4;
 
-#define USE_6STEP
+#undef USE_6STEP
 #ifdef USE_6STEP
 PWM6Step pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::TrigUpdate, Timer::PWM1, Timer::High, Timer::Low, 30, 0, {
 		{PA_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
@@ -75,7 +78,7 @@ Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(750), Frequency::from_hertz
 
 
 #else
-PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::PWM2, 0, {
+PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::PWM1, 0, {
 		{PA_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 		{PA_9,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 		{PA_10, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
@@ -84,7 +87,7 @@ PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCor
 		{PB_15,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 });
 
-Adc adc(ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_3CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, {
+Adc adc(ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_3CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, 0, {
 		{PC_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		{PC_4,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		{PC_5,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
@@ -123,18 +126,17 @@ void CallbackJeos(int32_t* data, size_t size)
 
 void CallbackPWMCC(uint32_t pulse, uint32_t period)
 {
+#ifdef USE_6STEP
 	float throttle = pwm3.GetPulseLength().seconds_float() * 1000.0 - 0.7;
 	pwm1.SetThrottle(throttle);
 	if (!pwm1.IsEnabledCounter() && throttle > PWM6Step::MIN_THROTTLE)
 		pwm1.Start();
 	if (pwm1.IsEnabledCounter() && throttle < PWM6Step::MIN_THROTTLE)
 		pwm1.Stop();
+#endif
 }
 
 
-#include "FreeRTOS.h"
-#include "FreeRTOSConfig.h"
-#include "task.h"
 
 void main_task(void *pvParameters)
 {
@@ -161,7 +163,7 @@ void main_task(void *pvParameters)
 	adc.CallbackJEOS(&pwm1, &PWM6Step::CallbackJEOS);
 #else
 	pwm1.SetRotationsPerSecond(Frequency::from_millihertz(1800));
-	pwm1.SetThrottle(0.15);
+	pwm1.SetThrottle(0.05);
 #endif
 
 	PWM6Step::LogEntry log;

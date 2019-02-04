@@ -105,8 +105,9 @@ float PWMSine::GetDutyCycle()
 	return 100.0 * duty_.nanoseconds()/switching_freq_.period().nanoseconds() / 100.0;
 }
 
-void PWMSine::SetDutyCycle(float percent)
+void PWMSine::SetThrottle(float percent)
 {
+	percent = std::max(std::min(percent, (float)MAX_THROTTLE), (float)MIN_THROTTLE);
 	duty_ = TimeSpan::from_nanoseconds(switching_freq_.period().nanoseconds() * percent);
 
 	for (unsigned int i = 0; i < SINE_STATES; i++) {
