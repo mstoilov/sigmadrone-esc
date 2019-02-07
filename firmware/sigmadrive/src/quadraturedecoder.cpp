@@ -1,10 +1,10 @@
 #include "quadraturedecoder.h"
 
-QuadratureDecoder::QuadratureDecoder(TIM_TypeDef *TIMx,	uint32_t counter_max, uint32_t irq_priority, const std::vector<GPIOPin>& pins)
+QuadratureDecoder::QuadratureDecoder(TIM_TypeDef *TIMx,	uint32_t max_cpr, uint32_t irq_priority, const std::vector<GPIOPin>& pins)
 	: Timer(TIMx, TimeSpan(0), Frequency::from_hertz(SystemCoreClock), irq_priority, pins)
-	, counter_max_(counter_max)
+	, counter_max_(max_cpr)
 {
-	SetAutoReloadValue(counter_max);
+	SetAutoReloadValue(max_cpr);
 	SetPrescaler(0);
 	SetClockDivision(0);
 	SetCounterMode(Up);
@@ -34,12 +34,49 @@ void QuadratureDecoder::Start()
 	base::Start();
 }
 
+/*
+ * Position is: counter / 4
+ */
 uint32_t QuadratureDecoder::GetPosition()
 {
-	return GetCounterValue() / 4;
+	return (GetCounterValue() >> 2);
 }
 
+/*
+ * Value will be wrapped within 0 to max CPR
+ */
+void QuadratureDecoder::ResetCounter(uint32_t value)
+{
+	SetCounterValue(value % counter_max_);
+}
+
+/*
+ * Counter is: postion * 4
+ */
 void QuadratureDecoder::ResetPosition(uint32_t position)
 {
-	SetCounterValue((position * 4) % counter_max_);
+	ResetCounter(position << 2);
+}
+
+uint32_t QuadratureDecoder::GetMaxPosition()
+{
+	return counter_max_ >> 2;
+}
+
+void QuadratureDecoder::CallbackIndex()
+{
+	if (index_offset_ < 0) {
+		SetIndexOffset(GetCounterValue());
+	}
+	ResetCounter(index_offset_);
+}
+
+void QuadratureDecoder::SetIndexOffset(int32_t offset)
+{
+	index_offset_ = offset;
+}
+
+int32_t QuadratureDecoder::GetIndexOffset()
+{
+	return index_offset_;
 }

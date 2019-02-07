@@ -24,6 +24,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <complex>
 #include "timer.h"
 #include "digitalout.h"
 
@@ -32,7 +33,9 @@ class PWMSine : public Timer
 public:
 	using base = Timer;
 
-	static constexpr unsigned int SINE_STATES = 1024;
+	static constexpr unsigned int NUMBER_OF_POLES = 14;
+	static constexpr unsigned int M2E_RATIO = NUMBER_OF_POLES / 2;
+//	static constexpr unsigned int SINE_STEPS = 1024;
 	static constexpr float MAX_THROTTLE = 0.35;
 	static constexpr float MIN_THROTTLE = 0.00;
 
@@ -51,18 +54,23 @@ public:
 	void SineDriving();
 	float GetDutyCycle();
 	void SetThrottle(float percent);
-	void SetDutyPeriod(const TimeSpan& period);
-	void SetRotationsPerSecond(const Frequency& f);
+	void SetElectricalRotationsPerSecond(const Frequency& f);
 	Frequency GetSwitchingFrequency();
 	void Toggle();
 
 public:
 	Frequency switching_freq_;
-	uint32_t state_;
+	uint32_t update_counter_ = 0;
 	TimeSpan duty_;
-	TimeSpan sine_duty_[SINE_STATES];
 	uint32_t counter_ = 0;
 	OCMode pwm_mode_;
+	uint32_t SINE_STEPS = 1024;
+	std::complex<float> p1;
+	std::complex<float> p2;
+	std::complex<float> p3;
+	std::complex<float> r;
+	std::complex<float> v;
+
 };
 
 #endif

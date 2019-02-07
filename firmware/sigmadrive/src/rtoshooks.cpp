@@ -3,10 +3,13 @@
 #include "queue.h"
 #include "stm32f4xx_hal.h"
 
+extern uint64_t jiffies;
+
 extern "C" void vApplicationTickHook(void)
 {
     /* Increment HAL counter */
     HAL_IncTick();
+    jiffies += 1;
 }
 
 extern "C" void vApplicationIdleHook(void)

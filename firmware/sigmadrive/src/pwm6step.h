@@ -24,7 +24,7 @@ public:
 	static constexpr unsigned int SINE_STATES = 6;
 	static constexpr unsigned int MAX_HERTZ = 150;
 	static constexpr unsigned int MIN_MILLIHERTZ = 1100;
-	static constexpr unsigned int MECHANICAL_DEGREES_RATIO = 8;
+	static constexpr unsigned int M2E_RATIO = 7;
 	static constexpr unsigned int BEMF_INTEGRAL_THRESHOLD = 3300;
 	static constexpr unsigned int ADC_A = 0;
 	static constexpr unsigned int ADC_B = 1;

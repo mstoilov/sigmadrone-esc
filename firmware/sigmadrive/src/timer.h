@@ -266,6 +266,7 @@ public:
 	void			GenerateEvent(EventGeneration event)		{ SET_BIT(TIMx_->EGR, event); }
 	void			EnableInterrupt(InterruptGeneration ig)		{ SET_BIT(TIMx_->DIER, ig); }
 	void			DisableInterrupt(InterruptGeneration ig)	{ CLEAR_BIT(TIMx_->DIER, ig); }
+	void			ClearFlag_UPDATE()							{ LL_TIM_ClearFlag_UPDATE(TIMx_);}
 	void			EnableDma(DmaGeneration dg)					{ SET_BIT(TIMx_->DIER, dg); }
 	void			DisableDma(DmaGeneration dg)				{ CLEAR_BIT(TIMx_->DIER, dg); }
 	TIM_TypeDef*	GetTIM()									{ return TIMx_; }

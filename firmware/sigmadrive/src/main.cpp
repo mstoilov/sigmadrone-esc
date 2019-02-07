@@ -100,6 +100,8 @@ Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(17000), Frequency::from_her
 
 #endif
 
+uint64_t jiffies = 0;
+
 void emergency_stop()
 {
 	pwm1.DisableOutputs();
@@ -140,6 +142,9 @@ void CallbackPWMCC(uint32_t pulse, uint32_t period)
 
 void main_task(void *pvParameters)
 {
+	uint32_t old_encoder_idx = 0, new_encoder_idx = 0;
+	uint32_t old_decoder_value = 0, new_decoder_value = 0;
+
 	btn_user.Callback(pwm1_toggle);
 
 	// At this stage the system clock should have already been configured
@@ -148,13 +153,13 @@ void main_task(void *pvParameters)
 
 	pwm3.Callback_PWMCC(CallbackPWMCC);
 
-	encoder_z.Callback([&](){ pwm4.ResetPosition(0); });
+	encoder_z.Callback([&](){ p_encoder->CallbackIndex(); });
 
 
 	pwm3.Start();
 	pwm4.Start();
 
-	adc.CallbackJEOS(CallbackJeos);
+//	adc.CallbackJEOS(CallbackJeos);
 	adc.Start();
 
 
@@ -162,7 +167,7 @@ void main_task(void *pvParameters)
 	pwm1.SetThrottle(0.35);
 	adc.CallbackJEOS(&pwm1, &PWM6Step::CallbackJEOS);
 #else
-	pwm1.SetRotationsPerSecond(Frequency::from_millihertz(1800));
+	pwm1.SetElectricalRotationsPerSecond(Frequency::from_millihertz(500 * PWMSine::M2E_RATIO));
 	pwm1.SetThrottle(0.05);
 #endif
 
@@ -170,7 +175,7 @@ void main_task(void *pvParameters)
 
 	while (1) {
 		std::string tmp;
-		HAL_Delay(50UL);
+		HAL_Delay(10UL);
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 
@@ -181,7 +186,7 @@ void main_task(void *pvParameters)
 			log = pwm1.log_entry_;
 			__enable_irq();
 
-			uint32_t hz = (uint32_t) (pwm1.GetSwitchingFrequency() / log.last_counter_ / PWM6Step::MECHANICAL_DEGREES_RATIO / PWM6Step::SINE_STATES).hertz();
+			uint32_t hz = (uint32_t) (pwm1.GetSwitchingFrequency() / log.last_counter_ / PWM6Step::M2E_RATIO / PWM6Step::SINE_STATES).hertz();
 
 			printf("%1lu: Speed: %5lu, slp: %7ld, incpt: %5ld, ibemf: %5ld, zero_c: %3ld (%3ld), %2d->[%6ld %6ld %6ld ] %2d->[%6ld %6ld %6ld]\n",
 					log.state_,
@@ -212,7 +217,20 @@ void main_task(void *pvParameters)
 //		std::cout << "Counter: " << pwm1.GetCounterValue() << std::endl;
 //		std::cout << "PWM: " << pwm3.GetPulseLength().seconds_float() * 1000.0 << " mSec, (Pulse/Period): " << pwm3.GetPWMPulse() << " / " << pwm3.GetPWMPeriod() << std::endl;
 
-//		std::cout << "Counter: " << pwm4.GetCounterValue() << std::endl;
+#if 0
+		new_decoder_value = (pwm4.GetPosition() >> 2);
+		if (new_decoder_value != old_decoder_value) {
+			old_decoder_value = new_decoder_value;
+			std::cout << jiffies << " : " << old_decoder_value;
+
+			if (new_encoder_idx != old_encoder_idx) {
+				old_encoder_idx = new_encoder_idx;
+				std::cout << " (Encoder Z)";
+			}
+
+			std::cout << std::endl;
+		}
+#endif
 
 //		std::cout << adc.injdata_[0] << ", "  << adc.injdata_[1] << ", "  << adc.injdata_[2] << ", " << std::endl;
 

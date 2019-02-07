@@ -23,7 +23,7 @@ PWM6Step::PWM6Step(TIM_TypeDef *TIMx,
 	, pwm_mode_(pwm_mode)
 	, polarity_(polarity)
 	, npolarity_(npolarity)
-	, com_cycles_max_(GetSwitchingFrequency()/Frequency::from_millihertz(MIN_MILLIHERTZ * SINE_STATES * MECHANICAL_DEGREES_RATIO))
+	, com_cycles_max_(GetSwitchingFrequency()/Frequency::from_millihertz(MIN_MILLIHERTZ * SINE_STATES * M2E_RATIO))
 {
 	/*
 	 * init sine samples
