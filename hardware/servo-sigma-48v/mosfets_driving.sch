@@ -1339,10 +1339,10 @@ L servo-sigma-48v-rescue:R-device R67
 U 1 1 5BC9D211
 P 2750 5700
 F 0 "R67" V 2830 5700 50  0000 C CNN
-F 1 "0.0005 1%" V 2650 5700 50  0000 C CNN
+F 1 "0.010 1%" V 2650 5700 50  0000 C CNN
 F 2 "Resistor_SMD:R_2512_6332Metric" V 2680 5700 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 2750 5700 50  0001 C CNN
-F 4 "696-1183-1-ND" V 2750 5700 60  0001 C CNN "Part"
+F 4 "CRA2512-FZ-R010ELFCT-ND" V 2750 5700 60  0001 C CNN "Part"
 F 5 "DigiKey" V 2750 5700 60  0001 C CNN "Provider"
 	1    2750 5700
 	1    0    0    -1  
@@ -1354,10 +1354,10 @@ L servo-sigma-48v-rescue:R-device R68
 U 1 1 5BC9D51F
 P 6100 5700
 F 0 "R68" V 6180 5700 50  0000 C CNN
-F 1 "0.0005 1%" V 6000 5700 50  0000 C CNN
+F 1 "0.010 1%" V 6000 5700 50  0000 C CNN
 F 2 "Resistor_SMD:R_2512_6332Metric" V 6030 5700 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 6100 5700 50  0001 C CNN
-F 4 "696-1183-1-ND" V 6100 5700 60  0001 C CNN "Part"
+F 4 "CRA2512-FZ-R010ELFCT-ND" V 6100 5700 60  0001 C CNN "Part"
 F 5 "DigiKey" V 6100 5700 60  0001 C CNN "Provider"
 	1    6100 5700
 	1    0    0    -1  
@@ -1369,10 +1369,10 @@ L servo-sigma-48v-rescue:R-device R69
 U 1 1 5BC9D5F5
 P 9600 5700
 F 0 "R69" V 9680 5700 50  0000 C CNN
-F 1 "0.0005 1%" V 9500 5700 50  0000 C CNN
+F 1 "0.010 1%" V 9500 5700 50  0000 C CNN
 F 2 "Resistor_SMD:R_2512_6332Metric" V 9530 5700 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 9600 5700 50  0001 C CNN
-F 4 "696-1183-1-ND" V 9600 5700 60  0001 C CNN "Part"
+F 4 "CRA2512-FZ-R010ELFCT-ND" V 9600 5700 60  0001 C CNN "Part"
 F 5 "DigiKey" V 9600 5700 60  0001 C CNN "Provider"
 	1    9600 5700
 	1    0    0    -1  
@@ -1861,35 +1861,6 @@ F 3 "" H 14550 6200 50  0001 C CNN
 	1    14550 6200
 	1    0    0    -1  
 $EndComp
-Connection ~ 14550 6100
-Wire Wire Line
-	14550 6100 14550 6200
-$Comp
-L servo-sigma-48v-rescue:R-device R82
-U 1 1 5BCAB8A5
-P 14550 5700
-F 0 "R82" V 14630 5700 50  0000 C CNN
-F 1 "0.0005 1%" V 14450 5700 50  0000 C CNN
-F 2 "Resistor_SMD:R_2512_6332Metric" V 14480 5700 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 14550 5700 50  0001 C CNN
-F 4 "696-1183-1-ND" V 14550 5700 60  0001 C CNN "Part"
-F 5 "DigiKey" V 14550 5700 60  0001 C CNN "Provider"
-	1    14550 5700
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	14550 5850 14550 6100
-Text HLabel 14950 5400 2    60   Output ~ 0
-R_ISENSE_P
-Text HLabel 14950 6100 2    60   Output ~ 0
-R_ISENSE_N
-Wire Wire Line
-	14950 5400 14550 5400
-Connection ~ 14550 5400
-Wire Wire Line
-	14550 5400 14550 5550
-Wire Wire Line
-	14950 6100 14550 6100
 Wire Wire Line
 	13550 5250 13550 6100
 Wire Wire Line
@@ -1917,6 +1888,35 @@ Wire Wire Line
 	14550 4650 14900 4650
 Wire Wire Line
 	14550 4750 14900 4750
+Text HLabel 14950 5400 2    60   Output ~ 0
+R_ISENSE_P
+Text HLabel 14950 6100 2    60   Output ~ 0
+R_ISENSE_N
+Wire Wire Line
+	14550 5850 14550 6100
+Wire Wire Line
+	14550 6100 14550 6200
+Connection ~ 14550 6100
+Wire Wire Line
+	14950 6100 14550 6100
 Wire Wire Line
 	14550 4750 14550 5400
+Wire Wire Line
+	14550 5400 14550 5550
+Connection ~ 14550 5400
+Wire Wire Line
+	14950 5400 14550 5400
+$Comp
+L servo-sigma-48v-rescue:R-device R82
+U 1 1 5BCAB8A5
+P 14550 5700
+F 0 "R82" V 14630 5700 50  0000 C CNN
+F 1 "0.010 1%" V 14450 5700 50  0000 C CNN
+F 2 "Resistor_SMD:R_2512_6332Metric" V 14480 5700 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 14550 5700 50  0001 C CNN
+F 4 "CRA2512-FZ-R010ELFCT-ND" V 14550 5700 60  0001 C CNN "Part"
+F 5 "DigiKey" V 14550 5700 60  0001 C CNN "Provider"
+	1    14550 5700
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
