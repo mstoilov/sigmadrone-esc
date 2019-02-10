@@ -14,7 +14,7 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Label 7400 9000 0    60   ~ 0
+Text Label 13700 8550 0    60   ~ 0
 VBAT_ADC
 Text Label 14650 3550 2    60   ~ 0
 PWM_AH
@@ -84,72 +84,46 @@ F 3 "" H 5600 10800 50  0001 C CNN
 	1    5600 10800
 	1    0    0    -1  
 $EndComp
-Text Label 7400 9100 0    60   ~ 0
-SENSE_A
-Text Label 7400 9200 0    60   ~ 0
-SENSE_B
-Text Label 7400 9300 0    60   ~ 0
-SENSE_C
-Text Label 7400 8900 0    60   ~ 0
-CURRENT_ADC
-Text Label 8700 9100 2    60   ~ 0
-PC0
-Text Label 8700 9200 2    60   ~ 0
-PC1
-Text Label 8700 9300 2    60   ~ 0
-PC2
-Text Label 8700 9400 2    60   ~ 0
-PC3
-Text Label 8700 8900 2    60   ~ 0
-PA0
 $Comp
 L servo-sigma-48v-rescue:CONN_02X05-conn J2
 U 1 1 5AB8EC7C
-P 2350 5050
-F 0 "J2" H 2350 5350 50  0000 C CNN
-F 1 "CONN_02X05" H 2350 4700 50  0000 C CNN
-F 2 "Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical" H 2350 3850 50  0001 C CNN
-F 3 "http://katalog.we-online.de/em/datasheet/6220xx21121.pdf" H 2350 3850 50  0001 C CNN
-F 4 "732-5374-ND" H 2350 5050 60  0001 C CNN "Part"
-F 5 "DigiKey" H 2350 5050 60  0001 C CNN "Provider"
-	1    2350 5050
+P 2550 1300
+F 0 "J2" H 2550 1600 50  0000 C CNN
+F 1 "CONN_02X05" H 2550 950 50  0000 C CNN
+F 2 "Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical" H 2550 100 50  0001 C CNN
+F 3 "http://katalog.we-online.de/em/datasheet/6220xx21121.pdf" H 2550 100 50  0001 C CNN
+F 4 "732-5374-ND" H 2550 1300 60  0001 C CNN "Part"
+F 5 "DigiKey" H 2550 1300 60  0001 C CNN "Provider"
+	1    2550 1300
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:GND #PWR02
 U 1 1 58D0728C
-P 900 4950
-F 0 "#PWR02" H 900 4700 50  0001 C CNN
-F 1 "GND" H 900 4800 50  0000 C CNN
-F 2 "" H 900 4950 50  0001 C CNN
-F 3 "" H 900 4950 50  0001 C CNN
-	1    900  4950
+P 1100 1200
+F 0 "#PWR02" H 1100 950 50  0001 C CNN
+F 1 "GND" H 1100 1050 50  0000 C CNN
+F 2 "" H 1100 1200 50  0001 C CNN
+F 3 "" H 1100 1200 50  0001 C CNN
+	1    1100 1200
 	0    1    1    0   
 $EndComp
-Text Label 3250 4850 2    60   ~ 0
+Text Label 3450 1100 2    60   ~ 0
 PA13
-Text Label 3650 4850 2    60   ~ 0
+Text Label 3850 1100 2    60   ~ 0
 SWDIO
-Text Label 3250 4950 2    60   ~ 0
+Text Label 3450 1200 2    60   ~ 0
 PA14
-Text Label 3650 4950 2    60   ~ 0
+Text Label 3850 1200 2    60   ~ 0
 SWCLK
-Text Label 3650 5250 2    60   ~ 0
+Text Label 3850 1500 2    60   ~ 0
 NRST
-Text Label 3250 5050 2    60   ~ 0
+Text Label 3450 1300 2    60   ~ 0
 PB3
-Text Notes 1400 5550 0    60   ~ 0
+Text Notes 1600 1800 0    60   ~ 0
 SWD Interface
-Text HLabel 7100 9000 0    60   Input ~ 0
+Text HLabel 13400 8550 0    60   Input ~ 0
 VBAT_ADC
-Text HLabel 7100 9100 0    60   Input ~ 0
-SENSE_A
-Text HLabel 7100 9200 0    60   Input ~ 0
-SENSE_B
-Text HLabel 7100 9300 0    60   Input ~ 0
-SENSE_C
-Text HLabel 7100 8900 0    60   Input ~ 0
-CURRENT_ADC
 Text HLabel 14950 3550 2    60   Output ~ 0
 PWM_AH
 Text HLabel 14950 5650 2    60   Output ~ 0
@@ -164,8 +138,6 @@ Text HLabel 14950 5850 2    60   Output ~ 0
 PWM_CL
 Text HLabel 14950 4850 2    60   Input ~ 0
 PWM
-Text HLabel 14950 2950 2    60   Input ~ 0
-CURRENT_FAULT
 $Comp
 L servo-sigma-48v-rescue:R-device R1
 U 1 1 5AB8EC7E
@@ -272,49 +244,49 @@ PC13
 $Comp
 L servo-sigma-48v-rescue:Crystal-device Y1
 U 1 1 58ED7267
-P 5600 4050
-F 0 "Y1" H 5600 4200 50  0000 C CNN
-F 1 "ABM3-8.000MHZ-D2Y-T" H 5600 3900 50  0000 C CNN
-F 2 "Crystal:Crystal_SMD_Abracon_ABM3-2Pin_5.0x3.2mm" H 5600 4050 50  0001 C CNN
-F 3 "http://www.abracon.com/Resonators/abm3.pdf" H 5600 4050 50  0001 C CNN
-F 4 "535-10630-1-ND" H 5600 4050 60  0001 C CNN "Part"
-F 5 "DigiKey" H 5600 4050 60  0001 C CNN "Provider"
-	1    5600 4050
+P 4700 4050
+F 0 "Y1" H 4700 4200 50  0000 C CNN
+F 1 "ABM3-8.000MHZ-D2Y-T" H 4700 3900 50  0000 C CNN
+F 2 "Crystal:Crystal_SMD_Abracon_ABM3-2Pin_5.0x3.2mm" H 4700 4050 50  0001 C CNN
+F 3 "http://www.abracon.com/Resonators/abm3.pdf" H 4700 4050 50  0001 C CNN
+F 4 "535-10630-1-ND" H 4700 4050 60  0001 C CNN "Part"
+F 5 "DigiKey" H 4700 4050 60  0001 C CNN "Provider"
+	1    4700 4050
 	0    1    1    0   
 $EndComp
 $Comp
 L servo-sigma-48v-rescue:C-device C27
 U 1 1 58EFF4C6
-P 5100 3850
-F 0 "C27" V 5050 3950 50  0000 C CNN
-F 1 "27pF/50V/1%" V 5250 3850 50  0000 C CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 5138 3700 50  0001 C CNN
-F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 5100 3850 50  0001 C CNN
-F 4 "490-9719-1-ND" V 5100 3850 60  0001 C CNN "Part"
-F 5 "DigiKey" V 5100 3850 60  0001 C CNN "Provider"
-	1    5100 3850
+P 4200 3850
+F 0 "C27" V 4150 3950 50  0000 C CNN
+F 1 "27pF/50V/1%" V 4350 3850 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 4238 3700 50  0001 C CNN
+F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 4200 3850 50  0001 C CNN
+F 4 "490-9719-1-ND" V 4200 3850 60  0001 C CNN "Part"
+F 5 "DigiKey" V 4200 3850 60  0001 C CNN "Provider"
+	1    4200 3850
 	0    1    1    0   
 $EndComp
 $Comp
 L power:GND #PWR04
 U 1 1 5AB8EC81
-P 4200 3850
-F 0 "#PWR04" H 4200 3600 50  0001 C CNN
-F 1 "GND" H 4200 3700 50  0000 C CNN
-F 2 "" H 4200 3850 50  0001 C CNN
-F 3 "" H 4200 3850 50  0001 C CNN
-	1    4200 3850
+P 3600 3850
+F 0 "#PWR04" H 3600 3600 50  0001 C CNN
+F 1 "GND" H 3600 3700 50  0000 C CNN
+F 2 "" H 3600 3850 50  0001 C CNN
+F 3 "" H 3600 3850 50  0001 C CNN
+	1    3600 3850
 	0    1    1    0   
 $EndComp
 $Comp
 L power:GND #PWR05
 U 1 1 58F00797
-P 4200 4250
-F 0 "#PWR05" H 4200 4000 50  0001 C CNN
-F 1 "GND" H 4200 4100 50  0000 C CNN
-F 2 "" H 4200 4250 50  0001 C CNN
-F 3 "" H 4200 4250 50  0001 C CNN
-	1    4200 4250
+P 3600 4250
+F 0 "#PWR05" H 3600 4000 50  0001 C CNN
+F 1 "GND" H 3600 4100 50  0000 C CNN
+F 2 "" H 3600 4250 50  0001 C CNN
+F 3 "" H 3600 4250 50  0001 C CNN
+	1    3600 4250
 	0    1    1    0   
 $EndComp
 $Comp
@@ -335,12 +307,12 @@ NRST
 $Comp
 L power:VDD #PWR08
 U 1 1 58F11F73
-P 900 4650
-F 0 "#PWR08" H 900 4500 50  0001 C CNN
-F 1 "VDD" H 917 4823 50  0000 C CNN
-F 2 "" H 900 4650 50  0001 C CNN
-F 3 "" H 900 4650 50  0001 C CNN
-	1    900  4650
+P 1100 900
+F 0 "#PWR08" H 1100 750 50  0001 C CNN
+F 1 "VDD" H 1117 1073 50  0000 C CNN
+F 2 "" H 1100 900 50  0001 C CNN
+F 3 "" H 1100 900 50  0001 C CNN
+	1    1100 900 
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -549,11 +521,8 @@ NoConn ~ 7150 4150
 NoConn ~ 7150 5350
 NoConn ~ 7150 5450
 NoConn ~ 7150 5550
-NoConn ~ 12950 4650
-NoConn ~ 12950 5450
-NoConn ~ 12950 5550
 Wire Wire Line
-	7100 9000 8700 9000
+	13400 8550 15000 8550
 Wire Wire Line
 	5150 9950 5150 10100
 Wire Wire Line
@@ -567,35 +536,21 @@ Wire Wire Line
 Wire Wire Line
 	5150 9250 5150 9650
 Wire Wire Line
-	7100 9100 8700 9100
+	2300 1200 1100 1200
 Wire Wire Line
-	7100 9200 8700 9200
+	2300 1300 2200 1300
 Wire Wire Line
-	7100 9300 8700 9300
+	1100 1500 1900 1500
 Wire Wire Line
-	7100 8900 8700 8900
+	1100 1100 2300 1100
 Wire Wire Line
-	2100 4950 900  4950
+	2800 1100 3850 1100
 Wire Wire Line
-	2100 5050 2000 5050
+	2800 1200 3850 1200
 Wire Wire Line
-	900  5250 1700 5250
+	2800 1300 2900 1300
 Wire Wire Line
-	900  4850 2100 4850
-Wire Wire Line
-	2600 4850 3650 4850
-Wire Wire Line
-	2600 4950 3650 4950
-Wire Wire Line
-	2600 5050 2700 5050
-Wire Wire Line
-	2600 5250 3650 5250
-Wire Wire Line
-	12950 4650 13350 4650
-Wire Wire Line
-	12950 5450 13350 5450
-Wire Wire Line
-	12950 5550 13350 5550
+	2800 1500 3850 1500
 Wire Wire Line
 	13350 2750 12950 2750
 Wire Wire Line
@@ -603,23 +558,9 @@ Wire Wire Line
 Wire Wire Line
 	13350 3050 12950 3050
 Wire Wire Line
-	13350 3150 12950 3150
-Wire Wire Line
 	13350 4050 12950 4050
 Wire Wire Line
 	13350 4150 12950 4150
-Wire Wire Line
-	6750 4350 7150 4350
-Wire Wire Line
-	6750 4450 7150 4450
-Wire Wire Line
-	6750 4550 7150 4550
-Wire Wire Line
-	6750 4650 7150 4650
-Wire Wire Line
-	6750 4750 7150 4750
-Wire Wire Line
-	6750 4850 7150 4850
 Wire Wire Line
 	7150 5150 6750 5150
 Wire Wire Line
@@ -633,19 +574,19 @@ Wire Wire Line
 Wire Wire Line
 	7150 5650 6750 5650
 Wire Wire Line
-	5250 3850 5600 3850
+	4350 3850 4700 3850
 Wire Wire Line
-	5600 4200 5600 4250
-Connection ~ 5600 3850
-Connection ~ 5600 4250
+	4700 4200 4700 4250
+Connection ~ 4700 3850
+Connection ~ 4700 4250
 Wire Wire Line
-	4200 3850 4950 3850
+	3600 3850 4050 3850
 Wire Wire Line
-	4200 4250 4950 4250
+	3600 4250 4050 4250
 Wire Wire Line
 	6750 2750 7150 2750
 Wire Wire Line
-	900  4650 900  4850
+	1100 900  1100 1100
 Wire Wire Line
 	6300 2950 7150 2950
 Wire Wire Line
@@ -653,11 +594,11 @@ Wire Wire Line
 Wire Wire Line
 	6300 2350 6300 2100
 Wire Wire Line
-	5250 4250 5600 4250
+	4350 4250 4700 4250
 Wire Wire Line
-	6000 4250 6000 3950
+	5100 4250 5100 3950
 Wire Wire Line
-	6000 3950 7150 3950
+	5100 3950 7150 3950
 Wire Wire Line
 	4550 3250 4850 3250
 Wire Wire Line
@@ -737,8 +678,6 @@ Connection ~ 6000 3450
 Wire Wire Line
 	7000 3550 7000 3250
 Connection ~ 7000 3250
-Text Label 8700 9000 2    60   ~ 0
-PA1
 $Comp
 L power:VDD #PWR023
 U 1 1 58F73DF4
@@ -761,7 +700,7 @@ PC14
 Text Label 6750 5850 0    60   ~ 0
 PC15
 Wire Wire Line
-	5600 3900 5600 3850
+	4700 3900 4700 3850
 $Comp
 L servo-sigma-48v-rescue:C-device C30
 U 1 1 5AB8EC97
@@ -820,14 +759,14 @@ Connection ~ 5850 2800
 $Comp
 L servo-sigma-48v-rescue:C-device C32
 U 1 1 5AB8ECA0
-P 5100 4250
-F 0 "C32" V 5050 4350 50  0000 C CNN
-F 1 "27pF/50V/1%" V 5250 4250 50  0000 C CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 5138 4100 50  0001 C CNN
-F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 5100 4250 50  0001 C CNN
-F 4 "490-9719-1-ND" V 5100 4250 60  0001 C CNN "Part"
-F 5 "DigiKey" V 5100 4250 60  0001 C CNN "Provider"
-	1    5100 4250
+P 4200 4250
+F 0 "C32" V 4150 4350 50  0000 C CNN
+F 1 "27pF/50V/1%" V 4350 4250 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 4238 4100 50  0001 C CNN
+F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 4200 4250 50  0001 C CNN
+F 4 "490-9719-1-ND" V 4200 4250 60  0001 C CNN "Part"
+F 5 "DigiKey" V 4200 4250 60  0001 C CNN "Provider"
+	1    4200 4250
 	0    1    1    0   
 $EndComp
 NoConn ~ 7150 5150
@@ -872,9 +811,9 @@ F 5 "DigiKey" H 5450 2500 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	5600 3850 7150 3850
+	4700 3850 7150 3850
 Wire Wire Line
-	5600 4250 6000 4250
+	4700 4250 5100 4250
 Wire Wire Line
 	11550 1800 12100 1800
 Wire Wire Line
@@ -919,12 +858,12 @@ Wire Wire Line
 	5850 2800 5850 3150
 Text Label 14650 4250 2    60   ~ 0
 USART_TX
-Text Label 900  5250 0    60   ~ 0
+Text Label 1100 1500 0    60   ~ 0
 USART_TX
 Wire Wire Line
-	2100 5150 900  5150
-NoConn ~ 2600 5150
-Text HLabel 900  5150 0    60   Output ~ 0
+	2300 1400 1100 1400
+NoConn ~ 2800 1400
+Text HLabel 1100 1400 0    60   Output ~ 0
 EXT_5V
 $Comp
 L servo-sigma-48v-rescue:R-device R5
@@ -1027,7 +966,7 @@ F 3 "" H 1150 7050 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Text Label 2950 6350 2    60   ~ 0
-PA4
+USER_BTN
 $Comp
 L servo-sigma-48v-rescue:R-device R9
 U 1 1 5AB8F249
@@ -1114,28 +1053,6 @@ Wire Wire Line
 	1150 6450 1150 6950
 Wire Wire Line
 	2300 6450 2300 6550
-Text Label 8700 9500 2    60   ~ 0
-PC4
-Text Label 8700 9600 2    60   ~ 0
-PC5
-Text HLabel 7100 9400 0    60   Input ~ 0
-IA_FB
-Text HLabel 7100 9500 0    60   Input ~ 0
-IB_FB
-Text HLabel 7100 9600 0    60   Input ~ 0
-IC_FB
-Wire Wire Line
-	7100 9400 8700 9400
-Wire Wire Line
-	7100 9500 8700 9500
-Wire Wire Line
-	7100 9600 8700 9600
-Text Label 7400 9400 0    60   ~ 0
-IA_FB
-Text Label 7400 9500 0    60   ~ 0
-IB_FB
-Text Label 7400 9600 0    60   ~ 0
-IC_FB
 Text Label 2100 7800 2    60   ~ 0
 ENCODER_B
 Text Label 2100 7900 2    60   ~ 0
@@ -1185,82 +1102,69 @@ ENCODER_A
 Text Label 14650 5150 2    60   ~ 0
 ENCODER_B
 Wire Wire Line
-	12950 3450 13350 3450
-Wire Wire Line
-	12950 4450 13350 4450
-Wire Wire Line
-	12950 4550 13350 4550
-Wire Wire Line
 	12950 4850 14950 4850
-NoConn ~ 12950 4550
-NoConn ~ 12950 4450
-NoConn ~ 12950 3450
 Wire Wire Line
 	12950 4750 13350 4750
 $Comp
 L servo-sigma-48v-rescue:R-device R44
 U 1 1 5BDC03FA
-P 2850 5050
-F 0 "R44" V 2900 5200 50  0000 C CNN
-F 1 "21" V 2850 5050 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2780 5050 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 2850 5050 50  0001 C CNN
-F 4 "311-21.0HRCT-ND" V 2850 5050 60  0001 C CNN "Part"
-F 5 "DigiKey" V 2850 5050 60  0001 C CNN "Provider"
-	1    2850 5050
+P 3050 1300
+F 0 "R44" V 3100 1450 50  0000 C CNN
+F 1 "21" V 3050 1300 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2980 1300 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 3050 1300 50  0001 C CNN
+F 4 "311-21.0HRCT-ND" V 3050 1300 60  0001 C CNN "Part"
+F 5 "DigiKey" V 3050 1300 60  0001 C CNN "Provider"
+	1    3050 1300
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	3000 5050 3650 5050
+	3200 1300 3850 1300
 $Comp
 L servo-sigma-48v-rescue:R-device R2
 U 1 1 5BDC074C
-P 1850 5050
-F 0 "R2" V 1900 5200 50  0000 C CNN
-F 1 "21" V 1850 5050 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 1780 5050 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 1850 5050 50  0001 C CNN
-F 4 "311-21.0HRCT-ND" V 1850 5050 60  0001 C CNN "Part"
-F 5 "DigiKey" V 1850 5050 60  0001 C CNN "Provider"
-	1    1850 5050
+P 2050 1300
+F 0 "R2" V 2100 1450 50  0000 C CNN
+F 1 "21" V 2050 1300 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1980 1300 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 2050 1300 50  0001 C CNN
+F 4 "311-21.0HRCT-ND" V 2050 1300 60  0001 C CNN "Part"
+F 5 "DigiKey" V 2050 1300 60  0001 C CNN "Provider"
+	1    2050 1300
 	0    -1   -1   0   
 $EndComp
 $Comp
 L servo-sigma-48v-rescue:R-device R3
 U 1 1 5BDE0108
-P 1850 5250
-F 0 "R3" V 1900 5400 50  0000 C CNN
-F 1 "21" V 1850 5250 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 1780 5250 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 1850 5250 50  0001 C CNN
-F 4 "311-21.0HRCT-ND" V 1850 5250 60  0001 C CNN "Part"
-F 5 "DigiKey" V 1850 5250 60  0001 C CNN "Provider"
-	1    1850 5250
+P 2050 1500
+F 0 "R3" V 2100 1650 50  0000 C CNN
+F 1 "21" V 2050 1500 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1980 1500 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 2050 1500 50  0001 C CNN
+F 4 "311-21.0HRCT-ND" V 2050 1500 60  0001 C CNN "Part"
+F 5 "DigiKey" V 2050 1500 60  0001 C CNN "Provider"
+	1    2050 1500
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	2000 5250 2100 5250
+	2200 1500 2300 1500
 Wire Wire Line
 	12950 4250 14650 4250
 Wire Wire Line
 	12950 5050 14650 5050
 Wire Wire Line
 	12950 5150 14650 5150
-Text Label 14650 4950 2    60   ~ 0
+Text Label 14650 4450 2    60   ~ 0
 ENCODER_Z
-Wire Wire Line
-	12950 4950 14650 4950
-Wire Wire Line
-	12950 2950 14950 2950
-Text Label 900  5050 0    60   ~ 0
+Text Label 1100 1300 0    60   ~ 0
 USART_RX
 Wire Wire Line
-	900  5050 1700 5050
-Text Label 1600 5050 2    60   ~ 0
+	1100 1300 1900 1300
+Text Label 1800 1300 2    60   ~ 0
 PB3
-Text Label 3650 5050 2    60   ~ 0
+Text Label 3850 1300 2    60   ~ 0
 SWO
-Text Label 1600 5250 2    60   ~ 0
+Text Label 1800 1500 2    60   ~ 0
 PA15
 $Comp
 L sigmadrone:629_105_150_921 J6
@@ -1368,9 +1272,9 @@ Wire Wire Line
 	12950 3850 14650 3850
 Wire Wire Line
 	12950 3950 14650 3950
-Text HLabel 6500 5050 0    60   Output ~ 0
+Text HLabel 6450 5850 0    60   Output ~ 0
 AUX_L
-Text HLabel 6500 4950 0    60   Output ~ 0
+Text HLabel 6450 5750 0    60   Output ~ 0
 AUX_H
 $Comp
 L servo-sigma-48v-rescue:CONN_01X05-conn J5
@@ -1397,35 +1301,325 @@ Wire Wire Line
 	12950 5750 14950 5750
 Wire Wire Line
 	12950 5850 14950 5850
-Text Label 8700 9700 2    60   ~ 0
-PA3
-Text HLabel 7100 9700 0    60   Input ~ 0
-IR_FB
-Wire Wire Line
-	7100 9700 8700 9700
-Text Label 14650 3250 2    60   ~ 0
+Text Label 14650 5350 2    60   ~ 0
 LED_WARN
-Text Label 14650 3350 2    60   ~ 0
+Text Label 14650 5450 2    60   ~ 0
 LED_STATUS
 NoConn ~ 7150 5650
 Wire Wire Line
-	6500 4950 7150 4950
-Wire Wire Line
-	6500 5050 7150 5050
-Wire Wire Line
 	12950 5250 13350 5250
-Wire Wire Line
-	12950 5350 13350 5350
 NoConn ~ 12950 5250
-NoConn ~ 12950 5350
+$Comp
+L Connector_Generic:Conn_01x03 J8
+U 1 1 5C6213BC
+P 7100 9800
+F 0 "J8" H 7100 10000 50  0000 C CNN
+F 1 "Conn_01x03" H 7100 9600 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Horizontal" H 7100 9800 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 7100 9800 50  0001 C CNN
+F 4 "WM4901-ND" H 7100 9800 50  0001 C CNN "Part"
+F 5 "DigiKey" H 7100 9800 50  0001 C CNN "Provider"
+	1    7100 9800
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR?
+U 1 1 5C645EB0
+P 8000 9800
+AR Path="/58BF599E/5C645EB0" Ref="#PWR?"  Part="1" 
+AR Path="/58BE2779/5C645EB0" Ref="#PWR075"  Part="1" 
+F 0 "#PWR075" H 8000 9650 50  0001 C CNN
+F 1 "+5V" V 8000 10000 50  0000 C CNN
+F 2 "" H 8000 9800 50  0001 C CNN
+F 3 "" H 8000 9800 50  0001 C CNN
+	1    8000 9800
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR076
+U 1 1 5C645EB6
+P 8000 9900
+F 0 "#PWR076" H 8000 9650 50  0001 C CNN
+F 1 "GND" V 8000 9700 50  0000 C CNN
+F 2 "" H 8000 9900 50  0001 C CNN
+F 3 "" H 8000 9900 50  0001 C CNN
+	1    8000 9900
+	0    -1   -1   0   
+$EndComp
 Wire Wire Line
-	12950 3350 14650 3350
+	7300 9900 8000 9900
 Wire Wire Line
-	12950 3250 14650 3250
+	7300 9800 8000 9800
+Text Label 8250 9700 2    60   ~ 0
+SW1
 Wire Wire Line
-	6750 5750 7150 5750
+	7300 9700 7700 9700
+$Comp
+L servo-sigma-48v-rescue:R-device R20
+U 1 1 5C69BA3F
+P 7700 10550
+F 0 "R20" V 7780 10550 50  0000 C CNN
+F 1 "100" V 7700 10550 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 7630 10550 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 7700 10550 50  0001 C CNN
+F 4 "311-100HRCT-ND" V 7700 10550 60  0001 C CNN "Part"
+F 5 "DigiKey" V 7700 10550 60  0001 C CNN "Provider"
+	1    7700 10550
+	1    0    0    -1  
+$EndComp
+$Comp
+L servo-sigma-48v-rescue:C-device C51
+U 1 1 5C69BA48
+P 7700 10150
+F 0 "C51" H 7550 10050 50  0000 L CNN
+F 1 "100nF 50V" H 7250 10250 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 7738 10000 50  0001 C CNN
+F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 7700 10150 50  0001 C CNN
+F 4 "490-4779-2-ND" H 7700 10150 60  0001 C CNN "Part"
+F 5 "DigiKey" H 7700 10150 60  0001 C CNN "Provider"
+	1    7700 10150
+	-1   0    0    1   
+$EndComp
 Wire Wire Line
-	6750 5850 7150 5850
-NoConn ~ 7150 5750
-NoConn ~ 7150 5850
+	7700 10300 7700 10400
+Wire Wire Line
+	7700 10000 7700 9700
+Connection ~ 7700 9700
+Wire Wire Line
+	7700 9700 8250 9700
+$Comp
+L power:GND #PWR073
+U 1 1 5C70ECD7
+P 7700 10800
+F 0 "#PWR073" H 7700 10550 50  0001 C CNN
+F 1 "GND" H 7700 10650 50  0000 C CNN
+F 2 "" H 7700 10800 50  0001 C CNN
+F 3 "" H 7700 10800 50  0001 C CNN
+	1    7700 10800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7700 10800 7700 10700
+$Comp
+L servo-sigma-48v-rescue:R-device R17
+U 1 1 5C71BDB8
+P 7700 9400
+F 0 "R17" V 7780 9400 50  0000 C CNN
+F 1 "10k" V 7700 9400 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 7630 9400 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 7700 9400 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 7700 9400 60  0001 C CNN "Part"
+F 5 "DigiKey" V 7700 9400 60  0001 C CNN "Provider"
+	1    7700 9400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR?
+U 1 1 5C71BEBC
+P 7700 9100
+AR Path="/58BF599E/5C71BEBC" Ref="#PWR?"  Part="1" 
+AR Path="/58BE2779/5C71BEBC" Ref="#PWR072"  Part="1" 
+F 0 "#PWR072" H 7700 8950 50  0001 C CNN
+F 1 "+5V" V 7700 9300 50  0000 C CNN
+F 2 "" H 7700 9100 50  0001 C CNN
+F 3 "" H 7700 9100 50  0001 C CNN
+	1    7700 9100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7700 9550 7700 9700
+Wire Wire Line
+	7700 9100 7700 9250
+$Comp
+L power:+5V #PWR?
+U 1 1 5C769B40
+P 10300 9800
+AR Path="/58BF599E/5C769B40" Ref="#PWR?"  Part="1" 
+AR Path="/58BE2779/5C769B40" Ref="#PWR083"  Part="1" 
+F 0 "#PWR083" H 10300 9650 50  0001 C CNN
+F 1 "+5V" V 10300 10000 50  0000 C CNN
+F 2 "" H 10300 9800 50  0001 C CNN
+F 3 "" H 10300 9800 50  0001 C CNN
+	1    10300 9800
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR084
+U 1 1 5C769B46
+P 10300 9900
+F 0 "#PWR084" H 10300 9650 50  0001 C CNN
+F 1 "GND" V 10300 9700 50  0000 C CNN
+F 2 "" H 10300 9900 50  0001 C CNN
+F 3 "" H 10300 9900 50  0001 C CNN
+	1    10300 9900
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	9600 9900 10300 9900
+Wire Wire Line
+	9600 9800 10300 9800
+Text Label 10550 9700 2    60   ~ 0
+SW2
+Wire Wire Line
+	9600 9700 10000 9700
+$Comp
+L servo-sigma-48v-rescue:R-device R30
+U 1 1 5C769B52
+P 10000 10550
+F 0 "R30" V 10080 10550 50  0000 C CNN
+F 1 "100" V 10000 10550 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9930 10550 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 10000 10550 50  0001 C CNN
+F 4 "311-100HRCT-ND" V 10000 10550 60  0001 C CNN "Part"
+F 5 "DigiKey" V 10000 10550 60  0001 C CNN "Provider"
+	1    10000 10550
+	1    0    0    -1  
+$EndComp
+$Comp
+L servo-sigma-48v-rescue:C-device C52
+U 1 1 5C769B5B
+P 10000 10150
+F 0 "C52" H 9850 10050 50  0000 L CNN
+F 1 "100nF 50V" H 9550 10250 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 10038 10000 50  0001 C CNN
+F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 10000 10150 50  0001 C CNN
+F 4 "490-4779-2-ND" H 10000 10150 60  0001 C CNN "Part"
+F 5 "DigiKey" H 10000 10150 60  0001 C CNN "Provider"
+	1    10000 10150
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	10000 10300 10000 10400
+Wire Wire Line
+	10000 10000 10000 9700
+Connection ~ 10000 9700
+Wire Wire Line
+	10000 9700 10550 9700
+$Comp
+L power:GND #PWR082
+U 1 1 5C769B66
+P 10000 10800
+F 0 "#PWR082" H 10000 10550 50  0001 C CNN
+F 1 "GND" H 10000 10650 50  0000 C CNN
+F 2 "" H 10000 10800 50  0001 C CNN
+F 3 "" H 10000 10800 50  0001 C CNN
+	1    10000 10800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10000 10800 10000 10700
+$Comp
+L servo-sigma-48v-rescue:R-device R28
+U 1 1 5C769B6F
+P 10000 9400
+F 0 "R28" V 10080 9400 50  0000 C CNN
+F 1 "10k" V 10000 9400 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9930 9400 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 10000 9400 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 10000 9400 60  0001 C CNN "Part"
+F 5 "DigiKey" V 10000 9400 60  0001 C CNN "Provider"
+	1    10000 9400
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+5V #PWR?
+U 1 1 5C769B76
+P 10000 9100
+AR Path="/58BF599E/5C769B76" Ref="#PWR?"  Part="1" 
+AR Path="/58BE2779/5C769B76" Ref="#PWR081"  Part="1" 
+F 0 "#PWR081" H 10000 8950 50  0001 C CNN
+F 1 "+5V" V 10000 9300 50  0000 C CNN
+F 2 "" H 10000 9100 50  0001 C CNN
+F 3 "" H 10000 9100 50  0001 C CNN
+	1    10000 9100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10000 9550 10000 9700
+Wire Wire Line
+	10000 9100 10000 9250
+Wire Wire Line
+	12950 4650 14650 4650
+Wire Wire Line
+	12950 4950 13350 4950
+NoConn ~ 12950 4950
+Text Label 14650 4550 2    60   ~ 0
+SW1
+Text Label 14650 4650 2    60   ~ 0
+SW2
+Wire Wire Line
+	12950 4550 14650 4550
+Wire Wire Line
+	12950 4450 14650 4450
+Text Label 6100 5050 0    60   ~ 0
+USART6_RX
+Text Label 6100 4950 0    60   ~ 0
+USART6_TX
+Wire Wire Line
+	6100 4950 7150 4950
+Wire Wire Line
+	6100 5050 7150 5050
+Wire Wire Line
+	6450 5750 7150 5750
+Wire Wire Line
+	6450 5850 7150 5850
+$Comp
+L Connector_Generic:Conn_01x03 J9
+U 1 1 5C86EEED
+P 9400 9800
+F 0 "J9" H 9400 10000 50  0000 C CNN
+F 1 "Conn_01x03" H 9400 9600 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Horizontal" H 9400 9800 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 9400 9800 50  0001 C CNN
+F 4 "WM4901-ND" H 9400 9800 50  0001 C CNN "Part"
+F 5 "DigiKey" H 9400 9800 50  0001 C CNN "Provider"
+	1    9400 9800
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	12950 2950 13350 2950
+Wire Wire Line
+	12950 3250 13350 3250
+Wire Wire Line
+	12950 3150 13350 3150
+Text HLabel 14950 3350 2    60   Input ~ 0
+IR_FB
+Wire Wire Line
+	12950 3350 14950 3350
+Text HLabel 5950 4850 0    60   Input ~ 0
+IC_FB
+Wire Wire Line
+	5950 4850 7150 4850
+Text HLabel 5950 4650 0    60   Input ~ 0
+IA_FB
+Text HLabel 5950 4750 0    60   Input ~ 0
+IB_FB
+Wire Wire Line
+	5950 4750 7150 4750
+Wire Wire Line
+	5950 4650 7150 4650
+Text HLabel 5950 4350 0    60   Input ~ 0
+SENSE_A
+Text HLabel 5950 4450 0    60   Input ~ 0
+SENSE_B
+Text HLabel 5950 4550 0    60   Input ~ 0
+SENSE_C
+Wire Wire Line
+	5950 4350 7150 4350
+Wire Wire Line
+	5950 4450 7150 4450
+Wire Wire Line
+	5950 4550 7150 4550
+Text Label 14650 5550 2    60   ~ 0
+USER_BTN
+Wire Wire Line
+	12950 5350 14650 5350
+Wire Wire Line
+	12950 5450 14650 5450
+Wire Wire Line
+	12950 5550 14650 5550
+Text HLabel 14950 3450 2    60   Input ~ 0
+VBAT_ADC
+Wire Wire Line
+	12950 3450 14950 3450
 $EndSCHEMATC
