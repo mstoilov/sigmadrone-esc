@@ -14,70 +14,7 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-$Comp
-L power:+BATT #PWR046
-U 1 1 58BEF24C
-P 3250 3050
-F 0 "#PWR046" H 3250 2900 50  0001 C CNN
-F 1 "+BATT" H 3250 3190 50  0000 C CNN
-F 2 "" H 3250 3050 50  0001 C CNN
-F 3 "" H 3250 3050 50  0001 C CNN
-	1    3250 3050
-	-1   0    0    -1  
-$EndComp
-$Comp
-L sigmadrone:ACS711 U3
-U 1 1 58CF4867
-P 4200 3500
-F 0 "U3" H 4450 3800 60  0000 C CNN
-F 1 "ACS711" H 4300 3200 60  0000 C CNN
-F 2 "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm" H 4200 3500 60  0001 C CNN
-F 3 "http://www.allegromicro.com/en/Products/Part_Numbers/0711/0711.pdf" H 4200 3500 60  0001 C CNN
-F 4 "620-1373-1-ND" H 4200 3500 60  0001 C CNN "Part"
-F 5 "DigiKey" H 4200 3500 60  0001 C CNN "Provider"
-	1    4200 3500
-	1    0    0    -1  
-$EndComp
-Text HLabel 7900 2450 2    60   Output ~ 0
-CURRENT_ADC_FILTERED
-Text HLabel 7900 4650 2    60   Output ~ 0
-CURRENT_FAULT
-$Comp
-L power:GND #PWR049
-U 1 1 58CF635C
-P 4850 3750
-F 0 "#PWR049" H 4850 3500 50  0001 C CNN
-F 1 "GND" H 4850 3600 50  0000 C CNN
-F 2 "" H 4850 3750 50  0001 C CNN
-F 3 "" H 4850 3750 50  0001 C CNN
-	1    4850 3750
-	-1   0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR050
-U 1 1 58CF656C
-P 5200 4100
-F 0 "#PWR050" H 5200 3850 50  0001 C CNN
-F 1 "GND" H 5200 3950 50  0000 C CNN
-F 2 "" H 5200 4100 50  0001 C CNN
-F 3 "" H 5200 4100 50  0001 C CNN
-	1    5200 4100
-	-1   0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR052
-U 1 1 58CF92CD
-P 7350 3350
-F 0 "#PWR052" H 7350 3100 50  0001 C CNN
-F 1 "GND" H 7350 3200 50  0000 C CNN
-F 2 "" H 7350 3350 50  0001 C CNN
-F 3 "" H 7350 3350 50  0001 C CNN
-	1    7350 3350
-	1    0    0    -1  
-$EndComp
-Text Notes 6500 2250 0    60   ~ 0
-Low-pass filter, cutoff at 3.4 Hz
-Text Notes 3600 5650 0    60   ~ 0
+Text Notes 3500 4100 0    60   ~ 0
 Power\nDecoupling\n
 $Comp
 L power:GND #PWR053
@@ -105,100 +42,6 @@ Text HLabel 10350 4650 2    60   Output ~ 0
 VBAT_ADC
 Text Notes 10300 4450 0    60   ~ 0
 Voltage Sense
-$Comp
-L servo-sigma-48v-rescue:R-device R15
-U 1 1 58D1E7D1
-P 7050 2450
-F 0 "R15" V 7130 2450 50  0000 C CNN
-F 1 "47k" V 7050 2450 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6980 2450 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 7050 2450 50  0001 C CNN
-F 4 "311-47KDCT-ND" V 7050 2450 60  0001 C CNN "Part"
-F 5 "DigiKey" V 7050 2450 60  0001 C CNN "Provider"
-	1    7050 2450
-	0    -1   -1   0   
-$EndComp
-$Comp
-L power:VDD #PWR063
-U 1 1 58F74240
-P 5200 3050
-F 0 "#PWR063" H 5200 2900 50  0001 C CNN
-F 1 "VDD" H 5217 3223 50  0000 C CNN
-F 2 "" H 5200 3050 50  0001 C CNN
-F 3 "" H 5200 3050 50  0001 C CNN
-	1    5200 3050
-	1    0    0    -1  
-$EndComp
-$Comp
-L servo-sigma-48v-rescue:C-device C8
-U 1 1 5A08C553
-P 5200 3850
-F 0 "C8" H 5050 3750 50  0000 L CNN
-F 1 "1uF 100V" H 4800 3950 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 5238 3700 50  0001 C CNN
-F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 5200 3850 50  0001 C CNN
-F 4 "445-8887-1-ND" H 5200 3850 60  0001 C CNN "Part"
-F 5 "DigiKey" H 5200 3850 60  0001 C CNN "Provider"
-	1    5200 3850
-	-1   0    0    1   
-$EndComp
-$Comp
-L power:GND #PWR044
-U 1 1 5A34CA62
-P 7350 5200
-F 0 "#PWR044" H 7350 4950 50  0001 C CNN
-F 1 "GND" H 7350 5050 50  0000 C CNN
-F 2 "" H 7350 5200 50  0001 C CNN
-F 3 "" H 7350 5200 50  0001 C CNN
-	1    7350 5200
-	-1   0    0    -1  
-$EndComp
-$Comp
-L servo-sigma-48v-rescue:C-device C10
-U 1 1 5A36219E
-P 7350 4950
-F 0 "C10" H 7200 4850 50  0000 L CNN
-F 1 "100nF 50V" H 6900 5050 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 7388 4800 50  0001 C CNN
-F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 7350 4950 50  0001 C CNN
-F 4 "490-4779-2-ND" H 7350 4950 60  0001 C CNN "Part"
-F 5 "DigiKey" H 7350 4950 60  0001 C CNN "Provider"
-	1    7350 4950
-	-1   0    0    1   
-$EndComp
-$Comp
-L servo-sigma-48v-rescue:R-device R14
-U 1 1 5A39E32B
-P 7350 4250
-F 0 "R14" V 7430 4250 50  0000 C CNN
-F 1 "10k" V 7350 4250 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 7280 4250 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 7350 4250 50  0001 C CNN
-F 4 "311-10.0KHRCT-ND" V 7350 4250 60  0001 C CNN "Part"
-F 5 "DigiKey" V 7350 4250 60  0001 C CNN "Provider"
-	1    7350 4250
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	3550 3450 3700 3450
-Wire Wire Line
-	3550 3550 3550 3650
-Connection ~ 3550 3650
-Wire Wire Line
-	4700 3650 4850 3650
-Wire Wire Line
-	4850 3650 4850 3750
-Wire Wire Line
-	4700 3450 6400 3450
-Wire Wire Line
-	3550 3550 3700 3550
-Wire Wire Line
-	7200 2450 7350 2450
-Wire Wire Line
-	7350 3350 7350 3050
-Wire Wire Line
-	7350 2750 7350 2450
-Connection ~ 7350 2450
 Wire Wire Line
 	9950 5300 9950 5050
 Wire Wire Line
@@ -208,44 +51,6 @@ Wire Wire Line
 Wire Wire Line
 	9950 4650 10350 4650
 Connection ~ 9950 4650
-Wire Wire Line
-	7350 4800 7350 4650
-Wire Wire Line
-	7350 5100 7350 5200
-$Comp
-L power:VDD #PWR057
-U 1 1 5A3AB83D
-P 7350 4000
-F 0 "#PWR057" H 7350 3850 50  0001 C CNN
-F 1 "VDD" H 7367 4173 50  0000 C CNN
-F 2 "" H 7350 4000 50  0001 C CNN
-F 3 "" H 7350 4000 50  0001 C CNN
-	1    7350 4000
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	7350 4100 7350 4000
-$Comp
-L servo-sigma-48v-rescue:C-device C5
-U 1 1 5A5404E1
-P 7350 2900
-F 0 "C5" H 7200 2800 50  0000 L CNN
-F 1 "1uF 100V" H 7400 3000 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 7388 2750 50  0001 C CNN
-F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 7350 2900 50  0001 C CNN
-F 4 "445-8887-1-ND" H 7350 2900 60  0001 C CNN "Part"
-F 5 "DigiKey" H 7350 2900 60  0001 C CNN "Provider"
-	1    7350 2900
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	3550 3350 3700 3350
-Wire Wire Line
-	3550 3350 3550 3450
-Wire Wire Line
-	3550 3650 3700 3650
-Wire Wire Line
-	7350 2450 7900 2450
 Wire Wire Line
 	9950 4650 9950 4750
 $Comp
@@ -347,44 +152,43 @@ $EndComp
 $Comp
 L servo-sigma-48v-rescue:CP-device C1
 U 1 1 5B98E0E3
-P 3250 5150
-F 0 "C1" H 3275 5250 50  0000 L CNN
-F 1 "120uF" H 3275 5050 50  0000 L CNN
-F 2 "Capacitor_SMD:CP_Elec_10x10" H 3288 5000 50  0001 C CNN
-F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 3250 5150 50  0001 C CNN
-F 4 "P19316CT-ND" H 3250 5150 60  0001 C CNN "Part"
-F 5 "DigiKey" H 3250 5150 60  0001 C CNN "Provider"
-	1    3250 5150
+P 3150 3600
+F 0 "C1" H 3175 3700 50  0000 L CNN
+F 1 "120uF" H 3175 3500 50  0000 L CNN
+F 2 "Capacitor_SMD:CP_Elec_10x10" H 3188 3450 50  0001 C CNN
+F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 3150 3600 50  0001 C CNN
+F 4 "P19316CT-ND" H 3150 3600 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3150 3600 60  0001 C CNN "Provider"
+	1    3150 3600
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
 	1900 3450 2300 3450
 Wire Wire Line
-	2300 3450 2300 4100
+	2300 3450 2300 4000
 Wire Wire Line
-	3250 5300 3250 5400
-Connection ~ 3250 5400
+	3150 3750 3150 3850
+Connection ~ 3150 3850
 Wire Wire Line
-	3250 5400 3550 5400
+	3150 3850 3450 3850
 Wire Wire Line
-	3550 5300 3550 5400
-Connection ~ 3550 5400
+	3450 3750 3450 3850
+Connection ~ 3450 3850
 Wire Wire Line
-	3550 5400 3850 5400
+	3450 3850 3750 3850
 Wire Wire Line
-	3850 5300 3850 5400
+	3750 3750 3750 3850
 Wire Wire Line
-	3250 5000 3250 4900
-Connection ~ 3250 4900
+	3150 3450 3150 3350
 Wire Wire Line
-	3250 4900 3550 4900
+	3150 3350 3450 3350
 Wire Wire Line
-	3550 5000 3550 4900
-Connection ~ 3550 4900
+	3450 3450 3450 3350
+Connection ~ 3450 3350
 Wire Wire Line
-	3550 4900 3850 4900
+	3450 3350 3750 3350
 Wire Wire Line
-	3850 5000 3850 4900
+	3750 3450 3750 3350
 $Comp
 L sigmadrone:VIN #PWR012
 U 1 1 5B9BBEE4
@@ -396,21 +200,19 @@ F 3 "" H 2300 3050 50  0000 C CNN
 	1    2300 3050
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3250 4900 3250 4600
 $Comp
 L power:GND #PWR020
 U 1 1 5B9C31BD
-P 3250 5550
-F 0 "#PWR020" H 3250 5300 50  0001 C CNN
-F 1 "GND" H 3255 5377 50  0000 C CNN
-F 2 "" H 3250 5550 50  0001 C CNN
-F 3 "" H 3250 5550 50  0001 C CNN
-	1    3250 5550
+P 3150 4000
+F 0 "#PWR020" H 3150 3750 50  0001 C CNN
+F 1 "GND" H 3155 3827 50  0000 C CNN
+F 2 "" H 3150 4000 50  0001 C CNN
+F 3 "" H 3150 4000 50  0001 C CNN
+	1    3150 4000
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3250 5550 3250 5400
+	3150 4000 3150 3850
 Text Notes 3700 7650 0    60   ~ 0
 10V-48V
 $Comp
@@ -699,27 +501,27 @@ Wire Wire Line
 $Comp
 L servo-sigma-48v-rescue:CP-device C6
 U 1 1 5BAAD8C5
-P 3550 5150
-F 0 "C6" H 3575 5250 50  0000 L CNN
-F 1 "120uF" H 3575 5050 50  0000 L CNN
-F 2 "Capacitor_SMD:CP_Elec_10x10" H 3588 5000 50  0001 C CNN
-F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 3550 5150 50  0001 C CNN
-F 4 "P19316CT-ND" H 3550 5150 60  0001 C CNN "Part"
-F 5 "DigiKey" H 3550 5150 60  0001 C CNN "Provider"
-	1    3550 5150
+P 3450 3600
+F 0 "C6" H 3475 3700 50  0000 L CNN
+F 1 "120uF" H 3475 3500 50  0000 L CNN
+F 2 "Capacitor_SMD:CP_Elec_10x10" H 3488 3450 50  0001 C CNN
+F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 3450 3600 50  0001 C CNN
+F 4 "P19316CT-ND" H 3450 3600 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3450 3600 60  0001 C CNN "Provider"
+	1    3450 3600
 	1    0    0    -1  
 $EndComp
 $Comp
 L servo-sigma-48v-rescue:CP-device C9
 U 1 1 5BAAD939
-P 3850 5150
-F 0 "C9" H 3875 5250 50  0000 L CNN
-F 1 "120uF" H 3875 5050 50  0000 L CNN
-F 2 "Capacitor_SMD:CP_Elec_10x10" H 3888 5000 50  0001 C CNN
-F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 3850 5150 50  0001 C CNN
-F 4 "P19316CT-ND" H 3850 5150 60  0001 C CNN "Part"
-F 5 "DigiKey" H 3850 5150 60  0001 C CNN "Provider"
-	1    3850 5150
+P 3750 3600
+F 0 "C9" H 3775 3700 50  0000 L CNN
+F 1 "120uF" H 3775 3500 50  0000 L CNN
+F 2 "Capacitor_SMD:CP_Elec_10x10" H 3788 3450 50  0001 C CNN
+F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 3750 3600 50  0001 C CNN
+F 4 "P19316CT-ND" H 3750 3600 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3750 3600 60  0001 C CNN "Provider"
+	1    3750 3600
 	1    0    0    -1  
 $EndComp
 Connection ~ 8200 7450
@@ -1046,26 +848,6 @@ Wire Wire Line
 Wire Wire Line
 	3250 6950 3250 7650
 Connection ~ 3250 7650
-Wire Wire Line
-	4700 3350 5200 3350
-Wire Wire Line
-	5200 3350 5200 3700
-Wire Wire Line
-	5200 3050 5200 3350
-Connection ~ 5200 3350
-Wire Wire Line
-	5200 4000 5200 4100
-Wire Wire Line
-	4700 3550 6400 3550
-Wire Wire Line
-	7350 4650 7900 4650
-Wire Wire Line
-	7350 4400 7350 4650
-Connection ~ 7350 4650
-Wire Wire Line
-	3250 3050 3250 3650
-Wire Wire Line
-	3250 3650 3550 3650
 $Comp
 L power:PWR_FLAG #FLG0101
 U 1 1 5BB0B70D
@@ -1177,52 +959,18 @@ Wire Wire Line
 	11750 7450 11750 7600
 Connection ~ 11750 7450
 Wire Wire Line
-	6400 3450 6400 2450
-Wire Wire Line
-	6400 2450 6900 2450
-Wire Wire Line
-	6400 3550 6400 4650
-Wire Wire Line
-	6400 4650 7350 4650
-Wire Wire Line
 	1900 3350 2300 3350
-Connection ~ 3550 3350
 Wire Wire Line
 	2300 3350 2300 3050
-Connection ~ 2300 3350
-Wire Wire Line
-	2300 3350 3550 3350
 $Comp
 L power:GND #PWR0108
 U 1 1 5BC053F5
-P 2300 4100
-F 0 "#PWR0108" H 2300 3850 50  0001 C CNN
-F 1 "GND" H 2300 3950 50  0000 C CNN
-F 2 "" H 2300 4100 50  0001 C CNN
-F 3 "" H 2300 4100 50  0001 C CNN
-	1    2300 4100
-	-1   0    0    -1  
-$EndComp
-$Comp
-L power:+BATT #PWR0109
-U 1 1 5BC182A9
-P 3250 4600
-F 0 "#PWR0109" H 3250 4450 50  0001 C CNN
-F 1 "+BATT" H 3250 4740 50  0000 C CNN
-F 2 "" H 3250 4600 50  0001 C CNN
-F 3 "" H 3250 4600 50  0001 C CNN
-	1    3250 4600
-	-1   0    0    -1  
-$EndComp
-$Comp
-L power:+BATT #PWR0110
-U 1 1 5BC1E3B1
-P 3250 6950
-F 0 "#PWR0110" H 3250 6800 50  0001 C CNN
-F 1 "+BATT" H 3250 7090 50  0000 C CNN
-F 2 "" H 3250 6950 50  0001 C CNN
-F 3 "" H 3250 6950 50  0001 C CNN
-	1    3250 6950
+P 2300 4000
+F 0 "#PWR0108" H 2300 3750 50  0001 C CNN
+F 1 "GND" H 2300 3850 50  0000 C CNN
+F 2 "" H 2300 4000 50  0001 C CNN
+F 3 "" H 2300 4000 50  0001 C CNN
+	1    2300 4000
 	-1   0    0    -1  
 $EndComp
 $Comp
@@ -1247,4 +995,19 @@ Wire Wire Line
 	6550 9000 7800 9000
 Wire Wire Line
 	6550 8250 6550 7450
+Wire Wire Line
+	2300 3350 3150 3350
+Connection ~ 2300 3350
+Connection ~ 3150 3350
+$Comp
+L sigmadrone:VIN #PWR0109
+U 1 1 5C8A86BB
+P 3250 6950
+F 0 "#PWR0109" H 3250 6800 50  0001 C CNN
+F 1 "VIN" H 3265 7123 50  0000 C CNN
+F 2 "" H 3250 6950 50  0000 C CNN
+F 3 "" H 3250 6950 50  0000 C CNN
+	1    3250 6950
+	1    0    0    -1  
+$EndComp
 $EndSCHEMATC
