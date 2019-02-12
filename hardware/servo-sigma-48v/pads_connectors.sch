@@ -796,55 +796,36 @@ F 5 "DigiKey" H 1700 1150 50  0001 C CNN "Provider"
 	1    1700 1150
 	-1   0    0    -1  
 $EndComp
-$Comp
-L servo-sigma-48v-rescue:CONN_01X03_MALE-conn J4
-U 1 1 5BCC7E52
-P 1750 2100
-F 0 "J4" H 1856 2490 50  0000 C CNN
-F 1 "CONN_01X03_MALE" H 1856 2399 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical" H 1750 2300 50  0001 C CNN
-F 3 "" H 1750 2300 50  0001 C CNN
-F 4 "732-5316-ND" H 1750 2100 50  0001 C CNN "Part"
-F 5 "DigiKey" H 1750 2100 50  0001 C CNN "Provider"
-	1    1750 2100
-	1    0    0    -1  
-$EndComp
 Text Label 2900 1900 2    60   ~ 0
 PWM_IN
-Text Label 2900 2100 2    60   ~ 0
+Text Label 2900 2000 2    60   ~ 0
 PWM_5V
-Text Label 2900 2300 2    60   ~ 0
+Text Label 2900 2100 2    60   ~ 0
 PWM_GND
 Text HLabel 3000 1900 2    60   Output ~ 0
 PWM
-Wire Wire Line
-	2050 1900 3000 1900
 $Comp
 L power:GND #PWR045
 U 1 1 5BD194DC
-P 3000 2300
-F 0 "#PWR045" H 3000 2050 50  0001 C CNN
-F 1 "GND" H 3000 2150 50  0000 C CNN
-F 2 "" H 3000 2300 50  0001 C CNN
-F 3 "" H 3000 2300 50  0001 C CNN
-	1    3000 2300
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	2050 2300 3000 2300
-$Comp
-L power:+5V #PWR043
-U 1 1 5BD23E44
 P 3000 2100
-F 0 "#PWR043" H 3000 1950 50  0001 C CNN
-F 1 "+5V" H 3015 2273 50  0000 C CNN
+F 0 "#PWR045" H 3000 1850 50  0001 C CNN
+F 1 "GND" V 3000 1900 50  0000 C CNN
 F 2 "" H 3000 2100 50  0001 C CNN
 F 3 "" H 3000 2100 50  0001 C CNN
 	1    3000 2100
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:+5V #PWR043
+U 1 1 5BD23E44
+P 3000 2000
+F 0 "#PWR043" H 3000 1850 50  0001 C CNN
+F 1 "+5V" V 3000 2200 50  0000 C CNN
+F 2 "" H 3000 2000 50  0001 C CNN
+F 3 "" H 3000 2000 50  0001 C CNN
+	1    3000 2000
 	0    1    1    0   
 $EndComp
-Wire Wire Line
-	2050 2100 3000 2100
 Wire Wire Line
 	3250 6950 3250 7650
 Connection ~ 3250 7650
@@ -1010,4 +991,25 @@ F 3 "" H 3250 6950 50  0000 C CNN
 	1    3250 6950
 	1    0    0    -1  
 $EndComp
+$Comp
+L Connector_Generic:Conn_01x03 J?
+U 1 1 5CA52083
+P 1650 2000
+AR Path="/58BE2779/5CA52083" Ref="J?"  Part="1" 
+AR Path="/58BE27E6/5CA52083" Ref="J4"  Part="1" 
+F 0 "J4" H 1650 2200 50  0000 C CNN
+F 1 "Conn_01x03" H 1650 1800 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Horizontal" H 1650 2000 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 1650 2000 50  0001 C CNN
+F 4 "WM4901-ND" H 1650 2000 50  0001 C CNN "Part"
+F 5 "DigiKey" H 1650 2000 50  0001 C CNN "Provider"
+	1    1650 2000
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	1850 1900 3000 1900
+Wire Wire Line
+	1850 2000 3000 2000
+Wire Wire Line
+	1850 2100 3000 2100
 $EndSCHEMATC
