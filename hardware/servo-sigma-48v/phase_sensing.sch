@@ -14,11 +14,11 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text HLabel 6250 9400 2    60   Input ~ 0
+Text HLabel 6250 10000 2    60   Input ~ 0
 PHASE_A
 Text HLabel 6250 9700 2    60   Input ~ 0
 PHASE_B
-Text HLabel 6250 10000 2    60   Input ~ 0
+Text HLabel 6250 9400 2    60   Input ~ 0
 PHASE_C
 $Comp
 L power:GND #PWR024
@@ -31,11 +31,11 @@ F 3 "" H 4350 10900 50  0001 C CNN
 	1    4350 10900
 	1    0    0    -1  
 $EndComp
-Text HLabel 1700 9000 0    60   Output ~ 0
+Text HLabel 1700 8400 0    60   Output ~ 0
 SENSE_C
 Text HLabel 1700 8700 0    60   Output ~ 0
 SENSE_B
-Text HLabel 1700 8400 0    60   Output ~ 0
+Text HLabel 1700 9000 0    60   Output ~ 0
 SENSE_A
 $Comp
 L servo-sigma-48v-rescue:R-device R45

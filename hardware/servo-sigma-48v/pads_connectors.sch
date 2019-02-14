@@ -27,17 +27,6 @@ F 3 "" H 9950 5300 50  0001 C CNN
 	1    9950 5300
 	1    0    0    -1  
 $EndComp
-$Comp
-L power:+BATT #PWR054
-U 1 1 58CF9E89
-P 9950 4000
-F 0 "#PWR054" H 9950 3850 50  0001 C CNN
-F 1 "+BATT" H 9950 4140 50  0000 C CNN
-F 2 "" H 9950 4000 50  0001 C CNN
-F 3 "" H 9950 4000 50  0001 C CNN
-	1    9950 4000
-	-1   0    0    -1  
-$EndComp
 Text HLabel 10350 4650 2    60   Output ~ 0
 VBAT_ADC
 Text Notes 10300 4450 0    60   ~ 0
@@ -783,19 +772,6 @@ Wire Wire Line
 	2700 1250 1900 1250
 Wire Wire Line
 	2700 1150 1900 1150
-$Comp
-L servo-sigma-48v-rescue:CONN_01X03-conn J3
-U 1 1 5BC83965
-P 1700 1150
-F 0 "J3" H 1619 1465 50  0000 C CNN
-F 1 "CONN_01X03" H 1619 1374 50  0000 C CNN
-F 2 "Sigmadrone:PhoenixContact_MKDS_03x7.62mm_Vertical" H 1700 1150 50  0001 C CNN
-F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1704936.pdf" H 1700 1150 50  0001 C CNN
-F 4 "277-5954-ND" H 1700 1150 50  0001 C CNN "Part"
-F 5 "DigiKey" H 1700 1150 50  0001 C CNN "Provider"
-	1    1700 1150
-	-1   0    0    -1  
-$EndComp
 Text Label 2900 1900 2    60   ~ 0
 PWM_IN
 Text Label 2900 2000 2    60   ~ 0
@@ -1012,4 +988,30 @@ Wire Wire Line
 	1850 2000 3000 2000
 Wire Wire Line
 	1850 2100 3000 2100
+$Comp
+L sigmadrone:VIN #PWR0133
+U 1 1 5D195306
+P 9950 4000
+F 0 "#PWR0133" H 9950 3850 50  0001 C CNN
+F 1 "VIN" H 9965 4173 50  0000 C CNN
+F 2 "" H 9950 4000 50  0000 C CNN
+F 3 "" H 9950 4000 50  0000 C CNN
+	1    9950 4000
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connector_Generic:Conn_01x03 J?
+U 1 1 5DA2DCD3
+P 1700 1150
+AR Path="/58BE2779/5DA2DCD3" Ref="J?"  Part="1" 
+AR Path="/58BE27E6/5DA2DCD3" Ref="J3"  Part="1" 
+F 0 "J3" H 1700 1350 50  0000 C CNN
+F 1 "Conn_01x03" H 1700 950 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Horizontal" H 1700 1150 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 1700 1150 50  0001 C CNN
+F 4 "WM4901-ND" H 1700 1150 50  0001 C CNN "Part"
+F 5 "DigiKey" H 1700 1150 50  0001 C CNN "Provider"
+	1    1700 1150
+	-1   0    0    -1  
+$EndComp
 $EndSCHEMATC
