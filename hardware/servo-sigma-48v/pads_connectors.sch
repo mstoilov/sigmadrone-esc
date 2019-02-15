@@ -785,23 +785,23 @@ F 5 "DigiKey" H 1700 1150 50  0001 C CNN "Provider"
 	1    1700 1150
 	-1   0    0    -1  
 $EndComp
-Text Label 2900 1900 2    60   ~ 0
+Text Label 2900 2100 2    60   ~ 0
 PWM_IN
 Text Label 2900 2000 2    60   ~ 0
 PWM_5V
-Text Label 2900 2100 2    60   ~ 0
+Text Label 2900 1900 2    60   ~ 0
 PWM_GND
-Text HLabel 3000 1900 2    60   Output ~ 0
+Text HLabel 3000 2100 2    60   Output ~ 0
 PWM
 $Comp
 L power:GND #PWR045
 U 1 1 5BD194DC
-P 3000 2100
-F 0 "#PWR045" H 3000 1850 50  0001 C CNN
-F 1 "GND" V 3000 1900 50  0000 C CNN
-F 2 "" H 3000 2100 50  0001 C CNN
-F 3 "" H 3000 2100 50  0001 C CNN
-	1    3000 2100
+P 3000 1900
+F 0 "#PWR045" H 3000 1650 50  0001 C CNN
+F 1 "GND" V 3000 1700 50  0000 C CNN
+F 2 "" H 3000 1900 50  0001 C CNN
+F 3 "" H 3000 1900 50  0001 C CNN
+	1    3000 1900
 	0    -1   -1   0   
 $EndComp
 $Comp
@@ -972,11 +972,11 @@ F 5 "DigiKey" H 1650 2000 50  0001 C CNN "Provider"
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	1850 1900 3000 1900
+	1850 2100 3000 2100
 Wire Wire Line
 	1850 2000 3000 2000
 Wire Wire Line
-	1850 2100 3000 2100
+	1850 1900 3000 1900
 $Comp
 L sigmadrone:VIN #PWR0133
 U 1 1 5CAF6219
