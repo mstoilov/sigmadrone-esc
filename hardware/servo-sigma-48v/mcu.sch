@@ -1185,22 +1185,20 @@ $EndComp
 $Comp
 L power:GND #PWR076
 U 1 1 5C645EB6
-P 5500 14400
-F 0 "#PWR076" H 5500 14150 50  0001 C CNN
-F 1 "GND" V 5500 14200 50  0000 C CNN
-F 2 "" H 5500 14400 50  0001 C CNN
-F 3 "" H 5500 14400 50  0001 C CNN
-	1    5500 14400
+P 5500 14200
+F 0 "#PWR076" H 5500 13950 50  0001 C CNN
+F 1 "GND" V 5500 14000 50  0000 C CNN
+F 2 "" H 5500 14200 50  0001 C CNN
+F 3 "" H 5500 14200 50  0001 C CNN
+	1    5500 14200
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	4800 14400 5500 14400
+	4800 14200 5500 14200
 Wire Wire Line
 	4800 14300 5500 14300
-Text Label 5750 14200 2    60   ~ 0
+Text Label 5550 14400 2    60   ~ 0
 SW1
-Wire Wire Line
-	4800 14200 5200 14200
 $Comp
 L servo-sigma-48v-rescue:R-device R20
 U 1 1 5C69BA3F
@@ -1229,11 +1227,6 @@ F 5 "DigiKey" H 5200 14650 60  0001 C CNN "Provider"
 $EndComp
 Wire Wire Line
 	5200 14800 5200 14900
-Wire Wire Line
-	5200 14500 5200 14200
-Connection ~ 5200 14200
-Wire Wire Line
-	5200 14200 5750 14200
 $Comp
 L power:GND #PWR073
 U 1 1 5C70ECD7
@@ -1274,8 +1267,6 @@ F 3 "" H 5200 13600 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5200 14050 5200 14200
-Wire Wire Line
 	5200 13600 5200 13750
 $Comp
 L power:+5V #PWR?
@@ -1293,22 +1284,20 @@ $EndComp
 $Comp
 L power:GND #PWR084
 U 1 1 5C769B46
-P 7350 14400
-F 0 "#PWR084" H 7350 14150 50  0001 C CNN
-F 1 "GND" V 7350 14200 50  0000 C CNN
-F 2 "" H 7350 14400 50  0001 C CNN
-F 3 "" H 7350 14400 50  0001 C CNN
-	1    7350 14400
+P 7350 14200
+F 0 "#PWR084" H 7350 13950 50  0001 C CNN
+F 1 "GND" V 7350 14000 50  0000 C CNN
+F 2 "" H 7350 14200 50  0001 C CNN
+F 3 "" H 7350 14200 50  0001 C CNN
+	1    7350 14200
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	6650 14400 7350 14400
+	6650 14200 7350 14200
 Wire Wire Line
 	6650 14300 7350 14300
-Text Label 7600 14200 2    60   ~ 0
+Text Label 7350 14400 2    60   ~ 0
 SW2
-Wire Wire Line
-	6650 14200 7050 14200
 $Comp
 L servo-sigma-48v-rescue:R-device R30
 U 1 1 5C769B52
@@ -1337,11 +1326,6 @@ F 5 "DigiKey" H 7050 14650 60  0001 C CNN "Provider"
 $EndComp
 Wire Wire Line
 	7050 14800 7050 14900
-Wire Wire Line
-	7050 14500 7050 14200
-Connection ~ 7050 14200
-Wire Wire Line
-	7050 14200 7600 14200
 $Comp
 L power:GND #PWR082
 U 1 1 5C769B66
@@ -1381,8 +1365,6 @@ F 3 "" H 7050 13600 50  0001 C CNN
 	1    7050 13600
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	7050 14050 7050 14200
 Wire Wire Line
 	7050 13600 7050 13750
 Wire Wire Line
@@ -1596,10 +1578,6 @@ Wire Wire Line
 	1450 8750 1450 9000
 Wire Wire Line
 	1450 9300 1450 9400
-Wire Wire Line
-	2750 8550 3000 8550
-Wire Wire Line
-	2750 8850 3000 8850
 $Comp
 L servo-sigma-48v-rescue:R-device R88
 U 1 1 5CEA24A4
@@ -1645,73 +1623,16 @@ Wire Wire Line
 	3650 9850 3650 8850
 Connection ~ 3650 8850
 $Comp
-L servo-sigma-48v-rescue:R-device R?
-U 1 1 5CF4DCAA
-P 3000 8200
-AR Path="/58BF599E/5CF4DCAA" Ref="R?"  Part="1" 
-AR Path="/58BE2779/5CF4DCAA" Ref="R86"  Part="1" 
-F 0 "R86" V 3080 8200 50  0000 C CNN
-F 1 "4.7k" V 3000 8200 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2930 8200 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 3000 8200 50  0001 C CNN
-F 4 "311-2606-2-ND" V 3000 8200 60  0001 C CNN "Part"
-F 5 "DigiKey" V 3000 8200 60  0001 C CNN "Provider"
-	1    3000 8200
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	2350 7800 3000 7800
-Wire Wire Line
-	3000 7800 3000 8050
-Wire Wire Line
-	3000 8350 3000 8550
-Connection ~ 3000 8550
-Wire Wire Line
-	3000 8550 3450 8550
-$Comp
-L servo-sigma-48v-rescue:R-device R?
-U 1 1 5CF86600
-P 3000 9150
-AR Path="/58BF599E/5CF86600" Ref="R?"  Part="1" 
-AR Path="/58BE2779/5CF86600" Ref="R87"  Part="1" 
-F 0 "R87" V 3080 9150 50  0000 C CNN
-F 1 "4.7k" V 3000 9150 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2930 9150 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 3000 9150 50  0001 C CNN
-F 4 "311-2606-2-ND" V 3000 9150 60  0001 C CNN "Part"
-F 5 "DigiKey" V 3000 9150 60  0001 C CNN "Provider"
-	1    3000 9150
-	-1   0    0    1   
-$EndComp
-$Comp
-L power:GND #PWR088
-U 1 1 5CF866A0
-P 3000 9400
-F 0 "#PWR088" H 3000 9150 50  0001 C CNN
-F 1 "GND" H 3000 9250 50  0000 C CNN
-F 2 "" H 3000 9400 50  0001 C CNN
-F 3 "" H 3000 9400 50  0001 C CNN
-	1    3000 9400
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	3000 9000 3000 8850
-Connection ~ 3000 8850
-Wire Wire Line
-	3000 8850 3650 8850
-Wire Wire Line
-	3000 9300 3000 9400
-$Comp
 L Connector_Generic:Conn_01x03 J10
 U 1 1 5CFADD45
-P 4250 9400
-F 0 "J10" H 4250 9600 50  0000 C CNN
-F 1 "Conn_01x03" H 4250 9200 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Horizontal" H 4250 9400 50  0001 C CNN
-F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 4250 9400 50  0001 C CNN
-F 4 "WM4901-ND" H 4250 9400 50  0001 C CNN "Part"
-F 5 "DigiKey" H 4250 9400 50  0001 C CNN "Provider"
-	1    4250 9400
+P 4150 9400
+F 0 "J10" H 4150 9600 50  0000 C CNN
+F 1 "Conn_01x03" H 4150 9200 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Horizontal" H 4150 9400 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 4150 9400 50  0001 C CNN
+F 4 "WM4901-ND" H 4150 9400 50  0001 C CNN "Part"
+F 5 "DigiKey" H 4150 9400 50  0001 C CNN "Provider"
+	1    4150 9400
 	0    -1   1    0   
 $EndComp
 Wire Wire Line
@@ -1725,14 +1646,14 @@ Wire Wire Line
 $Comp
 L Connector_Generic:Conn_01x03 J11
 U 1 1 5D05C4BC
-P 4750 9400
-F 0 "J11" H 4750 9600 50  0000 C CNN
-F 1 "Conn_01x03" H 4750 9200 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Horizontal" H 4750 9400 50  0001 C CNN
-F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 4750 9400 50  0001 C CNN
-F 4 "WM4901-ND" H 4750 9400 50  0001 C CNN "Part"
-F 5 "DigiKey" H 4750 9400 50  0001 C CNN "Provider"
-	1    4750 9400
+P 4650 9400
+F 0 "J11" H 4650 9600 50  0000 C CNN
+F 1 "Conn_01x03" H 4650 9200 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Horizontal" H 4650 9400 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 4650 9400 50  0001 C CNN
+F 4 "WM4901-ND" H 4650 9400 50  0001 C CNN "Part"
+F 5 "DigiKey" H 4650 9400 50  0001 C CNN "Provider"
+	1    4650 9400
 	0    -1   1    0   
 $EndComp
 Wire Wire Line
@@ -1748,29 +1669,29 @@ Connection ~ 4250 8550
 $Comp
 L power:GND #PWR089
 U 1 1 5D0BC76A
-P 4350 9100
-F 0 "#PWR089" H 4350 8850 50  0001 C CNN
-F 1 "GND" H 4350 8950 50  0000 C CNN
-F 2 "" H 4350 9100 50  0001 C CNN
-F 3 "" H 4350 9100 50  0001 C CNN
-	1    4350 9100
+P 4050 9100
+F 0 "#PWR089" H 4050 8850 50  0001 C CNN
+F 1 "GND" H 4050 8950 50  0000 C CNN
+F 2 "" H 4050 9100 50  0001 C CNN
+F 3 "" H 4050 9100 50  0001 C CNN
+	1    4050 9100
 	-1   0    0    1   
 $EndComp
 $Comp
 L power:GND #PWR090
 U 1 1 5D0BC84D
-P 4850 9100
-F 0 "#PWR090" H 4850 8850 50  0001 C CNN
-F 1 "GND" H 4850 8950 50  0000 C CNN
-F 2 "" H 4850 9100 50  0001 C CNN
-F 3 "" H 4850 9100 50  0001 C CNN
-	1    4850 9100
+P 4550 9100
+F 0 "#PWR090" H 4550 8850 50  0001 C CNN
+F 1 "GND" H 4550 8950 50  0000 C CNN
+F 2 "" H 4550 9100 50  0001 C CNN
+F 3 "" H 4550 9100 50  0001 C CNN
+	1    4550 9100
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	4350 9200 4350 9100
+	4050 9200 4050 9100
 Wire Wire Line
-	4850 9200 4850 9100
+	4550 9200 4550 9100
 $Comp
 L Interface_UART:MAX3485 U3
 U 1 1 5D0E51D6
@@ -1909,10 +1830,6 @@ Wire Wire Line
 	1400 11850 1400 12100
 Wire Wire Line
 	1400 12400 1400 12500
-Wire Wire Line
-	2700 11650 2950 11650
-Wire Wire Line
-	2700 11950 2950 11950
 $Comp
 L servo-sigma-48v-rescue:R-device R81
 U 1 1 5D0E522D
@@ -1946,63 +1863,6 @@ Wire Wire Line
 Wire Wire Line
 	3600 12700 3600 11950
 Connection ~ 3600 11950
-$Comp
-L servo-sigma-48v-rescue:R-device R?
-U 1 1 5D0E5249
-P 2950 11150
-AR Path="/58BF599E/5D0E5249" Ref="R?"  Part="1" 
-AR Path="/58BE2779/5D0E5249" Ref="R38"  Part="1" 
-F 0 "R38" V 3030 11150 50  0000 C CNN
-F 1 "4.7k" V 2950 11150 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2880 11150 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 2950 11150 50  0001 C CNN
-F 4 "311-2606-2-ND" V 2950 11150 60  0001 C CNN "Part"
-F 5 "DigiKey" V 2950 11150 60  0001 C CNN "Provider"
-	1    2950 11150
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	2300 10900 2950 10900
-Wire Wire Line
-	2950 10900 2950 11000
-Wire Wire Line
-	2950 11300 2950 11650
-Connection ~ 2950 11650
-Wire Wire Line
-	2950 11650 3400 11650
-$Comp
-L servo-sigma-48v-rescue:R-device R?
-U 1 1 5D0E5257
-P 2950 12200
-AR Path="/58BF599E/5D0E5257" Ref="R?"  Part="1" 
-AR Path="/58BE2779/5D0E5257" Ref="R40"  Part="1" 
-F 0 "R40" V 3030 12200 50  0000 C CNN
-F 1 "4.7k" V 2950 12200 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2880 12200 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 2950 12200 50  0001 C CNN
-F 4 "311-2606-2-ND" V 2950 12200 60  0001 C CNN "Part"
-F 5 "DigiKey" V 2950 12200 60  0001 C CNN "Provider"
-	1    2950 12200
-	-1   0    0    1   
-$EndComp
-$Comp
-L power:GND #PWR052
-U 1 1 5D0E525E
-P 2950 12500
-F 0 "#PWR052" H 2950 12250 50  0001 C CNN
-F 1 "GND" H 2950 12350 50  0000 C CNN
-F 2 "" H 2950 12500 50  0001 C CNN
-F 3 "" H 2950 12500 50  0001 C CNN
-	1    2950 12500
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	2950 12050 2950 11950
-Connection ~ 2950 11950
-Wire Wire Line
-	2950 11950 3600 11950
-Wire Wire Line
-	2950 12350 2950 12500
 Wire Wire Line
 	3600 12700 3400 12700
 Wire Wire Line
@@ -2685,4 +2545,87 @@ Wire Wire Line
 	13500 11350 14200 11350
 Wire Wire Line
 	13500 11450 14200 11450
+Wire Wire Line
+	2750 8550 3050 8550
+Wire Wire Line
+	2750 8850 3050 8850
+Wire Wire Line
+	2700 11650 3400 11650
+Wire Wire Line
+	2700 11950 3600 11950
+Wire Wire Line
+	2350 7800 3050 7800
+Wire Wire Line
+	3050 7800 3050 7900
+Wire Wire Line
+	3050 8200 3050 8550
+Connection ~ 3050 8550
+Wire Wire Line
+	3050 8550 3450 8550
+Wire Wire Line
+	3050 9000 3050 8850
+Connection ~ 3050 8850
+Wire Wire Line
+	3050 8850 3650 8850
+$Comp
+L power:GND #PWR0101
+U 1 1 5CD706F1
+P 3050 9400
+F 0 "#PWR0101" H 3050 9150 50  0001 C CNN
+F 1 "GND" H 3050 9250 50  0000 C CNN
+F 2 "" H 3050 9400 50  0001 C CNN
+F 3 "" H 3050 9400 50  0001 C CNN
+	1    3050 9400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3050 9300 3050 9400
+$Comp
+L servo-sigma-48v-rescue:R-device R?
+U 1 1 5CD9CA26
+P 3050 8050
+AR Path="/58BF599E/5CD9CA26" Ref="R?"  Part="1" 
+AR Path="/58BE2779/5CD9CA26" Ref="R38"  Part="1" 
+F 0 "R38" V 3130 8050 50  0000 C CNN
+F 1 "N/A" V 3050 8050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2980 8050 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 3050 8050 50  0001 C CNN
+F 4 "311-2606-2-ND" V 3050 8050 60  0001 C CNN "Part"
+F 5 "DigiKey" V 3050 8050 60  0001 C CNN "Provider"
+	1    3050 8050
+	-1   0    0    1   
+$EndComp
+$Comp
+L servo-sigma-48v-rescue:R-device R?
+U 1 1 5CDC1D18
+P 3050 9150
+AR Path="/58BF599E/5CDC1D18" Ref="R?"  Part="1" 
+AR Path="/58BE2779/5CDC1D18" Ref="R40"  Part="1" 
+F 0 "R40" V 3130 9150 50  0000 C CNN
+F 1 "N/A" V 3050 9150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2980 9150 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 3050 9150 50  0001 C CNN
+F 4 "311-2606-2-ND" V 3050 9150 60  0001 C CNN "Part"
+F 5 "DigiKey" V 3050 9150 60  0001 C CNN "Provider"
+	1    3050 9150
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	6650 14400 7050 14400
+Wire Wire Line
+	7050 14050 7050 14400
+Connection ~ 7050 14400
+Wire Wire Line
+	7050 14400 7350 14400
+Wire Wire Line
+	7050 14400 7050 14500
+Wire Wire Line
+	4800 14400 5200 14400
+Wire Wire Line
+	5200 14050 5200 14400
+Connection ~ 5200 14400
+Wire Wire Line
+	5200 14400 5550 14400
+Wire Wire Line
+	5200 14400 5200 14500
 $EndSCHEMATC
