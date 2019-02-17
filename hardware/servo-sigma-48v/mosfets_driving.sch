@@ -30,19 +30,6 @@ PHASE_A
 Text Label 3900 1850 2    60   ~ 0
 GATE_AH
 $Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q3
-U 1 1 58BF7288
-P 6000 3800
-F 0 "Q3" H 6200 3850 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 6200 3750 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 6200 3900 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 6000 3800 50  0001 C CNN
-F 4 "DigiKey" H 6000 3800 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 6000 3800 60  0001 C CNN "Part"
-	1    6000 3800
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:GND #PWR027
 U 1 1 58BF987A
 P 2750 6200
@@ -1198,58 +1185,6 @@ Wire Wire Line
 Wire Wire Line
 	8150 5050 8300 5050
 $Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q6
-U 1 1 5A8C12F1
-P 2650 5050
-F 0 "Q6" H 2850 5100 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 2850 5000 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 2850 5150 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 2650 5050 50  0001 C CNN
-F 4 "DigiKey" H 2650 5050 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 2650 5050 60  0001 C CNN "Part"
-	1    2650 5050
-	1    0    0    -1  
-$EndComp
-$Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q4
-U 1 1 5A8D4DE7
-P 6000 5050
-F 0 "Q4" H 6200 5100 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 6200 5000 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 6200 5150 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 6000 5050 50  0001 C CNN
-F 4 "DigiKey" H 6000 5050 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 6000 5050 60  0001 C CNN "Part"
-	1    6000 5050
-	1    0    0    -1  
-$EndComp
-$Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q1
-U 1 1 5A8D51CA
-P 9500 3800
-F 0 "Q1" H 9700 3850 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 9700 3750 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 9700 3900 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 9500 3800 50  0001 C CNN
-F 4 "DigiKey" H 9500 3800 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 9500 3800 60  0001 C CNN "Part"
-	1    9500 3800
-	1    0    0    -1  
-$EndComp
-$Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q2
-U 1 1 5A8D529E
-P 9500 5050
-F 0 "Q2" H 9700 5100 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 9700 5000 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 9700 5150 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 9500 5050 50  0001 C CNN
-F 4 "DigiKey" H 9500 5050 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 9500 5050 60  0001 C CNN "Part"
-	1    9500 5050
-	1    0    0    -1  
-$EndComp
-$Comp
 L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q5
 U 1 1 5A928DF8
 P 2650 3800
@@ -1259,6 +1194,7 @@ F 2 "Sigmadrone:PQFN_5x6_SGD" H 2850 3900 50  0001 C CNN
 F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 2650 3800 50  0001 C CNN
 F 4 "DigiKey" H 2650 3800 60  0001 C CNN "Provider"
 F 5 "497-14988-6-ND" H 2650 3800 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 2650 3800 50  0001 C CNN "Value1"
 	1    2650 3800
 	1    0    0    -1  
 $EndComp
@@ -1364,11 +1300,7 @@ Connection ~ 9600 5400
 Wire Wire Line
 	9600 5400 9600 5550
 Wire Wire Line
-	10000 6100 9600 6100
-Wire Wire Line
 	6500 6100 6100 6100
-Wire Wire Line
-	3150 6100 2750 6100
 Wire Wire Line
 	3150 5400 2750 5400
 Connection ~ 2750 5400
@@ -1765,32 +1697,6 @@ Wire Wire Line
 	12100 3800 12250 3800
 Wire Wire Line
 	12100 5050 12250 5050
-$Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q7
-U 1 1 5BC800CA
-P 13450 3800
-F 0 "Q7" H 13650 3850 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 13650 3750 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 13650 3900 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 13450 3800 50  0001 C CNN
-F 4 "DigiKey" H 13450 3800 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 13450 3800 60  0001 C CNN "Part"
-	1    13450 3800
-	1    0    0    -1  
-$EndComp
-$Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q8
-U 1 1 5BC800D2
-P 13450 5050
-F 0 "Q8" H 13650 5100 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 13650 5000 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 13650 5150 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 13450 5050 50  0001 C CNN
-F 4 "DigiKey" H 13450 5050 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 13450 5050 60  0001 C CNN "Part"
-	1    13450 5050
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	13550 4300 14550 4300
 $Comp
@@ -1848,13 +1754,6 @@ Text HLabel 14950 5400 2    60   Output ~ 0
 R_ISENSE_P
 Text HLabel 14950 6100 2    60   Output ~ 0
 R_ISENSE_N
-Wire Wire Line
-	14550 5850 14550 6100
-Wire Wire Line
-	14550 6100 14550 6200
-Connection ~ 14550 6100
-Wire Wire Line
-	14950 6100 14550 6100
 Wire Wire Line
 	14550 4750 14550 5400
 Wire Wire Line
@@ -1925,6 +1824,115 @@ F 1 "VIN" H 2765 3473 50  0000 C CNN
 F 2 "" H 2750 3300 50  0000 C CNN
 F 3 "" H 2750 3300 50  0000 C CNN
 	1    2750 3300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	14550 6100 14550 6200
+Wire Wire Line
+	14550 5850 14550 6100
+Connection ~ 14550 6100
+Wire Wire Line
+	14950 6100 14550 6100
+Wire Wire Line
+	10000 6100 9600 6100
+Wire Wire Line
+	3150 6100 2750 6100
+$Comp
+L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q6
+U 1 1 5C792FA5
+P 2650 5050
+F 0 "Q6" H 2850 5100 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 2850 5000 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 2850 5150 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 2650 5050 50  0001 C CNN
+F 4 "DigiKey" H 2650 5050 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 2650 5050 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 2650 5050 50  0001 C CNN "Value1"
+	1    2650 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q3
+U 1 1 5C79432A
+P 6000 3800
+F 0 "Q3" H 6200 3850 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 6200 3750 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 6200 3900 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 6000 3800 50  0001 C CNN
+F 4 "DigiKey" H 6000 3800 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 6000 3800 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 6000 3800 50  0001 C CNN "Value1"
+	1    6000 3800
+	1    0    0    -1  
+$EndComp
+$Comp
+L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q4
+U 1 1 5C794408
+P 6000 5050
+F 0 "Q4" H 6200 5100 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 6200 5000 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 6200 5150 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 6000 5050 50  0001 C CNN
+F 4 "DigiKey" H 6000 5050 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 6000 5050 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 6000 5050 50  0001 C CNN "Value1"
+	1    6000 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q1
+U 1 1 5C794DDD
+P 9500 3800
+F 0 "Q1" H 9700 3850 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 9700 3750 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 9700 3900 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 9500 3800 50  0001 C CNN
+F 4 "DigiKey" H 9500 3800 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 9500 3800 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 9500 3800 50  0001 C CNN "Value1"
+	1    9500 3800
+	1    0    0    -1  
+$EndComp
+$Comp
+L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q2
+U 1 1 5C794EBD
+P 9500 5050
+F 0 "Q2" H 9700 5100 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 9700 5000 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 9700 5150 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 9500 5050 50  0001 C CNN
+F 4 "DigiKey" H 9500 5050 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 9500 5050 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 9500 5050 50  0001 C CNN "Value1"
+	1    9500 5050
+	1    0    0    -1  
+$EndComp
+$Comp
+L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q7
+U 1 1 5C79539C
+P 13450 3800
+F 0 "Q7" H 13650 3850 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 13650 3750 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 13650 3900 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 13450 3800 50  0001 C CNN
+F 4 "DigiKey" H 13450 3800 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 13450 3800 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 13450 3800 50  0001 C CNN "Value1"
+	1    13450 3800
+	1    0    0    -1  
+$EndComp
+$Comp
+L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q8
+U 1 1 5C795574
+P 13450 5050
+F 0 "Q8" H 13650 5100 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 13650 5000 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 13650 5150 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 13450 5050 50  0001 C CNN
+F 4 "DigiKey" H 13450 5050 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 13450 5050 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 13450 5050 50  0001 C CNN "Value1"
+	1    13450 5050
 	1    0    0    -1  
 $EndComp
 $EndSCHEMATC
