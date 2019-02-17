@@ -444,9 +444,9 @@ C_ISENSE_P
 Text HLabel 2750 2450 0    60   Input ~ 0
 C_ISENSE_N
 Wire Wire Line
-	13000 2250 13250 2250
+	12900 2250 13250 2250
 Wire Wire Line
-	13000 2450 13250 2450
+	12900 2450 13250 2450
 Text HLabel 4850 2350 2    60   Output ~ 0
 IC_FB
 Wire Wire Line
@@ -1125,9 +1125,9 @@ F 3 "" H 3900 2800 50  0001 C CNN
 	1    3900 2800
 	-1   0    0    1   
 $EndComp
-Text HLabel 13000 2250 0    60   Input ~ 0
+Text HLabel 12900 2250 0    60   Input ~ 0
 R_ISENSE_P
-Text HLabel 13000 2450 0    60   Input ~ 0
+Text HLabel 12900 2450 0    60   Input ~ 0
 R_ISENSE_N
 Wire Wire Line
 	9800 4000 9800 4700
@@ -1168,4 +1168,8 @@ Wire Wire Line
 Connection ~ 8750 6550
 Wire Wire Line
 	8750 6550 12300 6550
+Text Label 12950 2250 0    60   ~ 0
+RS_P
+Text Label 12950 2450 0    60   ~ 0
+RS_N
 $EndSCHEMATC
