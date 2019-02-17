@@ -17,6 +17,8 @@
 extern Adc *p_adc;
 extern QuadratureDecoder *p_encoder;
 
+extern volatile uint64_t jiffies;
+
 PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequency& system_clock, OCMode pwm_mode, uint32_t irq_priority, const std::vector<GPIOPin>& pins)
 	: Timer(TIMx, (switching_freq + switching_freq / 8).period(), system_clock, irq_priority, pins)
 	, switching_freq_(switching_freq)
@@ -26,7 +28,6 @@ PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequ
 
 	SetDeadTime(30);
 
-//	CCEnablePreload();
 	EnableARRPreload();
 
 	GenerateEvent(EventUpdate);
@@ -37,6 +38,41 @@ PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequ
 	p3 = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
 	v = std::polar<float>(1.0f, 0.0f);
 	r = std::polar<float>(1.0f, 0.0f);
+
+	run_stack_.push_back([&]()->bool {
+		v = std::polar<float>(1.0f, 0.0f);
+		p_encoder->SetIndexOffset(-1);
+		p_encoder->ResetPosition(0);
+		if (update_counter_++ >= 1 * SINE_STEPS) {
+			update_counter_ = 0;
+			std::cout << "Starting: " << jiffies << std::endl;
+			return true;
+		}
+		return false;
+	});
+
+	run_stack_.push_back([&]()->bool {
+		v = v * r;
+
+//		if (update_counter_ % 5 == 0) {
+//			SetOCPeriod(CH1, duty_ * sine_[(update_counter_ * SINE_SAMPLES / SINE_STEPS + 0 * SINE_SAMPLES / 3) % SINE_SAMPLES]);
+//			SetOCPeriod(CH2, duty_ * sine_[(update_counter_ * SINE_SAMPLES / SINE_STEPS + 1 * SINE_SAMPLES / 3) % SINE_SAMPLES]);
+//			SetOCPeriod(CH3, duty_ * sine_[(update_counter_ * SINE_SAMPLES / SINE_STEPS + 2 * SINE_SAMPLES / 3) % SINE_SAMPLES]);
+//		}
+
+		if (update_counter_++ >= 2 * M2E_RATIO * SINE_STEPS) {
+			update_counter_ = 0;
+			std::cout << "Stopping: " << jiffies << std::endl;
+			return true;
+		}
+		return false;
+	});
+
+	run_stack_.push_back([&]()->bool {
+		Stop();
+		return false;
+	});
+
 }
 
 PWMSine::~PWMSine()
@@ -49,6 +85,10 @@ void PWMSine::Start()
 	SetOCMode(CH1, pwm_mode_);
 	SetOCMode(CH2, pwm_mode_);
 	SetOCMode(CH3, pwm_mode_);
+
+	EnableOCPreload(CH1);
+	EnableOCPreload(CH2);
+	EnableOCPreload(CH3);
 
 	SetOCPolarity(CH1, High);
 	SetOCPolarity(CH2, High);
@@ -65,6 +105,8 @@ void PWMSine::Start()
 	EnableChannel(CH3N);
 
 	update_counter_ = 0;
+	counter_ = 0;
+	run_index_ = 0;
 	EnableInterrupt(InterruptUpdate);
 	EnableOutputs();
 	base::Start();
@@ -112,6 +154,8 @@ void PWMSine::SetThrottle(float percent)
 {
 	percent = std::max(std::min(percent, (float)MAX_THROTTLE), (float)MIN_THROTTLE);
 	duty_ = TimeSpan::from_nanoseconds(switching_freq_.period().nanoseconds() * percent);
+
+	duty_oc_ = __LL_TIM_CALC_ARR(system_clock_.hertz(), GetPrescaler(), duty_.to_frequency().hertz());
 }
 
 Frequency PWMSine::GetSwitchingFrequency()
@@ -124,9 +168,13 @@ void PWMSine::SetElectricalRotationsPerSecond(const Frequency& f)
 	uint64_t swFreq = switching_freq_.millihertz();
 	uint64_t rotFreq = f.millihertz();
 
-	SINE_STEPS = swFreq/rotFreq/5;
+	SINE_STEPS = swFreq/rotFreq/1;
+
+	for (uint32_t i = 0; i < SINE_SAMPLES; i++)
+		sine_[i] = ((sin(2 * M_PI * i / SINE_SAMPLES) + 1.0f) * 0.5f);
+
 	uint64_t repCount = swFreq/rotFreq/SINE_STEPS;
-	SetRepetionCounterValue(repCount);
+	SetRepetionCounterValue(repCount - 1);
 
 	r = std::polar<float>(1.0f, 2.0f * M_PI / SINE_STEPS);
 }
@@ -136,9 +184,9 @@ void PWMSine::SineDriving()
 {
 
 #if 1
-	SetOCPeriod(CH1, duty_ * ((v.real()*p1.real() + v.imag()*p1.imag()) + 1.0f) / 2.0f);
-	SetOCPeriod(CH2, duty_ * ((v.real()*p2.real() + v.imag()*p2.imag()) + 1.0f) / 2.0f);
-	SetOCPeriod(CH3, duty_ * ((v.real()*p3.real() + v.imag()*p3.imag()) + 1.0f) / 2.0f);
+	SetOCValue(CH1, duty_oc_ * ((v.real()*p1.real() + v.imag()*p1.imag()) + 1.0f) * 0.5f);
+	SetOCValue(CH2, duty_oc_ * ((v.real()*p2.real() + v.imag()*p2.imag()) + 1.0f) * 0.5f);
+	SetOCValue(CH3, duty_oc_ * ((v.real()*p3.real() + v.imag()*p3.imag()) + 1.0f) * 0.5f);
 
 
 #else
@@ -153,11 +201,8 @@ void PWMSine::HandleUpdate()
 {
 	float enc_theta = 2 * M_PI * (p_encoder->GetPosition() % (2048 / M2E_RATIO)) / (2048 / M2E_RATIO) ;
 
-	if (update_counter_ > 2 * M2E_RATIO * SINE_STEPS) {
-//		Stop();
-
-		v = std::polar<float>(1.0f, enc_theta) * std::polar<float>(1.0f, M_PI/2);
-	} else {
+#if 0
+	if (update_counter_ < 2 * M2E_RATIO * SINE_STEPS) {
 		if (update_counter_ < 1 * M2E_RATIO * SINE_STEPS) {
 			v = std::polar<float>(1.0f, 0.0f);
 			p_encoder->SetIndexOffset(-1);
@@ -166,23 +211,31 @@ void PWMSine::HandleUpdate()
 			v = v * r;
 		}
 		update_counter_++;
+	} else {
+//		Stop();
+
+		v = std::polar<float>(1.0f, enc_theta) * std::polar<float>(1.0f, M_PI/2);
+	}
+#endif
+
+	if (run_index_ < run_stack_.size()) {
+		if (run_stack_[run_index_]())
+			run_index_++;
 	}
 
 	SineDriving();
 
+#if 1
+
 	if ((++counter_ % 128) == 0) {
 
-#if 1
 		float theta = std::arg(v);
 		if (theta < 0.0f)
 			theta += 2.0f * M_PI;
 
-//		if (theta < enc_theta)
-//			theta += 2.0f * M_PI;
-
-		printf("%6ld : %7.3f -> %7.3f ( %7.3f )   %6ld\n", update_counter_, theta, enc_theta, theta - enc_theta, p_encoder->GetIndexOffset());
+//		printf("%6ld : %7.3f -> %7.3f ( %7.3f )   %6ld\n", update_counter_, theta, enc_theta, theta - enc_theta, p_encoder->GetIndexOffset());
+	}
 
 #endif
 
-	}
 }

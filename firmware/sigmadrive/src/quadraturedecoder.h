@@ -24,22 +24,22 @@ public:
 
 	void Start();
 
-	void ResetCounter(uint32_t value);
+	void ResetCounter(uint32_t cpr);
 	uint32_t GetPosition();
 	void ResetPosition(uint32_t position);
 	uint32_t GetMaxPosition();
-	void SetIndexOffset(int32_t offset);
+	void SetIndexOffset(int32_t cpr);
 	int32_t GetIndexOffset();
 	void CallbackIndex();
 
 
 protected:
 	/* The maximum value the counter can have. */
-	uint32_t counter_max_;
+	uint32_t cpr_max_;
 
 	/*
 	 * The offset of the index output from the encoder.
-	 * If this value is valid, aka not negative, the counter
+	 * If this value is valid, i.e. not negative, the counter
 	 * will be reset to this value every time the CallbackIndex is called.
 	 */
 	int32_t index_offset_;

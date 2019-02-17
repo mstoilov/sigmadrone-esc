@@ -342,7 +342,7 @@ public:
 protected:
 	void UpdatePrescaler(const Frequency& timer_clock);
 
-protected:
+public:
 	uint32_t bsp_init_timer(TIM_TypeDef* TIMx, uint32_t irq_priority);
 	static uint32_t bsp_max_counter(TIM_TypeDef* TIMx);
 

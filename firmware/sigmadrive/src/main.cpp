@@ -23,6 +23,7 @@
 #include "trigger.h"
 #include "adc.h"
 #include "usart.h"
+#include "mathtest.h"
 
 
 #pragma GCC diagnostic push
@@ -43,10 +44,10 @@ DigitalOut led_status(PA_6, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, Di
 DigitalIn btn_user(PA_4, DigitalIn::PullDefault, DigitalIn::InterruptFalling);
 DigitalIn encoder_z(PB_5, DigitalIn::PullDown, DigitalIn::InterruptRising);
 
+
 PWMDecoder pwm3(TIM3, TimeSpan::from_milliseconds(25), Frequency::from_hertz(SystemCoreClock), 0, {
 		{PB_4, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_2}
 });
-
 
 QuadratureDecoder pwm4(TIM4,  2048*4, 0, {
 		{PB_6, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_2},
@@ -55,7 +56,7 @@ QuadratureDecoder pwm4(TIM4,  2048*4, 0, {
 
 QuadratureDecoder *p_encoder = &pwm4;
 
-#undef USE_6STEP
+#define USE_6STEP
 #ifdef USE_6STEP
 PWM6Step pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::TrigUpdate, Timer::PWM1, Timer::High, Timer::Low, 30, 0, {
 		{PA_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
@@ -75,6 +76,10 @@ Adc adc(ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TR
 		});
 
 Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(750), Frequency::from_hertz(SystemCoreClock));
+
+
+//Trigger adc_trigger(TIM3, TimeSpan::from_nanoseconds(750), Frequency::from_hertz(SystemCoreClock),
+//		Timer::SlaveTrigger, Timer::TriggerInternal0, Timer::TrigOC2REF, Timer::CH2, Timer::PWM1);
 
 
 #else
@@ -100,7 +105,7 @@ Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(17000), Frequency::from_her
 
 #endif
 
-uint64_t jiffies = 0;
+volatile uint64_t jiffies = 0;
 
 void emergency_stop()
 {
@@ -114,16 +119,6 @@ extern USART* ptrUsart1;
 void pwm1_toggle()
 {
 	pwm1.Toggle();
-}
-
-void CallbackJeos(int32_t* data, size_t size)
-{
-	static size_t counter = 0;
-
-	if ((counter++ % 64) == 0) {
-		std::for_each(data, data + size, [](int32_t& a){a = 3300/2 - a;});
-		printf("JeosCallback: %7ld %7ld %7ld (%7ld)\n", data[0], data[1], data[2], data[0] + data[1] + data[2]);
-	}
 }
 
 void CallbackPWMCC(uint32_t pulse, uint32_t period)
@@ -151,15 +146,36 @@ void main_task(void *pvParameters)
 	// at high speed.
 	printf("System clock: %lu Hz\n", SystemCoreClock);
 
+	int64_t jend = 0, jbegin = jiffies;
+	int iterations = 4000000;
+	for (int i = 0; i < iterations; i++) {
+		mul_float(2.0, 3.0);
+	}
+	jend = jiffies;
+
+	printf("mul_float  : %5ld\n", (int32_t)(jend - jbegin));
+
+	jbegin = jiffies;
+	for (int i = 0; i < iterations; i++) {
+		div_float(2.0, 3.0);
+	}
+	jend = jiffies;
+	printf("div_float  : %5ld\n", (int32_t)(jend - jbegin));
+
+	std::complex<float> a = 0.25 + 2.0i, b = 0.5 + 1.25i;
+	jbegin = jiffies;
+	for (int i = 0; i < iterations; i++) {
+		dot(a, b);
+	}
+	jend = jiffies;
+	printf("dot        : %5ld\n", (int32_t)(jend - jbegin));
+
 	pwm3.Callback_PWMCC(CallbackPWMCC);
+	pwm3.Start();
 
 	encoder_z.Callback([&](){ p_encoder->CallbackIndex(); });
-
-
-	pwm3.Start();
 	pwm4.Start();
 
-//	adc.CallbackJEOS(CallbackJeos);
 	adc.Start();
 
 
@@ -168,7 +184,7 @@ void main_task(void *pvParameters)
 	adc.CallbackJEOS(&pwm1, &PWM6Step::CallbackJEOS);
 #else
 	pwm1.SetElectricalRotationsPerSecond(Frequency::from_millihertz(500 * PWMSine::M2E_RATIO));
-	pwm1.SetThrottle(0.05);
+	pwm1.SetThrottle(0.04);
 #endif
 
 	PWM6Step::LogEntry log;
@@ -208,7 +224,7 @@ void main_task(void *pvParameters)
 
 		}
 
-		pwm1.SetThrottle(pwm3.GetPulseLength().seconds_float() * 1000.0 - 0.7);
+//		pwm1.SetThrottle(pwm3.GetPulseLength().seconds_float() * 1000.0 - 0.7);
 
 
 
@@ -232,7 +248,7 @@ void main_task(void *pvParameters)
 		}
 #endif
 
-//		std::cout << adc.injdata_[0] << ", "  << adc.injdata_[1] << ", "  << adc.injdata_[2] << ", " << std::endl;
+		std::cout << adc.injdata_[0] << ", "  << adc.injdata_[1] << ", "  << adc.injdata_[2] << ", " << std::endl;
 
 	}
 

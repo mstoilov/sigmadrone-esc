@@ -3,7 +3,7 @@
 #include "queue.h"
 #include "stm32f4xx_hal.h"
 
-extern uint64_t jiffies;
+extern volatile uint64_t jiffies;
 
 extern "C" void vApplicationTickHook(void)
 {

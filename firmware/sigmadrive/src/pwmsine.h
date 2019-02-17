@@ -25,8 +25,18 @@
 #include <stdint.h>
 #include <vector>
 #include <complex>
+#include <functional>
 #include "timer.h"
 #include "digitalout.h"
+
+struct RunState {
+	RunState(const std::function<bool(void)>& function)
+	: rs_function(function)
+	{
+	}
+
+	std::function<bool(void)> rs_function;
+};
 
 class PWMSine : public Timer
 {
@@ -35,7 +45,7 @@ public:
 
 	static constexpr unsigned int NUMBER_OF_POLES = 14;
 	static constexpr unsigned int M2E_RATIO = NUMBER_OF_POLES / 2;
-//	static constexpr unsigned int SINE_STEPS = 1024;
+	static constexpr unsigned int SINE_SAMPLES = 1024;
 	static constexpr float MAX_THROTTLE = 0.35;
 	static constexpr float MIN_THROTTLE = 0.00;
 
@@ -62,6 +72,7 @@ public:
 	Frequency switching_freq_;
 	uint32_t update_counter_ = 0;
 	TimeSpan duty_;
+	uint32_t duty_oc_;
 	uint32_t counter_ = 0;
 	OCMode pwm_mode_;
 	uint32_t SINE_STEPS = 1024;
@@ -71,6 +82,9 @@ public:
 	std::complex<float> r;
 	std::complex<float> v;
 
+	float sine_[SINE_SAMPLES];
+	uint32_t run_index_ = 0;
+	std::vector<std::function<bool(void)>> run_stack_;
 };
 
 #endif
