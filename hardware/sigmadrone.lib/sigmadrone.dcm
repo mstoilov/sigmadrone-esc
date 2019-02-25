@@ -1,5 +1,10 @@
 EESchema-DOCLIB  Version 2.0
 #
+$CMP GVDD
+D Power flag, positive voltage
+K power-flag
+$ENDCMP
+#
 $CMP HALFBRIDGE-DRIVER
 D High Voltage High and Low Side N-MOSFET Driver
 K driver
@@ -80,6 +85,11 @@ $CMP OPA4374
 D 6.5-MHz, 585-µA, Rail-to-Rail I/O CMOS Operational Amplifier
 K ampliop
 F http://www.ti.com/lit/ds/symlink/opa2373.pdf
+$ENDCMP
+#
+$CMP PGND
+D Power flag, ground
+K power-flag
 $ENDCMP
 #
 $CMP SW_SPST2
