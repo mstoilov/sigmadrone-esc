@@ -1,5 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:servo-sigma-48v-cache
+LIBS:sigmadrive-solo-cache
 EELAYER 26 0
 EELAYER END
 $Descr A3 16535 11693
@@ -38,7 +38,7 @@ SENSE_B
 Text HLabel 5350 5300 0    60   Output ~ 0
 SENSE_A
 $Comp
-L servo-sigma-48v-rescue:R-device R45
+L Device:R R45
 U 1 1 58D1DFF1
 P 9050 5700
 F 0 "R45" V 9130 5700 50  0000 C CNN
@@ -51,7 +51,7 @@ F 5 "DigiKey" V 9050 5700 60  0001 C CNN "Provider"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R48
+L Device:R R48
 U 1 1 58D1E075
 P 9050 6000
 F 0 "R48" V 9130 6000 50  0000 C CNN
@@ -64,7 +64,7 @@ F 5 "DigiKey" V 9050 6000 60  0001 C CNN "Provider"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R51
+L Device:R R51
 U 1 1 58D1E0AB
 P 9050 6300
 F 0 "R51" V 9130 6300 50  0000 C CNN
@@ -77,7 +77,7 @@ F 5 "DigiKey" V 9050 6300 60  0001 C CNN "Provider"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R52
+L Device:R R52
 U 1 1 58D1E348
 P 7750 6650
 F 0 "R52" V 7830 6650 50  0000 C CNN
@@ -90,7 +90,7 @@ F 5 "DigiKey" V 7750 6650 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R49
+L Device:R R49
 U 1 1 58D1E394
 P 8000 6650
 F 0 "R49" V 8080 6650 50  0000 C CNN
@@ -103,7 +103,7 @@ F 5 "DigiKey" V 8000 6650 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R46
+L Device:R R46
 U 1 1 58D1E3C0
 P 8250 6650
 F 0 "R46" V 8330 6650 50  0000 C CNN
