@@ -1,5 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:servo-sigma-48v-cache
+LIBS:sigmadrive-solo-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268

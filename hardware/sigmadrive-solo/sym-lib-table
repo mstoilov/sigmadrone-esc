@@ -1,5 +1,5 @@
 (sym_lib_table
   (lib (name sigmadrone)(type Legacy)(uri ${KIPRJMOD}/../sigmadrone.lib/sigmadrone.lib)(options "")(descr ""))
-  (lib (name servo-sigma-48v-rescue)(type Legacy)(uri ${KIPRJMOD}/servo-sigma-48v-rescue.lib)(options "")(descr ""))
+  (lib (name sigmadrive-solo-rescue)(type Legacy)(uri ${KIPRJMOD}/sigmadrive-solo-rescue.lib)(options "")(descr ""))
   (lib (name STM32LEGACY)(type Legacy)(uri ${KIPRJMOD}/../sigmadrone.lib/MCU_ST_STM32.lib)(options "")(descr ""))
 )

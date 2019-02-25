@@ -1,5 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:servo-sigma-48v-cache
+LIBS:sigmadrive-solo-cache
 EELAYER 26 0
 EELAYER END
 $Descr A2 23386 16535
@@ -14,71 +14,71 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Label 3700 13550 3    60   ~ 0
+Text Label 3950 13550 3    60   ~ 0
 LED_WARN
-Text Label 3250 15450 1    60   ~ 0
+Text Label 3500 15450 1    60   ~ 0
 LED_STATUS
 $Comp
-L servo-sigma-48v-rescue:LED-device D1
+L Device:LED D1
 U 1 1 5AB8EC78
-P 3250 14300
-F 0 "D1" H 3250 14400 50  0000 C CNN
-F 1 "GREEN" H 3250 14200 50  0000 C CNN
-F 2 "LED_SMD:LED_0603_1608Metric" H 3250 14300 50  0001 C CNN
-F 3 "http://katalog.we-online.de/led/datasheet/150060GS75000.pdf" H 3250 14300 50  0001 C CNN
-F 4 "732-4971-1-ND" H 3250 14300 60  0001 C CNN "Part"
-F 5 "DigiKey" H 3250 14300 60  0001 C CNN "Provider"
-	1    3250 14300
+P 3500 14300
+F 0 "D1" H 3500 14400 50  0000 C CNN
+F 1 "GREEN" H 3500 14200 50  0000 C CNN
+F 2 "LED_SMD:LED_0603_1608Metric" H 3500 14300 50  0001 C CNN
+F 3 "http://katalog.we-online.de/led/datasheet/150060GS75000.pdf" H 3500 14300 50  0001 C CNN
+F 4 "732-4971-1-ND" H 3500 14300 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3500 14300 60  0001 C CNN "Provider"
+	1    3500 14300
 	0    -1   -1   0   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:LED-device D4
+L Device:LED D4
 U 1 1 5AB8EC79
-P 3700 14300
-F 0 "D4" H 3700 14400 50  0000 C CNN
-F 1 "RED" H 3700 14200 50  0000 C CNN
-F 2 "LED_SMD:LED_0603_1608Metric" H 3700 14300 50  0001 C CNN
-F 3 "http://katalog.we-online.de/led/datasheet/150060RS75000.pdf" H 3700 14300 50  0001 C CNN
-F 4 "732-4978-1-ND" H 3700 14300 60  0001 C CNN "Part"
-F 5 "DigiKey" H 3700 14300 60  0001 C CNN "Provider"
-	1    3700 14300
+P 3950 14300
+F 0 "D4" H 3950 14400 50  0000 C CNN
+F 1 "RED" H 3950 14200 50  0000 C CNN
+F 2 "LED_SMD:LED_0603_1608Metric" H 3950 14300 50  0001 C CNN
+F 3 "http://katalog.we-online.de/led/datasheet/150060RS75000.pdf" H 3950 14300 50  0001 C CNN
+F 4 "732-4978-1-ND" H 3950 14300 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3950 14300 60  0001 C CNN "Provider"
+	1    3950 14300
 	0    -1   -1   0   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R4
+L Device:R R4
 U 1 1 5AB8EC7A
-P 3700 14750
-F 0 "R4" V 3780 14750 50  0000 C CNN
-F 1 "2.2k" V 3700 14750 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 3630 14750 50  0001 C CNN
-F 3 "https://www.seielect.com/Catalog/SEI-RMCF_RMCP.pdf" H 3700 14750 50  0001 C CNN
-F 4 "RMCF0603JT2K20CT-ND" V 3700 14750 60  0001 C CNN "Part"
-F 5 "DigiKey" V 3700 14750 60  0001 C CNN "Provider"
-	1    3700 14750
+P 3950 14750
+F 0 "R4" V 4030 14750 50  0000 C CNN
+F 1 "2.2k" V 3950 14750 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3880 14750 50  0001 C CNN
+F 3 "https://www.seielect.com/Catalog/SEI-RMCF_RMCP.pdf" H 3950 14750 50  0001 C CNN
+F 4 "RMCF0603JT2K20CT-ND" V 3950 14750 60  0001 C CNN "Part"
+F 5 "DigiKey" V 3950 14750 60  0001 C CNN "Provider"
+	1    3950 14750
 	-1   0    0    1   
 $EndComp
 $Comp
 L power:GND #PWR01
 U 1 1 5AB8EC7B
-P 3700 15300
-F 0 "#PWR01" H 3700 15050 50  0001 C CNN
-F 1 "GND" H 3700 15150 50  0000 C CNN
-F 2 "" H 3700 15300 50  0001 C CNN
-F 3 "" H 3700 15300 50  0001 C CNN
-	1    3700 15300
+P 3950 15300
+F 0 "#PWR01" H 3950 15050 50  0001 C CNN
+F 1 "GND" H 3950 15150 50  0000 C CNN
+F 2 "" H 3950 15300 50  0001 C CNN
+F 3 "" H 3950 15300 50  0001 C CNN
+	1    3950 15300
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:CONN_02X05-conn J2
+L Connector_Generic:Conn_02x05_Odd_Even J2
 U 1 1 5AB8EC7C
-P 2600 1400
-F 0 "J2" H 2600 1700 50  0000 C CNN
-F 1 "CONN_02X05" H 2600 1050 50  0000 C CNN
-F 2 "Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical" H 2600 200 50  0001 C CNN
-F 3 "http://katalog.we-online.de/em/datasheet/6220xx21121.pdf" H 2600 200 50  0001 C CNN
-F 4 "732-5374-ND" H 2600 1400 60  0001 C CNN "Part"
-F 5 "DigiKey" H 2600 1400 60  0001 C CNN "Provider"
-	1    2600 1400
+P 2550 1400
+F 0 "J2" H 2550 1700 50  0000 C CNN
+F 1 "CONN_02X05" H 2550 1050 50  0000 C CNN
+F 2 "Connector_PinHeader_1.27mm:PinHeader_2x05_P1.27mm_Vertical" H 2550 200 50  0001 C CNN
+F 3 "http://katalog.we-online.de/em/datasheet/6220xx21121.pdf" H 2550 200 50  0001 C CNN
+F 4 "732-5374-ND" H 2550 1400 60  0001 C CNN "Part"
+F 5 "DigiKey" H 2550 1400 60  0001 C CNN "Provider"
+	1    2550 1400
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -107,16 +107,16 @@ PB3
 Text Notes 1600 1800 0    60   ~ 0
 SWD Interface
 $Comp
-L servo-sigma-48v-rescue:R-device R1
+L Device:R R1
 U 1 1 5AB8EC7E
-P 3250 14750
-F 0 "R1" V 3330 14750 50  0000 C CNN
-F 1 "2.2k" V 3250 14750 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 3180 14750 50  0001 C CNN
-F 3 "https://www.seielect.com/Catalog/SEI-RMCF_RMCP.pdf" H 3250 14750 50  0001 C CNN
-F 4 "RMCF0603JT2K20CT-ND" V 3250 14750 60  0001 C CNN "Part"
-F 5 "DigiKey" V 3250 14750 60  0001 C CNN "Provider"
-	1    3250 14750
+P 3500 14750
+F 0 "R1" V 3580 14750 50  0000 C CNN
+F 1 "2.2k" V 3500 14750 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3430 14750 50  0001 C CNN
+F 3 "https://www.seielect.com/Catalog/SEI-RMCF_RMCP.pdf" H 3500 14750 50  0001 C CNN
+F 4 "RMCF0603JT2K20CT-ND" V 3500 14750 60  0001 C CNN "Part"
+F 5 "DigiKey" V 3500 14750 60  0001 C CNN "Provider"
+	1    3500 14750
 	-1   0    0    1   
 $EndComp
 Text Label 17850 5150 2    60   ~ 0
@@ -210,7 +210,7 @@ PC12
 Text Label 17850 8150 2    60   ~ 0
 PC13
 $Comp
-L servo-sigma-48v-rescue:Crystal-device Y1
+L Device:Crystal Y1
 U 1 1 58ED7267
 P 6000 5050
 F 0 "Y1" H 6000 5200 50  0000 C CNN
@@ -223,7 +223,7 @@ F 5 "DigiKey" H 6000 5050 60  0001 C CNN "Provider"
 	0    1    1    0   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C27
+L Device:C C27
 U 1 1 58EFF4C6
 P 5500 4850
 F 0 "C27" V 5450 4950 50  0000 C CNN
@@ -271,7 +271,7 @@ F 3 "" H 7600 2800 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R19
+L Device:R R19
 U 1 1 58F146B9
 P 7600 3200
 F 0 "R19" V 7680 3200 50  0000 C CNN
@@ -309,7 +309,7 @@ F 3 "" H 6750 2800 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C25
+L Device:C C25
 U 1 1 5AB8EC8C
 P 12350 1400
 F 0 "C25" H 12200 1300 50  0000 L CNN
@@ -322,7 +322,7 @@ F 5 "DigiKey" H 12350 1400 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C24
+L Device:C C24
 U 1 1 58F1C379
 P 12900 1400
 F 0 "C24" H 12750 1300 50  0000 L CNN
@@ -335,7 +335,7 @@ F 5 "DigiKey" H 12900 1400 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C19
+L Device:C C19
 U 1 1 58F1C405
 P 13450 1400
 F 0 "C19" H 13300 1300 50  0000 L CNN
@@ -348,7 +348,7 @@ F 5 "DigiKey" H 13450 1400 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C14
+L Device:C C14
 U 1 1 5AB8EC8F
 P 14050 1400
 F 0 "C14" H 13900 1300 50  0000 L CNN
@@ -407,17 +407,17 @@ F 3 "" H 13450 2000 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3250 14450 3250 14600
+	3500 14450 3500 14600
 Wire Wire Line
-	3700 15300 3700 14900
+	3950 15300 3950 14900
 Wire Wire Line
-	3700 14600 3700 14450
+	3950 14600 3950 14450
 Wire Wire Line
-	3250 14900 3250 15450
+	3500 14900 3500 15450
 Wire Wire Line
-	3700 13550 3700 14150
+	3950 13550 3950 14150
 Wire Wire Line
-	3250 13750 3250 14150
+	3500 13750 3500 14150
 Wire Wire Line
 	2350 1300 1150 1300
 Wire Wire Line
@@ -440,8 +440,6 @@ Wire Wire Line
 	17850 4850 17450 4850
 Wire Wire Line
 	17450 7750 17850 7750
-Wire Wire Line
-	17450 8150 17850 8150
 Wire Wire Line
 	5650 4850 6000 4850
 Wire Wire Line
@@ -483,8 +481,6 @@ Wire Wire Line
 Wire Wire Line
 	12350 1550 12350 1800
 Wire Wire Line
-	11850 1800 12350 1800
-Wire Wire Line
 	14050 1800 14050 1550
 Wire Wire Line
 	12900 1550 12900 1800
@@ -494,8 +490,6 @@ Wire Wire Line
 Connection ~ 13450 1800
 Wire Wire Line
 	12350 1250 12350 950 
-Wire Wire Line
-	11850 950  12350 950 
 Wire Wire Line
 	14050 950  14050 1250
 Wire Wire Line
@@ -535,12 +529,6 @@ Wire Wire Line
 Connection ~ 13050 9000
 Wire Wire Line
 	8050 7050 8450 7050
-Wire Wire Line
-	11850 1250 11850 950 
-Connection ~ 12350 950 
-Wire Wire Line
-	11850 1550 11850 1800
-Connection ~ 12350 1800
 Text Label 17850 8250 2    60   ~ 0
 PC14
 Text Label 17850 8350 2    60   ~ 0
@@ -548,7 +536,7 @@ PC15
 Wire Wire Line
 	6000 4900 6000 4850
 $Comp
-L servo-sigma-48v-rescue:C-device C30
+L Device:C C30
 U 1 1 5AB8EC97
 P 6150 3200
 F 0 "C30" H 6000 3100 50  0000 L CNN
@@ -561,7 +549,7 @@ F 5 "DigiKey" H 6150 3200 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C31
+L Device:C C31
 U 1 1 5AB8EC98
 P 5450 3200
 F 0 "C31" H 5300 3100 50  0000 L CNN
@@ -603,7 +591,7 @@ Wire Wire Line
 	6750 3500 7150 3500
 Connection ~ 7150 3500
 $Comp
-L servo-sigma-48v-rescue:C-device C32
+L Device:C C32
 U 1 1 5AB8ECA0
 P 5500 5250
 F 0 "C32" V 5450 5350 50  0000 C CNN
@@ -616,7 +604,7 @@ F 5 "DigiKey" V 5500 5250 60  0001 C CNN "Provider"
 	0    1    1    0   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C15
+L Device:C C15
 U 1 1 5A3A53E5
 P 7600 4400
 F 0 "C15" V 7550 4200 50  0000 L CNN
@@ -629,20 +617,7 @@ F 5 "DigiKey" H 7600 4400 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C29
-U 1 1 5A3B64F8
-P 11850 1400
-F 0 "C29" H 11750 1300 50  0000 L CNN
-F 1 "4.7uF 25V" H 11450 1500 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 11888 1250 50  0001 C CNN
-F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 11850 1400 50  0001 C CNN
-F 4 "1276-2415-1-ND" H 11850 1400 60  0001 C CNN "Part"
-F 5 "DigiKey" H 11850 1400 60  0001 C CNN "Provider"
-	1    11850 1400
-	-1   0    0    1   
-$EndComp
-$Comp
-L servo-sigma-48v-rescue:C-device C28
+L Device:C C28
 U 1 1 5A540099
 P 6750 3200
 F 0 "C28" H 6600 3100 50  0000 L CNN
@@ -704,7 +679,7 @@ NoConn ~ 2850 1500
 Text HLabel 1150 1500 0    60   Output ~ 0
 EXT_5V
 $Comp
-L servo-sigma-48v-rescue:R-device R8
+L Device:R R8
 U 1 1 5AB43AFD
 P 8450 1800
 F 0 "R8" V 8530 1800 50  0000 C CNN
@@ -717,7 +692,7 @@ F 5 "DigiKey" V 8450 1800 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C3
+L Device:C C3
 U 1 1 5AB43EE1
 P 8450 2400
 F 0 "C3" H 8300 2300 50  0000 L CNN
@@ -760,7 +735,7 @@ $EndComp
 Text Label 3000 3050 2    60   ~ 0
 USER_BTN
 $Comp
-L servo-sigma-48v-rescue:R-device R9
+L Device:R R9
 U 1 1 5AB8F249
 P 1750 3650
 F 0 "R9" V 1830 3650 50  0000 C CNN
@@ -773,7 +748,7 @@ F 5 "DigiKey" V 1750 3650 60  0001 C CNN "Provider"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C4
+L Device:C C4
 U 1 1 5AB8F252
 P 2350 3400
 F 0 "C4" H 2200 3300 50  0000 L CNN
@@ -823,7 +798,7 @@ Wire Wire Line
 	2350 3150 2050 3150
 Connection ~ 2350 3150
 $Comp
-L servo-sigma-48v-rescue:R-device R10
+L Device:R R10
 U 1 1 5AB8F272
 P 2350 2800
 F 0 "R10" V 2430 2800 50  0000 C CNN
@@ -889,12 +864,12 @@ F 3 "" H 20800 3800 50  0001 C CNN
 	1    20800 3800
 	0    1    -1   0   
 $EndComp
-Text Label 19150 3450 2    60   ~ 0
+Text Label 19150 5750 2    60   ~ 0
 ENCODER_A
-Text Label 19150 3550 2    60   ~ 0
+Text Label 19150 5850 2    60   ~ 0
 ENCODER_B
 $Comp
-L servo-sigma-48v-rescue:R-device R44
+L Device:R R44
 U 1 1 5BDC03FA
 P 3100 1400
 F 0 "R44" V 3150 1550 50  0000 C CNN
@@ -909,7 +884,7 @@ $EndComp
 Wire Wire Line
 	3250 1400 3900 1400
 $Comp
-L servo-sigma-48v-rescue:R-device R2
+L Device:R R2
 U 1 1 5BDC074C
 P 2100 1400
 F 0 "R2" V 2150 1550 50  0000 C CNN
@@ -922,7 +897,7 @@ F 5 "DigiKey" V 2100 1400 60  0001 C CNN "Provider"
 	0    -1   -1   0   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R3
+L Device:R R3
 U 1 1 5BDE0108
 P 2100 1600
 F 0 "R3" V 2150 1750 50  0000 C CNN
@@ -938,10 +913,6 @@ Wire Wire Line
 	2250 1600 2350 1600
 Wire Wire Line
 	17450 4950 17850 4950
-Wire Wire Line
-	17450 3450 19150 3450
-Wire Wire Line
-	17450 3550 19150 3550
 Text Label 1150 1400 0    60   ~ 0
 USART1_RX
 Wire Wire Line
@@ -1017,7 +988,7 @@ Wire Wire Line
 Wire Wire Line
 	1550 13950 1750 13950
 $Comp
-L servo-sigma-48v-rescue:R-device R47
+L Device:R R47
 U 1 1 5BF37336
 P 1900 13850
 F 0 "R47" V 1950 14000 50  0000 C CNN
@@ -1032,7 +1003,7 @@ $EndComp
 Wire Wire Line
 	2050 13850 2600 13850
 $Comp
-L servo-sigma-48v-rescue:R-device R50
+L Device:R R50
 U 1 1 5BF374B9
 P 1900 13950
 F 0 "R50" V 1950 14100 50  0000 C CNN
@@ -1104,7 +1075,7 @@ Wire Wire Line
 Text Label 5550 14400 2    60   ~ 0
 SW1
 $Comp
-L servo-sigma-48v-rescue:R-device R20
+L Device:R R20
 U 1 1 5C69BA3F
 P 5200 15050
 F 0 "R20" V 5280 15050 50  0000 C CNN
@@ -1117,7 +1088,7 @@ F 5 "DigiKey" V 5200 15050 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C51
+L Device:C C51
 U 1 1 5C69BA48
 P 5200 14650
 F 0 "C51" H 5050 14550 50  0000 L CNN
@@ -1145,7 +1116,7 @@ $EndComp
 Wire Wire Line
 	5200 15300 5200 15200
 $Comp
-L servo-sigma-48v-rescue:R-device R17
+L Device:R R17
 U 1 1 5C71BDB8
 P 5200 13900
 F 0 "R17" V 5280 13900 50  0000 C CNN
@@ -1203,7 +1174,7 @@ Wire Wire Line
 Text Label 7350 14400 2    60   ~ 0
 SW2
 $Comp
-L servo-sigma-48v-rescue:R-device R30
+L Device:R R30
 U 1 1 5C769B52
 P 7050 15050
 F 0 "R30" V 7130 15050 50  0000 C CNN
@@ -1216,7 +1187,7 @@ F 5 "DigiKey" V 7050 15050 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C52
+L Device:C C52
 U 1 1 5C769B5B
 P 7050 14650
 F 0 "C52" H 6900 14550 50  0000 L CNN
@@ -1244,7 +1215,7 @@ $EndComp
 Wire Wire Line
 	7050 15300 7050 15200
 $Comp
-L servo-sigma-48v-rescue:R-device R28
+L Device:R R28
 U 1 1 5C769B6F
 P 7050 13900
 F 0 "R28" V 7130 13900 50  0000 C CNN
@@ -1271,8 +1242,6 @@ F 3 "" H 7050 13600 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	7050 13600 7050 13750
-Wire Wire Line
-	17450 5650 17850 5650
 Text Label 19150 6450 2    60   ~ 0
 SW2
 Wire Wire Line
@@ -1292,15 +1261,13 @@ F 5 "DigiKey" H 6450 14300 50  0001 C CNN "Provider"
 	1    6450 14300
 	-1   0    0    -1  
 $EndComp
-Wire Wire Line
-	17450 4050 19450 4050
-Text HLabel 19450 3950 2    60   Input ~ 0
+Text HLabel 19450 3450 2    60   Input ~ 0
 IC_FB
 Wire Wire Line
-	19450 7350 17450 7350
-Text HLabel 19450 4150 2    60   Input ~ 0
+	19450 7150 17450 7150
+Text HLabel 19450 3650 2    60   Input ~ 0
 IA_FB
-Text HLabel 19450 4050 2    60   Input ~ 0
+Text HLabel 19450 3550 2    60   Input ~ 0
 IB_FB
 Text HLabel 19450 7050 2    60   Input ~ 0
 SENSE_A
@@ -1316,24 +1283,16 @@ Wire Wire Line
 	19450 7050 17450 7050
 Text Label 6350 7950 0    60   ~ 0
 USER_BTN
-Text HLabel 19450 7350 2    60   Input ~ 0
+Text HLabel 19450 7150 2    60   Input ~ 0
 VBAT_ADC
-Wire Wire Line
-	17450 3950 19450 3950
-Wire Wire Line
-	17450 3650 19150 3650
-Text Label 19150 5750 2    60   ~ 0
+Text Label 19150 4350 2    60   ~ 0
 USART1_TX
-Text Label 19150 5850 2    60   ~ 0
+Text Label 19150 4450 2    60   ~ 0
 USART1_RX
 Text Label 19150 5450 2    60   ~ 0
 SWO
 Wire Wire Line
 	17450 5450 19150 5450
-Wire Wire Line
-	17450 5750 19150 5750
-Wire Wire Line
-	17450 5850 19150 5850
 $Comp
 L Interface_UART:MAX3485 U12
 U 1 1 5CB68FA7
@@ -1384,7 +1343,7 @@ Connection ~ 1450 8750
 Wire Wire Line
 	1450 8750 1950 8750
 $Comp
-L servo-sigma-48v-rescue:C-device C8
+L Device:C C8
 U 1 1 5CD3A126
 P 1800 8050
 F 0 "C8" H 1650 7950 50  0000 L CNN
@@ -1417,7 +1376,7 @@ $EndComp
 Wire Wire Line
 	1800 8250 1800 8200
 $Comp
-L servo-sigma-48v-rescue:R-device R84
+L Device:R R84
 U 1 1 5CD9AA3E
 P 1450 8050
 F 0 "R84" V 1530 8050 50  0000 C CNN
@@ -1440,7 +1399,7 @@ Connection ~ 1450 8550
 Wire Wire Line
 	1450 8550 1950 8550
 $Comp
-L servo-sigma-48v-rescue:R-device R85
+L Device:R R85
 U 1 1 5CDBBD56
 P 1450 9150
 F 0 "R85" V 1530 9150 50  0000 C CNN
@@ -1468,7 +1427,7 @@ Wire Wire Line
 Wire Wire Line
 	1450 9300 1450 9400
 $Comp
-L servo-sigma-48v-rescue:R-device R88
+L Device:R R88
 U 1 1 5CEA24A4
 P 3450 9350
 F 0 "R88" V 3530 9350 50  0000 C CNN
@@ -1608,7 +1567,7 @@ Connection ~ 1400 11850
 Wire Wire Line
 	1400 11850 1900 11850
 $Comp
-L servo-sigma-48v-rescue:C-device C5
+L Device:C C5
 U 1 1 5D0E51F7
 P 1750 11150
 F 0 "C5" H 1600 11050 50  0000 L CNN
@@ -1641,7 +1600,7 @@ $EndComp
 Wire Wire Line
 	1750 11350 1750 11300
 $Comp
-L servo-sigma-48v-rescue:R-device R14
+L Device:R R14
 U 1 1 5D0E520B
 P 1400 11150
 F 0 "R14" V 1480 11150 50  0000 C CNN
@@ -1664,7 +1623,7 @@ Connection ~ 1400 11650
 Wire Wire Line
 	1400 11650 1900 11650
 $Comp
-L servo-sigma-48v-rescue:R-device R15
+L Device:R R15
 U 1 1 5D0E521A
 P 1400 12250
 F 0 "R15" V 1480 12250 50  0000 C CNN
@@ -1692,7 +1651,7 @@ Wire Wire Line
 Wire Wire Line
 	1400 12400 1400 12500
 $Comp
-L servo-sigma-48v-rescue:R-device R81
+L Device:R R81
 U 1 1 5D0E522D
 P 3400 12150
 F 0 "R81" V 3480 12150 50  0000 C CNN
@@ -1705,7 +1664,7 @@ F 5 "DigiKey" V 3400 12150 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R83
+L Device:R R83
 U 1 1 5D0E5236
 P 3400 12500
 F 0 "R83" V 3450 12650 50  0000 C CNN
@@ -1772,7 +1731,7 @@ Connection ~ 6750 3950
 Wire Wire Line
 	6750 3950 8450 3950
 $Comp
-L servo-sigma-48v-rescue:C-device C10
+L Device:C C10
 U 1 1 5C82DAED
 P 7150 4400
 F 0 "C10" V 7100 4200 50  0000 L CNN
@@ -1855,7 +1814,7 @@ Wire Wire Line
 	13250 2800 13150 2800
 Connection ~ 13150 2800
 $Comp
-L servo-sigma-48v-rescue:C-device C53
+L Device:C C53
 U 1 1 5CA0207F
 P 14600 1400
 F 0 "C53" H 14450 1300 50  0000 L CNN
@@ -1868,7 +1827,7 @@ F 5 "DigiKey" H 14600 1400 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C54
+L Device:C C54
 U 1 1 5CA0212F
 P 15150 1400
 F 0 "C54" H 15000 1300 50  0000 L CNN
@@ -1993,8 +1952,6 @@ NoConn ~ 8450 7550
 NoConn ~ 8450 7850
 NoConn ~ 17450 4950
 NoConn ~ 17450 7750
-NoConn ~ 17450 8150
-NoConn ~ 17450 5650
 NoConn ~ 17450 5950
 Text HLabel 6050 6050 0    60   Output ~ 0
 PWM_AH
@@ -2032,16 +1989,8 @@ Wire Wire Line
 	6050 6150 8450 6150
 Wire Wire Line
 	6050 6350 8450 6350
-Wire Wire Line
-	17450 4250 17850 4250
-Wire Wire Line
-	17450 4350 17850 4350
-Wire Wire Line
-	17450 4450 17850 4450
 NoConn ~ 17450 4250
-NoConn ~ 17450 4350
-NoConn ~ 17450 4450
-Text Label 19150 3650 2    60   ~ 0
+Text Label 19150 5650 2    60   ~ 0
 ENCODER_Z
 Text Label 19150 6350 2    60   ~ 0
 SW1
@@ -2066,7 +2015,7 @@ Wire Wire Line
 Wire Wire Line
 	6350 7450 8450 7450
 $Comp
-L servo-sigma-48v-rescue:R-device R92
+L Device:R R92
 U 1 1 5CC5ED43
 P 21900 3000
 F 0 "R92" V 21980 3000 50  0000 C CNN
@@ -2079,7 +2028,7 @@ F 5 "DigiKey" V 21900 3000 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R91
+L Device:R R91
 U 1 1 5CC5F3D7
 P 21700 3000
 F 0 "R91" V 21780 3000 50  0000 C CNN
@@ -2092,7 +2041,7 @@ F 5 "DigiKey" V 21700 3000 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R90
+L Device:R R90
 U 1 1 5CC5F477
 P 21500 3000
 F 0 "R90" V 21580 3000 50  0000 C CNN
@@ -2133,7 +2082,7 @@ Wire Wire Line
 Wire Wire Line
 	21700 2750 21700 2600
 $Comp
-L servo-sigma-48v-rescue:R-device R5
+L Device:R R5
 U 1 1 5AB437C6
 P 8800 2100
 F 0 "R5" V 8850 2250 50  0000 C CNN
@@ -2159,14 +2108,6 @@ Wire Wire Line
 Wire Wire Line
 	17450 6050 17850 6050
 NoConn ~ 17450 6050
-Wire Wire Line
-	17450 8250 17850 8250
-Wire Wire Line
-	17450 8350 17850 8350
-NoConn ~ 17450 8250
-NoConn ~ 17450 8350
-Wire Wire Line
-	17450 4150 19450 4150
 $Comp
 L Connector_Generic:Conn_01x05 J12
 U 1 1 5D413095
@@ -2250,7 +2191,7 @@ ENCODER_RS485_MCLR
 Wire Wire Line
 	6350 8150 8450 8150
 $Comp
-L servo-sigma-48v-rescue:C-device C55
+L Device:C C55
 U 1 1 5C675569
 P 15750 1400
 F 0 "C55" H 15600 1300 50  0000 L CNN
@@ -2286,44 +2227,39 @@ F 5 "DigiKey" H 13200 11550 50  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	12900 11550 12100 11550
-Text Label 12100 11550 0    60   ~ 0
+	13500 11350 14200 11350
+Text Label 14200 11350 2    60   ~ 0
 B_TERM_R120
-Text Label 14200 11550 2    60   ~ 0
+Text Label 12150 11350 0    60   ~ 0
 A_TERM_R120
 Wire Wire Line
-	14200 11550 13500 11550
+	12150 11350 12900 11350
 Text Label 14200 11650 2    60   ~ 0
 BOOT0
 Wire Wire Line
 	13500 11650 14200 11650
 Wire Wire Line
-	12100 11650 12900 11650
+	12900 11650 12750 11650
 Wire Wire Line
-	12100 11350 12750 11350
+	12750 11650 12750 11550
 Wire Wire Line
-	12900 11450 12750 11450
-Wire Wire Line
-	12750 11450 12750 11350
-Connection ~ 12750 11350
-Wire Wire Line
-	12750 11350 12900 11350
+	12750 11550 12900 11550
 Text Label 14200 11450 2    60   ~ 0
 GPIO_CONF_2
-Text Label 14200 11350 2    60   ~ 0
+Text Label 14200 11550 2    60   ~ 0
 GPIO_CONF_1
-Text Label 6600 5150 0    60   ~ 0
-GPIO_CONF_2
 Text Label 6600 5250 0    60   ~ 0
+GPIO_CONF_2
+Text Label 6600 5150 0    60   ~ 0
 GPIO_CONF_1
-Wire Wire Line
-	6600 5150 8450 5150
 Wire Wire Line
 	6600 5250 8450 5250
 Wire Wire Line
-	13500 11350 14200 11350
+	6600 5150 8450 5150
 Wire Wire Line
 	13500 11450 14200 11450
+Wire Wire Line
+	13500 11550 14200 11550
 Wire Wire Line
 	2750 8550 3050 8550
 Wire Wire Line
@@ -2360,7 +2296,7 @@ $EndComp
 Wire Wire Line
 	3050 9300 3050 9400
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5CD9CA26
 P 3050 8050
 AR Path="/58BF599E/5CD9CA26" Ref="R?"  Part="1" 
@@ -2375,7 +2311,7 @@ F 5 "DigiKey" V 3050 8050 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5CDC1D18
 P 3050 9150
 AR Path="/58BF599E/5CDC1D18" Ref="R?"  Part="1" 
@@ -2516,11 +2452,11 @@ Text HLabel 19450 7950 2    60   Input ~ 0
 DRV_SDO
 Text HLabel 19450 7850 2    60   Output ~ 0
 DRV_CLK
-Text HLabel 19450 3750 2    60   Output ~ 0
+Text HLabel 19450 8250 2    60   Output ~ 0
 DRV2_CS
 Text HLabel 6050 6650 0    60   Output ~ 0
 DRV_CAL
-Text HLabel 19450 7250 2    60   Input ~ 0
+Text HLabel 19450 8350 2    60   Input ~ 0
 DRV_FAULT
 Text HLabel 6050 6550 0    60   Output ~ 0
 GATE_ENABLE
@@ -2625,43 +2561,29 @@ $EndComp
 $Comp
 L power:+3V3 #PWR?
 U 1 1 5CABC8DB
-P 3250 13750
+P 3500 13750
 AR Path="/58BE27E6/5CABC8DB" Ref="#PWR?"  Part="1" 
 AR Path="/58BF664D/5CABC8DB" Ref="#PWR?"  Part="1" 
 AR Path="/58BE2779/5CABC8DB" Ref="#PWR0111"  Part="1" 
-F 0 "#PWR0111" H 3250 13600 50  0001 C CNN
-F 1 "+3V3" H 3265 13923 50  0000 C CNN
-F 2 "" H 3250 13750 50  0001 C CNN
-F 3 "" H 3250 13750 50  0001 C CNN
-	1    3250 13750
+F 0 "#PWR0111" H 3500 13600 50  0001 C CNN
+F 1 "+3V3" H 3515 13923 50  0000 C CNN
+F 2 "" H 3500 13750 50  0001 C CNN
+F 3 "" H 3500 13750 50  0001 C CNN
+	1    3500 13750
 	1    0    0    -1  
 $EndComp
 $Comp
 L power:+3V3 #PWR?
 U 1 1 5CAE5500
-P 12100 11350
+P 12350 11650
 AR Path="/58BE27E6/5CAE5500" Ref="#PWR?"  Part="1" 
 AR Path="/58BF664D/5CAE5500" Ref="#PWR?"  Part="1" 
 AR Path="/58BE2779/5CAE5500" Ref="#PWR0112"  Part="1" 
-F 0 "#PWR0112" H 12100 11200 50  0001 C CNN
-F 1 "+3V3" H 12115 11523 50  0000 C CNN
-F 2 "" H 12100 11350 50  0001 C CNN
-F 3 "" H 12100 11350 50  0001 C CNN
-	1    12100 11350
-	0    -1   -1   0   
-$EndComp
-$Comp
-L power:+3V3 #PWR?
-U 1 1 5CB0DCBA
-P 12100 11650
-AR Path="/58BE27E6/5CB0DCBA" Ref="#PWR?"  Part="1" 
-AR Path="/58BF664D/5CB0DCBA" Ref="#PWR?"  Part="1" 
-AR Path="/58BE2779/5CB0DCBA" Ref="#PWR0113"  Part="1" 
-F 0 "#PWR0113" H 12100 11500 50  0001 C CNN
-F 1 "+3V3" H 12115 11823 50  0000 C CNN
-F 2 "" H 12100 11650 50  0001 C CNN
-F 3 "" H 12100 11650 50  0001 C CNN
-	1    12100 11650
+F 0 "#PWR0112" H 12350 11500 50  0001 C CNN
+F 1 "+3V3" H 12365 11823 50  0000 C CNN
+F 2 "" H 12350 11650 50  0001 C CNN
+F 3 "" H 12350 11650 50  0001 C CNN
+	1    12350 11650
 	0    -1   -1   0   
 $EndComp
 $Comp
@@ -2710,17 +2632,11 @@ Wire Wire Line
 	6350 8250 8450 8250
 Wire Wire Line
 	6350 8350 8450 8350
-Text HLabel 19450 3850 2    60   Output ~ 0
+Text HLabel 19450 8150 2    60   Output ~ 0
 DRV1_CS
 Wire Wire Line
 	17450 6250 17850 6250
 NoConn ~ 17450 6250
-Wire Wire Line
-	17450 7250 19450 7250
-Wire Wire Line
-	17450 3850 19450 3850
-Wire Wire Line
-	17450 3750 19450 3750
 Wire Wire Line
 	3450 9500 3450 10050
 Wire Wire Line
@@ -2741,14 +2657,9 @@ Wire Wire Line
 NoConn ~ 17450 5150
 NoConn ~ 17450 5250
 Wire Wire Line
-	17450 7150 17850 7150
-NoConn ~ 17450 7150
-Wire Wire Line
 	6350 7950 8450 7950
 Wire Wire Line
 	17450 7950 19450 7950
-Wire Wire Line
-	17450 8050 19450 8050
 Wire Wire Line
 	17450 7850 19450 7850
 NoConn ~ 17450 6650
@@ -2760,4 +2671,118 @@ Wire Wire Line
 	17450 6550 17850 6550
 Wire Wire Line
 	17450 6650 17850 6650
+Wire Wire Line
+	17450 8050 19450 8050
+$Comp
+L Device:LED D6
+U 1 1 5C7F5EF4
+P 3000 14300
+F 0 "D6" H 3000 14400 50  0000 C CNN
+F 1 "GREEN" H 3000 14200 50  0000 C CNN
+F 2 "LED_SMD:LED_0603_1608Metric" H 3000 14300 50  0001 C CNN
+F 3 "http://katalog.we-online.de/led/datasheet/150060GS75000.pdf" H 3000 14300 50  0001 C CNN
+F 4 "732-4971-1-ND" H 3000 14300 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3000 14300 60  0001 C CNN "Provider"
+	1    3000 14300
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R21
+U 1 1 5C7F5EFD
+P 3000 14750
+F 0 "R21" V 3080 14750 50  0000 C CNN
+F 1 "2.2k" V 3000 14750 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2930 14750 50  0001 C CNN
+F 3 "https://www.seielect.com/Catalog/SEI-RMCF_RMCP.pdf" H 3000 14750 50  0001 C CNN
+F 4 "RMCF0603JT2K20CT-ND" V 3000 14750 60  0001 C CNN "Part"
+F 5 "DigiKey" V 3000 14750 60  0001 C CNN "Provider"
+	1    3000 14750
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	3000 14450 3000 14600
+Wire Wire Line
+	3000 14900 3000 15300
+Wire Wire Line
+	3000 13750 3000 14150
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5C7F5F07
+P 3000 13750
+AR Path="/58BE27E6/5C7F5F07" Ref="#PWR?"  Part="1" 
+AR Path="/58BF664D/5C7F5F07" Ref="#PWR?"  Part="1" 
+AR Path="/58BE2779/5C7F5F07" Ref="#PWR06"  Part="1" 
+F 0 "#PWR06" H 3000 13600 50  0001 C CNN
+F 1 "+3V3" H 3015 13923 50  0000 C CNN
+F 2 "" H 3000 13750 50  0001 C CNN
+F 3 "" H 3000 13750 50  0001 C CNN
+	1    3000 13750
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR08
+U 1 1 5C81BF0D
+P 3000 15300
+F 0 "#PWR08" H 3000 15050 50  0001 C CNN
+F 1 "GND" H 3000 15150 50  0000 C CNN
+F 2 "" H 3000 15300 50  0001 C CNN
+F 3 "" H 3000 15300 50  0001 C CNN
+	1    3000 15300
+	1    0    0    -1  
+$EndComp
+Text Label 3000 15300 1    60   ~ 0
+PWR_ON
+Wire Wire Line
+	17450 8250 19450 8250
+Wire Wire Line
+	17450 8150 19450 8150
+Wire Wire Line
+	17450 8350 19450 8350
+Wire Wire Line
+	17450 4250 17850 4250
+Wire Wire Line
+	17450 4450 19150 4450
+Wire Wire Line
+	17450 4350 19150 4350
+Wire Wire Line
+	17450 7350 17850 7350
+NoConn ~ 17450 7350
+Wire Wire Line
+	17450 3950 17850 3950
+Wire Wire Line
+	17450 4050 17850 4050
+Wire Wire Line
+	17450 4150 17850 4150
+NoConn ~ 17450 3950
+NoConn ~ 17450 4050
+NoConn ~ 17450 4150
+Wire Wire Line
+	17450 5750 19150 5750
+Wire Wire Line
+	17450 5850 19150 5850
+Wire Wire Line
+	17450 5650 19150 5650
+Wire Wire Line
+	12750 11450 12750 11550
+Wire Wire Line
+	12750 11450 12900 11450
+Connection ~ 12750 11550
+Wire Wire Line
+	12350 11650 12750 11650
+Connection ~ 12750 11650
+Wire Wire Line
+	17450 3450 19450 3450
+Wire Wire Line
+	17450 3550 19450 3550
+Wire Wire Line
+	17450 3650 19450 3650
+Wire Wire Line
+	17450 3750 17850 3750
+Wire Wire Line
+	17450 3850 17850 3850
+NoConn ~ 17450 3750
+NoConn ~ 17450 3850
+Wire Wire Line
+	17450 7250 17850 7250
+NoConn ~ 17450 7250
 $EndSCHEMATC

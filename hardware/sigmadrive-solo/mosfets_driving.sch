@@ -1,5 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:servo-sigma-48v-cache
+LIBS:sigmadrive-solo-cache
 EELAYER 26 0
 EELAYER END
 $Descr A2 23386 16535
@@ -59,7 +59,7 @@ Wire Wire Line
 Wire Wire Line
 	14700 2050 14700 2600
 $Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q5
+L Device:Q_NMOS_SGD Q5
 U 1 1 5A928DF8
 P 9350 1550
 F 0 "Q5" H 9550 1600 50  0000 L CNN
@@ -79,7 +79,7 @@ Wire Wire Line
 Wire Wire Line
 	14700 2050 15200 2050
 $Comp
-L servo-sigma-48v-rescue:R-device R67
+L Device:R R67
 U 1 1 5BC9D211
 P 9450 3450
 F 0 "R67" V 9530 3450 50  0000 C CNN
@@ -94,7 +94,7 @@ $EndComp
 Wire Wire Line
 	9450 3600 9450 3850
 $Comp
-L servo-sigma-48v-rescue:R-device R68
+L Device:R R68
 U 1 1 5BC9D51F
 P 12100 3450
 F 0 "R68" V 12180 3450 50  0000 C CNN
@@ -109,7 +109,7 @@ $EndComp
 Wire Wire Line
 	12100 3600 12100 3850
 $Comp
-L servo-sigma-48v-rescue:R-device R69
+L Device:R R69
 U 1 1 5BC9D5F5
 P 14700 3450
 F 0 "R69" V 14780 3450 50  0000 C CNN
@@ -150,19 +150,19 @@ Connection ~ 11300 10950
 Wire Wire Line
 	11300 10950 11800 10950
 $Comp
-L servo-sigma-48v-rescue:CONN_01X02-conn J?
+L Connector_Generic:Conn_01x02 J?
 U 1 1 5BC5C1F6
-P 11850 11350
+P 11850 11400
 AR Path="/58BE27E6/5BC5C1F6" Ref="J?"  Part="1" 
 AR Path="/58BF664D/5BC5C1F6" Ref="J7"  Part="1" 
 AR Path="/5BC5C1F6" Ref="J7"  Part="1" 
-F 0 "J7" H 11769 11615 50  0000 C CNN
-F 1 "CONN_01X02" H 11769 11524 50  0000 C CNN
-F 2 "Sigmadrone:PhoenixContact_MKDS_02x7.62mm_Vertical" H 11850 11350 50  0001 C CNN
-F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1868076.pdf" H 11850 11350 50  0001 C CNN
-F 4 "277-5840-ND" H 11850 11350 50  0001 C CNN "Part"
-F 5 "DigiKey" H 11850 11350 50  0001 C CNN "Provider"
-	1    11850 11350
+F 0 "J7" H 11769 11665 50  0000 C CNN
+F 1 "CONN_01X02" H 11769 11574 50  0000 C CNN
+F 2 "Sigmadrone:PhoenixContact_MKDS_02x7.62mm_Vertical" H 11850 11400 50  0001 C CNN
+F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1868076.pdf" H 11850 11400 50  0001 C CNN
+F 4 "277-5840-ND" H 11850 11400 50  0001 C CNN "Part"
+F 5 "DigiKey" H 11850 11400 50  0001 C CNN "Provider"
+	1    11850 11400
 	1    0    0    1   
 $EndComp
 Wire Wire Line
@@ -222,7 +222,7 @@ F 3 "" H 9450 1050 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q6
+L Device:Q_NMOS_SGD Q6
 U 1 1 5C792FA5
 P 9350 2800
 F 0 "Q6" H 9550 2850 50  0000 L CNN
@@ -236,7 +236,7 @@ F 6 "STL160N4F7" H 9350 2800 50  0001 C CNN "Value1"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q3
+L Device:Q_NMOS_SGD Q3
 U 1 1 5C79432A
 P 12000 1550
 F 0 "Q3" H 12200 1600 50  0000 L CNN
@@ -250,7 +250,7 @@ F 6 "STL160N4F7" H 12000 1550 50  0001 C CNN "Value1"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q4
+L Device:Q_NMOS_SGD Q4
 U 1 1 5C794408
 P 12000 2800
 F 0 "Q4" H 12200 2850 50  0000 L CNN
@@ -264,7 +264,7 @@ F 6 "STL160N4F7" H 12000 2800 50  0001 C CNN "Value1"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q1
+L Device:Q_NMOS_SGD Q1
 U 1 1 5C794DDD
 P 14600 1550
 F 0 "Q1" H 14800 1600 50  0000 L CNN
@@ -278,7 +278,7 @@ F 6 "STL160N4F7" H 14600 1550 50  0001 C CNN "Value1"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q2
+L Device:Q_NMOS_SGD Q2
 U 1 1 5C794EBD
 P 14600 2800
 F 0 "Q2" H 14800 2850 50  0000 L CNN
@@ -292,7 +292,7 @@ F 6 "STL160N4F7" H 14600 2800 50  0001 C CNN "Value1"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q7
+L Device:Q_NMOS_SGD Q7
 U 1 1 5C79539C
 P 9650 10450
 F 0 "Q7" H 9850 10500 50  0000 L CNN
@@ -306,7 +306,7 @@ F 6 "STL160N4F7" H 9650 10450 50  0001 C CNN "Value1"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:Q_NMOS_SGD-device Q8
+L Device:Q_NMOS_SGD Q8
 U 1 1 5C795574
 P 9650 11700
 F 0 "Q8" H 9850 11750 50  0000 L CNN
@@ -320,7 +320,7 @@ F 6 "STL160N4F7" H 9650 11700 50  0001 C CNN "Value1"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:L-device L?
+L Device:L L?
 U 1 1 5C6E5DEC
 P 6900 4550
 AR Path="/58BE27E6/5C6E5DEC" Ref="L?"  Part="1" 
@@ -337,7 +337,7 @@ $EndComp
 Wire Wire Line
 	5550 4750 6600 4750
 $Comp
-L servo-sigma-48v-rescue:D_Schottky-device D3
+L Device:D_Shockley D3
 U 1 1 5C6F6ADB
 P 6600 5300
 AR Path="/58BF664D/5C6F6ADB" Ref="D3"  Part="1" 
@@ -355,7 +355,7 @@ Wire Wire Line
 	6600 5150 6600 4750
 Connection ~ 6600 4750
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5C70F366
 P 7650 4750
 AR Path="/58BF599E/5C70F366" Ref="R?"  Part="1" 
@@ -371,7 +371,7 @@ F 5 "DigiKey" V 7650 4750 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5C70F372
 P 7650 5300
 AR Path="/58BF599E/5C70F372" Ref="R?"  Part="1" 
@@ -413,7 +413,7 @@ $EndComp
 Wire Wire Line
 	6600 5750 6600 5450
 $Comp
-L servo-sigma-48v-rescue:CP-device C?
+L Device:CP C?
 U 1 1 5C78B9CA
 P 7150 5300
 AR Path="/58BE27E6/5C78B9CA" Ref="C?"  Part="1" 
@@ -441,7 +441,7 @@ $EndComp
 Wire Wire Line
 	7150 5750 7150 5450
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5C7D8909
 P 6100 4550
 AR Path="/58BE2779/5C7D8909" Ref="C?"  Part="1" 
@@ -496,7 +496,7 @@ $EndComp
 Wire Wire Line
 	7150 4550 7150 4450
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5C865E6F
 P 3250 1450
 AR Path="/58BE27E6/5C865E6F" Ref="C?"  Part="1" 
@@ -511,7 +511,7 @@ F 5 "DigiKey" H 3250 1450 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5C86FE85
 P 2350 1450
 AR Path="/58BE27E6/5C86FE85" Ref="C?"  Part="1" 
@@ -527,7 +527,7 @@ F 6 "4.7uF 25V" H 2350 1450 50  0001 C CNN "Value1"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5C879D46
 P 2800 1450
 AR Path="/58BE2779/5C879D46" Ref="C?"  Part="1" 
@@ -566,7 +566,7 @@ Wire Wire Line
 Wire Wire Line
 	2800 1650 2800 1600
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5C971DF5
 P 3350 5250
 AR Path="/58BE27E6/5C971DF5" Ref="C?"  Part="1" 
@@ -686,7 +686,7 @@ Connection ~ 3800 4950
 Wire Wire Line
 	3800 4950 3350 4950
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CC4E978
 P 3250 2250
 AR Path="/58BE27E6/5CC4E978" Ref="C?"  Part="1" 
@@ -709,7 +709,7 @@ Wire Wire Line
 Wire Wire Line
 	3250 2450 3950 2450
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CC701F5
 P 3500 2650
 AR Path="/58BE27E6/5CC701F5" Ref="C?"  Part="1" 
@@ -800,7 +800,7 @@ $EndComp
 Wire Wire Line
 	2550 3150 2550 4250
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CDFEE38
 P 2550 4900
 AR Path="/58BE2779/5CDFEE38" Ref="C?"  Part="1" 
@@ -1029,7 +1029,7 @@ Connection ~ 3500 7800
 Wire Wire Line
 	3500 7800 3500 7900
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5D5E9150
 P 3500 7500
 AR Path="/58BE27E6/5D5E9150" Ref="R?"  Part="1" 
@@ -1044,7 +1044,7 @@ F 5 "DigiKey" V 3500 7500 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5D5E9159
 P 3500 8050
 AR Path="/58BE27E6/5D5E9159" Ref="R?"  Part="1" 
@@ -1059,22 +1059,22 @@ F 5 "DigiKey" V 3500 8050 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:CONN_01X02-conn J?
+L Connector_Generic:Conn_01x02 J?
 U 1 1 5D5E9162
-P 1250 7600
+P 1250 7650
 AR Path="/58BE27E6/5D5E9162" Ref="J?"  Part="1" 
 AR Path="/58BF664D/5D5E9162" Ref="J1"  Part="1" 
-F 0 "J1" H 1169 7865 50  0000 C CNN
-F 1 "CONN_01X02" H 1169 7774 50  0000 C CNN
-F 2 "Sigmadrone:PhoenixContact_MKDS_02x7.62mm_Vertical" H 1250 7600 50  0001 C CNN
-F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1868076.pdf" H 1250 7600 50  0001 C CNN
-F 4 "277-5840-ND" H 1250 7600 50  0001 C CNN "Part"
-F 5 "DigiKey" H 1250 7600 50  0001 C CNN "Provider"
-	1    1250 7600
+F 0 "J1" H 1169 7915 50  0000 C CNN
+F 1 "CONN_01X02" H 1169 7824 50  0000 C CNN
+F 2 "Sigmadrone:PhoenixContact_MKDS_02x7.62mm_Vertical" H 1250 7650 50  0001 C CNN
+F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1868076.pdf" H 1250 7650 50  0001 C CNN
+F 4 "277-5840-ND" H 1250 7650 50  0001 C CNN "Part"
+F 5 "DigiKey" H 1250 7650 50  0001 C CNN "Provider"
+	1    1250 7650
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:CP-device C?
+L Device:CP C?
 U 1 1 5D5E916B
 P 2150 7800
 AR Path="/58BE27E6/5D5E916B" Ref="C?"  Part="1" 
@@ -1118,7 +1118,7 @@ F 3 "" H 1850 7250 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:CP-device C?
+L Device:CP C?
 U 1 1 5D5E9190
 P 2450 7800
 AR Path="/58BE27E6/5D5E9190" Ref="C?"  Part="1" 
@@ -1139,7 +1139,7 @@ Wire Wire Line
 Wire Wire Line
 	11600 4650 12250 4650
 $Comp
-L servo-sigma-48v-rescue:CONN_01X03-conn J?
+L Connector_Generic:Conn_01x03 J?
 U 1 1 5D5E91A8
 P 12450 4650
 AR Path="/58BE27E6/5D5E91A8" Ref="J?"  Part="1" 
@@ -1285,7 +1285,7 @@ Wire Wire Line
 Wire Wire Line
 	8400 2050 9450 2050
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5C79A319
 P 9900 1150
 AR Path="/58BE27E6/5C79A319" Ref="C?"  Part="1" 
@@ -1312,7 +1312,7 @@ Connection ~ 12100 1150
 Wire Wire Line
 	12100 1150 12100 1350
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5C8289D7
 P 12550 1150
 AR Path="/58BE27E6/5C8289D7" Ref="C?"  Part="1" 
@@ -1331,7 +1331,7 @@ Wire Wire Line
 Wire Wire Line
 	12700 1150 12900 1150
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5C8453D9
 P 15150 1150
 AR Path="/58BE27E6/5C8453D9" Ref="C?"  Part="1" 
@@ -1475,7 +1475,7 @@ Wire Wire Line
 Wire Wire Line
 	9750 11900 9750 12850
 $Comp
-L servo-sigma-48v-rescue:L-device L?
+L Device:L L?
 U 1 1 5CA944B3
 P 6900 13350
 AR Path="/58BE27E6/5CA944B3" Ref="L?"  Part="1" 
@@ -1492,7 +1492,7 @@ $EndComp
 Wire Wire Line
 	5550 13550 6600 13550
 $Comp
-L servo-sigma-48v-rescue:D_Schottky-device D2
+L Device:D_Shockley D2
 U 1 1 5CA944BD
 P 6600 14100
 AR Path="/58BF664D/5CA944BD" Ref="D2"  Part="1" 
@@ -1510,7 +1510,7 @@ Wire Wire Line
 	6600 13950 6600 13550
 Connection ~ 6600 13550
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5CA944C8
 P 7650 14100
 AR Path="/58BF599E/5CA944C8" Ref="R?"  Part="1" 
@@ -1526,7 +1526,7 @@ F 5 "DigiKey" V 7650 14100 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5CA944D1
 P 7650 13550
 AR Path="/58BF599E/5CA944D1" Ref="R?"  Part="1" 
@@ -1568,7 +1568,7 @@ $EndComp
 Wire Wire Line
 	6600 14550 6600 14250
 $Comp
-L servo-sigma-48v-rescue:CP-device C?
+L Device:CP C?
 U 1 1 5CA944E8
 P 7150 14100
 AR Path="/58BE27E6/5CA944E8" Ref="C?"  Part="1" 
@@ -1596,7 +1596,7 @@ $EndComp
 Wire Wire Line
 	7150 14550 7150 14250
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CA944F8
 P 6100 13350
 AR Path="/58BE2779/5CA944F8" Ref="C?"  Part="1" 
@@ -1638,7 +1638,7 @@ Wire Wire Line
 Wire Wire Line
 	7150 13350 7150 13250
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CA94516
 P 3250 10250
 AR Path="/58BE27E6/5CA94516" Ref="C?"  Part="1" 
@@ -1653,7 +1653,7 @@ F 5 "DigiKey" H 3250 10250 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CA94520
 P 2350 10250
 AR Path="/58BE27E6/5CA94520" Ref="C?"  Part="1" 
@@ -1669,7 +1669,7 @@ F 6 "4.7uF 25V" H 2350 10250 50  0001 C CNN "Value1"
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CA94529
 P 2800 10250
 AR Path="/58BE2779/5CA94529" Ref="C?"  Part="1" 
@@ -1708,7 +1708,7 @@ Wire Wire Line
 Wire Wire Line
 	2800 10450 2800 10400
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CA94540
 P 3350 14050
 AR Path="/58BE27E6/5CA94540" Ref="C?"  Part="1" 
@@ -1815,7 +1815,7 @@ Connection ~ 3800 13750
 Wire Wire Line
 	3800 13750 3350 13750
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CA94583
 P 3250 11050
 AR Path="/58BE27E6/5CA94583" Ref="C?"  Part="1" 
@@ -1838,7 +1838,7 @@ Wire Wire Line
 Wire Wire Line
 	3250 11250 3950 11250
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CA94590
 P 3500 11450
 AR Path="/58BE27E6/5CA94590" Ref="C?"  Part="1" 
@@ -1888,8 +1888,6 @@ PWM_RH
 Text HLabel 3600 12250 0    60   Input ~ 0
 PWM_RL
 Wire Wire Line
-	1450 12550 3950 12550
-Wire Wire Line
 	1450 12650 3950 12650
 Wire Wire Line
 	1450 12750 3950 12750
@@ -1907,7 +1905,7 @@ $EndComp
 Wire Wire Line
 	2550 11950 2550 13050
 $Comp
-L servo-sigma-48v-rescue:C-device C?
+L Device:C C?
 U 1 1 5CA945D2
 P 2550 13700
 AR Path="/58BE2779/5CA945D2" Ref="C?"  Part="1" 
@@ -2064,7 +2062,7 @@ F 3 "" H 2200 3150 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5CD77F2C
 P 2200 3400
 AR Path="/58BE2779/5CD77F2C" Ref="R?"  Part="1" 
@@ -2094,7 +2092,7 @@ F 3 "" H 1850 3150 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5CF2179F
 P 1850 3400
 AR Path="/58BE2779/5CF2179F" Ref="R?"  Part="1" 
@@ -2178,7 +2176,7 @@ $EndComp
 Wire Wire Line
 	7450 7100 7450 7400
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5CD745A7
 P 3650 3650
 AR Path="/58BE2779/5CD745A7" Ref="R?"  Part="1" 
@@ -2200,7 +2198,7 @@ Connection ~ 1850 3650
 Wire Wire Line
 	1850 3650 3500 3650
 $Comp
-L servo-sigma-48v-rescue:R-device R?
+L Device:R R?
 U 1 1 5CDB071A
 P 3650 12450
 AR Path="/58BE2779/5CDB071A" Ref="R?"  Part="1" 
@@ -2217,7 +2215,7 @@ $EndComp
 Wire Wire Line
 	3800 12450 3950 12450
 $Comp
-L servo-sigma-48v-rescue:D_Schottky-device D?
+L Device:D_Shockley D?
 U 1 1 5D088870
 P 8150 4550
 AR Path="/5D07002B/5D088870" Ref="D?"  Part="1" 
@@ -2259,4 +2257,6 @@ Wire Wire Line
 Connection ~ 7450 7400
 Wire Wire Line
 	7450 7400 7450 7600
+Wire Wire Line
+	1450 12550 3950 12550
 $EndSCHEMATC
