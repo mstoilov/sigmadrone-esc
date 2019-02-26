@@ -14,121 +14,121 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-Text Label 8400 1550 0    60   ~ 0
+Text Label 9050 1550 0    60   ~ 0
 GHA
-Text Label 11050 1550 0    60   ~ 0
+Text Label 11700 1550 0    60   ~ 0
 GHB
-Text Label 13650 1550 0    60   ~ 0
+Text Label 14300 1550 0    60   ~ 0
 GHC
-Text Label 8400 2800 0    60   ~ 0
+Text Label 9050 2800 0    60   ~ 0
 GLA
-Text Label 11050 2800 0    60   ~ 0
+Text Label 11700 2800 0    60   ~ 0
 GLB
-Text Label 13650 2800 0    60   ~ 0
+Text Label 14300 2800 0    60   ~ 0
 GLC
 Wire Wire Line
-	9450 1050 9450 1150
+	10100 1050 10100 1150
 Wire Wire Line
-	9450 1750 9450 2050
+	10100 1750 10100 2050
 Wire Wire Line
-	9450 3000 9450 3150
-Connection ~ 9450 3850
-Connection ~ 9450 2050
+	10100 3000 10100 3150
+Connection ~ 10100 3850
+Connection ~ 10100 2050
 Wire Wire Line
-	12100 1750 12100 2050
-Connection ~ 12100 3850
-Connection ~ 12100 2050
+	12750 1750 12750 2050
+Connection ~ 12750 3850
+Connection ~ 12750 2050
 Wire Wire Line
-	14700 1050 14700 1150
+	15350 1050 15350 1150
 Wire Wire Line
-	14700 1750 14700 2050
+	15350 1750 15350 2050
 Wire Wire Line
-	14700 3000 14700 3150
-Connection ~ 14700 3850
-Connection ~ 14700 2050
+	15350 3000 15350 3150
+Connection ~ 15350 3850
+Connection ~ 15350 2050
 Wire Wire Line
-	9450 3850 9450 3950
+	10100 3850 10100 3950
 Wire Wire Line
-	9450 2050 9450 2600
+	10100 2050 10100 2600
 Wire Wire Line
-	12100 3850 12100 3950
+	12750 3850 12750 3950
 Wire Wire Line
-	12100 2050 12100 2600
+	12750 2050 12750 2600
 Wire Wire Line
-	14700 3850 14700 3950
+	15350 3850 15350 3950
 Wire Wire Line
-	14700 2050 14700 2600
+	15350 2050 15350 2600
 $Comp
 L Device:Q_NMOS_SGD Q5
 U 1 1 5A928DF8
-P 9350 1550
-F 0 "Q5" H 9550 1600 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 9550 1500 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 9550 1650 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 9350 1550 50  0001 C CNN
-F 4 "DigiKey" H 9350 1550 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 9350 1550 60  0001 C CNN "Part"
-F 6 "STL160N4F7" H 9350 1550 50  0001 C CNN "Value1"
-	1    9350 1550
+P 10000 1550
+F 0 "Q5" H 10200 1600 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 10200 1500 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 10200 1650 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 10000 1550 50  0001 C CNN
+F 4 "DigiKey" H 10000 1550 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 10000 1550 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 10000 1550 50  0001 C CNN "Value1"
+	1    10000 1550
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	12100 2050 12600 2050
+	12750 2050 13250 2050
 Wire Wire Line
-	9450 2050 9950 2050
+	10100 2050 10600 2050
 Wire Wire Line
-	14700 2050 15200 2050
+	15350 2050 15850 2050
 $Comp
 L Device:R R67
 U 1 1 5BC9D211
-P 9450 3450
-F 0 "R67" V 9530 3450 50  0000 C CNN
-F 1 "0.010 1%" V 9350 3450 50  0000 C CNN
-F 2 "Resistor_SMD:R_2512_6332Metric" V 9380 3450 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 9450 3450 50  0001 C CNN
-F 4 "CRA2512-FZ-R010ELFCT-ND" V 9450 3450 60  0001 C CNN "Part"
-F 5 "DigiKey" V 9450 3450 60  0001 C CNN "Provider"
-	1    9450 3450
+P 10100 3450
+F 0 "R67" V 10180 3450 50  0000 C CNN
+F 1 "0.010 1%" V 10000 3450 50  0000 C CNN
+F 2 "Resistor_SMD:R_2512_6332Metric" V 10030 3450 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 10100 3450 50  0001 C CNN
+F 4 "CRA2512-FZ-R010ELFCT-ND" V 10100 3450 60  0001 C CNN "Part"
+F 5 "DigiKey" V 10100 3450 60  0001 C CNN "Provider"
+	1    10100 3450
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	9450 3600 9450 3850
+	10100 3600 10100 3850
 $Comp
 L Device:R R68
 U 1 1 5BC9D51F
-P 12100 3450
-F 0 "R68" V 12180 3450 50  0000 C CNN
-F 1 "0.010 1%" V 12000 3450 50  0000 C CNN
-F 2 "Resistor_SMD:R_2512_6332Metric" V 12030 3450 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 12100 3450 50  0001 C CNN
-F 4 "CRA2512-FZ-R010ELFCT-ND" V 12100 3450 60  0001 C CNN "Part"
-F 5 "DigiKey" V 12100 3450 60  0001 C CNN "Provider"
-	1    12100 3450
+P 12750 3450
+F 0 "R68" V 12830 3450 50  0000 C CNN
+F 1 "0.010 1%" V 12650 3450 50  0000 C CNN
+F 2 "Resistor_SMD:R_2512_6332Metric" V 12680 3450 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 12750 3450 50  0001 C CNN
+F 4 "CRA2512-FZ-R010ELFCT-ND" V 12750 3450 60  0001 C CNN "Part"
+F 5 "DigiKey" V 12750 3450 60  0001 C CNN "Provider"
+	1    12750 3450
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	12100 3600 12100 3850
+	12750 3600 12750 3850
 $Comp
 L Device:R R69
 U 1 1 5BC9D5F5
-P 14700 3450
-F 0 "R69" V 14780 3450 50  0000 C CNN
-F 1 "0.010 1%" V 14600 3450 50  0000 C CNN
-F 2 "Resistor_SMD:R_2512_6332Metric" V 14630 3450 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 14700 3450 50  0001 C CNN
-F 4 "CRA2512-FZ-R010ELFCT-ND" V 14700 3450 60  0001 C CNN "Part"
-F 5 "DigiKey" V 14700 3450 60  0001 C CNN "Provider"
-	1    14700 3450
+P 15350 3450
+F 0 "R69" V 15430 3450 50  0000 C CNN
+F 1 "0.010 1%" V 15250 3450 50  0000 C CNN
+F 2 "Resistor_SMD:R_2512_6332Metric" V 15280 3450 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 15350 3450 50  0001 C CNN
+F 4 "CRA2512-FZ-R010ELFCT-ND" V 15350 3450 60  0001 C CNN "Part"
+F 5 "DigiKey" V 15350 3450 60  0001 C CNN "Provider"
+	1    15350 3450
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	14700 3600 14700 3850
-Connection ~ 14700 3150
+	15350 3600 15350 3850
+Connection ~ 15350 3150
 Wire Wire Line
-	14700 3150 14700 3300
-Connection ~ 9450 3150
+	15350 3150 15350 3300
+Connection ~ 10100 3150
 Wire Wire Line
-	9450 3150 9450 3300
+	10100 3150 10100 3300
 Text Label 8700 10450 0    60   ~ 0
 GHR
 Text Label 8700 11700 0    60   ~ 0
@@ -185,110 +185,110 @@ $EndComp
 $Comp
 L sigmadrone:VIN #PWR?
 U 1 1 5D1A8822
-P 14700 1050
+P 15350 1050
 AR Path="/58BE27E6/5D1A8822" Ref="#PWR?"  Part="1" 
 AR Path="/58BF664D/5D1A8822" Ref="#PWR0130"  Part="1" 
-F 0 "#PWR0130" H 14700 900 50  0001 C CNN
-F 1 "VIN" H 14715 1223 50  0000 C CNN
-F 2 "" H 14700 1050 50  0000 C CNN
-F 3 "" H 14700 1050 50  0000 C CNN
-	1    14700 1050
+F 0 "#PWR0130" H 15350 900 50  0001 C CNN
+F 1 "VIN" H 15365 1223 50  0000 C CNN
+F 2 "" H 15350 1050 50  0000 C CNN
+F 3 "" H 15350 1050 50  0000 C CNN
+	1    15350 1050
 	1    0    0    -1  
 $EndComp
 $Comp
 L sigmadrone:VIN #PWR?
 U 1 1 5D1B74E6
-P 12100 1050
+P 12750 1050
 AR Path="/58BE27E6/5D1B74E6" Ref="#PWR?"  Part="1" 
 AR Path="/58BF664D/5D1B74E6" Ref="#PWR0131"  Part="1" 
-F 0 "#PWR0131" H 12100 900 50  0001 C CNN
-F 1 "VIN" H 12115 1223 50  0000 C CNN
-F 2 "" H 12100 1050 50  0000 C CNN
-F 3 "" H 12100 1050 50  0000 C CNN
-	1    12100 1050
+F 0 "#PWR0131" H 12750 900 50  0001 C CNN
+F 1 "VIN" H 12765 1223 50  0000 C CNN
+F 2 "" H 12750 1050 50  0000 C CNN
+F 3 "" H 12750 1050 50  0000 C CNN
+	1    12750 1050
 	1    0    0    -1  
 $EndComp
 $Comp
 L sigmadrone:VIN #PWR?
 U 1 1 5D1C61AA
-P 9450 1050
+P 10100 1050
 AR Path="/58BE27E6/5D1C61AA" Ref="#PWR?"  Part="1" 
 AR Path="/58BF664D/5D1C61AA" Ref="#PWR0132"  Part="1" 
-F 0 "#PWR0132" H 9450 900 50  0001 C CNN
-F 1 "VIN" H 9465 1223 50  0000 C CNN
-F 2 "" H 9450 1050 50  0000 C CNN
-F 3 "" H 9450 1050 50  0000 C CNN
-	1    9450 1050
+F 0 "#PWR0132" H 10100 900 50  0001 C CNN
+F 1 "VIN" H 10115 1223 50  0000 C CNN
+F 2 "" H 10100 1050 50  0000 C CNN
+F 3 "" H 10100 1050 50  0000 C CNN
+	1    10100 1050
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:Q_NMOS_SGD Q6
 U 1 1 5C792FA5
-P 9350 2800
-F 0 "Q6" H 9550 2850 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 9550 2750 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 9550 2900 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 9350 2800 50  0001 C CNN
-F 4 "DigiKey" H 9350 2800 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 9350 2800 60  0001 C CNN "Part"
-F 6 "STL160N4F7" H 9350 2800 50  0001 C CNN "Value1"
-	1    9350 2800
+P 10000 2800
+F 0 "Q6" H 10200 2850 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 10200 2750 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 10200 2900 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 10000 2800 50  0001 C CNN
+F 4 "DigiKey" H 10000 2800 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 10000 2800 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 10000 2800 50  0001 C CNN "Value1"
+	1    10000 2800
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:Q_NMOS_SGD Q3
 U 1 1 5C79432A
-P 12000 1550
-F 0 "Q3" H 12200 1600 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 12200 1500 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 12200 1650 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 12000 1550 50  0001 C CNN
-F 4 "DigiKey" H 12000 1550 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 12000 1550 60  0001 C CNN "Part"
-F 6 "STL160N4F7" H 12000 1550 50  0001 C CNN "Value1"
-	1    12000 1550
+P 12650 1550
+F 0 "Q3" H 12850 1600 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 12850 1500 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 12850 1650 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 12650 1550 50  0001 C CNN
+F 4 "DigiKey" H 12650 1550 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 12650 1550 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 12650 1550 50  0001 C CNN "Value1"
+	1    12650 1550
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:Q_NMOS_SGD Q4
 U 1 1 5C794408
-P 12000 2800
-F 0 "Q4" H 12200 2850 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 12200 2750 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 12200 2900 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 12000 2800 50  0001 C CNN
-F 4 "DigiKey" H 12000 2800 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 12000 2800 60  0001 C CNN "Part"
-F 6 "STL160N4F7" H 12000 2800 50  0001 C CNN "Value1"
-	1    12000 2800
+P 12650 2800
+F 0 "Q4" H 12850 2850 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 12850 2750 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 12850 2900 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 12650 2800 50  0001 C CNN
+F 4 "DigiKey" H 12650 2800 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 12650 2800 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 12650 2800 50  0001 C CNN "Value1"
+	1    12650 2800
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:Q_NMOS_SGD Q1
 U 1 1 5C794DDD
-P 14600 1550
-F 0 "Q1" H 14800 1600 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 14800 1500 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 14800 1650 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 14600 1550 50  0001 C CNN
-F 4 "DigiKey" H 14600 1550 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 14600 1550 60  0001 C CNN "Part"
-F 6 "STL160N4F7" H 14600 1550 50  0001 C CNN "Value1"
-	1    14600 1550
+P 15250 1550
+F 0 "Q1" H 15450 1600 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 15450 1500 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 15450 1650 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 15250 1550 50  0001 C CNN
+F 4 "DigiKey" H 15250 1550 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 15250 1550 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 15250 1550 50  0001 C CNN "Value1"
+	1    15250 1550
 	1    0    0    -1  
 $EndComp
 $Comp
 L Device:Q_NMOS_SGD Q2
 U 1 1 5C794EBD
-P 14600 2800
-F 0 "Q2" H 14800 2850 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 14800 2750 50  0000 L CNN
-F 2 "Sigmadrone:PQFN_5x6_SGD" H 14800 2900 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 14600 2800 50  0001 C CNN
-F 4 "DigiKey" H 14600 2800 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 14600 2800 60  0001 C CNN "Part"
-F 6 "STL160N4F7" H 14600 2800 50  0001 C CNN "Value1"
-	1    14600 2800
+P 15250 2800
+F 0 "Q2" H 15450 2850 50  0000 L CNN
+F 1 "STL160NS3LLH7" H 15450 2750 50  0000 L CNN
+F 2 "Sigmadrone:PQFN_5x6_SGD" H 15450 2900 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 15250 2800 50  0001 C CNN
+F 4 "DigiKey" H 15250 2800 60  0001 C CNN "Provider"
+F 5 "497-14988-6-ND" H 15250 2800 60  0001 C CNN "Part"
+F 6 "STL160N4F7" H 15250 2800 50  0001 C CNN "Value1"
+	1    15250 2800
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -483,18 +483,18 @@ Wire Wire Line
 $Comp
 L power:+5V #PWR?
 U 1 1 5C8517F8
-P 7150 4450
+P 7150 3850
 AR Path="/58BE27E6/5C8517F8" Ref="#PWR?"  Part="1" 
 AR Path="/58BF664D/5C8517F8" Ref="#PWR053"  Part="1" 
-F 0 "#PWR053" H 7150 4300 50  0001 C CNN
-F 1 "+5V" H 7165 4623 50  0000 C CNN
-F 2 "" H 7150 4450 50  0001 C CNN
-F 3 "" H 7150 4450 50  0001 C CNN
-	1    7150 4450
+F 0 "#PWR053" H 7150 3700 50  0001 C CNN
+F 1 "+5V" H 7165 4023 50  0000 C CNN
+F 2 "" H 7150 3850 50  0001 C CNN
+F 3 "" H 7150 3850 50  0001 C CNN
+	1    7150 3850
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7150 4550 7150 4450
+	7150 4550 7150 4350
 $Comp
 L Device:C C?
 U 1 1 5C865E6F
@@ -848,10 +848,10 @@ Text Label 6300 1250 2    60   ~ 0
 VDRAIN
 Wire Wire Line
 	5550 1250 6300 1250
-Text Label 11350 1150 0    60   ~ 0
+Text Label 12000 1150 0    60   ~ 0
 VDRAIN
 Wire Wire Line
-	12100 1150 11350 1150
+	12750 1150 12000 1150
 Text Label 6300 1450 2    60   ~ 0
 GHA
 Wire Wire Line
@@ -877,22 +877,18 @@ GLC
 Wire Wire Line
 	5550 2500 6300 2500
 Wire Wire Line
-	13650 1550 14400 1550
+	14300 1550 14800 1550
 Wire Wire Line
-	13650 2800 14400 2800
+	14300 2800 14800 2800
 Wire Wire Line
-	11050 1550 11800 1550
+	11700 1550 12200 1550
 Wire Wire Line
-	11050 2800 11800 2800
-Wire Wire Line
-	8400 1550 9150 1550
-Wire Wire Line
-	8400 2800 9150 2800
-Text Label 8400 2050 0    60   ~ 0
+	11700 2800 12200 2800
+Text Label 9050 2050 0    60   ~ 0
 SHA
-Text Label 11050 2050 0    60   ~ 0
+Text Label 11700 2050 0    60   ~ 0
 SHB
-Text Label 13650 2050 0    60   ~ 0
+Text Label 14300 2050 0    60   ~ 0
 SHC
 Text Label 6300 1550 2    60   ~ 0
 SHA
@@ -906,74 +902,68 @@ Text Label 6300 2400 2    60   ~ 0
 SHC
 Wire Wire Line
 	5550 2400 6300 2400
-Text Label 8400 3150 0    60   ~ 0
+Text Label 9050 3150 0    60   ~ 0
 A_ISENSE_P
-Text Label 8400 3850 0    60   ~ 0
+Text Label 9050 3850 0    60   ~ 0
 A_ISENSE_N
 $Comp
 L Device:Net-Tie_2 NT2
 U 1 1 5D379876
-P 9150 3850
-F 0 "NT2" H 9150 4028 50  0000 C CNN
-F 1 "Net-Tie_2" H 9150 3937 50  0000 C CNN
-F 2 "NetTie:NetTie-2_SMD_Pad0.5mm" H 9150 3850 50  0001 C CNN
-F 3 "~" H 9150 3850 50  0001 C CNN
-	1    9150 3850
+P 9800 3850
+F 0 "NT2" H 9800 4028 50  0000 C CNN
+F 1 "Net-Tie_2" H 9800 3937 50  0000 C CNN
+F 2 "NetTie:NetTie-2_SMD_Pad0.5mm" H 9800 3850 50  0001 C CNN
+F 3 "~" H 9800 3850 50  0001 C CNN
+	1    9800 3850
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	8400 3150 9450 3150
+	9050 3850 9700 3850
 Wire Wire Line
-	8400 3850 9050 3850
-Wire Wire Line
-	9250 3850 9450 3850
-Text Label 11050 3150 0    60   ~ 0
+	9900 3850 10100 3850
+Text Label 11700 3150 0    60   ~ 0
 B_ISENSE_P
-Text Label 11050 3850 0    60   ~ 0
+Text Label 11700 3850 0    60   ~ 0
 B_ISENSE_N
 $Comp
 L Device:Net-Tie_2 NT4
 U 1 1 5D3C069E
-P 11800 3850
-F 0 "NT4" H 11800 4028 50  0000 C CNN
-F 1 "Net-Tie_2" H 11800 3937 50  0000 C CNN
-F 2 "NetTie:NetTie-2_SMD_Pad0.5mm" H 11800 3850 50  0001 C CNN
-F 3 "~" H 11800 3850 50  0001 C CNN
-	1    11800 3850
+P 12450 3850
+F 0 "NT4" H 12450 4028 50  0000 C CNN
+F 1 "Net-Tie_2" H 12450 3937 50  0000 C CNN
+F 2 "NetTie:NetTie-2_SMD_Pad0.5mm" H 12450 3850 50  0001 C CNN
+F 3 "~" H 12450 3850 50  0001 C CNN
+	1    12450 3850
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	11050 3150 12100 3150
+	11700 3850 12350 3850
 Wire Wire Line
-	11050 3850 11700 3850
-Wire Wire Line
-	11900 3850 12100 3850
-Text Label 13650 3150 0    60   ~ 0
+	12550 3850 12750 3850
+Text Label 14300 3150 0    60   ~ 0
 C_ISENSE_P
-Text Label 13650 3850 0    60   ~ 0
+Text Label 14300 3850 0    60   ~ 0
 C_ISENSE_N
 $Comp
 L Device:Net-Tie_2 NT6
 U 1 1 5D3CEBCB
-P 14400 3850
-F 0 "NT6" H 14400 4028 50  0000 C CNN
-F 1 "Net-Tie_2" H 14400 3937 50  0000 C CNN
-F 2 "NetTie:NetTie-2_SMD_Pad0.5mm" H 14400 3850 50  0001 C CNN
-F 3 "~" H 14400 3850 50  0001 C CNN
-	1    14400 3850
+P 15050 3850
+F 0 "NT6" H 15050 4028 50  0000 C CNN
+F 1 "Net-Tie_2" H 15050 3937 50  0000 C CNN
+F 2 "NetTie:NetTie-2_SMD_Pad0.5mm" H 15050 3850 50  0001 C CNN
+F 3 "~" H 15050 3850 50  0001 C CNN
+	1    15050 3850
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	13650 3150 14700 3150
+	14300 3850 14950 3850
 Wire Wire Line
-	13650 3850 14300 3850
+	15150 3850 15350 3850
 Wire Wire Line
-	14500 3850 14700 3850
+	12750 3000 12750 3150
+Connection ~ 12750 3150
 Wire Wire Line
-	12100 3000 12100 3150
-Connection ~ 12100 3150
-Wire Wire Line
-	12100 3150 12100 3300
+	12750 3150 12750 3300
 Text Label 6200 3950 2    60   ~ 0
 A_ISENSE_P
 Text Label 6200 4350 2    60   ~ 0
@@ -1133,24 +1123,24 @@ F 5 "DigiKey" H 2450 7800 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	11600 4750 12250 4750
+	12250 4750 12900 4750
 Wire Wire Line
-	11600 4550 12250 4550
+	12250 4550 12900 4550
 Wire Wire Line
-	11600 4650 12250 4650
+	12250 4650 12900 4650
 $Comp
 L Connector_Generic:Conn_01x03 J?
 U 1 1 5D5E91A8
-P 12450 4650
+P 13100 4650
 AR Path="/58BE27E6/5D5E91A8" Ref="J?"  Part="1" 
 AR Path="/58BF664D/5D5E91A8" Ref="J3"  Part="1" 
-F 0 "J3" H 12369 4965 50  0000 C CNN
-F 1 "CONN_01X03" H 12369 4874 50  0000 C CNN
-F 2 "Sigmadrone:PhoenixContact_MKDS_03x7.62mm_Vertical" H 12450 4650 50  0001 C CNN
-F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1704936.pdf" H 12450 4650 50  0001 C CNN
-F 4 "277-5954-ND" H 12450 4650 50  0001 C CNN "Part"
-F 5 "DigiKey" H 12450 4650 50  0001 C CNN "Provider"
-	1    12450 4650
+F 0 "J3" H 13019 4965 50  0000 C CNN
+F 1 "CONN_01X03" H 13019 4874 50  0000 C CNN
+F 2 "Sigmadrone:PhoenixContact_MKDS_03x7.62mm_Vertical" H 13100 4650 50  0001 C CNN
+F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1704936.pdf" H 13100 4650 50  0001 C CNN
+F 4 "277-5954-ND" H 13100 4650 50  0001 C CNN "Part"
+F 5 "DigiKey" H 13100 4650 50  0001 C CNN "Provider"
+	1    13100 4650
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -1230,23 +1220,23 @@ F 3 "" H 3500 7150 50  0000 C CNN
 	1    3500 7150
 	1    0    0    -1  
 $EndComp
-Text Label 11600 4750 0    60   ~ 0
+Text Label 12250 4750 0    60   ~ 0
 PHASE_C
-Text Label 11600 4650 0    60   ~ 0
+Text Label 12250 4650 0    60   ~ 0
 PHASE_B
-Text Label 11600 4550 0    60   ~ 0
+Text Label 12250 4550 0    60   ~ 0
 PHASE_A
-Text Label 15200 2050 2    60   ~ 0
+Text Label 15850 2050 2    60   ~ 0
 PHASE_C
-Text Label 12600 2050 2    60   ~ 0
+Text Label 13250 2050 2    60   ~ 0
 PHASE_B
-Text Label 9950 2050 2    60   ~ 0
+Text Label 10600 2050 2    60   ~ 0
 PHASE_A
-Text HLabel 9950 2050 2    60   Output ~ 0
+Text HLabel 10600 2050 2    60   Output ~ 0
 PHASE_A
-Text HLabel 12600 2050 2    60   Output ~ 0
+Text HLabel 13250 2050 2    60   Output ~ 0
 PHASE_B
-Text HLabel 15200 2050 2    60   Output ~ 0
+Text HLabel 15850 2050 2    60   Output ~ 0
 PHASE_C
 Wire Wire Line
 	11300 11400 11300 12850
@@ -1279,79 +1269,79 @@ $EndComp
 Wire Wire Line
 	5800 7100 5800 7600
 Wire Wire Line
-	13650 2050 14700 2050
+	14300 2050 14800 2050
 Wire Wire Line
-	11050 2050 12100 2050
+	11700 2050 12200 2050
 Wire Wire Line
-	8400 2050 9450 2050
+	9050 2050 9500 2050
 $Comp
 L Device:C C?
 U 1 1 5C79A319
-P 9900 1150
+P 10550 1150
 AR Path="/58BE27E6/5C79A319" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5C79A319" Ref="C11"  Part="1" 
-F 0 "C11" V 9950 1000 50  0000 L CNN
-F 1 "1uF 100V" V 9750 900 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 9938 1000 50  0001 C CNN
-F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 9900 1150 50  0001 C CNN
-F 4 "445-4468-1-ND" H 9900 1150 60  0001 C CNN "Part"
-F 5 "DigiKey" H 9900 1150 60  0001 C CNN "Provider"
-	1    9900 1150
+F 0 "C11" V 10600 1000 50  0000 L CNN
+F 1 "1uF 100V" V 10400 900 50  0000 L CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric" H 10588 1000 50  0001 C CNN
+F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 10550 1150 50  0001 C CNN
+F 4 "445-4468-1-ND" H 10550 1150 60  0001 C CNN "Part"
+F 5 "DigiKey" H 10550 1150 60  0001 C CNN "Provider"
+	1    10550 1150
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	9750 1150 9450 1150
-Connection ~ 9450 1150
+	10400 1150 10100 1150
+Connection ~ 10100 1150
 Wire Wire Line
-	9450 1150 9450 1350
+	10100 1150 10100 1350
 Wire Wire Line
-	10050 1150 10250 1150
+	10700 1150 10900 1150
 Wire Wire Line
-	12100 1050 12100 1150
-Connection ~ 12100 1150
+	12750 1050 12750 1150
+Connection ~ 12750 1150
 Wire Wire Line
-	12100 1150 12100 1350
+	12750 1150 12750 1350
 $Comp
 L Device:C C?
 U 1 1 5C8289D7
-P 12550 1150
+P 13200 1150
 AR Path="/58BE27E6/5C8289D7" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5C8289D7" Ref="C39"  Part="1" 
-F 0 "C39" V 12600 1000 50  0000 L CNN
-F 1 "1uF 100V" V 12400 900 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 12588 1000 50  0001 C CNN
-F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 12550 1150 50  0001 C CNN
-F 4 "445-4468-1-ND" H 12550 1150 60  0001 C CNN "Part"
-F 5 "DigiKey" H 12550 1150 60  0001 C CNN "Provider"
-	1    12550 1150
+F 0 "C39" V 13250 1000 50  0000 L CNN
+F 1 "1uF 100V" V 13050 900 50  0000 L CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric" H 13238 1000 50  0001 C CNN
+F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 13200 1150 50  0001 C CNN
+F 4 "445-4468-1-ND" H 13200 1150 60  0001 C CNN "Part"
+F 5 "DigiKey" H 13200 1150 60  0001 C CNN "Provider"
+	1    13200 1150
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	12400 1150 12100 1150
+	13050 1150 12750 1150
 Wire Wire Line
-	12700 1150 12900 1150
+	13350 1150 13550 1150
 $Comp
 L Device:C C?
 U 1 1 5C8453D9
-P 15150 1150
+P 15800 1150
 AR Path="/58BE27E6/5C8453D9" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5C8453D9" Ref="C40"  Part="1" 
-F 0 "C40" V 15200 1000 50  0000 L CNN
-F 1 "1uF 100V" V 15000 900 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 15188 1000 50  0001 C CNN
-F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 15150 1150 50  0001 C CNN
-F 4 "445-4468-1-ND" H 15150 1150 60  0001 C CNN "Part"
-F 5 "DigiKey" H 15150 1150 60  0001 C CNN "Provider"
-	1    15150 1150
+F 0 "C40" V 15850 1000 50  0000 L CNN
+F 1 "1uF 100V" V 15650 900 50  0000 L CNN
+F 2 "Capacitor_SMD:C_1206_3216Metric" H 15838 1000 50  0001 C CNN
+F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 15800 1150 50  0001 C CNN
+F 4 "445-4468-1-ND" H 15800 1150 60  0001 C CNN "Part"
+F 5 "DigiKey" H 15800 1150 60  0001 C CNN "Provider"
+	1    15800 1150
 	0    -1   -1   0   
 $EndComp
 Wire Wire Line
-	15000 1150 14700 1150
+	15650 1150 15350 1150
 Wire Wire Line
-	15300 1150 15500 1150
-Connection ~ 14700 1150
+	15950 1150 16150 1150
+Connection ~ 15350 1150
 Wire Wire Line
-	14700 1150 14700 1350
+	15350 1150 15350 1350
 Wire Wire Line
 	2150 8050 1850 8050
 Connection ~ 2150 8050
@@ -1390,67 +1380,67 @@ $EndComp
 $Comp
 L sigmadrone:PGND #PWR0121
 U 1 1 5C8C8623
-P 9450 3950
-F 0 "#PWR0121" H 9450 3700 50  0001 C CNN
-F 1 "PGND" H 9455 3777 50  0000 C CNN
-F 2 "" H 9450 3950 50  0001 C CNN
-F 3 "" H 9450 3950 50  0001 C CNN
-	1    9450 3950
+P 10100 3950
+F 0 "#PWR0121" H 10100 3700 50  0001 C CNN
+F 1 "PGND" H 10105 3777 50  0000 C CNN
+F 2 "" H 10100 3950 50  0001 C CNN
+F 3 "" H 10100 3950 50  0001 C CNN
+	1    10100 3950
 	1    0    0    -1  
 $EndComp
 $Comp
 L sigmadrone:PGND #PWR0122
 U 1 1 5C8C8A3F
-P 12100 3950
-F 0 "#PWR0122" H 12100 3700 50  0001 C CNN
-F 1 "PGND" H 12105 3777 50  0000 C CNN
-F 2 "" H 12100 3950 50  0001 C CNN
-F 3 "" H 12100 3950 50  0001 C CNN
-	1    12100 3950
+P 12750 3950
+F 0 "#PWR0122" H 12750 3700 50  0001 C CNN
+F 1 "PGND" H 12755 3777 50  0000 C CNN
+F 2 "" H 12750 3950 50  0001 C CNN
+F 3 "" H 12750 3950 50  0001 C CNN
+	1    12750 3950
 	1    0    0    -1  
 $EndComp
 $Comp
 L sigmadrone:PGND #PWR0123
 U 1 1 5C8E5E1D
-P 14700 3950
-F 0 "#PWR0123" H 14700 3700 50  0001 C CNN
-F 1 "PGND" H 14705 3777 50  0000 C CNN
-F 2 "" H 14700 3950 50  0001 C CNN
-F 3 "" H 14700 3950 50  0001 C CNN
-	1    14700 3950
+P 15350 3950
+F 0 "#PWR0123" H 15350 3700 50  0001 C CNN
+F 1 "PGND" H 15355 3777 50  0000 C CNN
+F 2 "" H 15350 3950 50  0001 C CNN
+F 3 "" H 15350 3950 50  0001 C CNN
+	1    15350 3950
 	1    0    0    -1  
 $EndComp
 $Comp
 L sigmadrone:PGND #PWR0124
 U 1 1 5C903323
-P 15500 1150
-F 0 "#PWR0124" H 15500 900 50  0001 C CNN
-F 1 "PGND" V 15505 1022 50  0000 R CNN
-F 2 "" H 15500 1150 50  0001 C CNN
-F 3 "" H 15500 1150 50  0001 C CNN
-	1    15500 1150
+P 16150 1150
+F 0 "#PWR0124" H 16150 900 50  0001 C CNN
+F 1 "PGND" V 16155 1022 50  0000 R CNN
+F 2 "" H 16150 1150 50  0001 C CNN
+F 3 "" H 16150 1150 50  0001 C CNN
+	1    16150 1150
 	0    -1   -1   0   
 $EndComp
 $Comp
 L sigmadrone:PGND #PWR0125
 U 1 1 5C920BFA
-P 12900 1150
-F 0 "#PWR0125" H 12900 900 50  0001 C CNN
-F 1 "PGND" V 12905 1022 50  0000 R CNN
-F 2 "" H 12900 1150 50  0001 C CNN
-F 3 "" H 12900 1150 50  0001 C CNN
-	1    12900 1150
+P 13550 1150
+F 0 "#PWR0125" H 13550 900 50  0001 C CNN
+F 1 "PGND" V 13555 1022 50  0000 R CNN
+F 2 "" H 13550 1150 50  0001 C CNN
+F 3 "" H 13550 1150 50  0001 C CNN
+	1    13550 1150
 	0    -1   -1   0   
 $EndComp
 $Comp
 L sigmadrone:PGND #PWR0126
 U 1 1 5C93E0B6
-P 10250 1150
-F 0 "#PWR0126" H 10250 900 50  0001 C CNN
-F 1 "PGND" V 10255 1022 50  0000 R CNN
-F 2 "" H 10250 1150 50  0001 C CNN
-F 3 "" H 10250 1150 50  0001 C CNN
-	1    10250 1150
+P 10900 1150
+F 0 "#PWR0126" H 10900 900 50  0001 C CNN
+F 1 "PGND" V 10905 1022 50  0000 R CNN
+F 2 "" H 10900 1150 50  0001 C CNN
+F 3 "" H 10900 1150 50  0001 C CNN
+	1    10900 1150
 	0    -1   -1   0   
 $EndComp
 $Comp
@@ -2214,28 +2204,12 @@ F 5 "DigiKey" V 3650 12450 60  0001 C CNN "Provider"
 $EndComp
 Wire Wire Line
 	3800 12450 3950 12450
-$Comp
-L Device:D_Shockley D?
-U 1 1 5D088870
-P 8150 4550
-AR Path="/5D07002B/5D088870" Ref="D?"  Part="1" 
-AR Path="/58BF664D/5D088870" Ref="D5"  Part="1" 
-F 0 "D5" H 8150 4650 50  0000 C CNN
-F 1 "BAT30KFILM" H 8150 4450 50  0000 C CNN
-F 2 "Diode_SMD:D_SOD-523" H 8150 4550 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/b5/44/50/dc/a4/84/48/70/CD00126118.pdf/files/CD00126118.pdf/jcr:content/translations/en.CD00126118.pdf" H 8150 4550 50  0001 C CNN
-F 4 "497-5552-1-ND" H 8150 4550 60  0001 C CNN "Part"
-F 5 "DigiKey" H 8150 4550 60  0001 C CNN "Provider"
-	1    8150 4550
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
-	7650 4550 8000 4550
-Connection ~ 7650 4550
-Text HLabel 8500 4550 2    60   Output ~ 0
+	7150 3950 7350 3950
+Text HLabel 7850 3950 2    60   Input ~ 0
 EXT_5V
 Wire Wire Line
-	8300 4550 8500 4550
+	7650 3950 7850 3950
 $Comp
 L Device:Net-Tie_2 NT1
 U 1 1 5D4D5931
@@ -2259,4 +2233,175 @@ Wire Wire Line
 	7450 7400 7450 7600
 Wire Wire Line
 	1450 12550 3950 12550
+$Comp
+L Device:D_Shockley D5
+U 1 1 5C75F403
+P 7500 3950
+AR Path="/58BF664D/5C75F403" Ref="D5"  Part="1" 
+AR Path="/58BE27E6/5C75F403" Ref="D?"  Part="1" 
+F 0 "D5" H 7500 4050 50  0000 C CNN
+F 1 "STPS0560Z" H 7500 3850 50  0000 C CNN
+F 2 "Diode_SMD:D_SOD-123" H 7500 3950 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/group1/0f/03/9b/7c/50/58/48/d7/CD00001852/files/CD00001852.pdf/jcr:content/translations/en.CD00001852.pdf" H 7500 3950 50  0001 C CNN
+F 4 "497-3787-1-ND" H 7500 3950 60  0001 C CNN "Part"
+F 5 "DigiKey" H 7500 3950 60  0001 C CNN "Provider"
+	1    7500 3950
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:D_Shockley D7
+U 1 1 5C7DF579
+P 7150 4200
+AR Path="/58BF664D/5C7DF579" Ref="D7"  Part="1" 
+AR Path="/58BE27E6/5C7DF579" Ref="D?"  Part="1" 
+F 0 "D7" H 7150 4300 50  0000 C CNN
+F 1 "STPS0560Z" H 7150 4100 50  0000 C CNN
+F 2 "Diode_SMD:D_SOD-123" H 7150 4200 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/group1/0f/03/9b/7c/50/58/48/d7/CD00001852/files/CD00001852.pdf/jcr:content/translations/en.CD00001852.pdf" H 7150 4200 50  0001 C CNN
+F 4 "497-3787-1-ND" H 7150 4200 60  0001 C CNN "Part"
+F 5 "DigiKey" H 7150 4200 60  0001 C CNN "Provider"
+	1    7150 4200
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	7150 4050 7150 3950
+Connection ~ 7150 3950
+Wire Wire Line
+	7150 3950 7150 3850
+Wire Wire Line
+	9050 2800 9500 2800
+$Comp
+L Connector:TestPoint_Probe TP1
+U 1 1 5C82275D
+P 9500 1550
+F 0 "TP1" V 9600 1600 50  0000 R CNN
+F 1 "PAD" V 9450 1650 50  0000 R CNN
+F 2 "TestPoint:TestPoint_Pad_D1.0mm" H 9700 1550 50  0001 C CNN
+F 3 "~" H 9700 1550 50  0001 C CNN
+	1    9500 1550
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	9050 1550 9500 1550
+Connection ~ 9500 1550
+Wire Wire Line
+	9500 1550 9800 1550
+$Comp
+L Connector:TestPoint_Probe TP2
+U 1 1 5C88E011
+P 9500 2800
+F 0 "TP2" V 9600 2850 50  0000 R CNN
+F 1 "PAD" V 9450 2900 50  0000 R CNN
+F 2 "TestPoint:TestPoint_Pad_D1.0mm" H 9700 2800 50  0001 C CNN
+F 3 "~" H 9700 2800 50  0001 C CNN
+	1    9500 2800
+	0    -1   -1   0   
+$EndComp
+Connection ~ 9500 2800
+Wire Wire Line
+	9500 2800 9800 2800
+$Comp
+L Connector:TestPoint_Probe TP4
+U 1 1 5C88E0DB
+P 12200 1550
+F 0 "TP4" V 12300 1600 50  0000 R CNN
+F 1 "PAD" V 12150 1650 50  0000 R CNN
+F 2 "TestPoint:TestPoint_Pad_D1.0mm" H 12400 1550 50  0001 C CNN
+F 3 "~" H 12400 1550 50  0001 C CNN
+	1    12200 1550
+	0    -1   -1   0   
+$EndComp
+Connection ~ 12200 1550
+Wire Wire Line
+	12200 1550 12450 1550
+$Comp
+L Connector:TestPoint_Probe TP5
+U 1 1 5C88E3EE
+P 12200 2800
+F 0 "TP5" V 12300 2850 50  0000 R CNN
+F 1 "PAD" V 12150 2900 50  0000 R CNN
+F 2 "TestPoint:TestPoint_Pad_D1.0mm" H 12400 2800 50  0001 C CNN
+F 3 "~" H 12400 2800 50  0001 C CNN
+	1    12200 2800
+	0    -1   -1   0   
+$EndComp
+Connection ~ 12200 2800
+Wire Wire Line
+	12200 2800 12450 2800
+$Comp
+L Connector:TestPoint_Probe TP7
+U 1 1 5C88E4B6
+P 14800 1550
+F 0 "TP7" V 14900 1600 50  0000 R CNN
+F 1 "PAD" V 14750 1650 50  0000 R CNN
+F 2 "TestPoint:TestPoint_Pad_D1.0mm" H 15000 1550 50  0001 C CNN
+F 3 "~" H 15000 1550 50  0001 C CNN
+	1    14800 1550
+	0    -1   -1   0   
+$EndComp
+Connection ~ 14800 1550
+Wire Wire Line
+	14800 1550 15050 1550
+$Comp
+L Connector:TestPoint_Probe TP8
+U 1 1 5C88E6AE
+P 14800 2800
+F 0 "TP8" V 14900 2850 50  0000 R CNN
+F 1 "PAD" V 14750 2900 50  0000 R CNN
+F 2 "TestPoint:TestPoint_Pad_D1.0mm" H 15000 2800 50  0001 C CNN
+F 3 "~" H 15000 2800 50  0001 C CNN
+	1    14800 2800
+	0    -1   -1   0   
+$EndComp
+Connection ~ 14800 2800
+Wire Wire Line
+	14800 2800 15050 2800
+$Comp
+L Connector:TestPoint_Probe TP3
+U 1 1 5C88F26C
+P 9500 2050
+F 0 "TP3" V 9600 2100 50  0000 R CNN
+F 1 "PAD" V 9450 2150 50  0000 R CNN
+F 2 "TestPoint:TestPoint_Pad_D1.0mm" H 9700 2050 50  0001 C CNN
+F 3 "~" H 9700 2050 50  0001 C CNN
+	1    9500 2050
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Connector:TestPoint_Probe TP6
+U 1 1 5C88F5CE
+P 12200 2050
+F 0 "TP6" V 12300 2100 50  0000 R CNN
+F 1 "PAD" V 12150 2150 50  0000 R CNN
+F 2 "TestPoint:TestPoint_Pad_D1.0mm" H 12400 2050 50  0001 C CNN
+F 3 "~" H 12400 2050 50  0001 C CNN
+	1    12200 2050
+	0    -1   -1   0   
+$EndComp
+Connection ~ 9500 2050
+Wire Wire Line
+	9500 2050 10100 2050
+Wire Wire Line
+	9050 3150 10100 3150
+Connection ~ 12200 2050
+Wire Wire Line
+	12200 2050 12750 2050
+Wire Wire Line
+	11700 3150 12750 3150
+$Comp
+L Connector:TestPoint_Probe TP9
+U 1 1 5C88F6CE
+P 14800 2050
+F 0 "TP9" V 14900 2100 50  0000 R CNN
+F 1 "PAD" V 14750 2150 50  0000 R CNN
+F 2 "TestPoint:TestPoint_Pad_D1.0mm" H 15000 2050 50  0001 C CNN
+F 3 "~" H 15000 2050 50  0001 C CNN
+	1    14800 2050
+	0    -1   -1   0   
+$EndComp
+Connection ~ 14800 2050
+Wire Wire Line
+	14800 2050 15350 2050
+Wire Wire Line
+	14300 3150 15350 3150
 $EndSCHEMATC

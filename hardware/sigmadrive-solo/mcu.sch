@@ -1261,11 +1261,11 @@ F 5 "DigiKey" H 6450 14300 50  0001 C CNN "Provider"
 	1    6450 14300
 	-1   0    0    -1  
 $EndComp
-Text HLabel 19450 3450 2    60   Input ~ 0
+Text HLabel 19450 3650 2    60   Input ~ 0
 IC_FB
 Wire Wire Line
 	19450 7150 17450 7150
-Text HLabel 19450 3650 2    60   Input ~ 0
+Text HLabel 19450 3450 2    60   Input ~ 0
 IA_FB
 Text HLabel 19450 3550 2    60   Input ~ 0
 IB_FB
@@ -2771,11 +2771,11 @@ Wire Wire Line
 	12350 11650 12750 11650
 Connection ~ 12750 11650
 Wire Wire Line
-	17450 3450 19450 3450
+	17450 3650 19450 3650
 Wire Wire Line
 	17450 3550 19450 3550
 Wire Wire Line
-	17450 3650 19450 3650
+	17450 3450 19450 3450
 Wire Wire Line
 	17450 3750 17850 3750
 Wire Wire Line
