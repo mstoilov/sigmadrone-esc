@@ -82,7 +82,6 @@ public:
 	std::complex<float> r;
 	std::complex<float> v;
 
-	float sine_[SINE_SAMPLES];
 	uint32_t run_index_ = 0;
 	std::vector<std::function<bool(void)>> run_stack_;
 };

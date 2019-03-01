@@ -56,7 +56,7 @@ QuadratureDecoder pwm4(TIM4,  2048*4, 0, {
 
 QuadratureDecoder *p_encoder = &pwm4;
 
-#define USE_6STEP
+#undef USE_6STEP
 #ifdef USE_6STEP
 PWM6Step pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::TrigUpdate, Timer::PWM1, Timer::High, Timer::Low, 30, 0, {
 		{PA_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
@@ -133,21 +133,14 @@ void CallbackPWMCC(uint32_t pulse, uint32_t period)
 #endif
 }
 
-
-
-void main_task(void *pvParameters)
+void RunFloatingPointTest()
 {
-	uint32_t old_encoder_idx = 0, new_encoder_idx = 0;
-	uint32_t old_decoder_value = 0, new_decoder_value = 0;
-
-	btn_user.Callback(pwm1_toggle);
-
-	// At this stage the system clock should have already been configured
-	// at high speed.
-	printf("System clock: %lu Hz\n", SystemCoreClock);
-
 	int64_t jend = 0, jbegin = jiffies;
 	int iterations = 4000000;
+
+	printf("----- Starting FPU Test\n");
+	printf("Iterations : %d\n", iterations);
+
 	for (int i = 0; i < iterations; i++) {
 		mul_float(2.0, 3.0);
 	}
@@ -169,6 +162,22 @@ void main_task(void *pvParameters)
 	}
 	jend = jiffies;
 	printf("dot        : %5ld\n", (int32_t)(jend - jbegin));
+	printf("----- Done.\n");
+}
+
+
+void main_task(void *pvParameters)
+{
+	uint32_t old_encoder_idx = 0, new_encoder_idx = 0;
+	uint32_t old_decoder_value = 0, new_decoder_value = 0;
+
+	btn_user.Callback(pwm1_toggle);
+
+	// At this stage the system clock should have already been configured
+	// at high speed.
+	printf("System clock: %lu Hz\n", SystemCoreClock);
+
+	RunFloatingPointTest();
 
 	pwm3.Callback_PWMCC(CallbackPWMCC);
 	pwm3.Start();
@@ -247,8 +256,6 @@ void main_task(void *pvParameters)
 			std::cout << std::endl;
 		}
 #endif
-
-		std::cout << adc.injdata_[0] << ", "  << adc.injdata_[1] << ", "  << adc.injdata_[2] << ", " << std::endl;
 
 	}
 

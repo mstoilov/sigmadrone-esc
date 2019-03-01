@@ -39,6 +39,10 @@ PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequ
 	v = std::polar<float>(1.0f, 0.0f);
 	r = std::polar<float>(1.0f, 0.0f);
 
+	/*
+	 * Initialize v and the encoder.
+	 * Wait for the time of one full 360 electrical degree cycle.
+	 */
 	run_stack_.push_back([&]()->bool {
 		v = std::polar<float>(1.0f, 0.0f);
 		p_encoder->SetIndexOffset(-1);
@@ -51,15 +55,36 @@ PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequ
 		return false;
 	});
 
+	/*
+	 * Rotate 2 full mechanical turns. i.e. 2 * M2E_RATIO * SINE_STEPS
+	 */
 	run_stack_.push_back([&]()->bool {
 		v = v * r;
+		if (update_counter_++ >= 2 * M2E_RATIO * SINE_STEPS) {
+			update_counter_ = 0;
+			std::cout << "Stopping: " << jiffies << std::endl;
+			return true;
+		}
+		return false;
+	});
 
-//		if (update_counter_ % 5 == 0) {
-//			SetOCPeriod(CH1, duty_ * sine_[(update_counter_ * SINE_SAMPLES / SINE_STEPS + 0 * SINE_SAMPLES / 3) % SINE_SAMPLES]);
-//			SetOCPeriod(CH2, duty_ * sine_[(update_counter_ * SINE_SAMPLES / SINE_STEPS + 1 * SINE_SAMPLES / 3) % SINE_SAMPLES]);
-//			SetOCPeriod(CH3, duty_ * sine_[(update_counter_ * SINE_SAMPLES / SINE_STEPS + 2 * SINE_SAMPLES / 3) % SINE_SAMPLES]);
-//		}
+	/*
+	 * Wait
+	 */
+	run_stack_.push_back([&]()->bool {
+		if (update_counter_++ >= 1 * SINE_STEPS) {
+			update_counter_ = 0;
+			std::cout << "Starting: " << jiffies << std::endl;
+			return true;
+		}
+		return false;
+	});
 
+	/*
+	 * Rotate 2 full mechanical turns. i.e. 2 * M2E_RATIO * SINE_STEPS
+	 */
+	run_stack_.push_back([&]()->bool {
+		v = v / r;
 		if (update_counter_++ >= 2 * M2E_RATIO * SINE_STEPS) {
 			update_counter_ = 0;
 			std::cout << "Stopping: " << jiffies << std::endl;
@@ -167,15 +192,14 @@ void PWMSine::SetElectricalRotationsPerSecond(const Frequency& f)
 {
 	uint64_t swFreq = switching_freq_.millihertz();
 	uint64_t rotFreq = f.millihertz();
+	uint32_t repCount = 0;
 
-	SINE_STEPS = swFreq/rotFreq/1;
+	SetRepetionCounterValue(repCount);
+	SINE_STEPS = swFreq/rotFreq/(repCount + 1);
 
-	for (uint32_t i = 0; i < SINE_SAMPLES; i++)
-		sine_[i] = ((sin(2 * M_PI * i / SINE_SAMPLES) + 1.0f) * 0.5f);
-
-	uint64_t repCount = swFreq/rotFreq/SINE_STEPS;
-	SetRepetionCounterValue(repCount - 1);
-
+	/*
+	 * Rotation Delta
+	 */
 	r = std::polar<float>(1.0f, 2.0f * M_PI / SINE_STEPS);
 }
 
