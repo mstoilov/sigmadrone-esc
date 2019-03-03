@@ -1,5 +1,4 @@
 EESchema Schematic File Version 4
-LIBS:sigmadrive-solo-cache
 EELAYER 26 0
 EELAYER END
 $Descr A2 23386 16535
@@ -63,11 +62,11 @@ L Device:Q_NMOS_SGD Q5
 U 1 1 5A928DF8
 P 10000 1550
 F 0 "Q5" H 10200 1600 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 10200 1500 50  0000 L CNN
+F 1 "NTMFS5C628NLT1G" H 10200 1500 50  0000 L CNN
 F 2 "Sigmadrone:PQFN_5x6_SGD" H 10200 1650 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 10000 1550 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/NTMFS5C628NL-D.PDF" H 10000 1550 50  0001 C CNN
 F 4 "DigiKey" H 10000 1550 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 10000 1550 60  0001 C CNN "Part"
+F 5 "NTMFS5C628NLT1GOSDKR-ND" H 10000 1550 60  0001 C CNN "Part"
 F 6 "STL160N4F7" H 10000 1550 50  0001 C CNN "Value1"
 	1    10000 1550
 	1    0    0    -1  
@@ -226,11 +225,11 @@ L Device:Q_NMOS_SGD Q6
 U 1 1 5C792FA5
 P 10000 2800
 F 0 "Q6" H 10200 2850 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 10200 2750 50  0000 L CNN
+F 1 "NTMFS5C628NLT1G" H 10200 2750 50  0000 L CNN
 F 2 "Sigmadrone:PQFN_5x6_SGD" H 10200 2900 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 10000 2800 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/NTMFS5C628NL-D.PDF" H 10000 2800 50  0001 C CNN
 F 4 "DigiKey" H 10000 2800 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 10000 2800 60  0001 C CNN "Part"
+F 5 "NTMFS5C628NLT1GOSDKR-ND" H 10000 2800 60  0001 C CNN "Part"
 F 6 "STL160N4F7" H 10000 2800 50  0001 C CNN "Value1"
 	1    10000 2800
 	1    0    0    -1  
@@ -240,11 +239,11 @@ L Device:Q_NMOS_SGD Q3
 U 1 1 5C79432A
 P 12650 1550
 F 0 "Q3" H 12850 1600 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 12850 1500 50  0000 L CNN
+F 1 "NTMFS5C628NLT1G" H 12850 1500 50  0000 L CNN
 F 2 "Sigmadrone:PQFN_5x6_SGD" H 12850 1650 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 12650 1550 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/NTMFS5C628NL-D.PDF" H 12650 1550 50  0001 C CNN
 F 4 "DigiKey" H 12650 1550 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 12650 1550 60  0001 C CNN "Part"
+F 5 "NTMFS5C628NLT1GOSDKR-ND" H 12650 1550 60  0001 C CNN "Part"
 F 6 "STL160N4F7" H 12650 1550 50  0001 C CNN "Value1"
 	1    12650 1550
 	1    0    0    -1  
@@ -254,11 +253,11 @@ L Device:Q_NMOS_SGD Q4
 U 1 1 5C794408
 P 12650 2800
 F 0 "Q4" H 12850 2850 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 12850 2750 50  0000 L CNN
+F 1 "NTMFS5C628NLT1G" H 12850 2750 50  0000 L CNN
 F 2 "Sigmadrone:PQFN_5x6_SGD" H 12850 2900 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 12650 2800 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/NTMFS5C628NL-D.PDF" H 12650 2800 50  0001 C CNN
 F 4 "DigiKey" H 12650 2800 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 12650 2800 60  0001 C CNN "Part"
+F 5 "NTMFS5C628NLT1GOSDKR-ND" H 12650 2800 60  0001 C CNN "Part"
 F 6 "STL160N4F7" H 12650 2800 50  0001 C CNN "Value1"
 	1    12650 2800
 	1    0    0    -1  
@@ -268,11 +267,11 @@ L Device:Q_NMOS_SGD Q1
 U 1 1 5C794DDD
 P 15250 1550
 F 0 "Q1" H 15450 1600 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 15450 1500 50  0000 L CNN
+F 1 "NTMFS5C628NLT1G" H 15450 1500 50  0000 L CNN
 F 2 "Sigmadrone:PQFN_5x6_SGD" H 15450 1650 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 15250 1550 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/NTMFS5C628NL-D.PDF" H 15250 1550 50  0001 C CNN
 F 4 "DigiKey" H 15250 1550 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 15250 1550 60  0001 C CNN "Part"
+F 5 "NTMFS5C628NLT1GOSDKR-ND" H 15250 1550 60  0001 C CNN "Part"
 F 6 "STL160N4F7" H 15250 1550 50  0001 C CNN "Value1"
 	1    15250 1550
 	1    0    0    -1  
@@ -282,11 +281,11 @@ L Device:Q_NMOS_SGD Q2
 U 1 1 5C794EBD
 P 15250 2800
 F 0 "Q2" H 15450 2850 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 15450 2750 50  0000 L CNN
+F 1 "NTMFS5C628NLT1G" H 15450 2750 50  0000 L CNN
 F 2 "Sigmadrone:PQFN_5x6_SGD" H 15450 2900 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 15250 2800 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/NTMFS5C628NL-D.PDF" H 15250 2800 50  0001 C CNN
 F 4 "DigiKey" H 15250 2800 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 15250 2800 60  0001 C CNN "Part"
+F 5 "NTMFS5C628NLT1GOSDKR-ND" H 15250 2800 60  0001 C CNN "Part"
 F 6 "STL160N4F7" H 15250 2800 50  0001 C CNN "Value1"
 	1    15250 2800
 	1    0    0    -1  
@@ -296,11 +295,11 @@ L Device:Q_NMOS_SGD Q7
 U 1 1 5C79539C
 P 9650 10450
 F 0 "Q7" H 9850 10500 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 9850 10400 50  0000 L CNN
+F 1 "NTMFS5C628NLT1G" H 9850 10400 50  0000 L CNN
 F 2 "Sigmadrone:PQFN_5x6_SGD" H 9850 10550 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 9650 10450 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/NTMFS5C628NL-D.PDF" H 9650 10450 50  0001 C CNN
 F 4 "DigiKey" H 9650 10450 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 9650 10450 60  0001 C CNN "Part"
+F 5 "NTMFS5C628NLT1GOSDKR-ND" H 9650 10450 60  0001 C CNN "Part"
 F 6 "STL160N4F7" H 9650 10450 50  0001 C CNN "Value1"
 	1    9650 10450
 	1    0    0    -1  
@@ -310,11 +309,11 @@ L Device:Q_NMOS_SGD Q8
 U 1 1 5C795574
 P 9650 11700
 F 0 "Q8" H 9850 11750 50  0000 L CNN
-F 1 "STL160NS3LLH7" H 9850 11650 50  0000 L CNN
+F 1 "NTMFS5C628NLT1G" H 9850 11650 50  0000 L CNN
 F 2 "Sigmadrone:PQFN_5x6_SGD" H 9850 11800 50  0001 C CNN
-F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/6c/2c/68/6d/40/eb/44/cd/DM00087549.pdf/files/DM00087549.pdf/jcr:content/translations/en.DM00087549.pdf" H 9650 11700 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/NTMFS5C628NL-D.PDF" H 9650 11700 50  0001 C CNN
 F 4 "DigiKey" H 9650 11700 60  0001 C CNN "Provider"
-F 5 "497-14988-6-ND" H 9650 11700 60  0001 C CNN "Part"
+F 5 "NTMFS5C628NLT1GOSDKR-ND" H 9650 11700 60  0001 C CNN "Part"
 F 6 "STL160N4F7" H 9650 11700 50  0001 C CNN "Value1"
 	1    9650 11700
 	1    0    0    -1  
