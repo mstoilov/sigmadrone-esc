@@ -177,8 +177,6 @@ void main_task(void *pvParameters)
 	// at high speed.
 	printf("System clock: %lu Hz\n", SystemCoreClock);
 
-	RunFloatingPointTest();
-
 	pwm3.Callback_PWMCC(CallbackPWMCC);
 	pwm3.Start();
 

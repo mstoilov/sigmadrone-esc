@@ -49,7 +49,7 @@ PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequ
 		p_encoder->ResetPosition(0);
 		if (update_counter_++ >= 1 * SINE_STEPS) {
 			update_counter_ = 0;
-			std::cout << "Starting: " << jiffies << std::endl;
+			std::cout << "Starting: " << update_counter_ << " (" << jiffies << ")"<< std::endl;
 			return true;
 		}
 		return false;
@@ -61,8 +61,8 @@ PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequ
 	run_stack_.push_back([&]()->bool {
 		v = v * r;
 		if (update_counter_++ >= 2 * M2E_RATIO * SINE_STEPS) {
+			std::cout << "Stopping: " << update_counter_ << " (" << jiffies << ")"<< std::endl;
 			update_counter_ = 0;
-			std::cout << "Stopping: " << jiffies << std::endl;
 			return true;
 		}
 		return false;
@@ -74,7 +74,7 @@ PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequ
 	run_stack_.push_back([&]()->bool {
 		if (update_counter_++ >= 1 * SINE_STEPS) {
 			update_counter_ = 0;
-			std::cout << "Starting: " << jiffies << std::endl;
+			std::cout << "Starting: "  << update_counter_ << " (" << jiffies << ")"<< std::endl;
 			return true;
 		}
 		return false;
@@ -86,15 +86,10 @@ PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequ
 	run_stack_.push_back([&]()->bool {
 		v = v / r;
 		if (update_counter_++ >= 2 * M2E_RATIO * SINE_STEPS) {
-			update_counter_ = 0;
-			std::cout << "Stopping: " << jiffies << std::endl;
+			std::cout << "Stopping: " << update_counter_ << " (" << jiffies << ")"<< std::endl;
+			Stop();
 			return true;
 		}
-		return false;
-	});
-
-	run_stack_.push_back([&]()->bool {
-		Stop();
 		return false;
 	});
 
@@ -130,7 +125,6 @@ void PWMSine::Start()
 	EnableChannel(CH3N);
 
 	update_counter_ = 0;
-	counter_ = 0;
 	run_index_ = 0;
 	EnableInterrupt(InterruptUpdate);
 	EnableOutputs();
@@ -251,13 +245,13 @@ void PWMSine::HandleUpdate()
 
 #if 1
 
-	if ((++counter_ % 128) == 0) {
+	if ((update_counter_ % 1000) == 0) {
 
 		float theta = std::arg(v);
 		if (theta < 0.0f)
 			theta += 2.0f * M_PI;
 
-//		printf("%6ld : %7.3f -> %7.3f ( %7.3f )   %6ld\n", update_counter_, theta, enc_theta, theta - enc_theta, p_encoder->GetIndexOffset());
+		printf("%6ld : Elec: %7.3f -> Enc: %7.3f (Delta: %7.3f )   %6ld\n", update_counter_, theta, enc_theta, theta - enc_theta, p_encoder->GetIndexOffset());
 	}
 
 #endif

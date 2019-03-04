@@ -73,7 +73,6 @@ public:
 	uint32_t update_counter_ = 0;
 	TimeSpan duty_;
 	uint32_t duty_oc_;
-	uint32_t counter_ = 0;
 	OCMode pwm_mode_;
 	uint32_t SINE_STEPS = 1024;
 	std::complex<float> p1;
