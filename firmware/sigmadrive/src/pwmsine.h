@@ -54,6 +54,9 @@ public:
 			const Frequency& switching_freq,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
 			OCMode pwm_mode = PWM1,
+			OCPolarity polarity = High,
+			OCPolarity npolarity = Low,
+			uint32_t deadtime = 30, 		/* ns */
 			uint32_t irq_priority = 0,
 			const std::vector<GPIOPin>& output_pins = {}
 	);
@@ -74,6 +77,8 @@ public:
 	TimeSpan duty_;
 	uint32_t duty_oc_;
 	OCMode pwm_mode_;
+	OCPolarity polarity_;
+	OCPolarity npolarity_;
 	uint32_t SINE_STEPS = 1024;
 	std::complex<float> p1;
 	std::complex<float> p2;

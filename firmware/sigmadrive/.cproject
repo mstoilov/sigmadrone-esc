@@ -45,7 +45,7 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.306827555" name="Build command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.make" useByScannerDiscovery="false" value="make" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.1558613739" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm" useByScannerDiscovery="false" value="rm" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.1477628121" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" useByScannerDiscovery="false" value="962691777" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.777566440" name="FPU Type" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.fpv4spd16" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.777566440" name="FPU Type" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit" useByScannerDiscovery="true" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.fpv4spd16" valueType="enumerated"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.1258164962" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
 							<builder buildPath="${workspace_loc:/sigmadrive}/Debug" id="ilg.gnuarmeclipse.managedbuild.cross.builder.2055950921" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="ilg.gnuarmeclipse.managedbuild.cross.builder"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.299097489" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
@@ -63,7 +63,7 @@
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>
 									<listOptionValue builtIn="false" value="TRACE"/>
 									<listOptionValue builtIn="false" value="OS_USE_TRACE_ITM"/>
-									<listOptionValue builtIn="false" value="STM32F411xE"/>
+									<listOptionValue builtIn="false" value="STM32F405xx"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="HSE_VALUE=8000000"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
@@ -84,7 +84,7 @@
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>
 									<listOptionValue builtIn="false" value="TRACE"/>
 									<listOptionValue builtIn="false" value="OS_USE_TRACE_ITM"/>
-									<listOptionValue builtIn="false" value="STM32F411xE"/>
+									<listOptionValue builtIn="false" value="STM32F405xx"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="HSE_VALUE=8000000"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
@@ -109,7 +109,7 @@
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>
 									<listOptionValue builtIn="false" value="TRACE"/>
 									<listOptionValue builtIn="false" value="OS_USE_TRACE_ITM"/>
-									<listOptionValue builtIn="false" value="STM32F411xE"/>
+									<listOptionValue builtIn="false" value="STM32F405xx"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="HSE_VALUE=8000000"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
@@ -253,9 +253,16 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.1558613739.205841031" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.1558613739"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.1477628121.2034266642" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.1477628121"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.777566440.33384155" name="FPU Type" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.fpu.unit.777566440"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.186035629" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.299097489"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.198585999" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.667962907"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1901179797" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1925600836"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.186035629" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.299097489">
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1765281724" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.198585999" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.667962907">
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1434633738" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1901179797" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1925600836">
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.912197383" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
+							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.1234465175" name="GNU ARM Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.1072166124"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.61076593" name="GNU ARM Cross C++ Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.1434309001"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver.1597071085" name="GNU ARM Cross Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver.356784041"/>
@@ -334,7 +341,7 @@
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>
 									<listOptionValue builtIn="false" value="TRACE"/>
 									<listOptionValue builtIn="false" value="OS_USE_TRACE_ITM"/>
-									<listOptionValue builtIn="false" value="STM32F411xE"/>
+									<listOptionValue builtIn="false" value="STM32F405xx"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="HSE_VALUE=8000000"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
@@ -355,7 +362,7 @@
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>
 									<listOptionValue builtIn="false" value="TRACE"/>
 									<listOptionValue builtIn="false" value="OS_USE_TRACE_ITM"/>
-									<listOptionValue builtIn="false" value="STM32F411xE"/>
+									<listOptionValue builtIn="false" value="STM32F405xx"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="HSE_VALUE=8000000"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
@@ -380,7 +387,7 @@
 									<listOptionValue builtIn="false" value="USE_FULL_ASSERT"/>
 									<listOptionValue builtIn="false" value="TRACE"/>
 									<listOptionValue builtIn="false" value="OS_USE_TRACE_ITM"/>
-									<listOptionValue builtIn="false" value="STM32F411xE"/>
+									<listOptionValue builtIn="false" value="STM32F405xx"/>
 									<listOptionValue builtIn="false" value="USE_HAL_DRIVER"/>
 									<listOptionValue builtIn="false" value="HSE_VALUE=8000000"/>
 									<listOptionValue builtIn="false" value="USE_FULL_LL_DRIVER"/>
@@ -516,9 +523,16 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.1381077330.1586632868" name="Build command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.1381077330"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.482315720.242298120" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.482315720"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.2039576003.469501054" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.2039576003"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.683514763" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.300138380"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1498486160" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.334320344"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.78232700" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1479823408"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.683514763" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.300138380">
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.723499667" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1498486160" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.334320344">
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1342716943" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.78232700" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1479823408">
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1983732887" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
+							</tool>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.201477252" name="GNU ARM Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.479254473"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.1452204705" name="GNU ARM Cross C++ Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.755337645"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver.1029375691" name="GNU ARM Cross Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver.1119069491"/>

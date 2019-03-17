@@ -19,14 +19,24 @@ extern QuadratureDecoder *p_encoder;
 
 extern volatile uint64_t jiffies;
 
-PWMSine::PWMSine(TIM_TypeDef *TIMx, const Frequency& switching_freq, const Frequency& system_clock, OCMode pwm_mode, uint32_t irq_priority, const std::vector<GPIOPin>& pins)
+PWMSine::PWMSine(TIM_TypeDef *TIMx,
+		const Frequency& switching_freq,
+		const Frequency& system_clock,
+		OCMode pwm_mode,
+		OCPolarity polarity,
+		OCPolarity npolarity,
+		uint32_t deadtime,
+		uint32_t irq_priority,
+		const std::vector<GPIOPin>& pins)
 	: Timer(TIMx, (switching_freq + switching_freq / 8).period(), system_clock, irq_priority, pins)
 	, switching_freq_(switching_freq)
 	, pwm_mode_(pwm_mode)
+	, polarity_(polarity)
+	, npolarity_(npolarity)
 {
 	SetAutoReloadPeriod(switching_freq_.period());
 
-	SetDeadTime(30);
+	SetDeadTime(deadtime);
 
 	EnableARRPreload();
 
@@ -117,12 +127,12 @@ void PWMSine::Start()
 	EnableOCPreload(CH2);
 	EnableOCPreload(CH3);
 
-	SetOCPolarity(CH1, High);
-	SetOCPolarity(CH2, High);
-	SetOCPolarity(CH3, High);
-	SetOCPolarity(CH1N, Low);
-	SetOCPolarity(CH2N, Low);
-	SetOCPolarity(CH3N, Low);
+	SetOCPolarity(CH1, polarity_);
+	SetOCPolarity(CH2, polarity_);
+	SetOCPolarity(CH3, polarity_);
+	SetOCPolarity(CH1N, npolarity_);
+	SetOCPolarity(CH2N, npolarity_);
+	SetOCPolarity(CH3N, npolarity_);
 
 	EnableChannel(CH1);
 	EnableChannel(CH2);

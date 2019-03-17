@@ -47,6 +47,10 @@ public:
 
 	void Init() const;
 	void CleanUp() const;
+//	void SetPin() 		{LL_GPIO_SetOutputPin(gpio_port_, LL_PIN(pinnum_);}
+//	void ResetPin()		{LL_GPIO_ResetOutputPin(gpio_port_, LL_PIN(pinnum_);}
+
+
 public:
 	GPIO_TypeDef* gpio_port_;
 	uint16_t pinnum_;

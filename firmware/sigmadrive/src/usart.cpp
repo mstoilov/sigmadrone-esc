@@ -18,7 +18,6 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 {
 	for (auto& pin : data_pins)
 		pin.Init();
-
 	/*##-1- Configure the UART peripheral ######################################*/
 	/* Put the USART peripheral in the Asynchronous mode (UART Mode) */
 	/* UART1 configured as follow:
@@ -113,10 +112,15 @@ ssize_t USART::Write(const char* buf, size_t nbytes)
 ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 {
 	size_t i = 0;
+	uint32_t vector = __get_xPSR() & 0xFF;
 
-
-	if (!output_queue_.space())
+	if (vector && !output_queue_.space()) {
+		/*
+		 * If this is called from interrupt and the queue is out of space
+		 * just drop the write request.
+		 */
 		return nbytes;
+	}
 
 	while (!output_queue_.space())
 		;

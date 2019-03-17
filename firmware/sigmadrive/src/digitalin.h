@@ -111,7 +111,6 @@ public:
 	 *  @param mptr pointer to the member function to be called
 	 */
 
-#define USE_BIND
 	template<typename T>
 	void Callback(T* object, void (T::*func)(void))
 	{

@@ -52,7 +52,7 @@ private:
 	friend void InterruptManageVectorHandler();
 
 private:
-	std::array<std::function<void(void)>, 16 + SPI5_IRQn> vectors_;
+	std::array<std::function<void(void)>, 16 + 100> vectors_;
 };
 
 #endif /* _INTERRUPTMANAGER_H_ */

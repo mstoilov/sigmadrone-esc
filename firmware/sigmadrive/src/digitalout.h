@@ -144,6 +144,26 @@ protected:
 		case 3:
 			LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOD);
 			break;
+		case 4:
+			#if defined(GPIOE)
+			LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOE);
+			#endif /* GPIOE */
+			break;
+		case 5:
+			#if defined(GPIOF)
+			LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOF);
+			#endif /* GPIOF */
+			break;
+		case 6:
+			#if defined(GPIOG)
+			LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOG);
+			#endif /* GPIOG */
+			break;
+		case 7:
+			#if defined(GPIOH)
+			LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOH);
+			#endif /* GPIOH */
+			break;
 		default:
 			break;
 		};

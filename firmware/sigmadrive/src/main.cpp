@@ -24,25 +24,40 @@
 #include "adc.h"
 #include "usart.h"
 #include "mathtest.h"
+#include "spimaster.h"
 
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-#define CURRENT_FB_A	LL_ADC_CHANNEL_13
-#define CURRENT_FB_B	LL_ADC_CHANNEL_14
-#define CURRENT_FB_C	LL_ADC_CHANNEL_15
-#define CURRENT_FB_R	LL_ADC_CHANNEL_4
+#define CURRENT_FB_A	LL_ADC_CHANNEL_0
+#define CURRENT_FB_B	LL_ADC_CHANNEL_1
+#define CURRENT_FB_C	LL_ADC_CHANNEL_2
 
-#define BEMF_FB_A	LL_ADC_CHANNEL_10
+#define BEMF_FB_A	LL_ADC_CHANNEL_12
 #define BEMF_FB_B	LL_ADC_CHANNEL_11
-#define BEMF_FB_C	LL_ADC_CHANNEL_12
+#define BEMF_FB_C	LL_ADC_CHANNEL_10
 
 
-DigitalOut led_warn(PA_5, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullDown, DigitalOut::ActiveDefault, 0);
-DigitalOut led_status(PA_6, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullNone, DigitalOut::ActiveLow, 0);
-DigitalIn btn_user(PA_4, DigitalIn::PullDefault, DigitalIn::InterruptFalling);
+#define LED_WARN PD_14
+#define LED_STATUS PD_15
+#define BTN_USER PD_11
+#define GATE_ENABLE PE_14
+#define DRV_FAULT PC_15
+
+#define SPI_CLK PC_10
+#define SPI_MISO PC_11
+#define SPI_MOSI PC_12
+#define DRV1_CS PC_13
+#define DRV2_CS PC_14
+
+DigitalOut gate_enable(GATE_ENABLE, DigitalOut::SpeedDefault, DigitalOut::OutputDefault, DigitalOut::PullUp, DigitalOut::ActiveDefault, 1);
+DigitalOut led_warn(LED_WARN, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullDown, DigitalOut::ActiveDefault, 0);
+DigitalOut led_status(LED_STATUS, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullNone, DigitalOut::ActiveLow, 0);
+DigitalIn btn_user(BTN_USER, DigitalIn::PullDefault, DigitalIn::InterruptFalling);
 DigitalIn encoder_z(PB_5, DigitalIn::PullDown, DigitalIn::InterruptRising);
+DigitalIn drv_fault(DRV_FAULT, DigitalIn::PullNone, DigitalIn::InterruptNone);
+
 
 
 PWMDecoder pwm3(TIM3, TimeSpan::from_milliseconds(25), Frequency::from_hertz(SystemCoreClock), 0, {
@@ -58,13 +73,13 @@ QuadratureDecoder *p_encoder = &pwm4;
 
 #undef USE_6STEP
 #ifdef USE_6STEP
-PWM6Step pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::TrigUpdate, Timer::PWM1, Timer::High, Timer::Low, 30, 0, {
-		{PA_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
-		{PA_9,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
-		{PA_10, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
-		{PB_13,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
-		{PB_14,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
-		{PB_15,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+PWM6Step pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::TrigUpdate, Timer::PWM1, Timer::High, Timer::High, 30, 0, {
+		{PE_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PE_9,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PE_10, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PE_11,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PE_12,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PE_13,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 });
 
 Adc adc(ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, 0, {
@@ -83,29 +98,66 @@ Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(750), Frequency::from_hertz
 
 
 #else
-PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::PWM1, 0, {
-		{PA_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
-		{PA_9,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
-		{PA_10, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
-		{PB_13,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
-		{PB_14,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
-		{PB_15,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+PWMSine pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::PWM1,  Timer::High,  Timer::High, 30, 0, {
+		{PE_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PE_9,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PE_10, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PE_11,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PE_12,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
+		{PE_13,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 });
 
 Adc adc(ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_3CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, 0, {
-		{PC_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
-		{PC_4,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
-		{PC_5,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
-		{PA_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},},
+		{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PA_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},},
 		{
-				CURRENT_FB_A, CURRENT_FB_B, CURRENT_FB_C, CURRENT_FB_R,
+				CURRENT_FB_A, CURRENT_FB_B, CURRENT_FB_C,
 		});
 
 Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(17000), Frequency::from_hertz(SystemCoreClock));
 
 #endif
 
+SPIMaster spi3(SPI3, SPIMaster::Data16Bit, SPIMaster::Div32, {
+		{SPI_CLK, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_6},
+		{SPI_MISO, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_6},
+		{SPI_MOSI, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_6},
+}, {
+		{DRV1_CS, LL_GPIO_MODE_OUTPUT, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, 0},
+		{DRV2_CS, LL_GPIO_MODE_OUTPUT, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, 0},
+
+});
+
 volatile uint64_t jiffies = 0;
+
+
+uint32_t drv_read_reg(uint32_t cs, uint32_t addr)
+{
+	uint16_t data = (0x1 << 15) | ((addr & 0xF) << 11);
+	spi3.spi_chip_select(cs, true);
+	data = spi3.spi_write_read16(data);
+	spi3.spi_chip_select(cs, false);
+	return data & 0x7FF;
+}
+
+uint32_t drv_write_reg(uint32_t cs, uint32_t addr, uint32_t data)
+{
+	uint16_t data16 = (uint16_t)(((addr & 0xF) << 11) | (data & 0x7FF));
+	spi3.spi_chip_select(cs, true);
+	data = spi3.spi_write_read16(data16);
+	spi3.spi_chip_select(cs, false);
+	return data & 0x7FF;
+}
+
+
+void drv_dump_regs(uint32_t cs)
+{
+	for (int i = 0; i < 7; i++) {
+		printf("DRV: Reg %d: 0x%x\n", i, (unsigned int) drv_read_reg(cs, i));
+	}
+	printf("\n\n");
+}
 
 void emergency_stop()
 {
@@ -118,8 +170,13 @@ extern USART* ptrUsart1;
 
 void pwm1_toggle()
 {
-	pwm1.Toggle();
+	if (!pwm1.IsEnabledCounter()) {
+		pwm1.Start();
+	} else {
+		pwm1.Stop();
+	}
 }
+
 
 void CallbackPWMCC(uint32_t pulse, uint32_t period)
 {
@@ -177,6 +234,30 @@ void main_task(void *pvParameters)
 	// at high speed.
 	printf("System clock: %lu Hz\n", SystemCoreClock);
 
+	printf("Gate Enable: %lu\n", gate_enable.Read());
+	printf("Driver Fault: %lu\n", !drv_fault.Read());
+
+	printf("DRV1, Reg 2: 0x%lx\n", drv_write_reg(0, 2, 0x0));
+	printf("DRV2, Reg 2: 0x%lx\n", drv_write_reg(1, 2, 0x0));
+
+	printf("DRV1, Reg 3: 0x%lx\n", drv_write_reg(0, 3, 0xCF));
+	printf("DRV2, Reg 3: 0x%lx\n", drv_write_reg(1, 3, 0xCF));
+
+	printf("DRV1, Reg 4: 0x%lx\n", drv_write_reg(0, 4, 0x3CF));
+	printf("DRV2, Reg 4: 0x%lx\n", drv_write_reg(1, 4, 0x3CF));
+
+	printf("DRV1, Reg 5: 0x%lx\n", drv_write_reg(0, 5, 0x1C9));
+	printf("DRV2, Reg 5: 0x%lx\n", drv_write_reg(1, 5, 0x1C9));
+
+	printf("DRV1, Reg 6: 0x%lx\n", drv_write_reg(0, 6, 0x83));
+	printf("DRV2, Reg 6: 0x%lx\n", drv_write_reg(1, 6, 0x83));
+
+	printf("DRV1: \n");
+	drv_dump_regs(0);
+
+	printf("DRV2: \n");
+	drv_dump_regs(1);
+
 	pwm3.Callback_PWMCC(CallbackPWMCC);
 	pwm3.Start();
 
@@ -202,6 +283,13 @@ void main_task(void *pvParameters)
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 
+		if (drv_fault.Read() == 0) {
+			pwm1.Stop();
+			printf("Driver Fault: \n");
+			drv_dump_regs(0);
+			drv_write_reg(0, 2, 0x1);
+
+		}
 
 #ifdef USE_6STEP
 		if (pwm1.log_entry_.serial_ != log.serial_) {

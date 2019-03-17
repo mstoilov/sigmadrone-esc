@@ -30,7 +30,7 @@ public:
 	static constexpr unsigned int ADC_B = 1;
 	static constexpr unsigned int ADC_C = 2;
 	static constexpr float MAX_THROTTLE = 0.65;
-	static constexpr float MIN_THROTTLE = 0.35;
+	static constexpr float MIN_THROTTLE = 0.05;
 	static constexpr unsigned int adc_data_counter1 = 1;
 	static constexpr unsigned int adc_data_counter2 = 5;
 	static constexpr unsigned int adc_data_size = 3;

@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <vector>
 #include <functional>
-#include "stm32f411xe.h"
+#include "stm32f4xx.h"
 #include "stm32f4xx_ll_tim.h"
 #include "stm32f4xx_ll_dma.h"
 #include "gpiopin.h"

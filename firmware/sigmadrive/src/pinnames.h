@@ -9,7 +9,12 @@ extern "C" {
 #define LL_PORT(X) ((((uint32_t)(X) >> 4) & 0xF) == 0 ? GPIOA :\
 					(((uint32_t)(X) >> 4) & 0xF) == 1 ? GPIOB :\
 					(((uint32_t)(X) >> 4) & 0xF) == 2 ? GPIOC :\
-					(((uint32_t)(X) >> 4) & 0xF) == 3 ? GPIOD : NULL)
+					(((uint32_t)(X) >> 4) & 0xF) == 3 ? GPIOD :\
+					(((uint32_t)(X) >> 4) & 0xF) == 4 ? GPIOE :\
+					(((uint32_t)(X) >> 4) & 0xF) == 5 ? GPIOF :\
+					(((uint32_t)(X) >> 4) & 0xF) == 6 ? GPIOG :\
+					(((uint32_t)(X) >> 4) & 0xF) == 7 ? GPIOH : NULL)
+
 #define LL_PINNUM(X) ((uint32_t)(X) & 0xF)
 #define LL_PIN(X)  (((uint32_t)0x1U) << ((uint32_t)(X) & 0xF))
 

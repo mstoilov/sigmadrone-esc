@@ -275,7 +275,7 @@ void PWM6Step::CallbackJEOS(int32_t *injdata, size_t size)
 {
 	assert(size >= 3);
 
-	std::for_each(injdata, injdata + size, [](auto &a){ a = a * (47000/4700);});
+	std::for_each(injdata, injdata + size, [](auto &a){ a = a * (47000/3300);});
 
 	if (counter_ == adc_data_counter1)
 		std::copy(injdata, injdata + adc_data_size, adc_data1_);
@@ -379,6 +379,8 @@ void PWM6Step::LogComEvent()
 		log_entry_.zero_crossing_ = zero_crossing_;
 		log_entry_.integral_bemf_ = integral_bemf_;
 		log_entry_.last_counter_ = last_counter_;
+		std::copy(adc_data1_, adc_data1_ + adc_data_size, log_entry_.adc_data1_);
+		std::copy(adc_data2_, adc_data2_ + adc_data_size, log_entry_.adc_data2_);
 		log_entry_.serial_++;
 	}
 
