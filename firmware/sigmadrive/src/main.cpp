@@ -25,6 +25,7 @@
 #include "usart.h"
 #include "mathtest.h"
 #include "spimaster.h"
+#include "drv8323.h"
 
 
 #pragma GCC diagnostic push
@@ -119,15 +120,17 @@ Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(17000), Frequency::from_her
 
 #endif
 
-SPIMaster spi3(SPI3, SPIMaster::Data16Bit, SPIMaster::Div32, {
+SPIMaster spi3(SPI3, SPIMaster::Data16Bit, SPIMaster::Div32, SPIMaster::PolarityLow, SPIMaster::Edge2, {
 		{SPI_CLK, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_6},
 		{SPI_MISO, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_6},
 		{SPI_MOSI, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_6},
 }, {
 		{DRV1_CS, LL_GPIO_MODE_OUTPUT, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, 0},
 		{DRV2_CS, LL_GPIO_MODE_OUTPUT, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, 0},
-
 });
+
+Drv8323 drv1(spi3, 0);
+Drv8323 drv2(spi3, 1);
 
 volatile uint64_t jiffies = 0;
 
@@ -234,29 +237,36 @@ void main_task(void *pvParameters)
 	// at high speed.
 	printf("System clock: %lu Hz\n", SystemCoreClock);
 
-	printf("Gate Enable: %lu\n", gate_enable.Read());
-	printf("Driver Fault: %lu\n", !drv_fault.Read());
+	drv1.WriteReg(2, 0x0);
+	drv1.WriteReg(3, 0x0);
+	drv1.WriteReg(4, 0x0);
+	drv1.WriteReg(5, 0x0);
+	drv1.WriteReg(6, 0x0);
 
-	printf("DRV1, Reg 2: 0x%lx\n", drv_write_reg(0, 2, 0x0));
-	printf("DRV2, Reg 2: 0x%lx\n", drv_write_reg(1, 2, 0x0));
-
-	printf("DRV1, Reg 3: 0x%lx\n", drv_write_reg(0, 3, 0xCF));
-	printf("DRV2, Reg 3: 0x%lx\n", drv_write_reg(1, 3, 0xCF));
-
-	printf("DRV1, Reg 4: 0x%lx\n", drv_write_reg(0, 4, 0x3CF));
-	printf("DRV2, Reg 4: 0x%lx\n", drv_write_reg(1, 4, 0x3CF));
-
-	printf("DRV1, Reg 5: 0x%lx\n", drv_write_reg(0, 5, 0x1C9));
-	printf("DRV2, Reg 5: 0x%lx\n", drv_write_reg(1, 5, 0x1C9));
-
-	printf("DRV1, Reg 6: 0x%lx\n", drv_write_reg(0, 6, 0x83));
-	printf("DRV2, Reg 6: 0x%lx\n", drv_write_reg(1, 6, 0x83));
+	drv1.SetIDriveP_HS(Drv8323::IDRIVEP_1000mA);
+	drv1.SetIDriveN_HS(Drv8323::IDRIVEN_2000mA);
+	drv1.SetIDriveP_LS(Drv8323::IDRIVEP_1000mA);
+	drv1.SetIDriveN_LS(Drv8323::IDRIVEN_2000mA);
+	drv1.SetTDrive(Drv8323::TDRIVE_4000ns);
+	drv1.EnableCBC();
+	drv1.DisableCPUV();
+	drv1.EnableCPUV();
+	drv1.DisableGDF();
+	drv1.EnableGDF();
+	drv1.EnableOTW();
+	drv1.DisableOTW();
+	drv1.SetPWMMode(Drv8323::PWM_MODE_6X);
+	drv1.SetDeadTime(Drv8323::DEADTIME_400ns);
+	drv1.SetOCPMode(Drv8323::OCP_RETRY_FAULT);
+	drv1.SetOCPDeglitch(Drv8323::OCP_DEG_4us);
+	drv1.SetVDSLevel(Drv8323::VDS_LVL_060V);
+	drv1.EnableVREFDiv();
+	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
+	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
 	printf("DRV1: \n");
-	drv_dump_regs(0);
+	drv1.DumpRegs();
 
-	printf("DRV2: \n");
-	drv_dump_regs(1);
 
 	pwm3.Callback_PWMCC(CallbackPWMCC);
 	pwm3.Start();
