@@ -220,7 +220,7 @@ void PWMSine::HandleJEOS(int32_t *injdata, size_t size)
 	assert(size >= CURRENT_SAMPLES);
 
 	std::copy(injdata, injdata + CURRENT_SAMPLES, adc_data_);
-	std::for_each(adc_data_, adc_data_ + CURRENT_SAMPLES, [](auto &a){ a = a * 1;});
+	std::for_each(adc_data_, adc_data_ + CURRENT_SAMPLES, [](auto &a){ a = (a - 1665);});
 }
 
 void PWMSine::SineDriving()
@@ -276,7 +276,9 @@ void PWMSine::HandleUpdate()
 		if (theta < 0.0f)
 			theta += 2.0f * M_PI;
 
-		printf("%6ld : Elec: %7.3f -> Enc: %7.3f (Delta: %7.3f )   %6ld\n", update_counter_, theta, enc_theta, theta - enc_theta, p_encoder->GetIndexOffset());
+		printf("%6ld : Elec: %7.3f -> Enc: %7.3f (Delta: %7.3f )   %6ld, Current: %6ld, %6ld, %6ld ( %6ld )\n",
+				update_counter_, theta, enc_theta, theta - enc_theta, p_encoder->GetIndexOffset(), adc_data_[0], adc_data_[1], adc_data_[2],
+				adc_data_[0] + adc_data_[1] + adc_data_[2]);
 	}
 
 #endif

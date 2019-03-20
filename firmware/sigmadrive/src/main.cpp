@@ -247,7 +247,7 @@ void main_task(void *pvParameters)
 	drv1.SetIDriveN_HS(Drv8323::IDRIVEN_1360mA);
 	drv1.SetIDriveP_LS(Drv8323::IDRIVEP_370mA);
 	drv1.SetIDriveN_LS(Drv8323::IDRIVEN_1360mA);
-	drv1.SetTDrive(Drv8323::TDRIVE_1000ns);
+	drv1.SetTDrive(Drv8323::TDRIVE_4000ns);
 	drv1.EnableCBC();
 	drv1.DisableCPUV();
 	drv1.EnableCPUV();
@@ -256,13 +256,17 @@ void main_task(void *pvParameters)
 	drv1.EnableOTW();
 	drv1.DisableOTW();
 	drv1.SetPWMMode(Drv8323::PWM_MODE_6X);
-	drv1.SetDeadTime(Drv8323::DEADTIME_400ns);
+	drv1.SetDeadTime(Drv8323::DEADTIME_100ns);
 	drv1.SetOCPMode(Drv8323::OCP_RETRY_FAULT);
 	drv1.SetOCPDeglitch(Drv8323::OCP_DEG_4us);
 	drv1.SetVDSLevel(Drv8323::VDS_LVL_060V);
 	drv1.EnableVREFDiv();
-	drv1.SetCSAGain(Drv8323::CSA_GAIN_10VV);
+	drv1.SetCSAGain(Drv8323::CSA_GAIN_20VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
+
+	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C);
+	HAL_Delay(500);
+	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, 0);
 
 	printf("DRV1: \n");
 	drv1.DumpRegs();

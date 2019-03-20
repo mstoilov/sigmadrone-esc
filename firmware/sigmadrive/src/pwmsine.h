@@ -47,6 +47,8 @@ public:
 	static constexpr unsigned int M2E_RATIO = NUMBER_OF_POLES / 2;
 	static constexpr unsigned int SINE_SAMPLES = 1024;
 	static constexpr unsigned int CURRENT_SAMPLES = 3;
+	static constexpr unsigned int ADC_GAIN = 10;
+	static constexpr unsigned int SHUNT_RESISTOR = 10; /* mA */
 	static constexpr float MAX_THROTTLE = 0.35;
 	static constexpr float MIN_THROTTLE = 0.00;
 
