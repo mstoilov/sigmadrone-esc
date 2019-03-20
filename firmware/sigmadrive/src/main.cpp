@@ -243,11 +243,11 @@ void main_task(void *pvParameters)
 	drv1.WriteReg(5, 0x0);
 	drv1.WriteReg(6, 0x0);
 
-	drv1.SetIDriveP_HS(Drv8323::IDRIVEP_1000mA);
-	drv1.SetIDriveN_HS(Drv8323::IDRIVEN_2000mA);
-	drv1.SetIDriveP_LS(Drv8323::IDRIVEP_1000mA);
-	drv1.SetIDriveN_LS(Drv8323::IDRIVEN_2000mA);
-	drv1.SetTDrive(Drv8323::TDRIVE_4000ns);
+	drv1.SetIDriveP_HS(Drv8323::IDRIVEP_370mA);
+	drv1.SetIDriveN_HS(Drv8323::IDRIVEN_1360mA);
+	drv1.SetIDriveP_LS(Drv8323::IDRIVEP_370mA);
+	drv1.SetIDriveN_LS(Drv8323::IDRIVEN_1360mA);
+	drv1.SetTDrive(Drv8323::TDRIVE_1000ns);
 	drv1.EnableCBC();
 	drv1.DisableCPUV();
 	drv1.EnableCPUV();
@@ -261,7 +261,7 @@ void main_task(void *pvParameters)
 	drv1.SetOCPDeglitch(Drv8323::OCP_DEG_4us);
 	drv1.SetVDSLevel(Drv8323::VDS_LVL_060V);
 	drv1.EnableVREFDiv();
-	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
+	drv1.SetCSAGain(Drv8323::CSA_GAIN_10VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
 	printf("DRV1: \n");
@@ -279,10 +279,11 @@ void main_task(void *pvParameters)
 
 #ifdef USE_6STEP
 	pwm1.SetThrottle(0.35);
-	adc.CallbackJEOS(&pwm1, &PWM6Step::CallbackJEOS);
+	adc.CallbackJEOS(&pwm1, &PWM6Step::HandleJEOS);
 #else
 	pwm1.SetElectricalRotationsPerSecond(Frequency::from_millihertz(500 * PWMSine::M2E_RATIO));
-	pwm1.SetThrottle(0.04);
+	pwm1.SetThrottle(0.05);
+	adc.CallbackJEOS(&pwm1, &PWMSine::HandleJEOS);
 #endif
 
 	PWM6Step::LogEntry log;

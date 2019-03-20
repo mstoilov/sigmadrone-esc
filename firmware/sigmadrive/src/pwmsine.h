@@ -46,6 +46,7 @@ public:
 	static constexpr unsigned int NUMBER_OF_POLES = 14;
 	static constexpr unsigned int M2E_RATIO = NUMBER_OF_POLES / 2;
 	static constexpr unsigned int SINE_SAMPLES = 1024;
+	static constexpr unsigned int CURRENT_SAMPLES = 3;
 	static constexpr float MAX_THROTTLE = 0.35;
 	static constexpr float MIN_THROTTLE = 0.00;
 
@@ -64,6 +65,7 @@ public:
 	virtual void HandleUpdate() override;
 	virtual void Start() override;
 	virtual void Stop() override;
+	void HandleJEOS(int32_t *injdata, size_t size);
 	void SineDriving();
 	float GetDutyCycle();
 	void SetThrottle(float percent);
@@ -72,6 +74,7 @@ public:
 	void Toggle();
 
 public:
+	int32_t adc_data_[CURRENT_SAMPLES];
 	Frequency switching_freq_;
 	uint32_t update_counter_ = 0;
 	TimeSpan duty_;

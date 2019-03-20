@@ -95,7 +95,7 @@ public:
 	void SetDutyPeriod(const TimeSpan& period);
 	Frequency GetSwitchingFrequency();
 	void Toggle();
-	void CallbackJEOS(int32_t *injdata, size_t size);
+	void HandleJEOS(int32_t *injdata, size_t size);
 	inline int32_t CalculateBEMF(int32_t v1, int32_t v2, int32_t v3);
 	int32_t DetectBEMF(uint32_t state, int32_t *injdata);
 	void GenerateComEvent();

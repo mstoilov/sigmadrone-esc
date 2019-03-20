@@ -271,7 +271,7 @@ bool PWM6Step::Bootstrap()
 	return false;
 }
 
-void PWM6Step::CallbackJEOS(int32_t *injdata, size_t size)
+void PWM6Step::HandleJEOS(int32_t *injdata, size_t size)
 {
 	assert(size >= 3);
 

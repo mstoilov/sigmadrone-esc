@@ -1,5 +1,6 @@
 #include <iostream>
 #include <complex>
+#include <algorithm>
 #include <math.h>
 #include "pwmsine.h"
 #include "adc.h"
@@ -214,6 +215,13 @@ void PWMSine::SetElectricalRotationsPerSecond(const Frequency& f)
 	r = std::polar<float>(1.0f, 2.0f * M_PI / SINE_STEPS);
 }
 
+void PWMSine::HandleJEOS(int32_t *injdata, size_t size)
+{
+	assert(size >= CURRENT_SAMPLES);
+
+	std::copy(injdata, injdata + CURRENT_SAMPLES, adc_data_);
+	std::for_each(adc_data_, adc_data_ + CURRENT_SAMPLES, [](auto &a){ a = a * 1;});
+}
 
 void PWMSine::SineDriving()
 {
