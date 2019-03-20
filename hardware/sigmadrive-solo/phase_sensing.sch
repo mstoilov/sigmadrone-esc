@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:sigmadrive-solo-cache
 EELAYER 26 0
 EELAYER END
 $Descr A3 16535 11693
@@ -75,45 +76,6 @@ F 5 "DigiKey" V 9050 6300 60  0001 C CNN "Provider"
 	1    9050 6300
 	0    -1   -1   0   
 $EndComp
-$Comp
-L Device:R R52
-U 1 1 58D1E348
-P 7750 6650
-F 0 "R52" V 7830 6650 50  0000 C CNN
-F 1 "4.7k" V 7750 6650 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 7680 6650 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 7750 6650 50  0001 C CNN
-F 4 "311-2606-2-ND" V 7750 6650 60  0001 C CNN "Part"
-F 5 "DigiKey" V 7750 6650 60  0001 C CNN "Provider"
-	1    7750 6650
-	-1   0    0    1   
-$EndComp
-$Comp
-L Device:R R49
-U 1 1 58D1E394
-P 8000 6650
-F 0 "R49" V 8080 6650 50  0000 C CNN
-F 1 "4.7k" V 8000 6650 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 7930 6650 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 8000 6650 50  0001 C CNN
-F 4 "311-2606-2-ND" V 8000 6650 60  0001 C CNN "Part"
-F 5 "DigiKey" V 8000 6650 60  0001 C CNN "Provider"
-	1    8000 6650
-	-1   0    0    1   
-$EndComp
-$Comp
-L Device:R R46
-U 1 1 58D1E3C0
-P 8250 6650
-F 0 "R46" V 8330 6650 50  0000 C CNN
-F 1 "4.7k" V 8250 6650 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 8180 6650 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 8250 6650 50  0001 C CNN
-F 4 "311-2606-2-ND" V 8250 6650 60  0001 C CNN "Part"
-F 5 "DigiKey" V 8250 6650 60  0001 C CNN "Provider"
-	1    8250 6650
-	-1   0    0    1   
-$EndComp
 Wire Wire Line
 	7750 5300 7750 6300
 Wire Wire Line
@@ -160,4 +122,52 @@ Wire Wire Line
 	7750 6300 8900 6300
 Wire Wire Line
 	7750 6300 7750 6500
+$Comp
+L Device:R R52
+U 1 1 5C838571
+P 7750 6650
+AR Path="/58BF599E/5C838571" Ref="R52"  Part="1" 
+AR Path="/58BE27E6/5C838571" Ref="R?"  Part="1" 
+AR Path="/58BF664D/5C838571" Ref="R?"  Part="1" 
+F 0 "R52" V 7830 6650 50  0000 C CNN
+F 1 "3.3k" V 7750 6650 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 7680 6650 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 7750 6650 50  0001 C CNN
+F 4 "311-3.30KHRCT-ND" V 7750 6650 60  0001 C CNN "Part"
+F 5 "DigiKey" V 7750 6650 60  0001 C CNN "Provider"
+	1    7750 6650
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R49
+U 1 1 5C83877F
+P 8000 6650
+AR Path="/58BF599E/5C83877F" Ref="R49"  Part="1" 
+AR Path="/58BE27E6/5C83877F" Ref="R?"  Part="1" 
+AR Path="/58BF664D/5C83877F" Ref="R?"  Part="1" 
+F 0 "R49" V 8080 6650 50  0000 C CNN
+F 1 "3.3k" V 8000 6650 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 7930 6650 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 8000 6650 50  0001 C CNN
+F 4 "311-3.30KHRCT-ND" V 8000 6650 60  0001 C CNN "Part"
+F 5 "DigiKey" V 8000 6650 60  0001 C CNN "Provider"
+	1    8000 6650
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R46
+U 1 1 5C838806
+P 8250 6650
+AR Path="/58BF599E/5C838806" Ref="R46"  Part="1" 
+AR Path="/58BE27E6/5C838806" Ref="R?"  Part="1" 
+AR Path="/58BF664D/5C838806" Ref="R?"  Part="1" 
+F 0 "R46" V 8330 6650 50  0000 C CNN
+F 1 "3.3k" V 8250 6650 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 8180 6650 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 8250 6650 50  0001 C CNN
+F 4 "311-3.30KHRCT-ND" V 8250 6650 60  0001 C CNN "Part"
+F 5 "DigiKey" V 8250 6650 60  0001 C CNN "Provider"
+	1    8250 6650
+	-1   0    0    1   
+$EndComp
 $EndSCHEMATC

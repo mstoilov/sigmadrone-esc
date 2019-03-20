@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:sigmadrive-solo-cache
 EELAYER 26 0
 EELAYER END
 $Descr A2 23386 16535
@@ -445,8 +446,8 @@ U 1 1 5C7D8909
 P 6100 4550
 AR Path="/58BE2779/5C7D8909" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5C7D8909" Ref="C22"  Part="1" 
-F 0 "C22" V 6150 4400 50  0000 L CNN
-F 1 "100nF" V 6050 4250 50  0000 L CNN
+F 0 "C22" V 6150 4350 50  0000 L CNN
+F 1 "100nF 50V" V 6050 4600 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 6138 4400 50  0001 C CNN
 F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 6100 4550 50  0001 C CNN
 F 4 "490-4779-2-ND" H 6100 4550 60  0001 C CNN "Part"
@@ -521,7 +522,7 @@ F 2 "Capacitor_SMD:C_0805_2012Metric" H 2388 1300 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 2350 1450 50  0001 C CNN
 F 4 "490-10751-2-ND" H 2350 1450 60  0001 C CNN "Part"
 F 5 "DigiKey" H 2350 1450 60  0001 C CNN "Provider"
-F 6 "4.7uF 25V" H 2350 1450 50  0001 C CNN "Value1"
+F 6 "" H 2350 1450 50  0001 C CNN "Value1"
 	1    2350 1450
 	1    0    0    -1  
 $EndComp
@@ -532,7 +533,7 @@ P 2800 1450
 AR Path="/58BE2779/5C879D46" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5C879D46" Ref="C12"  Part="1" 
 F 0 "C12" H 2800 1550 50  0000 L CNN
-F 1 "100nF" V 2650 1350 50  0000 L CNN
+F 1 "100nF 50V" V 2650 1350 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2838 1300 50  0001 C CNN
 F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 2800 1450 50  0001 C CNN
 F 4 "490-4779-2-ND" H 2800 1450 60  0001 C CNN "Part"
@@ -576,7 +577,7 @@ F 2 "Capacitor_SMD:C_0805_2012Metric" H 3388 5100 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 3350 5250 50  0001 C CNN
 F 4 "490-10751-2-ND" H 3350 5250 60  0001 C CNN "Part"
 F 5 "DigiKey" H 3350 5250 60  0001 C CNN "Provider"
-F 6 "4.7uF 25V" H 3350 5250 50  0001 C CNN "Value1"
+F 6 "" H 3350 5250 50  0001 C CNN "Value1"
 	1    3350 5250
 	1    0    0    -1  
 $EndComp
@@ -805,7 +806,7 @@ P 2550 4900
 AR Path="/58BE2779/5CDFEE38" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5CDFEE38" Ref="C7"  Part="1" 
 F 0 "C7" H 2550 5000 50  0000 L CNN
-F 1 "100nF" V 2400 4800 50  0000 L CNN
+F 1 "100nF 50V" V 2400 4800 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2588 4750 50  0001 C CNN
 F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 2550 4900 50  0001 C CNN
 F 4 "490-4779-2-ND" H 2550 4900 60  0001 C CNN "Part"
@@ -963,30 +964,30 @@ Wire Wire Line
 Connection ~ 12750 3150
 Wire Wire Line
 	12750 3150 12750 3300
-Text Label 6200 3950 2    60   ~ 0
+Text Label 6600 3950 2    60   ~ 0
 A_ISENSE_P
-Text Label 6200 4350 2    60   ~ 0
+Text Label 6600 4350 2    60   ~ 0
 A_ISENSE_N
 Wire Wire Line
-	6200 4350 5550 4350
+	6600 4350 5750 4350
 Wire Wire Line
-	5550 3950 6200 3950
-Text Label 6200 3450 2    60   ~ 0
+	5550 3950 5750 3950
+Text Label 6600 3450 2    60   ~ 0
 B_ISENSE_P
-Text Label 6200 3850 2    60   ~ 0
+Text Label 6600 3850 2    60   ~ 0
 B_ISENSE_N
 Wire Wire Line
-	6200 3850 5550 3850
+	6600 3850 5750 3850
 Wire Wire Line
-	5550 3450 6200 3450
-Text Label 6200 2950 2    60   ~ 0
+	5550 3450 5750 3450
+Text Label 6600 2950 2    60   ~ 0
 C_ISENSE_P
-Text Label 6200 3350 2    60   ~ 0
+Text Label 6600 3350 2    60   ~ 0
 C_ISENSE_N
 Wire Wire Line
-	6200 3350 5550 3350
+	6600 3350 5750 3350
 Wire Wire Line
-	5550 2950 6200 2950
+	5550 2950 5750 2950
 Text Notes 2450 8300 0    60   ~ 0
 Power\nDecoupling\n
 $Comp
@@ -1591,7 +1592,7 @@ P 6100 13350
 AR Path="/58BE2779/5CA944F8" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5CA944F8" Ref="C34"  Part="1" 
 F 0 "C34" V 6150 13200 50  0000 L CNN
-F 1 "100nF" V 6050 13050 50  0000 L CNN
+F 1 "100nF 50V" V 6050 13050 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 6138 13200 50  0001 C CNN
 F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 6100 13350 50  0001 C CNN
 F 4 "490-4779-2-ND" H 6100 13350 60  0001 C CNN "Part"
@@ -1653,7 +1654,7 @@ F 2 "Capacitor_SMD:C_0805_2012Metric" H 2388 10100 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 2350 10250 50  0001 C CNN
 F 4 "490-10751-2-ND" H 2350 10250 60  0001 C CNN "Part"
 F 5 "DigiKey" H 2350 10250 60  0001 C CNN "Provider"
-F 6 "4.7uF 25V" H 2350 10250 50  0001 C CNN "Value1"
+F 6 "" H 2350 10250 50  0001 C CNN "Value1"
 	1    2350 10250
 	1    0    0    -1  
 $EndComp
@@ -1664,7 +1665,7 @@ P 2800 10250
 AR Path="/58BE2779/5CA94529" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5CA94529" Ref="C9"  Part="1" 
 F 0 "C9" H 2800 10350 50  0000 L CNN
-F 1 "100nF" V 2650 10150 50  0000 L CNN
+F 1 "100nF 50V" V 2650 10150 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2838 10100 50  0001 C CNN
 F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 2800 10250 50  0001 C CNN
 F 4 "490-4779-2-ND" H 2800 10250 60  0001 C CNN "Part"
@@ -1708,7 +1709,7 @@ F 2 "Capacitor_SMD:C_0805_2012Metric" H 3388 13900 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 3350 14050 50  0001 C CNN
 F 4 "490-10751-2-ND" H 3350 14050 60  0001 C CNN "Part"
 F 5 "DigiKey" H 3350 14050 60  0001 C CNN "Provider"
-F 6 "4.7uF 25V" H 3350 14050 50  0001 C CNN "Value1"
+F 6 "" H 3350 14050 50  0001 C CNN "Value1"
 	1    3350 14050
 	1    0    0    -1  
 $EndComp
@@ -1900,7 +1901,7 @@ P 2550 13700
 AR Path="/58BE2779/5CA945D2" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5CA945D2" Ref="C2"  Part="1" 
 F 0 "C2" H 2550 13800 50  0000 L CNN
-F 1 "100nF" V 2400 13600 50  0000 L CNN
+F 1 "100nF 50V" V 2400 13600 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2588 13550 50  0001 C CNN
 F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 2550 13700 50  0001 C CNN
 F 4 "490-4779-2-ND" H 2550 13700 60  0001 C CNN "Part"
@@ -2403,4 +2404,79 @@ Wire Wire Line
 	14800 2050 15350 2050
 Wire Wire Line
 	14300 3150 15350 3150
+$Comp
+L Device:C C?
+U 1 1 5C959C8D
+P 5750 3150
+AR Path="/58BE2779/5C959C8D" Ref="C?"  Part="1" 
+AR Path="/58BF664D/5C959C8D" Ref="C29"  Part="1" 
+F 0 "C29" H 5800 3250 50  0000 L CNN
+F 1 "100pF" H 5750 3050 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 5788 3000 50  0001 C CNN
+F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 5750 3150 50  0001 C CNN
+F 4 "399-7821-2-ND" H 5750 3150 60  0001 C CNN "Part"
+F 5 "DigiKey" H 5750 3150 60  0001 C CNN "Provider"
+	1    5750 3150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5750 3000 5750 2950
+Connection ~ 5750 2950
+Wire Wire Line
+	5750 2950 6600 2950
+Wire Wire Line
+	5750 3300 5750 3350
+Connection ~ 5750 3350
+Wire Wire Line
+	5750 3350 5550 3350
+$Comp
+L Device:C C?
+U 1 1 5C99D9A4
+P 5750 3650
+AR Path="/58BE2779/5C99D9A4" Ref="C?"  Part="1" 
+AR Path="/58BF664D/5C99D9A4" Ref="C38"  Part="1" 
+F 0 "C38" H 5800 3750 50  0000 L CNN
+F 1 "100pF" H 5750 3550 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 5788 3500 50  0001 C CNN
+F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 5750 3650 50  0001 C CNN
+F 4 "399-7821-2-ND" H 5750 3650 60  0001 C CNN "Part"
+F 5 "DigiKey" H 5750 3650 60  0001 C CNN "Provider"
+	1    5750 3650
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5C99DB76
+P 5750 4150
+AR Path="/58BE2779/5C99DB76" Ref="C?"  Part="1" 
+AR Path="/58BF664D/5C99DB76" Ref="C41"  Part="1" 
+F 0 "C41" H 5800 4250 50  0000 L CNN
+F 1 "100pF" H 5750 4050 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 5788 4000 50  0001 C CNN
+F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 5750 4150 50  0001 C CNN
+F 4 "399-7821-2-ND" H 5750 4150 60  0001 C CNN "Part"
+F 5 "DigiKey" H 5750 4150 60  0001 C CNN "Provider"
+	1    5750 4150
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5750 3500 5750 3450
+Connection ~ 5750 3450
+Wire Wire Line
+	5750 3450 6600 3450
+Wire Wire Line
+	5750 3800 5750 3850
+Connection ~ 5750 3850
+Wire Wire Line
+	5750 3850 5550 3850
+Wire Wire Line
+	5750 4000 5750 3950
+Connection ~ 5750 3950
+Wire Wire Line
+	5750 3950 6600 3950
+Wire Wire Line
+	5750 4300 5750 4350
+Connection ~ 5750 4350
+Wire Wire Line
+	5750 4350 5550 4350
 $EndSCHEMATC

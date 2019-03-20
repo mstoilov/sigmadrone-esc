@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:sigmadrive-solo-cache
 EELAYER 26 0
 EELAYER END
 $Descr A2 23386 16535
@@ -555,7 +556,7 @@ F 0 "C31" H 5300 3100 50  0000 L CNN
 F 1 "1uF 100V" H 5500 3300 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric" H 5488 3050 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 5450 3200 50  0001 C CNN
-F 4 "445-8887-1-ND" H 5450 3200 60  0001 C CNN "Part"
+F 4 "445-6804-2-ND" H 5450 3200 60  0001 C CNN "Part"
 F 5 "DigiKey" H 5450 3200 60  0001 C CNN "Provider"
 	1    5450 3200
 	-1   0    0    1   
@@ -623,7 +624,7 @@ F 0 "C28" H 6600 3100 50  0000 L CNN
 F 1 "1uF 100V" H 6800 3300 50  0000 L CNN
 F 2 "Capacitor_SMD:C_0805_2012Metric" H 6788 3050 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 6750 3200 50  0001 C CNN
-F 4 "445-8887-1-ND" H 6750 3200 60  0001 C CNN "Part"
+F 4 "445-6804-2-ND" H 6750 3200 60  0001 C CNN "Part"
 F 5 "DigiKey" H 6750 3200 60  0001 C CNN "Provider"
 	1    6750 3200
 	-1   0    0    1   
