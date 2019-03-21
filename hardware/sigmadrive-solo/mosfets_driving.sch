@@ -568,36 +568,32 @@ Wire Wire Line
 $Comp
 L Device:C C?
 U 1 1 5C971DF5
-P 3350 5250
+P 3450 5400
 AR Path="/58BE27E6/5C971DF5" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5C971DF5" Ref="C17"  Part="1" 
-F 0 "C17" H 3350 5350 50  0000 L CNN
-F 1 "4.7uF 50V" V 3200 5000 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 3388 5100 50  0001 C CNN
-F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 3350 5250 50  0001 C CNN
-F 4 "490-10751-2-ND" H 3350 5250 60  0001 C CNN "Part"
-F 5 "DigiKey" H 3350 5250 60  0001 C CNN "Provider"
-F 6 "" H 3350 5250 50  0001 C CNN "Value1"
-	1    3350 5250
+F 0 "C17" H 3450 5500 50  0000 L CNN
+F 1 "4.7uF 50V" V 3300 5150 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3488 5250 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 3450 5400 50  0001 C CNN
+F 4 "490-10751-2-ND" H 3450 5400 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3450 5400 60  0001 C CNN "Provider"
+F 6 "" H 3450 5400 50  0001 C CNN "Value1"
+	1    3450 5400
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3950 4950 3800 4950
-Wire Wire Line
-	3350 4950 3350 5100
 $Comp
 L power:GND #PWR042
 U 1 1 5C97DC3B
-P 3350 5500
-F 0 "#PWR042" H 3350 5250 50  0001 C CNN
-F 1 "GND" H 3350 5350 50  0000 C CNN
-F 2 "" H 3350 5500 50  0001 C CNN
-F 3 "" H 3350 5500 50  0001 C CNN
-	1    3350 5500
+P 3450 5650
+F 0 "#PWR042" H 3450 5400 50  0001 C CNN
+F 1 "GND" H 3450 5500 50  0000 C CNN
+F 2 "" H 3450 5650 50  0001 C CNN
+F 3 "" H 3450 5650 50  0001 C CNN
+	1    3450 5650
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3350 5400 3350 5500
+	3450 5550 3450 5650
 Wire Wire Line
 	2350 1750 2350 1650
 Connection ~ 2350 1650
@@ -652,19 +648,16 @@ Connection ~ 2350 1250
 $Comp
 L sigmadrone:VIN #PWR?
 U 1 1 5CA64BF7
-P 3350 4850
+P 3450 4750
 AR Path="/58BE27E6/5CA64BF7" Ref="#PWR?"  Part="1" 
 AR Path="/58BF664D/5CA64BF7" Ref="#PWR038"  Part="1" 
-F 0 "#PWR038" H 3350 4700 50  0001 C CNN
-F 1 "VIN" H 3350 5000 50  0000 C CNN
-F 2 "" H 3350 4850 50  0000 C CNN
-F 3 "" H 3350 4850 50  0000 C CNN
-	1    3350 4850
+F 0 "#PWR038" H 3450 4600 50  0001 C CNN
+F 1 "VIN" H 3450 4900 50  0000 C CNN
+F 2 "" H 3450 4750 50  0000 C CNN
+F 3 "" H 3450 4750 50  0000 C CNN
+	1    3450 4750
 	1    0    0    -1  
 $EndComp
-Connection ~ 3350 4950
-Wire Wire Line
-	3350 4850 3350 4950
 $Comp
 L sigmadrone:DRV8323RS U2
 U 1 1 5CBE0032
@@ -679,12 +672,7 @@ F 5 "DigiKey" H 4750 3450 50  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3950 5150 3800 5150
-Wire Wire Line
-	3800 5150 3800 4950
-Connection ~ 3800 4950
-Wire Wire Line
-	3800 4950 3350 4950
+	3950 5150 3850 5150
 $Comp
 L Device:C C?
 U 1 1 5CC4E978
@@ -1857,10 +1845,10 @@ Wire Wire Line
 	3350 11450 3100 11450
 Wire Wire Line
 	3650 11450 3950 11450
-Text HLabel 3600 11650 0    60   Input ~ 0
-GATE_ENABLE
+Text HLabel 1450 11650 0    60   Input ~ 0
+GATE2_ENABLE
 Wire Wire Line
-	3600 11650 3950 11650
+	1450 11650 3950 11650
 Text HLabel 1450 12550 0    60   Input ~ 0
 DRV_SDI
 Text HLabel 1450 12450 0    60   Output ~ 0
@@ -1868,14 +1856,14 @@ DRV_SDO
 Text HLabel 1450 12650 0    60   Input ~ 0
 DRV_CLK
 Wire Wire Line
-	3600 12150 3950 12150
+	1450 12150 3950 12150
 Wire Wire Line
-	3600 12250 3950 12250
+	1450 12250 3950 12250
 Text HLabel 1450 12750 0    60   Input ~ 0
 DRV2_CS
-Text HLabel 3600 12150 0    60   Input ~ 0
+Text HLabel 1450 12150 0    60   Input ~ 0
 PWM_RH
-Text HLabel 3600 12250 0    60   Input ~ 0
+Text HLabel 1450 12250 0    60   Input ~ 0
 PWM_RL
 Wire Wire Line
 	1450 12650 3950 12650
@@ -2479,4 +2467,32 @@ Wire Wire Line
 Connection ~ 5750 4350
 Wire Wire Line
 	5750 4350 5550 4350
+$Comp
+L Device:R R?
+U 1 1 5C9E1FE1
+P 3700 5150
+AR Path="/58BF599E/5C9E1FE1" Ref="R?"  Part="1" 
+AR Path="/58BE27E6/5C9E1FE1" Ref="R?"  Part="1" 
+AR Path="/58BF664D/5C9E1FE1" Ref="R26"  Part="1" 
+F 0 "R26" V 3780 5150 50  0000 C CNN
+F 1 "28k" V 3700 5150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3630 5150 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 3700 5150 50  0001 C CNN
+F 4 "311-28.0KHRCT-ND" V 3700 5150 60  0001 C CNN "Part"
+F 5 "DigiKey" V 3700 5150 60  0001 C CNN "Provider"
+	1    3700 5150
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	3550 5150 3450 5150
+Wire Wire Line
+	3450 5150 3450 4950
+Wire Wire Line
+	3450 4950 3950 4950
+Wire Wire Line
+	3450 5250 3450 5150
+Connection ~ 3450 5150
+Wire Wire Line
+	3450 4750 3450 4950
+Connection ~ 3450 4950
 $EndSCHEMATC
