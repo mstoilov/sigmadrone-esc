@@ -581,7 +581,7 @@
     (tags resistor)
     (path /58BE2779/5CBDFAC0)
     (attr smd)
-    (fp_text reference R36 (at 0 -1.43 270) (layer F.SilkS)
+    (fp_text reference R36 (at 2.7 0 270) (layer F.SilkS)
       (effects (font (size 0.8 0.8) (thickness 0.15)))
     )
     (fp_text value 21 (at 0 1.43 270) (layer F.Fab)
