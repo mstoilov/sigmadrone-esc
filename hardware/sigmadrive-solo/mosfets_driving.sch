@@ -1,6 +1,6 @@
 EESchema Schematic File Version 4
 LIBS:sigmadrive-solo-cache
-EELAYER 26 0
+EELAYER 29 0
 EELAYER END
 $Descr A2 23386 16535
 encoding utf-8
@@ -327,7 +327,7 @@ AR Path="/58BE27E6/5C6E5DEC" Ref="L?"  Part="1"
 AR Path="/58BF664D/5C6E5DEC" Ref="L2"  Part="1" 
 F 0 "L2" V 7090 4550 50  0000 C CNN
 F 1 "22uH" V 6999 4550 50  0000 C CNN
-F 2 "Inductor_SMD:L_Wuerth_WE-TPC-3816" H 6900 4550 50  0001 C CNN
+F 2 "Sigmadrone:L_Wuerth_WE-TPC-4828" H 6900 4550 50  0001 C CNN
 F 3 "https://katalog.we-online.de/pbs/datasheet/744042150.pdf" H 6900 4550 50  0001 C CNN
 F 4 "732-1107-1-ND" V 6900 4550 50  0001 C CNN "Part"
 F 5 "DigiKey" V 6900 4550 50  0001 C CNN "Provider"
@@ -522,7 +522,6 @@ F 2 "Capacitor_SMD:C_0805_2012Metric" H 2388 1300 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 2350 1450 50  0001 C CNN
 F 4 "490-10751-2-ND" H 2350 1450 60  0001 C CNN "Part"
 F 5 "DigiKey" H 2350 1450 60  0001 C CNN "Provider"
-F 6 "" H 2350 1450 50  0001 C CNN "Value1"
 	1    2350 1450
 	1    0    0    -1  
 $EndComp
@@ -577,7 +576,6 @@ F 2 "Capacitor_SMD:C_0805_2012Metric" H 3488 5250 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 3450 5400 50  0001 C CNN
 F 4 "490-10751-2-ND" H 3450 5400 60  0001 C CNN "Part"
 F 5 "DigiKey" H 3450 5400 60  0001 C CNN "Provider"
-F 6 "" H 3450 5400 50  0001 C CNN "Value1"
 	1    3450 5400
 	1    0    0    -1  
 $EndComp
@@ -1270,9 +1268,9 @@ AR Path="/58BE27E6/5C79A319" Ref="C?"  Part="1"
 AR Path="/58BF664D/5C79A319" Ref="C11"  Part="1" 
 F 0 "C11" V 10600 1000 50  0000 L CNN
 F 1 "1uF 100V" V 10400 900 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 10588 1000 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 10588 1000 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 10550 1150 50  0001 C CNN
-F 4 "445-4468-1-ND" H 10550 1150 60  0001 C CNN "Part"
+F 4 "445-6804-2-ND" H 10550 1150 60  0001 C CNN "Part"
 F 5 "DigiKey" H 10550 1150 60  0001 C CNN "Provider"
 	1    10550 1150
 	0    -1   -1   0   
@@ -1297,9 +1295,9 @@ AR Path="/58BE27E6/5C8289D7" Ref="C?"  Part="1"
 AR Path="/58BF664D/5C8289D7" Ref="C39"  Part="1" 
 F 0 "C39" V 13250 1000 50  0000 L CNN
 F 1 "1uF 100V" V 13050 900 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 13238 1000 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 13238 1000 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 13200 1150 50  0001 C CNN
-F 4 "445-4468-1-ND" H 13200 1150 60  0001 C CNN "Part"
+F 4 "445-6804-2-ND" H 13200 1150 60  0001 C CNN "Part"
 F 5 "DigiKey" H 13200 1150 60  0001 C CNN "Provider"
 	1    13200 1150
 	0    -1   -1   0   
@@ -1316,9 +1314,9 @@ AR Path="/58BE27E6/5C8453D9" Ref="C?"  Part="1"
 AR Path="/58BF664D/5C8453D9" Ref="C40"  Part="1" 
 F 0 "C40" V 15850 1000 50  0000 L CNN
 F 1 "1uF 100V" V 15650 900 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 15838 1000 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 15838 1000 50  0001 C CNN
 F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 15800 1150 50  0001 C CNN
-F 4 "445-4468-1-ND" H 15800 1150 60  0001 C CNN "Part"
+F 4 "445-6804-2-ND" H 15800 1150 60  0001 C CNN "Part"
 F 5 "DigiKey" H 15800 1150 60  0001 C CNN "Provider"
 	1    15800 1150
 	0    -1   -1   0   
@@ -1460,7 +1458,7 @@ AR Path="/58BE27E6/5CA944B3" Ref="L?"  Part="1"
 AR Path="/58BF664D/5CA944B3" Ref="L1"  Part="1" 
 F 0 "L1" V 7090 13350 50  0000 C CNN
 F 1 "22uH" V 6999 13350 50  0000 C CNN
-F 2 "Inductor_SMD:L_Wuerth_WE-TPC-3816" H 6900 13350 50  0001 C CNN
+F 2 "Sigmadrone:L_Wuerth_WE-TPC-4828" H 6900 13350 50  0001 C CNN
 F 3 "https://katalog.we-online.de/pbs/datasheet/744042150.pdf" H 6900 13350 50  0001 C CNN
 F 4 "732-1107-1-ND" V 6900 13350 50  0001 C CNN "Part"
 F 5 "DigiKey" V 6900 13350 50  0001 C CNN "Provider"
@@ -1642,7 +1640,6 @@ F 2 "Capacitor_SMD:C_0805_2012Metric" H 2388 10100 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 2350 10250 50  0001 C CNN
 F 4 "490-10751-2-ND" H 2350 10250 60  0001 C CNN "Part"
 F 5 "DigiKey" H 2350 10250 60  0001 C CNN "Provider"
-F 6 "" H 2350 10250 50  0001 C CNN "Value1"
 	1    2350 10250
 	1    0    0    -1  
 $EndComp
@@ -1688,36 +1685,33 @@ Wire Wire Line
 $Comp
 L Device:C C?
 U 1 1 5CA94540
-P 3350 14050
+P 3250 14250
 AR Path="/58BE27E6/5CA94540" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5CA94540" Ref="C23"  Part="1" 
-F 0 "C23" H 3350 14150 50  0000 L CNN
-F 1 "4.7uF 50V" V 3200 13800 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric" H 3388 13900 50  0001 C CNN
-F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 3350 14050 50  0001 C CNN
-F 4 "490-10751-2-ND" H 3350 14050 60  0001 C CNN "Part"
-F 5 "DigiKey" H 3350 14050 60  0001 C CNN "Provider"
-F 6 "" H 3350 14050 50  0001 C CNN "Value1"
-	1    3350 14050
+F 0 "C23" H 3250 14350 50  0000 L CNN
+F 1 "4.7uF 50V" V 3100 14000 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 3288 14100 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 3250 14250 50  0001 C CNN
+F 4 "490-10751-2-ND" H 3250 14250 60  0001 C CNN "Part"
+F 5 "DigiKey" H 3250 14250 60  0001 C CNN "Provider"
+	1    3250 14250
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3950 13750 3800 13750
-Wire Wire Line
-	3350 13750 3350 13900
+	3250 13750 3250 13950
 $Comp
 L power:GND #PWR018
 U 1 1 5CA94549
-P 3350 14300
-F 0 "#PWR018" H 3350 14050 50  0001 C CNN
-F 1 "GND" H 3350 14150 50  0000 C CNN
-F 2 "" H 3350 14300 50  0001 C CNN
-F 3 "" H 3350 14300 50  0001 C CNN
-	1    3350 14300
+P 3250 14500
+F 0 "#PWR018" H 3250 14250 50  0001 C CNN
+F 1 "GND" H 3250 14350 50  0000 C CNN
+F 2 "" H 3250 14500 50  0001 C CNN
+F 3 "" H 3250 14500 50  0001 C CNN
+	1    3250 14500
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	3350 14200 3350 14300
+	3250 14400 3250 14500
 Wire Wire Line
 	2350 10550 2350 10450
 Connection ~ 2350 10450
@@ -1769,9 +1763,9 @@ $EndComp
 Wire Wire Line
 	2350 9950 2350 10050
 Connection ~ 2350 10050
-Connection ~ 3350 13750
+Connection ~ 3250 13750
 Wire Wire Line
-	3350 13650 3350 13750
+	3250 13650 3250 13750
 $Comp
 L sigmadrone:DRV8323RS U1
 U 1 1 5CA94576
@@ -1785,13 +1779,6 @@ F 5 "DigiKey" H 4750 12250 50  0001 C CNN "Provider"
 	1    4750 12250
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3950 13950 3800 13950
-Wire Wire Line
-	3800 13950 3800 13750
-Connection ~ 3800 13750
-Wire Wire Line
-	3800 13750 3350 13750
 $Comp
 L Device:C C?
 U 1 1 5CA94583
@@ -2090,14 +2077,14 @@ NoConn ~ 3950 12950
 $Comp
 L power:+5V #PWR?
 U 1 1 5C9E9AA2
-P 3350 13650
+P 3250 13650
 AR Path="/58BE27E6/5C9E9AA2" Ref="#PWR?"  Part="1" 
 AR Path="/58BF664D/5C9E9AA2" Ref="#PWR0133"  Part="1" 
-F 0 "#PWR0133" H 3350 13500 50  0001 C CNN
-F 1 "+5V" H 3365 13823 50  0000 C CNN
-F 2 "" H 3350 13650 50  0001 C CNN
-F 3 "" H 3350 13650 50  0001 C CNN
-	1    3350 13650
+F 0 "#PWR0133" H 3250 13500 50  0001 C CNN
+F 1 "+5V" H 3265 13823 50  0000 C CNN
+F 2 "" H 3250 13650 50  0001 C CNN
+F 3 "" H 3250 13650 50  0001 C CNN
+	1    3250 13650
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -2392,21 +2379,6 @@ Wire Wire Line
 	14800 2050 15350 2050
 Wire Wire Line
 	14300 3150 15350 3150
-$Comp
-L Device:C C?
-U 1 1 5C959C8D
-P 5750 3150
-AR Path="/58BE2779/5C959C8D" Ref="C?"  Part="1" 
-AR Path="/58BF664D/5C959C8D" Ref="C29"  Part="1" 
-F 0 "C29" H 5800 3250 50  0000 L CNN
-F 1 "100pF" H 5750 3050 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 5788 3000 50  0001 C CNN
-F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 5750 3150 50  0001 C CNN
-F 4 "399-7821-2-ND" H 5750 3150 60  0001 C CNN "Part"
-F 5 "DigiKey" H 5750 3150 60  0001 C CNN "Provider"
-	1    5750 3150
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	5750 3000 5750 2950
 Connection ~ 5750 2950
@@ -2417,36 +2389,6 @@ Wire Wire Line
 Connection ~ 5750 3350
 Wire Wire Line
 	5750 3350 5550 3350
-$Comp
-L Device:C C?
-U 1 1 5C99D9A4
-P 5750 3650
-AR Path="/58BE2779/5C99D9A4" Ref="C?"  Part="1" 
-AR Path="/58BF664D/5C99D9A4" Ref="C38"  Part="1" 
-F 0 "C38" H 5800 3750 50  0000 L CNN
-F 1 "100pF" H 5750 3550 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 5788 3500 50  0001 C CNN
-F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 5750 3650 50  0001 C CNN
-F 4 "399-7821-2-ND" H 5750 3650 60  0001 C CNN "Part"
-F 5 "DigiKey" H 5750 3650 60  0001 C CNN "Provider"
-	1    5750 3650
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:C C?
-U 1 1 5C99DB76
-P 5750 4150
-AR Path="/58BE2779/5C99DB76" Ref="C?"  Part="1" 
-AR Path="/58BF664D/5C99DB76" Ref="C41"  Part="1" 
-F 0 "C41" H 5800 4250 50  0000 L CNN
-F 1 "100pF" H 5750 4050 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 5788 4000 50  0001 C CNN
-F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 5750 4150 50  0001 C CNN
-F 4 "399-7821-2-ND" H 5750 4150 60  0001 C CNN "Part"
-F 5 "DigiKey" H 5750 4150 60  0001 C CNN "Provider"
-	1    5750 4150
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	5750 3500 5750 3450
 Connection ~ 5750 3450
@@ -2495,4 +2437,74 @@ Connection ~ 3450 5150
 Wire Wire Line
 	3450 4750 3450 4950
 Connection ~ 3450 4950
+$Comp
+L Device:R R?
+U 1 1 5CA18FAD
+P 3650 13950
+AR Path="/58BF599E/5CA18FAD" Ref="R?"  Part="1" 
+AR Path="/58BE27E6/5CA18FAD" Ref="R?"  Part="1" 
+AR Path="/58BF664D/5CA18FAD" Ref="R32"  Part="1" 
+F 0 "R32" V 3730 13950 50  0000 C CNN
+F 1 "28k" V 3650 13950 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 3580 13950 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 3650 13950 50  0001 C CNN
+F 4 "311-28.0KHRCT-ND" V 3650 13950 60  0001 C CNN "Part"
+F 5 "DigiKey" V 3650 13950 60  0001 C CNN "Provider"
+	1    3650 13950
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	3250 13750 3950 13750
+Wire Wire Line
+	3500 13950 3250 13950
+Connection ~ 3250 13950
+Wire Wire Line
+	3250 13950 3250 14100
+Wire Wire Line
+	3800 13950 3950 13950
+$Comp
+L Device:C C?
+U 1 1 5CE58B39
+P 5750 3150
+AR Path="/58BE2779/5CE58B39" Ref="C?"  Part="1" 
+AR Path="/58BF664D/5CE58B39" Ref="C29"  Part="1" 
+F 0 "C29" H 5750 3250 50  0000 L CNN
+F 1 "1000pF/50V" H 5800 3050 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 5788 3000 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2018/06/11/CL10C102JB8NNNC.pdf" H 5750 3150 50  0001 C CNN
+F 4 "1276-1091-2-ND" H 5750 3150 60  0001 C CNN "Part"
+F 5 "DigiKey" H 5750 3150 60  0001 C CNN "Provider"
+	1    5750 3150
+	1    0    0    1   
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5CE714B0
+P 5750 3650
+AR Path="/58BE2779/5CE714B0" Ref="C?"  Part="1" 
+AR Path="/58BF664D/5CE714B0" Ref="C38"  Part="1" 
+F 0 "C38" H 5750 3750 50  0000 L CNN
+F 1 "1000pF/50V" H 5800 3550 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 5788 3500 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2018/06/11/CL10C102JB8NNNC.pdf" H 5750 3650 50  0001 C CNN
+F 4 "1276-1091-2-ND" H 5750 3650 60  0001 C CNN "Part"
+F 5 "DigiKey" H 5750 3650 60  0001 C CNN "Provider"
+	1    5750 3650
+	1    0    0    1   
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5CE72003
+P 5750 4150
+AR Path="/58BE2779/5CE72003" Ref="C?"  Part="1" 
+AR Path="/58BF664D/5CE72003" Ref="C41"  Part="1" 
+F 0 "C41" H 5750 4250 50  0000 L CNN
+F 1 "1000pF/50V" H 5800 4050 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 5788 4000 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2018/06/11/CL10C102JB8NNNC.pdf" H 5750 4150 50  0001 C CNN
+F 4 "1276-1091-2-ND" H 5750 4150 60  0001 C CNN "Part"
+F 5 "DigiKey" H 5750 4150 60  0001 C CNN "Provider"
+	1    5750 4150
+	1    0    0    1   
+$EndComp
 $EndSCHEMATC
