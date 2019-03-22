@@ -1,4 +1,4 @@
-update=Sun 11 Nov 2018 09:46:47 PM PST
+update=Thu 21 Mar 2019 03:32:37 PM PDT
 version=1
 last_client=kicad
 [cvpcb]
@@ -22,7 +22,7 @@ ERC_TestSimilarLabels=1
 [pcbnew]
 version=1
 PageLayoutDescrFile=
-LastNetListRead=servo-sigma-48v.net
+LastNetListRead=sigmadrive-solo.net
 CopperLayerCount=4
 BoardThickness=1.6
 AllowMicroVias=0
