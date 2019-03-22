@@ -2877,6 +2877,8 @@ F 0 "U4" H 21050 3137 60  0000 C CNN
 F 1 "TPD4S009" H 21050 3031 60  0000 C CNN
 F 2 "Package_SO:TSSOP-10_3x3mm_P0.5mm" H 20900 2200 60  0001 C CNN
 F 3 "http://www.ti.com/lit/ds/symlink/tpd4s009.pdf" H 20950 2100 60  0001 C CNN
+F 4 "296-24538-1-ND" H 21050 2650 50  0001 C CNN "Part"
+F 5 "DigiKey" H 21050 2650 50  0001 C CNN "Provider"
 	1    21050 2650
 	1    0    0    -1  
 $EndComp
