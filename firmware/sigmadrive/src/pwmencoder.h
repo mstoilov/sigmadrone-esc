@@ -33,10 +33,10 @@ public:
 	using base = Timer;
 
 	PWMEncoder(
+			const std::vector<GPIOPin>& output_pins,
 			TIM_TypeDef *TIMx,
 			const TimeSpan& pwm_period,
-			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
-			const std::vector<GPIOPin>& output_pins = {}
+			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock)
 	);
 	virtual ~PWMEncoder();
 	virtual void HandleUpdate() override;

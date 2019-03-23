@@ -20,11 +20,11 @@ public:
 	using base = Timer;
 
 	PWMDecoder(
+			const std::vector<GPIOPin>& output_pins,
 			TIM_TypeDef *TIMx,
 			const TimeSpan& pwm_period,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
-			uint32_t irq_priority = 0,
-			const std::vector<GPIOPin>& output_pins = {}
+			uint32_t irq_priority = 0
 	);
 	virtual ~PWMDecoder();
 	virtual void HandleCC1() override;

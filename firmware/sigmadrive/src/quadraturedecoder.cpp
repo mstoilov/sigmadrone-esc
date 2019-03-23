@@ -1,7 +1,7 @@
 #include "quadraturedecoder.h"
 
-QuadratureDecoder::QuadratureDecoder(TIM_TypeDef *TIMx,	uint32_t cpr_max, uint32_t irq_priority, const std::vector<GPIOPin>& pins)
-	: Timer(TIMx, TimeSpan(0), Frequency::from_hertz(SystemCoreClock), irq_priority, pins)
+QuadratureDecoder::QuadratureDecoder(const std::vector<GPIOPin>& pins, TIM_TypeDef *TIMx,	uint32_t cpr_max, uint32_t irq_priority)
+	: Timer(pins, TIMx, TimeSpan(0), Frequency::from_hertz(SystemCoreClock), irq_priority)
 	, cpr_max_(cpr_max)
 	, index_offset_(-1)
 {

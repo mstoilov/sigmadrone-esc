@@ -8,8 +8,8 @@
 #include "pwmdecoder.h"
 
 
-PWMDecoder::PWMDecoder(TIM_TypeDef *TIMx, const TimeSpan& pwm_period, const Frequency& system_clock, uint32_t irq_priority, const std::vector<GPIOPin>& pins)
-	: Timer(TIMx, pwm_period, system_clock, irq_priority, pins)
+PWMDecoder::PWMDecoder(const std::vector<GPIOPin>& pins, TIM_TypeDef *TIMx, const TimeSpan& pwm_period, const Frequency& system_clock, uint32_t irq_priority)
+	: Timer(pins, TIMx, pwm_period, system_clock, irq_priority)
 	, pwm_pulse_(0)
 	, pwm_period_(0)
 {

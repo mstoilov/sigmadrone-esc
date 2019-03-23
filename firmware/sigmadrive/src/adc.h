@@ -9,13 +9,13 @@
 
 class Adc {
 public:
-	Adc(ADC_TypeDef* ADCx = ADC1,
-			uint32_t resolution = LL_ADC_RESOLUTION_12B,
-			uint32_t samplingTime = LL_ADC_SAMPLINGTIME_3CYCLES,
-			uint32_t injectedTrigger = LL_ADC_INJ_TRIG_SOFTWARE,
-			uint32_t irq_priority = 0,
-			const std::vector<GPIOPin>& pins = {},
-			const std::vector<uint32_t>& injChannels = {});
+	Adc(const std::vector<GPIOPin>& pins,
+		const std::vector<uint32_t>& injChannels,
+		ADC_TypeDef* ADCx = ADC1,
+		uint32_t resolution = LL_ADC_RESOLUTION_12B,
+		uint32_t samplingTime = LL_ADC_SAMPLINGTIME_3CYCLES,
+		uint32_t injectedTrigger = LL_ADC_INJ_TRIG_SOFTWARE,
+		uint32_t irq_priority = 0);
 	virtual ~Adc();
 	void Start();
 	void Stop();

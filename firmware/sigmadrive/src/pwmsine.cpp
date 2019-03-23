@@ -20,16 +20,16 @@ extern QuadratureDecoder *p_encoder;
 
 extern volatile uint64_t jiffies;
 
-PWMSine::PWMSine(TIM_TypeDef *TIMx,
+PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
+		TIM_TypeDef *TIMx,
 		const Frequency& switching_freq,
 		const Frequency& system_clock,
 		OCMode pwm_mode,
 		OCPolarity polarity,
 		OCPolarity npolarity,
 		uint32_t deadtime,
-		uint32_t irq_priority,
-		const std::vector<GPIOPin>& pins)
-	: Timer(TIMx, (switching_freq + switching_freq / 8).period(), system_clock, irq_priority, pins)
+		uint32_t irq_priority)
+	: Timer(pins, TIMx, (switching_freq + switching_freq / 8).period(), system_clock, irq_priority)
 	, switching_freq_(switching_freq)
 	, pwm_mode_(pwm_mode)
 	, polarity_(polarity)

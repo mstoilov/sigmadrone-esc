@@ -26,7 +26,7 @@
 #include "interruptmanager.h"
 #include "timer.h"
 
-Timer::Timer(TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& system_clock, uint32_t irq_priority, const std::vector<GPIOPin>& pins)
+Timer::Timer(const std::vector<GPIOPin>& pins, TIM_TypeDef *TIMx, const TimeSpan& timer_period, const Frequency& system_clock, uint32_t irq_priority)
 	: TIMx_(TIMx)
 	, system_clock_(system_clock)
 	, pins_(pins)

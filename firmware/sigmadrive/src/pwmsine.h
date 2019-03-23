@@ -52,7 +52,7 @@ public:
 	static constexpr float MAX_THROTTLE = 0.35;
 	static constexpr float MIN_THROTTLE = 0.00;
 
-	PWMSine(
+	PWMSine(const std::vector<GPIOPin>& output_pins,
 			TIM_TypeDef *TIMx,
 			const Frequency& switching_freq,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
@@ -60,9 +60,7 @@ public:
 			OCPolarity polarity = High,
 			OCPolarity npolarity = Low,
 			uint32_t deadtime = 30, 		/* ns */
-			uint32_t irq_priority = 0,
-			const std::vector<GPIOPin>& output_pins = {}
-	);
+			uint32_t irq_priority = 0);
 	virtual ~PWMSine();
 	virtual void HandleUpdate() override;
 	virtual void Start() override;

@@ -9,7 +9,8 @@
 #include "pwm6step.h"
 
 
-PWM6Step::PWM6Step(TIM_TypeDef *TIMx,
+PWM6Step::PWM6Step(const std::vector<GPIOPin>& output_pins,
+		TIM_TypeDef *TIMx,
 		const Frequency& switching_freq,
 		const Frequency& system_clock,
 		TriggerOutput trigger_output,
@@ -17,9 +18,8 @@ PWM6Step::PWM6Step(TIM_TypeDef *TIMx,
 		OCPolarity polarity,
 		OCPolarity npolarity,
 		uint32_t deadtime,
-		uint32_t irq_priority,
-		const std::vector<GPIOPin>& output_pins)
-	: Timer(TIMx, switching_freq.period(), system_clock, irq_priority, output_pins)
+		uint32_t irq_priority)
+	: Timer(output_pins, TIMx, switching_freq.period(), system_clock, irq_priority)
 	, pwm_mode_(pwm_mode)
 	, polarity_(polarity)
 	, npolarity_(npolarity)

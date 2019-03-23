@@ -3,13 +3,13 @@
 #include "adc.h"
 #include "interruptmanager.h"
 
-Adc::Adc(ADC_TypeDef* ADCx,
+Adc::Adc(const std::vector<GPIOPin>& pins,
+		const std::vector<uint32_t>& injChannels,
+		ADC_TypeDef* ADCx,
 		uint32_t resolution,
 		uint32_t samplingTime,
 		uint32_t injectedTrigger,
-		uint32_t irq_priority,
-		const std::vector<GPIOPin>& pins,
-		const std::vector<uint32_t>& injChannels)
+		uint32_t irq_priority)
 	: ADCx_(ADCx)
 	, resolution_(resolution)
 	, injdataSize_(injChannels.size())

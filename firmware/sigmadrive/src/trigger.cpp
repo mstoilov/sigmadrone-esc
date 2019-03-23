@@ -9,7 +9,7 @@ Trigger::Trigger(
 		TriggerOutput trigger_output,
 		Channel ch,
 		OCMode pwm_mode)
-	: Timer(TIMx, trigger_period * 2, system_clock)
+	: Timer({}, TIMx, trigger_period * 2, system_clock)
 {
 	SetCounterMode(Up);
 	SetCounterValue(0);

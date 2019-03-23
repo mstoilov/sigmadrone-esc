@@ -204,11 +204,11 @@ public:
 		CountDirectionDown = LL_TIM_COUNTERDIRECTION_DOWN,
 	};
 
-	Timer(TIM_TypeDef *TIMx,
+	Timer(const std::vector<GPIOPin>& pins,
+			TIM_TypeDef *TIMx,
 			const TimeSpan& timer_period,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
-			uint32_t irq_priority = 0,
-			const std::vector<GPIOPin>& pins = {}
+			uint32_t irq_priority = 0
 	);
 
 	void			SetICActiveInput(Channel ch, ActiveInput ai)	{ LL_TIM_IC_SetActiveInput(TIMx_, ch, ai); }
