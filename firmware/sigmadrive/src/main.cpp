@@ -298,6 +298,17 @@ void main_task(void *pvParameters)
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 
+#define ECHO_TEST
+
+#ifdef ECHO_TEST
+		char buf[128];
+		int ret = 0;
+		if ((ret = ptrUsart1->ReadDMA(buf, sizeof(buf))) > 0) {
+			std::string echo(buf, ret);
+			std::cout << echo;
+		}
+#endif
+
 		if (drv_fault.Read() == 0) {
 			pwm1.Stop();
 			printf("Driver Fault Detected: \n");

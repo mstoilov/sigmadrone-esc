@@ -34,9 +34,13 @@
 #include "diag/Trace.h"
 #include "usart.h"
 
+/*
+ * Set up the remote terminal like this:
+ * # stty -F /dev/ttyUSB0 230400 -echo inlcr
+ */
 USART usart({
 	{PA_9, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FAST, GPIO_AF7_USART1},
-	{PB_10, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART1}},
+	{PA_10, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART1}},
 	230400,
 	USART1);
 
