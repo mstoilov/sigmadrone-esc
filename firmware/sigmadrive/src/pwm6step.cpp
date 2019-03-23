@@ -75,6 +75,13 @@ void PWM6Step::Start()
 {
 	DisableARRPreload();
 	DisableChannel(CH1 | CH2 | CH3 | CH1N | CH2N | CH3N);
+
+	DisableCCPreload();
+	SetOCValue(CH1, 0);
+	SetOCValue(CH2, 0);
+	SetOCValue(CH3, 0);
+	EnableCCPreload();
+
 	EnableARRPreload();
 	EnableOutputs();
 //	DisableOutputs();
@@ -206,19 +213,30 @@ void PWM6Step::SetJeosState(JeosState state)
 	jeos_state_ = state;
 }
 
+
+#define BOOTSTRAP_INIT_POSITION_THROTTLE 0.35
+#define BOOTSTRAP_BASE_THROTTLE 0.10f
+
+#undef ODRIVE_MOTOR
+#ifdef ODRIVE_MOTOR
+#define BOOTSTRAP_THROTTLE_INCFACTOR 0.011f
+#else
+#define BOOTSTRAP_THROTTLE_INCFACTOR 0.005f
+#endif
+
 bool PWM6Step::Bootstrap()
 {
 	uint32_t com_cycles = com_cycles_max_ / (boots_.elrev_counter + 1);
-	float bootstrap_throttle = 0.1 + 0.80f * boots_.elrev_counter / 100.0;
+	float bootstrap_throttle = BOOTSTRAP_BASE_THROTTLE + BOOTSTRAP_THROTTLE_INCFACTOR * boots_.elrev_counter;
 
 	if (boots_.delay_counter < BOOTSTRAP_DELAY) {
 		boots_.delay_counter++;
 		DisableCCPreload();
 		SetupChannels(state_);
 		uint32_t arr = GetAutoReloadValue();
-		SetOCValue(CH1, arr * 0.35 * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
-		SetOCValue(CH2, arr * 0.35 * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
-		SetOCValue(CH3, arr * 0.35 * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
+		SetOCValue(CH1, arr * BOOTSTRAP_INIT_POSITION_THROTTLE * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
+		SetOCValue(CH2, arr * BOOTSTRAP_INIT_POSITION_THROTTLE * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
+		SetOCValue(CH3, arr * BOOTSTRAP_INIT_POSITION_THROTTLE * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
 		EnableCCPreload();
 		return false;
 	}
@@ -226,13 +244,18 @@ bool PWM6Step::Bootstrap()
 	if (counter_++ > com_cycles) {
 		boots_.com_counter_++;
 
-		if ((boots_.com_counter_ % (SINE_STATES * 3 / 2)) == 0) {
+		if ((boots_.com_counter_ % (SINE_STATES/2 * (1 + 5 * boots_.elrev_counter / BOOTSTRAP_STAGES ))) == 0) {
 			if (boots_.elrev_counter < BOOTSTRAP_STAGES) {
 				boots_.elrev_counter++;
 			}
 		}
 
 		if (boots_.elrev_counter == BOOTSTRAP_STAGES && state_ == 0) {
+#undef TEST_BOOTSTRAP
+#ifdef TEST_BOOTSTRAP
+			Stop();
+			return true;
+#endif
 			DisableCCPreload();
 			DisableOutputs();
 			DisableChannel(CH1 | CH2 | CH3 | CH1N | CH2N| CH3N);
@@ -241,7 +264,7 @@ bool PWM6Step::Bootstrap()
 			SetOCValue(CH2, arr * 20 / 100);
 			SetOCValue(CH3, arr * 20 / 100);
 			counter_ = 0;
-			state_ = 2;
+			state_ = 1;
 			SetupChannels(state_);
 			EnableOutputs();
 			EnableCCPreload();

@@ -15,7 +15,6 @@
 #include "digitalout.h"
 #include "stm32f4xx_ll_adc.h"
 
-#undef IHM08M1
 
 class PWM6Step : public Timer {
 public:
@@ -36,7 +35,7 @@ public:
 	static constexpr unsigned int adc_data_size = 3;
 	static constexpr unsigned int SINE_SAMPLES = 144;
 	static constexpr unsigned int BOOTSTRAP_STAGES = 28;
-	static constexpr unsigned int BOOTSTRAP_DELAY = 5000; /* switching cycles */
+	static constexpr unsigned int BOOTSTRAP_DELAY = 15000; /* switching cycles */
 	static constexpr unsigned int BOOTSTRAP_COUNTDOWN = 20; /* switching cycles */
 
 	struct BemfMeasurement {

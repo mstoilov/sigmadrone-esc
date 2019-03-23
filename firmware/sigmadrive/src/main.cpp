@@ -72,7 +72,7 @@ QuadratureDecoder pwm4(TIM4,  2048*4, 0, {
 
 QuadratureDecoder *p_encoder = &pwm4;
 
-#undef USE_6STEP
+#define USE_6STEP
 #ifdef USE_6STEP
 PWM6Step pwm1(TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::TrigUpdate, Timer::PWM1, Timer::High, Timer::High, 30, 0, {
 		{PE_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
@@ -300,9 +300,9 @@ void main_task(void *pvParameters)
 
 		if (drv_fault.Read() == 0) {
 			pwm1.Stop();
-			printf("Driver Fault: \n");
-			drv_dump_regs(0);
-			drv_write_reg(0, 2, 0x1);
+			printf("Driver Fault Detected: \n");
+			drv1.DumpRegs();
+			drv1.ClearFault();
 
 		}
 
