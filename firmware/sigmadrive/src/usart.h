@@ -30,16 +30,12 @@ public:
 			uint32_t rx_stream = LL_DMA_STREAM_5,
 			uint32_t dma_channel = LL_DMA_CHANNEL_4,
 			uint32_t hwflowctrl = LL_USART_HWCONTROL_NONE,
-			uint32_t irq_priority = 0,
-			DigitalOut* de_pin = NULL
-			);
+			uint32_t irq_priority = 0);
 	virtual ~USART();
 
 	void Enable(void)			{ LL_USART_Enable(USARTx_); }
 	void Disable(void)			{ LL_USART_Disable(USARTx_); }
 	bool IsEnable(void)			{ return LL_USART_IsEnabled(USARTx_) ? true : false; }
-	void StartDmaRx();
-	void StartDmaTx();
 
 	ssize_t Write(const char* buf, size_t nbytes);
 	ssize_t WriteDMA(const char* buf, size_t nbytes);
@@ -52,7 +48,11 @@ private:
 	void DisableDMAReq_RX(void)	{ LL_USART_DisableDMAReq_RX(USARTx_); }
 
 	void IrqHandlerUSART(void);
-	void CallbackTX_DmaTC(void);
+
+protected:
+	virtual void CallbackTX_DmaTC(void);
+	virtual void StartDmaRx();
+	virtual void StartDmaTx();
 
 public:
 	Ring<char, 256> output_queue_;
@@ -60,7 +60,6 @@ public:
 	USART_TypeDef* USARTx_;
 	Dma dma_tx_;
 	Dma dma_rx_;
-	DigitalOut* de_pin_;
 	volatile size_t outputNDT = 0;
 };
 

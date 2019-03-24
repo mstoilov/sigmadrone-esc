@@ -22,7 +22,7 @@
 #include "pwm6step.h"
 #include "trigger.h"
 #include "adc.h"
-#include "usart.h"
+#include "usartde.h"
 #include "mathtest.h"
 #include "spimaster.h"
 #include "drv8323.h"
@@ -62,11 +62,8 @@ DigitalIn drv_fault(DRV_FAULT, DigitalIn::PullNone, DigitalIn::InterruptNone);
 #define TEST_RS485
 #ifdef TEST_RS485
 
-DigitalOut usart2_de(PD_4, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullDown, DigitalOut::ActiveDefault, 0);
-DigitalOut usart3_de(PD_12, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullDown, DigitalOut::ActiveDefault, 0);
-
-USART usart2({
-	{PD_5, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART2},
+USARTDE usart2(PD_4,
+	{{PD_5, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART2},
 	{PD_6, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART2}},
 	2500000,
 	USART2,
@@ -75,11 +72,10 @@ USART usart2({
 	LL_DMA_STREAM_5,
 	LL_DMA_CHANNEL_4,
 	LL_USART_HWCONTROL_NONE,
-	0,
-	&usart2_de);
+	0);
 
-USART usart3({
-	{PD_8, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3},
+USARTDE usart3(PD_12,
+	{{PD_8, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3},
 	{PD_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3}},
 	2500000,
 	USART3,
@@ -88,8 +84,7 @@ USART usart3({
 	LL_DMA_STREAM_1,
 	LL_DMA_CHANNEL_4,
 	LL_USART_HWCONTROL_NONE,
-	0,
-	&usart3_de);
+	0);
 #endif
 
 
