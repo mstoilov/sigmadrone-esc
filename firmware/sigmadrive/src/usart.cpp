@@ -41,6 +41,9 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 	} else if (usart_device == USART2) {
 		__USART2_CLK_ENABLE();
 		InterruptManager::instance().Callback_EnableIRQ(USART2_IRQn, irq_priority, &USART::IrqHandlerUSART, this);
+	} else if (usart_device == USART3) {
+		__USART3_CLK_ENABLE();
+		InterruptManager::instance().Callback_EnableIRQ(USART3_IRQn, irq_priority, &USART::IrqHandlerUSART, this);
 	} else if (usart_device == USART6) {
 		__USART6_CLK_ENABLE();
 		InterruptManager::instance().Callback_EnableIRQ(USART6_IRQn, irq_priority, &USART::IrqHandlerUSART, this);

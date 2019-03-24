@@ -59,7 +59,31 @@ DigitalIn btn_user(BTN_USER, DigitalIn::PullDefault, DigitalIn::InterruptFalling
 DigitalIn encoder_z(PB_5, DigitalIn::PullDown, DigitalIn::InterruptRising);
 DigitalIn drv_fault(DRV_FAULT, DigitalIn::PullNone, DigitalIn::InterruptNone);
 
+#ifdef TEST_RS485
+USART usart2({
+	{PD_4, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART2},
+	{PD_5, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART2},
+	{PD_6, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART2}},
+	230400,
+	USART2,
+	DMA1,
+	LL_DMA_STREAM_6,
+	LL_DMA_STREAM_5,
+	LL_DMA_CHANNEL_4,
+	LL_USART_HWCONTROL_RTS);
 
+USART usart3({
+	{PD_6, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3},
+	{PD_8, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3},
+	{PD_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3}},
+	230400,
+	USART3,
+	DMA1,
+	LL_DMA_STREAM_3,
+	LL_DMA_STREAM_1,
+	LL_DMA_CHANNEL_4,
+	LL_USART_HWCONTROL_RTS);
+#endif
 
 PWMDecoder pwm3({
 		{PB_4, LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_2}},
@@ -291,6 +315,17 @@ void main_task(void *pvParameters)
 #endif
 
 	PWM6Step::LogEntry log;
+
+#ifdef TEST_RS485
+	std::string rs485_test = "Do you get this?";
+	usart2.WriteDMA(rs485_test.c_str(), rs485_test.size());
+	char buf[128];
+	int ret = 0;
+	if ((ret = usart3.ReadDMA(buf, sizeof(buf))) > 0) {
+		std::string echo(buf, ret);
+		std::cout << echo;
+	}
+#endif
 
 	while (1) {
 		std::string tmp;
