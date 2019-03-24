@@ -18,6 +18,7 @@
 #include "dma.h"
 #include "interruptmanager.h"
 #include "ring.h"
+#include "digitalout.h"
 
 class USART {
 public:
@@ -29,7 +30,8 @@ public:
 			uint32_t rx_stream = LL_DMA_STREAM_5,
 			uint32_t dma_channel = LL_DMA_CHANNEL_4,
 			uint32_t hwflowctrl = LL_USART_HWCONTROL_NONE,
-			uint32_t irq_priority = 0
+			uint32_t irq_priority = 0,
+			DigitalOut* de_pin = NULL
 			);
 	virtual ~USART();
 
@@ -58,6 +60,7 @@ public:
 	USART_TypeDef* USARTx_;
 	Dma dma_tx_;
 	Dma dma_rx_;
+	DigitalOut* de_pin_;
 	volatile size_t outputNDT = 0;
 };
 
