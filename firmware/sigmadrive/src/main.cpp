@@ -320,7 +320,7 @@ void main_task(void *pvParameters)
 	PWM6Step::LogEntry log;
 
 #ifdef TEST_RS485
-	std::string rs485_test = "Do you get this?\n";
+	std::string rs485_test = "Do you see this? From RS485 ...\n";
 	usart2.WriteDMA(rs485_test.c_str(), rs485_test.size());
 	char buf[128];
 	int ret = 0;
