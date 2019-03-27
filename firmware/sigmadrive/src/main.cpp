@@ -26,7 +26,7 @@
 #include "mathtest.h"
 #include "spimaster.h"
 #include "drv8323.h"
-
+#include "minas_a4_abs_encoder.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -59,7 +59,7 @@ DigitalIn btn_user(BTN_USER, DigitalIn::PullDefault, DigitalIn::InterruptFalling
 DigitalIn encoder_z(PB_5, DigitalIn::PullDown, DigitalIn::InterruptRising);
 DigitalIn drv_fault(DRV_FAULT, DigitalIn::PullNone, DigitalIn::InterruptNone);
 
-#define TEST_RS485
+//#define TEST_RS485
 #ifdef TEST_RS485
 
 USARTDE usart2(PD_4,
@@ -222,6 +222,8 @@ void CallbackPWMCC(uint32_t pulse, uint32_t period)
 
 void RunFloatingPointTest()
 {
+#if 0
+	using namespace std::complex_literals;
 	int64_t jend = 0, jbegin = jiffies;
 	int iterations = 4000000;
 
@@ -250,6 +252,38 @@ void RunFloatingPointTest()
 	jend = jiffies;
 	printf("dot        : %5ld\n", (int32_t)(jend - jbegin));
 	printf("----- Done.\n");
+#endif
+}
+
+//#define DUMP_MINAS_A4_STATE
+#define DUMP_DRV_FAULT
+
+MinasA4AbsEncoder* ma4_abs_encoder_ptr = nullptr;
+
+void encoder_reader_task(void *pvParameters)
+{
+	USARTDE usart3(PD_12, {
+			{PD_8, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FAST, GPIO_AF7_USART3},
+			{PD_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3}},
+			2500000, // 2.5 Mbps
+			USART3,
+			DMA1,
+			LL_DMA_STREAM_3,
+			LL_DMA_STREAM_1,
+			LL_DMA_CHANNEL_4);
+
+	MinasA4AbsEncoder ma4_abs_encoder(usart3);
+
+	ma4_abs_encoder.init();
+
+	ma4_abs_encoder_ptr = &ma4_abs_encoder;
+
+	while (1) {
+		if (!ma4_abs_encoder.update()) {
+			ma4_abs_encoder.reset_all_errors();
+		}
+	}
+
 }
 
 
@@ -257,6 +291,8 @@ void main_task(void *pvParameters)
 {
 	uint32_t old_encoder_idx = 0, new_encoder_idx = 0;
 	uint32_t old_decoder_value = 0, new_decoder_value = 0;
+
+	uint32_t count = 0;
 
 	btn_user.Callback(pwm1_toggle);
 
@@ -333,11 +369,11 @@ void main_task(void *pvParameters)
 
 	while (1) {
 		std::string tmp;
-		HAL_Delay(10UL);
+		vTaskDelay(10 / portTICK_RATE_MS);
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 
-#define ECHO_TEST
+//#define ECHO_TEST
 
 #ifdef ECHO_TEST
 		char buf[128];
@@ -350,11 +386,27 @@ void main_task(void *pvParameters)
 
 		if (drv_fault.Read() == 0) {
 			pwm1.Stop();
+#ifdef DUMP_DRV_FAULT
 			printf("Driver Fault Detected: \n");
 			drv1.DumpRegs();
+#endif
 			drv1.ClearFault();
 
 		}
+
+		count++;
+
+#ifdef DUMP_MINAS_A4_STATE
+		if (count % 20 == 0 && !!ma4_abs_encoder_ptr) {
+			printf("Servo Angle: %3.4f\n", ma4_abs_encoder_ptr->get_absolute_angle_deg());
+			printf("Servo Revs:  %u\n", ma4_abs_encoder_ptr->get_revolutions());
+			MA4Almc almc = ma4_abs_encoder_ptr->get_last_error();
+			printf("OS: %u, FS: %u, CE: %u, OF: %u, ME: %u, SYD: %u, BA: %u\n\n",
+					almc.overspeed_, almc.full_abs_status_, almc.count_error_,
+					almc.counter_overflow_, almc.multiple_revolution_error_, almc.system_down_,
+					almc.battery_alarm_);
+		}
+#endif
 
 #ifdef USE_6STEP
 		if (pwm1.log_entry_.serial_ != log.serial_) {
@@ -417,6 +469,7 @@ int main(int argc, char* argv[])
 	InterruptManager& im = InterruptManager::instance();
 
 	TaskHandle_t main_task_handle = 0;
+	TaskHandle_t encoder_reader_task_handle = 0;
 
 	vTaskSuspendAll();
 
@@ -428,6 +481,15 @@ int main(int argc, char* argv[])
 			(void*) NULL, /* Pointer to tasks arguments (parameter) */
 			tskIDLE_PRIORITY + 3UL, /* Task priority*/
 			&main_task_handle /* Task handle */
+	);
+
+	xTaskCreate(
+			encoder_reader_task, /* Function pointer */
+			"encoder_reader_task", /* Task name - for debugging only*/
+			4 * configMINIMAL_STACK_SIZE, /* Stack depth in words */
+			(void*) NULL, /* Pointer to tasks arguments (parameter) */
+			tskIDLE_PRIORITY + 1UL, /* Task priority*/
+			&encoder_reader_task_handle /* Task handle */
 	);
 
 	im.VectorHandler(SVCall_IRQn, vPortSVCHandler);
