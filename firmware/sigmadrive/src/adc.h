@@ -15,6 +15,7 @@ public:
 		uint32_t resolution = LL_ADC_RESOLUTION_12B,
 		uint32_t samplingTime = LL_ADC_SAMPLINGTIME_3CYCLES,
 		uint32_t injectedTrigger = LL_ADC_INJ_TRIG_SOFTWARE,
+		uint32_t injectedTriggerEdge = LL_ADC_INJ_TRIG_EXT_RISING,
 		uint32_t irq_priority = 0);
 	virtual ~Adc();
 	void Start();
@@ -41,6 +42,7 @@ protected:
 	virtual void handle_awd1();
 
 	std::function<void(int32_t*, size_t)> callback_JEOS_ = [](int32_t*, size_t){};
+	static unsigned int instance_count_;
 
 public:
 	ADC_TypeDef* ADCx_;

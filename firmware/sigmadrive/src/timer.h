@@ -216,7 +216,7 @@ public:
 	void			SetICPrescaler(Channel ch, ICPrescaler pre)	{ LL_TIM_IC_SetPrescaler(TIMx_, ch, pre); }
 	void			SetICPolarity(Channel ch, ICPolarity pol)	{ LL_TIM_IC_SetPolarity(TIMx_, ch, pol); }
 	uint32_t		GetICValue(Channel ch)						{ return GetOCValue(ch); }
-	void			SetOCValue(Channel ch, uint32_t value);
+	virtual void	SetOCValue(Channel ch, uint32_t value);
 	uint32_t		GetOCValue(Channel ch);
 	void			SetEncoderMode(EncoderMode mode)			{ LL_TIM_SetEncoderMode(TIMx_, mode); }
 	void			SetSlaveMode(SlaveMode mode)				{ LL_TIM_SetSlaveMode(TIMx_, mode); }

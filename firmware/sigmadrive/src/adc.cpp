@@ -3,25 +3,47 @@
 #include "adc.h"
 #include "interruptmanager.h"
 
+unsigned int Adc::instance_count_ = 0UL;
+
 Adc::Adc(const std::vector<GPIOPin>& pins,
 		const std::vector<uint32_t>& injChannels,
 		ADC_TypeDef* ADCx,
 		uint32_t resolution,
 		uint32_t samplingTime,
 		uint32_t injectedTrigger,
+		uint32_t injectedTriggerEdge,
 		uint32_t irq_priority)
 	: ADCx_(ADCx)
 	, resolution_(resolution)
 	, injdataSize_(injChannels.size())
 {
-	if (ADCx_ == ADC1)
+	if (ADCx_ == ADC1) {
 		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC1);
+	}
+#ifdef ADC2
+	else if (ADCx_ == ADC2) {
+		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC2);
+	}
+#endif
+#ifdef ADC3
+	else if (ADCx_ == ADC3) {
+		LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC3);
+	}
+#endif
+
+
 	for (auto& pin : pins)
 		pin.Init();
 
 	LL_ADC_SetCommonClock(__LL_ADC_COMMON_INSTANCE(ADCx_), LL_ADC_CLOCK_SYNC_PCLK_DIV2);
 
-	InterruptManager::instance().Callback_EnableIRQ(ADC_IRQn, irq_priority, &Adc::IRQHandler, this);
+	if (instance_count_) {
+		auto OldIrqHandler = InterruptManager::instance().GetIrqHandler(ADC_IRQn);
+		InterruptManager::instance().Callback_EnableIRQ(ADC_IRQn, irq_priority, [=](void){IRQHandler(); OldIrqHandler();});
+	} else {
+		InterruptManager::instance().Callback_EnableIRQ(ADC_IRQn, irq_priority, [=](void){IRQHandler(); });
+	}
+	instance_count_++;
 
 	InitInjectedChannels(resolution, samplingTime, injChannels);
 	SetInjectedTrigger(injectedTrigger);

@@ -117,13 +117,22 @@ Adc adc({
 	{
 			BEMF_FB_A, BEMF_FB_B, BEMF_FB_C,
 	},
-	ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, 0);
+	ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_15CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, 0);
+
+Adc adc_current({
+	{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+	{PA_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+	{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},},
+	{
+			 CURRENT_FB_A, CURRENT_FB_B, CURRENT_FB_C, CURRENT_FB_A
+	},
+	ADC2, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_3CYCLES, LL_ADC_INJ_TRIG_EXT_TIM3_CH2, 0);
 
 Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(750), Frequency::from_hertz(SystemCoreClock));
 
 
-//Trigger adc_trigger(TIM3, TimeSpan::from_nanoseconds(750), Frequency::from_hertz(SystemCoreClock),
-//		Timer::SlaveTrigger, Timer::TriggerInternal0, Timer::TrigOC2REF, Timer::CH2, Timer::PWM1);
+Trigger adc_current_trigger(TIM3, TimeSpan::from_nanoseconds(750), Frequency::from_hertz(SystemCoreClock),
+		Timer::SlaveTrigger, Timer::TriggerInternal0, Timer::TrigOC2REF, Timer::CH2, Timer::PWM1);
 
 
 #else
@@ -133,15 +142,40 @@ PWMSine pwm1({{PE_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_F
 		{PE_11,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 		{PE_12,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
 		{PE_13,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1}},
-		TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::PWM1,  Timer::High,  Timer::High, 30, 0);
+		TIM1, Frequency::from_hertz(50000), Frequency::from_hertz(SystemCoreClock), Timer::TrigUpdate, Timer::PWM1,  Timer::High,  Timer::High, 30, 0);
 
-Adc adc({{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+Adc adc1({
+		{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		{PA_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
-		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},},
-		{
-				CURRENT_FB_A, CURRENT_FB_B, CURRENT_FB_C,
+		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		},
-		ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_3CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, 0);
+		{
+				CURRENT_FB_A, // CURRENT_FB_B, CURRENT_FB_C,
+		},
+		ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, 0);
+
+#if 1
+Adc adc2({
+		{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PA_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		},
+		{
+				CURRENT_FB_B,
+		},
+		ADC2, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, 0);
+
+Adc adc3({
+		{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PA_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		},
+		{
+				CURRENT_FB_C,
+		},
+		ADC3, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, 0);
+
+#endif
 
 Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(17000), Frequency::from_hertz(SystemCoreClock));
 
@@ -288,7 +322,7 @@ void main_task(void *pvParameters)
 	drv1.SetOCPDeglitch(Drv8323::OCP_DEG_4us);
 	drv1.SetVDSLevel(Drv8323::VDS_LVL_060V);
 	drv1.EnableVREFDiv();
-	drv1.SetCSAGain(Drv8323::CSA_GAIN_20VV);
+	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
 	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C);
@@ -305,16 +339,22 @@ void main_task(void *pvParameters)
 	encoder_z.Callback([&](){ p_encoder->CallbackIndex(); });
 	pwm4.Start();
 
-	adc.Start();
+	adc1.Start();
+	adc2.Start();
+	adc3.Start();
 
 
 #ifdef USE_6STEP
 	pwm1.SetThrottle(0.35);
-	adc.CallbackJEOS(&pwm1, &PWM6Step::HandleJEOS);
+	adc.CallbackJEOS(&pwm1, &PWM6Step::HandleCurrentJEOS);
+	adc_current.CallbackJEOS(&pwm1, &PWM6Step::HandleCurrentJEOS);
+	adc_current.Start();
 #else
 	pwm1.SetElectricalRotationsPerSecond(Frequency::from_millihertz(500 * PWMSine::M2E_RATIO));
 	pwm1.SetThrottle(0.05);
-	adc.CallbackJEOS(&pwm1, &PWMSine::HandleJEOS);
+	adc1.CallbackJEOS([=](int32_t *injdata, size_t size){pwm1.HandleCurrentJEOS(injdata, 0, size);});
+	adc2.CallbackJEOS([=](int32_t *injdata, size_t size){pwm1.HandleCurrentJEOS(injdata, 1, size);});
+	adc3.CallbackJEOS([=](int32_t *injdata, size_t size){pwm1.HandleCurrentJEOS(injdata, 2, size);});
 #endif
 
 	PWM6Step::LogEntry log;
@@ -337,17 +377,6 @@ void main_task(void *pvParameters)
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 
-#define ECHO_TEST
-
-#ifdef ECHO_TEST
-		char buf[128];
-		int ret = 0;
-		if ((ret = ptrUsart1->ReadDMA(buf, sizeof(buf))) > 0) {
-			std::string echo(buf, ret);
-			std::cout << echo;
-		}
-#endif
-
 		if (drv_fault.Read() == 0) {
 			pwm1.Stop();
 			printf("Driver Fault Detected: \n");
@@ -364,7 +393,7 @@ void main_task(void *pvParameters)
 
 			uint32_t hz = (uint32_t) (pwm1.GetSwitchingFrequency() / log.last_counter_ / PWM6Step::M2E_RATIO / PWM6Step::SINE_STATES).hertz();
 
-			printf("%1lu: Speed: %5lu, slp: %7ld, incpt: %5ld, ibemf: %5ld, zero_c: %3ld (%3ld), %2d->[%6ld %6ld %6ld ] %2d->[%6ld %6ld %6ld]\n",
+			printf("%1lu: Speed: %5lu, slp: %7ld, incpt: %5ld, ibemf: %5ld, zero_c: %3ld (%3ld), %2d->[%6ld %6ld %6ld ] %2d->[%6ld %6ld %6ld], Current: [%6ld %6ld %6ld %6ld]\n",
 					log.state_,
 					hz,
 					log.bemf_mslope_,
@@ -379,7 +408,12 @@ void main_task(void *pvParameters)
 					pwm1.adc_data_counter2,
 					log.adc_data2_[0],
 					log.adc_data2_[1],
-					log.adc_data2_[2]
+					log.adc_data2_[2],
+					log.adc_current_[0],
+					log.adc_current_[1],
+					log.adc_current_[2],
+					log.adc_current_[3]
+
 			);
 
 		}

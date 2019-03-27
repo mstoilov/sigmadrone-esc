@@ -294,6 +294,18 @@ bool PWM6Step::Bootstrap()
 	return false;
 }
 
+void PWM6Step::HandleCurrentJEOS(int32_t *injdata, size_t size)
+{
+	assert(size >= 3);
+
+	std::for_each(injdata, injdata + size, [](auto &a){a = (-(a - 1639)) / 10; });
+
+//	if (counter_ == (adc_data_counter1 + adc_data_counter1) / 2)
+	if (counter_ == 8)
+		std::copy(injdata, injdata + adc_current_data_size, adc_current_);
+
+}
+
 void PWM6Step::HandleJEOS(int32_t *injdata, size_t size)
 {
 	assert(size >= 3);
@@ -404,6 +416,7 @@ void PWM6Step::LogComEvent()
 		log_entry_.last_counter_ = last_counter_;
 		std::copy(adc_data1_, adc_data1_ + adc_data_size, log_entry_.adc_data1_);
 		std::copy(adc_data2_, adc_data2_ + adc_data_size, log_entry_.adc_data2_);
+		std::copy(adc_current_, adc_current_ + adc_current_data_size, log_entry_.adc_current_);
 		log_entry_.serial_++;
 	}
 

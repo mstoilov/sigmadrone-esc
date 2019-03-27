@@ -56,6 +56,7 @@ public:
 			TIM_TypeDef *TIMx,
 			const Frequency& switching_freq,
 			const Frequency& system_clock = Frequency::from_hertz(SystemCoreClock),
+			TriggerOutput trigger_output = TrigUpdate,
 			OCMode pwm_mode = PWM1,
 			OCPolarity polarity = High,
 			OCPolarity npolarity = Low,
@@ -65,7 +66,8 @@ public:
 	virtual void HandleUpdate() override;
 	virtual void Start() override;
 	virtual void Stop() override;
-	void HandleJEOS(int32_t *injdata, size_t size);
+	virtual void SetOCValue(Channel ch, uint32_t value) override;
+	void HandleCurrentJEOS(int32_t *injdata, size_t idx, size_t size);
 	void SineDriving();
 	float GetDutyCycle();
 	void SetThrottle(float percent);

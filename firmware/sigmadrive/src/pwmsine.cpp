@@ -24,6 +24,7 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 		TIM_TypeDef *TIMx,
 		const Frequency& switching_freq,
 		const Frequency& system_clock,
+		TriggerOutput trigger_output,
 		OCMode pwm_mode,
 		OCPolarity polarity,
 		OCPolarity npolarity,
@@ -43,7 +44,12 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 
 	GenerateEvent(EventUpdate);
 
-	SetTriggerOutput(TrigUpdate);
+	/*
+	 * ADC trigger
+	 */
+	SetTriggerOutput(trigger_output);
+
+
 	p1 = std::polar<float>(1.0f, 0.0f);
 	p2 = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
 	p3 = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
@@ -174,6 +180,16 @@ void PWMSine::Stop()
 
 }
 
+void PWMSine::SetOCValue(Channel ch, uint32_t value)
+{
+	if (pwm_mode_ == PWM2) {
+		uint32_t arr = GetAutoReloadValue();
+		value = arr - value;
+	}
+	base::SetOCValue(ch, value);
+
+}
+
 void PWMSine::Toggle()
 {
 	if (IsEnabledCounter())
@@ -190,8 +206,8 @@ float PWMSine::GetDutyCycle()
 void PWMSine::SetThrottle(float percent)
 {
 	percent = std::max(std::min(percent, (float)MAX_THROTTLE), (float)MIN_THROTTLE);
-	duty_ = TimeSpan::from_nanoseconds(switching_freq_.period().nanoseconds() * percent);
 
+	duty_ = TimeSpan::from_nanoseconds(switching_freq_.period().nanoseconds() * percent);
 	duty_oc_ = __LL_TIM_CALC_ARR(system_clock_.hertz(), GetPrescaler(), duty_.to_frequency().hertz());
 }
 
@@ -215,12 +231,14 @@ void PWMSine::SetElectricalRotationsPerSecond(const Frequency& f)
 	r = std::polar<float>(1.0f, 2.0f * M_PI / SINE_STEPS);
 }
 
-void PWMSine::HandleJEOS(int32_t *injdata, size_t size)
+void PWMSine::HandleCurrentJEOS(int32_t *injdata, size_t idx, size_t size)
 {
-	assert(size >= CURRENT_SAMPLES);
+	assert(idx + size <= CURRENT_SAMPLES);
 
-	std::copy(injdata, injdata + CURRENT_SAMPLES, adc_data_);
-	std::for_each(adc_data_, adc_data_ + CURRENT_SAMPLES, [](auto &a){ a = (a - 1665);});
+	if (GetDirection() == CountDirectionUp) {
+		std::copy(injdata, injdata + size, adc_data_ + idx);
+		std::for_each(adc_data_ + idx, adc_data_ + idx + size, [](auto &a){ a = -(a - 1658);});
+	}
 }
 
 void PWMSine::SineDriving()

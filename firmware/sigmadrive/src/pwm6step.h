@@ -33,6 +33,7 @@ public:
 	static constexpr unsigned int adc_data_counter1 = 1;
 	static constexpr unsigned int adc_data_counter2 = 5;
 	static constexpr unsigned int adc_data_size = 3;
+	static constexpr unsigned int adc_current_data_size = 4;
 	static constexpr unsigned int SINE_SAMPLES = 144;
 	static constexpr unsigned int BOOTSTRAP_STAGES = 28;
 	static constexpr unsigned int BOOTSTRAP_DELAY = 15000; /* switching cycles */
@@ -70,6 +71,7 @@ public:
 		int32_t integral_bemf_ = 0;
 		int32_t adc_data1_[adc_data_size];
 		int32_t adc_data2_[adc_data_size];
+		int32_t adc_current_[adc_current_data_size];
 	};
 
 	PWM6Step(
@@ -95,6 +97,7 @@ public:
 	Frequency GetSwitchingFrequency();
 	void Toggle();
 	void HandleJEOS(int32_t *injdata, size_t size);
+	void HandleCurrentJEOS(int32_t *injdata, size_t size);
 	inline int32_t CalculateBEMF(int32_t v1, int32_t v2, int32_t v3);
 	int32_t DetectBEMF(uint32_t state, int32_t *injdata);
 	void GenerateComEvent();
@@ -134,6 +137,7 @@ public:
 	BemfMeasurement msr_[2];
 	int32_t adc_data1_[adc_data_size];
 	int32_t adc_data2_[adc_data_size];
+	int32_t adc_current_[adc_current_data_size];
 	LogEntry log_entry_;
 	BootStrap boots_;
 	std::function<void(void)> callback_COM_ = [](){};
