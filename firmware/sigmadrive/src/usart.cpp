@@ -82,12 +82,12 @@ void USART::CallbackTX_DmaTC(void)
 	output_queue_.read_update(outputNDT);
 	outputNDT = 0UL;
 	if (!dma_tx_.IsEnabled())
-		StartDmaTx();
+		StartDmaTx(output_queue_.read_size());
 }
 
-void USART::StartDmaTx()
+void USART::StartDmaTx(size_t nbytes)
 {
-	outputNDT = output_queue_.read_size();
+	outputNDT = nbytes;
 	if (outputNDT > 0) {
 		dma_tx_.EnableIT_TC();
 		dma_tx_.ConfigAddresses((uint32_t)output_queue_.get_read_ptr(), LL_USART_DMA_GetRegAddr(USARTx_), dma_tx_.GetDataTransferDirection());
@@ -111,7 +111,6 @@ ssize_t USART::Write(const char* buf, size_t nbytes)
 	return nbytes;
 }
 
-
 ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 {
 	size_t i = 0;
@@ -132,7 +131,7 @@ ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 	}
 	__disable_irq();
 	if (i > 0 && !dma_tx_.IsEnabled()) {
-		StartDmaTx();
+		StartDmaTx(output_queue_.read_size());
 	}
 	__enable_irq();
 	return i;

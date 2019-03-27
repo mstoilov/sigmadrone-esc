@@ -29,7 +29,7 @@ public:
 
 protected:
 	virtual void CallbackTX_DmaTC(void);
-	virtual void StartDmaTx();
+	virtual void StartDmaTx(size_t nbytes);
 
 public:
 	DigitalOut de_pin_;

@@ -52,7 +52,7 @@ private:
 protected:
 	virtual void CallbackTX_DmaTC(void);
 	virtual void StartDmaRx();
-	virtual void StartDmaTx();
+	virtual void StartDmaTx(size_t nbytes);
 
 public:
 	Ring<char, 256> output_queue_;

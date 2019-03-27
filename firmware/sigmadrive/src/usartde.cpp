@@ -35,8 +35,10 @@ void USARTDE::CallbackTX_DmaTC(void)
 	base::CallbackTX_DmaTC();
 }
 
-void USARTDE::StartDmaTx()
+void USARTDE::StartDmaTx(size_t nbytes)
 {
-	de_pin_.Write(1);
-	base::StartDmaTx();
+	if (nbytes > 0) {
+		de_pin_.Write(1);
+		base::StartDmaTx(nbytes);
+	}
 }
