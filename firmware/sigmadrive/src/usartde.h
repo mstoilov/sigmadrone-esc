@@ -28,8 +28,8 @@ public:
 	virtual ~USARTDE();
 
 protected:
-	virtual void CallbackTX_DmaTC(void);
-	virtual void StartDmaTx(size_t nbytes);
+	virtual void OnTxBegin(void) override;
+	virtual void OnTxComplete(void) override;
 
 public:
 	DigitalOut de_pin_;

@@ -40,19 +40,25 @@ public:
 	ssize_t Write(const char* buf, size_t nbytes);
 	ssize_t WriteDMA(const char* buf, size_t nbytes);
 	ssize_t ReadDMA(char* buf, size_t nbytes);
+	ssize_t ReadDMAOrBlock(char* buf, size_t nbytes);
+	size_t GetRxSize();
+	std::string Read();
+	void Write(const std::string& str);
+
 
 private:
 	void EnableDMAReq_TX(void)	{ LL_USART_EnableDMAReq_TX(USARTx_); }
 	void EnableDMAReq_RX(void)	{ LL_USART_EnableDMAReq_RX(USARTx_); }
 	void DisableDMAReq_TX(void)	{ LL_USART_DisableDMAReq_TX(USARTx_); }
 	void DisableDMAReq_RX(void)	{ LL_USART_DisableDMAReq_RX(USARTx_); }
-
+	void CallbackTX_DmaTC(void);
+	void StartDmaRx();
+	void StartDmaTx(size_t nbytes);
 	void IrqHandlerUSART(void);
 
 protected:
-	virtual void CallbackTX_DmaTC(void);
-	virtual void StartDmaRx();
-	virtual void StartDmaTx(size_t nbytes);
+	virtual void OnTxBegin(void) { };
+	virtual void OnTxComplete(void) { };
 
 public:
 	Ring<char, 256> output_queue_;
@@ -60,7 +66,7 @@ public:
 	USART_TypeDef* USARTx_;
 	Dma dma_tx_;
 	Dma dma_rx_;
-	volatile size_t outputNDT = 0;
+	volatile size_t outputNDT_ = 0;
 };
 
 #endif /* _USART_H_ */

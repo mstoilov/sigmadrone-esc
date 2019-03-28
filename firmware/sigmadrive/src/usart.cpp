@@ -79,19 +79,22 @@ void USART::StartDmaRx()
 
 void USART::CallbackTX_DmaTC(void)
 {
-	output_queue_.read_update(outputNDT);
-	outputNDT = 0UL;
-	if (!dma_tx_.IsEnabled())
-		StartDmaTx(output_queue_.read_size());
+	output_queue_.read_update(outputNDT_);
+	outputNDT_ = 0UL;
+	size_t nbytes = output_queue_.read_size();
+	if (nbytes && !dma_tx_.IsEnabled())
+		StartDmaTx(nbytes);
+	else
+		OnTxComplete();
 }
 
 void USART::StartDmaTx(size_t nbytes)
 {
-	outputNDT = nbytes;
-	if (outputNDT > 0) {
+	outputNDT_ = nbytes;
+	if (outputNDT_ > 0) {
 		dma_tx_.EnableIT_TC();
 		dma_tx_.ConfigAddresses((uint32_t)output_queue_.get_read_ptr(), LL_USART_DMA_GetRegAddr(USARTx_), dma_tx_.GetDataTransferDirection());
-		dma_tx_.SetDataLength(outputNDT);
+		dma_tx_.SetDataLength(outputNDT_);
 		EnableDMAReq_TX();
 		dma_tx_.Enable();
 	}
@@ -102,12 +105,16 @@ ssize_t USART::Write(const char* buf, size_t nbytes)
 {
 	size_t i = 0;
 
+	OnTxBegin();
 	for (i = 0; i < nbytes; i++) {
 		while(!LL_USART_IsActiveFlag_TXE(USARTx_))
 			;
 		LL_USART_TransmitData8(USARTx_, buf[i]);
 	}
 
+	while(!LL_USART_IsActiveFlag_TXE(USARTx_))
+		;
+	OnTxComplete();
 	return nbytes;
 }
 
@@ -131,12 +138,30 @@ ssize_t USART::WriteDMA(const char* buf, size_t nbytes)
 	}
 	__disable_irq();
 	if (i > 0 && !dma_tx_.IsEnabled()) {
+		OnTxBegin();
 		StartDmaTx(output_queue_.read_size());
 	}
 	__enable_irq();
 	return i;
 }
 
+ssize_t USART::ReadDMAOrBlock(char* buf, size_t nbytes)
+{
+	ssize_t ret = 0;
+	while ((ret = GetRxSize()) == 0)
+		;
+	return ReadDMA(buf, nbytes);
+}
+
+size_t USART::GetRxSize()
+{
+	/*
+	 * Update the write ptr according to the number of data elements transfered
+	 * from the DMA.
+	 */
+	input_queue_.reset_wp(input_queue_.capacity() - dma_rx_.GetDataLength());
+	return input_queue_.read_size();
+}
 
 ssize_t USART::ReadDMA(char* buf, size_t nbytes)
 {
@@ -150,4 +175,21 @@ ssize_t USART::ReadDMA(char* buf, size_t nbytes)
 	memcpy(buf, input_queue_.get_read_ptr(), i);
 	input_queue_.read_update(i);
 	return i;
+}
+
+std::string USART::Read()
+{
+	ssize_t read_size = 0;
+	while ((read_size = GetRxSize()) == 0)
+		;
+	std::string ret(input_queue_.get_read_ptr(), read_size);
+	input_queue_.read_update(read_size);
+	return ret;
+}
+
+void USART::Write(const std::string& str)
+{
+	for (size_t ret = 0, i = 0, n = str.size(); n > 0; n -= ret, i += ret) {
+		ret = WriteDMA(str.c_str() + i, n);
+	}
 }

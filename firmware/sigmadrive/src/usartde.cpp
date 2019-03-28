@@ -29,16 +29,12 @@ USARTDE::~USARTDE()
 
 }
 
-void USARTDE::CallbackTX_DmaTC(void)
+void USARTDE::OnTxComplete(void)
 {
 	de_pin_.Write(0);
-	base::CallbackTX_DmaTC();
 }
 
-void USARTDE::StartDmaTx(size_t nbytes)
+void USARTDE::OnTxBegin()
 {
-	if (nbytes > 0) {
-		de_pin_.Write(1);
-		base::StartDmaTx(nbytes);
-	}
+	de_pin_.Write(1);
 }

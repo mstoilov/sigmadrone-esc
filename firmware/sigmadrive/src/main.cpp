@@ -59,7 +59,7 @@ DigitalIn btn_user(BTN_USER, DigitalIn::PullDefault, DigitalIn::InterruptFalling
 DigitalIn encoder_z(PB_5, DigitalIn::PullDown, DigitalIn::InterruptRising);
 DigitalIn drv_fault(DRV_FAULT, DigitalIn::PullNone, DigitalIn::InterruptNone);
 
-//#define TEST_RS485
+#define TEST_RS485
 #ifdef TEST_RS485
 
 USARTDE usart2(PD_4,
@@ -397,7 +397,7 @@ void main_task(void *pvParameters)
 
 #ifdef TEST_RS485
 	std::string rs485_test = "Do you see this? From RS485 ...\n";
-	usart2.WriteDMA(rs485_test.c_str(), rs485_test.size());
+	usart2.Write(rs485_test.c_str(), rs485_test.size());
 	char buf[128];
 	int ret = 0;
 	HAL_Delay(100UL);
