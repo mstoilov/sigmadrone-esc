@@ -31,10 +31,10 @@ USARTDE::~USARTDE()
 
 void USARTDE::OnTxComplete(void)
 {
-	de_pin_.Write(0);
+	DisableDE();
 }
 
 void USARTDE::OnTxBegin()
 {
-	de_pin_.Write(1);
+	EnableDE();
 }

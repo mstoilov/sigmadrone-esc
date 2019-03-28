@@ -52,7 +52,7 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 		throw std::runtime_error("Failed to init UART");
 	}
 
-	LL_USART_EnableIT_RXNE(USARTx_);
+	LL_USART_EnableIT_TC(USARTx_);
 	dma_tx_.Callback_TC(this, &USART::CallbackTX_DmaTC);
 	Enable();
 	StartDmaRx();
@@ -65,8 +65,11 @@ USART::~USART()
 
 void USART::IrqHandlerUSART(void)
 {
-	LL_USART_ClearFlag_RXNE(USARTx_);
-	LL_USART_ClearFlag_ORE(USARTx_);
+	if (LL_USART_IsActiveFlag_TC(USARTx_)) {
+		LL_USART_ClearFlag_TC(USARTx_);
+		OnTxComplete();
+	}
+
 }
 
 void USART::StartDmaRx()
@@ -84,8 +87,6 @@ void USART::CallbackTX_DmaTC(void)
 	size_t nbytes = output_queue_.read_size();
 	if (nbytes && !dma_tx_.IsEnabled())
 		StartDmaTx(nbytes);
-	else
-		OnTxComplete();
 }
 
 void USART::StartDmaTx(size_t nbytes)
@@ -111,10 +112,6 @@ ssize_t USART::Write(const char* buf, size_t nbytes)
 			;
 		LL_USART_TransmitData8(USARTx_, buf[i]);
 	}
-
-	while(!LL_USART_IsActiveFlag_TXE(USARTx_))
-		;
-	OnTxComplete();
 	return nbytes;
 }
 

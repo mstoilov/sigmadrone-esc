@@ -85,6 +85,8 @@ USARTDE usart3(PD_12,
 	LL_DMA_CHANNEL_4,
 	LL_USART_HWCONTROL_NONE,
 	0);
+
+
 #endif
 
 
@@ -396,15 +398,19 @@ void main_task(void *pvParameters)
 	PWM6Step::LogEntry log;
 
 #ifdef TEST_RS485
-	std::string rs485_test = "Do you see this? From RS485 ...\n";
-	usart2.Write(rs485_test.c_str(), rs485_test.size());
-	char buf[128];
-	int ret = 0;
+
+	usart2.Write("Do you see this? From RS485 ... 1\n");
 	HAL_Delay(100UL);
-	if ((ret = usart3.ReadDMA(buf, sizeof(buf))) > 0) {
-		std::string echo(buf, ret);
-		std::cout << echo;
-	}
+	std::cout << usart3.Read() << std::endl;
+
+	usart2.Write("Do you see this? From RS485 ... 2\n");
+	HAL_Delay(100UL);
+	std::cout << usart3.Read() << std::endl;
+
+	usart2.Write("Do you see this? From RS485 ... 3\n");
+	HAL_Delay(100UL);
+	std::cout << usart3.Read() << std::endl;
+
 #endif
 
 	while (1) {
