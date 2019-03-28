@@ -528,6 +528,8 @@ int main(int argc, char* argv[])
 			&main_task_handle /* Task handle */
 	);
 
+#undef SUPPORT_MINAS_A4
+#ifdef SUPPORT_MINAS_A4
 	xTaskCreate(
 			encoder_reader_task, /* Function pointer */
 			"encoder_reader_task", /* Task name - for debugging only*/
@@ -536,6 +538,7 @@ int main(int argc, char* argv[])
 			tskIDLE_PRIORITY + 1UL, /* Task priority*/
 			&encoder_reader_task_handle /* Task handle */
 	);
+#endif
 
 	im.VectorHandler(SVCall_IRQn, vPortSVCHandler);
 	im.VectorHandler(PendSV_IRQn, xPortPendSVHandler);
