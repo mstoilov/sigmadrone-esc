@@ -59,7 +59,7 @@ DigitalIn btn_user(BTN_USER, DigitalIn::PullDefault, DigitalIn::InterruptFalling
 DigitalIn encoder_z(PB_5, DigitalIn::PullDown, DigitalIn::InterruptRising);
 DigitalIn drv_fault(DRV_FAULT, DigitalIn::PullNone, DigitalIn::InterruptNone);
 
-#define TEST_RS485
+//#define TEST_RS485
 #ifdef TEST_RS485
 
 USARTDE usart2(PD_4,
@@ -291,9 +291,6 @@ void RunFloatingPointTest()
 #endif
 }
 
-//#define DUMP_MINAS_A4_STATE
-#define DUMP_DRV_FAULT
-
 MinasA4AbsEncoder* ma4_abs_encoder_ptr = nullptr;
 
 void encoder_reader_task(void *pvParameters)
@@ -315,6 +312,7 @@ void encoder_reader_task(void *pvParameters)
 	ma4_abs_encoder_ptr = &ma4_abs_encoder;
 
 	while (1) {
+		vTaskDelay(4 / portTICK_RATE_MS);
 		if (!ma4_abs_encoder.update()) {
 			ma4_abs_encoder.reset_all_errors();
 		}
@@ -430,6 +428,7 @@ void main_task(void *pvParameters)
 		}
 #endif
 
+#define DUMP_DRV_FAULT
 		if (drv_fault.Read() == 0) {
 			pwm1.Stop();
 #ifdef DUMP_DRV_FAULT
@@ -442,6 +441,7 @@ void main_task(void *pvParameters)
 
 		count++;
 
+//#define DUMP_MINAS_A4_STATE
 #ifdef DUMP_MINAS_A4_STATE
 		if (count % 20 == 0 && !!ma4_abs_encoder_ptr) {
 			printf("Servo Angle: %3.4f\n", ma4_abs_encoder_ptr->get_absolute_angle_deg());
@@ -534,14 +534,14 @@ int main(int argc, char* argv[])
 			&main_task_handle /* Task handle */
 	);
 
-#undef SUPPORT_MINAS_A4
+//#define SUPPORT_MINAS_A4
 #ifdef SUPPORT_MINAS_A4
 	xTaskCreate(
 			encoder_reader_task, /* Function pointer */
 			"encoder_reader_task", /* Task name - for debugging only*/
 			4 * configMINIMAL_STACK_SIZE, /* Stack depth in words */
 			(void*) NULL, /* Pointer to tasks arguments (parameter) */
-			tskIDLE_PRIORITY + 1UL, /* Task priority*/
+			tskIDLE_PRIORITY + 4UL, /* Task priority*/
 			&encoder_reader_task_handle /* Task handle */
 	);
 #endif

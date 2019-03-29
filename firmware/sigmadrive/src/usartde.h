@@ -26,8 +26,8 @@ public:
 			uint32_t irq_priority = 0);
 
 	virtual ~USARTDE();
-	void EnableDE() { de_pin_.Write(1); }
-	void DisableDE() { de_pin_.Write(0); }
+	inline void EnableDE() { de_pin_.Write(1); }
+	inline void DisableDE() { de_pin_.Write(0); }
 
 protected:
 	virtual void OnTxBegin(void) override;

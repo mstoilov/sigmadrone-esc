@@ -52,7 +52,7 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 		throw std::runtime_error("Failed to init UART");
 	}
 
-	LL_USART_EnableIT_TC(USARTx_);
+	//LL_USART_EnableIT_TC(USARTx_);
 	dma_tx_.Callback_TC(this, &USART::CallbackTX_DmaTC);
 	Enable();
 	StartDmaRx();
@@ -106,12 +106,22 @@ ssize_t USART::Write(const char* buf, size_t nbytes)
 {
 	size_t i = 0;
 
+	LL_USART_ClearFlag_TC(USARTx_);
 	OnTxBegin();
+
 	for (i = 0; i < nbytes; i++) {
 		while(!LL_USART_IsActiveFlag_TXE(USARTx_))
 			;
 		LL_USART_TransmitData8(USARTx_, buf[i]);
 	}
+
+	while (!LL_USART_IsActiveFlag_TC(USARTx_)) {
+		;
+	}
+
+	OnTxComplete();
+	LL_USART_ClearFlag_TC(USARTx_);
+
 	return nbytes;
 }
 
@@ -169,6 +179,7 @@ ssize_t USART::ReadDMA(char* buf, size_t nbytes)
 	input_queue_.reset_wp(input_queue_.capacity() - dma_rx_.GetDataLength());
 
 	size_t i = std::min(nbytes, input_queue_.read_size());
+
 	memcpy(buf, input_queue_.get_read_ptr(), i);
 	input_queue_.read_update(i);
 	return i;
