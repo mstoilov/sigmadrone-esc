@@ -140,35 +140,8 @@ Wire Wire Line
 Connection ~ 9750 10950
 Wire Wire Line
 	9750 10950 9750 11500
-Wire Wire Line
-	9750 10950 11300 10950
-Text Label 11800 10950 2    60   ~ 0
+Text Label 11050 10950 0    60   ~ 0
 PHASE_R
-Wire Wire Line
-	11300 11300 11300 10950
-Connection ~ 11300 10950
-Wire Wire Line
-	11300 10950 11800 10950
-$Comp
-L Connector_Generic:Conn_01x02 J?
-U 1 1 5BC5C1F6
-P 11850 11400
-AR Path="/58BE27E6/5BC5C1F6" Ref="J?"  Part="1" 
-AR Path="/58BF664D/5BC5C1F6" Ref="J7"  Part="1" 
-AR Path="/5BC5C1F6" Ref="J7"  Part="1" 
-F 0 "J7" H 11769 11665 50  0000 C CNN
-F 1 "CONN_01X02" H 11769 11574 50  0000 C CNN
-F 2 "Sigmadrone:PhoenixContact_MKDS_02x7.62mm_Vertical" H 11850 11400 50  0001 C CNN
-F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1868076.pdf" H 11850 11400 50  0001 C CNN
-F 4 "277-5840-ND" H 11850 11400 50  0001 C CNN "Part"
-F 5 "DigiKey" H 11850 11400 50  0001 C CNN "Provider"
-	1    11850 11400
-	1    0    0    1   
-$EndComp
-Wire Wire Line
-	11300 11300 11650 11300
-Wire Wire Line
-	11300 11400 11650 11400
 $Comp
 L sigmadrone:VIN #PWR?
 U 1 1 5D199B5E
@@ -974,7 +947,7 @@ Wire Wire Line
 	6600 3350 5750 3350
 Wire Wire Line
 	5550 2950 5750 2950
-Text Notes 2450 8300 0    60   ~ 0
+Text Notes 11450 12250 2    60   ~ 0
 Power\nDecoupling\n
 $Comp
 L power:GND #PWR?
@@ -1035,100 +1008,81 @@ F 5 "DigiKey" V 3500 8050 60  0001 C CNN "Provider"
 	1    0    0    -1  
 $EndComp
 $Comp
-L Connector_Generic:Conn_01x02 J?
+L Connector_Generic:Conn_01x07 J?
 U 1 1 5D5E9162
-P 1250 7650
+P 12900 11250
 AR Path="/58BE27E6/5D5E9162" Ref="J?"  Part="1" 
 AR Path="/58BF664D/5D5E9162" Ref="J1"  Part="1" 
-F 0 "J1" H 1169 7915 50  0000 C CNN
-F 1 "CONN_01X02" H 1169 7824 50  0000 C CNN
-F 2 "Sigmadrone:PhoenixContact_MKDS_02x7.62mm_Vertical" H 1250 7650 50  0001 C CNN
-F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1868076.pdf" H 1250 7650 50  0001 C CNN
-F 4 "277-5840-ND" H 1250 7650 50  0001 C CNN "Part"
-F 5 "DigiKey" H 1250 7650 50  0001 C CNN "Provider"
-	1    1250 7650
-	-1   0    0    1   
+F 0 "J1" H 12900 10850 50  0000 C CNN
+F 1 "CONN_01X02" H 12900 11650 50  0000 C CNN
+F 2 "Sigmadrone:PhoenixContact_MKDS_07x7.62mm_Vertical" H 12900 11250 50  0001 C CNN
+F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1868076.pdf" H 12900 11250 50  0001 C CNN
+F 4 "277-5840-ND" H 12900 11250 50  0001 C CNN "Part"
+F 5 "DigiKey" H 12900 11250 50  0001 C CNN "Provider"
+	1    12900 11250
+	1    0    0    1   
 $EndComp
 $Comp
 L Device:CP C?
 U 1 1 5D5E916B
-P 2150 7800
+P 11400 12550
 AR Path="/58BE27E6/5D5E916B" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5D5E916B" Ref="C36"  Part="1" 
-F 0 "C36" H 2175 7900 50  0000 L CNN
-F 1 "120uF" H 2175 7700 50  0000 L CNN
-F 2 "Capacitor_SMD:CP_Elec_10x10" H 2188 7650 50  0001 C CNN
-F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 2150 7800 50  0001 C CNN
-F 4 "P19316CT-ND" H 2150 7800 60  0001 C CNN "Part"
-F 5 "DigiKey" H 2150 7800 60  0001 C CNN "Provider"
-	1    2150 7800
-	1    0    0    -1  
+F 0 "C36" H 11425 12650 50  0000 L CNN
+F 1 "120uF" H 11425 12450 50  0000 L CNN
+F 2 "Capacitor_SMD:CP_Elec_10x10" H 11438 12400 50  0001 C CNN
+F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 11400 12550 50  0001 C CNN
+F 4 "P19316CT-ND" H 11400 12550 60  0001 C CNN "Part"
+F 5 "DigiKey" H 11400 12550 60  0001 C CNN "Provider"
+	1    11400 12550
+	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	1450 7650 1850 7650
+	11400 12700 11400 12800
 Wire Wire Line
-	1850 7650 1850 8050
+	11400 12800 11100 12800
 Wire Wire Line
-	2150 7950 2150 8050
+	11100 12700 11100 12800
 Wire Wire Line
-	2150 8050 2450 8050
+	11400 12400 11400 12300
 Wire Wire Line
-	2450 7950 2450 8050
+	11400 12300 11100 12300
 Wire Wire Line
-	2150 7650 2150 7550
-Wire Wire Line
-	2150 7550 2450 7550
-Wire Wire Line
-	2450 7650 2450 7550
+	11100 12400 11100 12300
 $Comp
 L sigmadrone:VIN #PWR?
 U 1 1 5D5E9181
-P 1850 7250
+P 11700 12150
 AR Path="/58BE27E6/5D5E9181" Ref="#PWR?"  Part="1" 
 AR Path="/58BF664D/5D5E9181" Ref="#PWR058"  Part="1" 
-F 0 "#PWR058" H 1850 7100 50  0001 C CNN
-F 1 "VIN" H 1865 7423 50  0000 C CNN
-F 2 "" H 1850 7250 50  0000 C CNN
-F 3 "" H 1850 7250 50  0000 C CNN
-	1    1850 7250
-	1    0    0    -1  
+F 0 "#PWR058" H 11700 12000 50  0001 C CNN
+F 1 "VIN" H 11715 12323 50  0000 C CNN
+F 2 "" H 11700 12150 50  0000 C CNN
+F 3 "" H 11700 12150 50  0000 C CNN
+	1    11700 12150
+	-1   0    0    -1  
 $EndComp
 $Comp
 L Device:CP C?
 U 1 1 5D5E9190
-P 2450 7800
+P 11100 12550
 AR Path="/58BE27E6/5D5E9190" Ref="C?"  Part="1" 
 AR Path="/58BF664D/5D5E9190" Ref="C37"  Part="1" 
-F 0 "C37" H 2475 7900 50  0000 L CNN
-F 1 "120uF" H 2475 7700 50  0000 L CNN
-F 2 "Capacitor_SMD:CP_Elec_10x10" H 2488 7650 50  0001 C CNN
-F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 2450 7800 50  0001 C CNN
-F 4 "P19316CT-ND" H 2450 7800 60  0001 C CNN "Part"
-F 5 "DigiKey" H 2450 7800 60  0001 C CNN "Provider"
-	1    2450 7800
-	1    0    0    -1  
+F 0 "C37" H 11125 12650 50  0000 L CNN
+F 1 "120uF" H 11125 12450 50  0000 L CNN
+F 2 "Capacitor_SMD:CP_Elec_10x10" H 11138 12400 50  0001 C CNN
+F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/RDD0000/DMD0000COL92.pdf" H 11100 12550 50  0001 C CNN
+F 4 "P19316CT-ND" H 11100 12550 60  0001 C CNN "Part"
+F 5 "DigiKey" H 11100 12550 60  0001 C CNN "Provider"
+	1    11100 12550
+	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	12250 4750 12900 4750
+	11050 11150 12700 11150
 Wire Wire Line
-	12250 4550 12900 4550
+	11050 11350 12700 11350
 Wire Wire Line
-	12250 4650 12900 4650
-$Comp
-L Connector_Generic:Conn_01x03 J?
-U 1 1 5D5E91A8
-P 13100 4650
-AR Path="/58BE27E6/5D5E91A8" Ref="J?"  Part="1" 
-AR Path="/58BF664D/5D5E91A8" Ref="J3"  Part="1" 
-F 0 "J3" H 13019 4965 50  0000 C CNN
-F 1 "CONN_01X03" H 13019 4874 50  0000 C CNN
-F 2 "Sigmadrone:PhoenixContact_MKDS_03x7.62mm_Vertical" H 13100 4650 50  0001 C CNN
-F 3 "https://media.digikey.com/PDF/Data%20Sheets/Phoenix%20Contact%20PDFs/1704936.pdf" H 13100 4650 50  0001 C CNN
-F 4 "277-5954-ND" H 13100 4650 50  0001 C CNN "Part"
-F 5 "DigiKey" H 13100 4650 50  0001 C CNN "Provider"
-	1    13100 4650
-	1    0    0    -1  
-$EndComp
+	11050 11250 12700 11250
 $Comp
 L power:GND #PWR?
 U 1 1 5D5E91BC
@@ -1186,13 +1140,10 @@ $EndComp
 Wire Wire Line
 	6350 7100 6350 7600
 Wire Wire Line
-	1450 7550 1850 7550
+	11700 12300 11700 12150
 Wire Wire Line
-	1850 7550 1850 7250
-Wire Wire Line
-	1850 7550 2150 7550
-Connection ~ 1850 7550
-Connection ~ 2150 7550
+	11700 12300 11400 12300
+Connection ~ 11400 12300
 $Comp
 L sigmadrone:VIN #PWR?
 U 1 1 5D5E91E1
@@ -1206,11 +1157,11 @@ F 3 "" H 3500 7150 50  0000 C CNN
 	1    3500 7150
 	1    0    0    -1  
 $EndComp
-Text Label 12250 4750 0    60   ~ 0
+Text Label 11050 11150 0    60   ~ 0
 PHASE_C
-Text Label 12250 4650 0    60   ~ 0
+Text Label 11050 11250 0    60   ~ 0
 PHASE_B
-Text Label 12250 4550 0    60   ~ 0
+Text Label 11050 11350 0    60   ~ 0
 PHASE_A
 Text Label 15850 2050 2    60   ~ 0
 PHASE_C
@@ -1224,8 +1175,6 @@ Text HLabel 13250 2050 2    60   Output ~ 0
 PHASE_B
 Text HLabel 15850 2050 2    60   Output ~ 0
 PHASE_C
-Wire Wire Line
-	11300 11400 11300 12850
 $Comp
 L power:PWR_FLAG #FLG?
 U 1 1 5C93CF09
@@ -1328,12 +1277,9 @@ Wire Wire Line
 Connection ~ 15350 1150
 Wire Wire Line
 	15350 1150 15350 1350
+Connection ~ 11400 12800
 Wire Wire Line
-	2150 8050 1850 8050
-Connection ~ 2150 8050
-Connection ~ 1850 8050
-Wire Wire Line
-	1850 8050 1850 8200
+	11100 12800 11100 12850
 Wire Wire Line
 	6250 5450 6250 5750
 Wire Wire Line
@@ -1344,13 +1290,13 @@ Wire Wire Line
 $Comp
 L sigmadrone:PGND #PWR0119
 U 1 1 5C8C7B0A
-P 1850 8200
-F 0 "#PWR0119" H 1850 7950 50  0001 C CNN
-F 1 "PGND" H 1855 8027 50  0000 C CNN
-F 2 "" H 1850 8200 50  0001 C CNN
-F 3 "" H 1850 8200 50  0001 C CNN
-	1    1850 8200
-	1    0    0    -1  
+P 11100 12850
+F 0 "#PWR0119" H 11100 12600 50  0001 C CNN
+F 1 "PGND" H 11105 12677 50  0000 C CNN
+F 2 "" H 11100 12850 50  0001 C CNN
+F 3 "" H 11100 12850 50  0001 C CNN
+	1    11100 12850
+	-1   0    0    -1  
 $EndComp
 $Comp
 L sigmadrone:PGND #PWR0120
@@ -1993,13 +1939,13 @@ $EndComp
 $Comp
 L sigmadrone:PGND #PWR034
 U 1 1 5CCF6FDE
-P 11300 12850
-F 0 "#PWR034" H 11300 12600 50  0001 C CNN
-F 1 "PGND" H 11300 12700 50  0000 C CNN
-F 2 "" H 11300 12850 50  0001 C CNN
-F 3 "" H 11300 12850 50  0001 C CNN
-	1    11300 12850
-	1    0    0    -1  
+P 10950 11050
+F 0 "#PWR034" H 10950 10800 50  0001 C CNN
+F 1 "PGND" H 10950 10900 50  0000 C CNN
+F 2 "" H 10950 11050 50  0001 C CNN
+F 3 "" H 10950 11050 50  0001 C CNN
+	1    10950 11050
+	0    1    1    0   
 $EndComp
 NoConn ~ 5550 13150
 NoConn ~ 3950 11750
@@ -2507,4 +2453,22 @@ F 5 "DigiKey" H 5750 4150 60  0001 C CNN "Provider"
 	1    5750 4150
 	1    0    0    1   
 $EndComp
+Wire Wire Line
+	11700 12300 12000 12300
+Connection ~ 11700 12300
+Connection ~ 11100 12800
+Wire Wire Line
+	12700 11450 12000 11450
+Wire Wire Line
+	12000 11450 12000 12300
+Wire Wire Line
+	12700 11550 12350 11550
+Wire Wire Line
+	12350 11550 12350 12800
+Wire Wire Line
+	11400 12800 12350 12800
+Wire Wire Line
+	10950 11050 12700 11050
+Wire Wire Line
+	9750 10950 12700 10950
 $EndSCHEMATC

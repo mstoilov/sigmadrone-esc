@@ -487,8 +487,6 @@ Connection ~ 11950 9100
 Wire Wire Line
 	12150 9100 12150 8950
 Connection ~ 12050 9100
-Wire Wire Line
-	6550 7150 6950 7150
 Text Label 17550 8350 2    60   ~ 0
 PC14
 Text Label 17550 8450 2    60   ~ 0
@@ -983,8 +981,6 @@ Text Label 4850 8350 0    60   ~ 0
 LED_WARN
 Text Label 4850 8450 0    60   ~ 0
 LED_STATUS
-Wire Wire Line
-	17150 6050 17550 6050
 $Comp
 L Connector_Generic:Conn_01x03 J8
 U 1 1 5C6213BC
@@ -1859,7 +1855,6 @@ Text Label 17550 6350 2    60   ~ 0
 PB11
 NoConn ~ 17150 5050
 NoConn ~ 17150 7850
-NoConn ~ 17150 6050
 Text HLabel 4550 6150 0    60   Output ~ 0
 PWM_AH
 Text HLabel 4550 6350 0    60   Output ~ 0
@@ -1896,7 +1891,7 @@ Wire Wire Line
 	4550 6250 6950 6250
 Wire Wire Line
 	4550 6450 6950 6450
-Text Label 18850 5750 2    60   ~ 0
+Text Label 18850 6050 2    60   ~ 0
 ENCODER_Z
 Text Label 18850 6450 2    60   ~ 0
 SW1
@@ -2275,21 +2270,6 @@ F 3 "" H 13500 14400 50  0001 C CNN
 	1    13500 14400
 	0    1    1    0   
 $EndComp
-$Comp
-L Connector_Generic:Conn_01x03 J4
-U 1 1 5D4ACCD8
-P 12150 14400
-AR Path="/58BE2779/5D4ACCD8" Ref="J4"  Part="1" 
-AR Path="/58BE27E6/5D4ACCD8" Ref="J?"  Part="1" 
-F 0 "J4" H 12150 14600 50  0000 C CNN
-F 1 "Conn_01x03" H 12150 14200 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Horizontal" H 12150 14400 50  0001 C CNN
-F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 12150 14400 50  0001 C CNN
-F 4 "WM4901-ND" H 12150 14400 50  0001 C CNN "Part"
-F 5 "DigiKey" H 12150 14400 50  0001 C CNN "Provider"
-	1    12150 14400
-	-1   0    0    -1  
-$EndComp
 Wire Wire Line
 	12350 14500 13500 14500
 Wire Wire Line
@@ -2658,7 +2638,7 @@ Wire Wire Line
 Wire Wire Line
 	17150 5950 18850 5950
 Wire Wire Line
-	17150 5750 18850 5750
+	17150 6050 18850 6050
 Wire Wire Line
 	15250 14300 15250 14400
 Wire Wire Line
@@ -3088,7 +3068,69 @@ Wire Wire Line
 Connection ~ 12150 9100
 NoConn ~ 6950 6950
 NoConn ~ 6950 7050
-NoConn ~ 6950 7150
 NoConn ~ 6950 7650
 NoConn ~ 6950 7950
+$Comp
+L Connector_Generic:Conn_01x05 J4
+U 1 1 5CA2996D
+P 12150 14500
+F 0 "J4" H 12150 14800 50  0000 C CNN
+F 1 "Conn_01x05" H 12150 14200 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_1x05_P2.54mm_Horizontal" H 12150 14500 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/705530002_sd.pdf" H 12150 14500 50  0001 C CNN
+F 4 "WM4903-ND" H 12150 14500 50  0001 C CNN "Part"
+F 5 "DigiKey" H 12150 14500 50  0001 C CNN "Provider"
+	1    12150 14500
+	-1   0    0    -1  
+$EndComp
+Text Label 13500 14600 2    60   ~ 0
+DIR
+Wire Wire Line
+	12350 14600 13500 14600
+Text Label 13500 14700 2    60   ~ 0
+BUSY
+Wire Wire Line
+	12350 14700 12700 14700
+Wire Wire Line
+	12700 13800 12700 13900
+$Comp
+L Device:R R37
+U 1 1 5CAFBC64
+P 12700 14050
+F 0 "R37" V 12780 14050 50  0000 C CNN
+F 1 "10k" V 12700 14050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 12630 14050 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 12700 14050 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 12700 14050 60  0001 C CNN "Part"
+F 5 "DigiKey" V 12700 14050 60  0001 C CNN "Provider"
+	1    12700 14050
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5CAFBC6A
+P 12700 13800
+AR Path="/58BE27E6/5CAFBC6A" Ref="#PWR?"  Part="1" 
+AR Path="/58BF664D/5CAFBC6A" Ref="#PWR?"  Part="1" 
+AR Path="/58BE2779/5CAFBC6A" Ref="#PWR0113"  Part="1" 
+F 0 "#PWR0113" H 12700 13650 50  0001 C CNN
+F 1 "+3V3" H 12715 13973 50  0000 C CNN
+F 2 "" H 12700 13800 50  0001 C CNN
+F 3 "" H 12700 13800 50  0001 C CNN
+	1    12700 13800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	12700 14200 12700 14700
+Connection ~ 12700 14700
+Wire Wire Line
+	12700 14700 13500 14700
+Text Label 4850 7150 0    60   ~ 0
+BUSY
+Text Label 18850 5750 2    60   ~ 0
+DIR
+Wire Wire Line
+	17150 5750 18850 5750
+Wire Wire Line
+	4850 7150 6950 7150
 $EndSCHEMATC
