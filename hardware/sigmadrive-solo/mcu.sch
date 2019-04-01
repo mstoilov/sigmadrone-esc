@@ -3258,19 +3258,6 @@ F 5 "DigiKey" V 1400 8150 60  0001 C CNN "Provider"
 	1    1400 8150
 	-1   0    0    1   
 $EndComp
-$Comp
-L Device:Varistor RV1
-U 1 1 5E4BF9BF
-P 1400 7650
-F 0 "RV1" H 1279 7696 50  0000 R CNN
-F 1 "Varistor" H 1279 7605 50  0000 R CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 1330 7650 50  0001 C CNN
-F 3 "https://www.tdk-electronics.tdk.com/inf/50/db/ntc/NTC_SMD_Automotive_series_0603.pdf" H 1400 7650 50  0001 C CNN
-F 4 "495-76110-1-ND" H 1400 7650 50  0001 C CNN "Part"
-F 5 "DigiKey" H 1400 7650 50  0001 C CNN "Provider"
-	1    1400 7650
-	-1   0    0    -1  
-$EndComp
 Wire Wire Line
 	1400 7800 1400 7900
 $Comp
@@ -3332,4 +3319,17 @@ Wire Wire Line
 Wire Wire Line
 	17150 5250 18850 5250
 NoConn ~ 17150 3850
+$Comp
+L Device:Varistor RV1
+U 1 1 5E4BF9BF
+P 1400 7650
+F 0 "RV1" H 1279 7696 50  0000 R CNN
+F 1 "10K" H 1279 7605 50  0000 R CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1330 7650 50  0001 C CNN
+F 3 "https://industrial.panasonic.com/cdbs/www-data/pdf/AUA0000/AUA0000C8.pdf" H 1400 7650 50  0001 C CNN
+F 4 "P12014CT-ND" H 1400 7650 50  0001 C CNN "Part"
+F 5 "DigiKey" H 1400 7650 50  0001 C CNN "Provider"
+	1    1400 7650
+	-1   0    0    -1  
+$EndComp
 $EndSCHEMATC
