@@ -20,17 +20,6 @@ Text HLabel 9900 6000 2    60   Input ~ 0
 PHASE_B
 Text HLabel 9900 5700 2    60   Input ~ 0
 PHASE_C
-$Comp
-L power:GND #PWR024
-U 1 1 58BF6189
-P 8000 7200
-F 0 "#PWR024" H 8000 6950 50  0001 C CNN
-F 1 "GND" H 8000 7050 50  0000 C CNN
-F 2 "" H 8000 7200 50  0001 C CNN
-F 3 "" H 8000 7200 50  0001 C CNN
-	1    8000 7200
-	1    0    0    -1  
-$EndComp
 Text HLabel 5350 4700 0    60   Output ~ 0
 SENSE_C
 Text HLabel 5350 5000 0    60   Output ~ 0
@@ -169,5 +158,16 @@ F 4 "311-3.30KHRCT-ND" V 8250 6650 60  0001 C CNN "Part"
 F 5 "DigiKey" V 8250 6650 60  0001 C CNN "Provider"
 	1    8250 6650
 	-1   0    0    1   
+$EndComp
+$Comp
+L power:GND #PWR024
+U 1 1 58BF6189
+P 8000 7200
+F 0 "#PWR024" H 8000 6950 50  0001 C CNN
+F 1 "GND" H 8000 7050 50  0000 C CNN
+F 2 "" H 8000 7200 50  0001 C CNN
+F 3 "" H 8000 7200 50  0001 C CNN
+	1    8000 7200
+	1    0    0    -1  
 $EndComp
 $EndSCHEMATC
