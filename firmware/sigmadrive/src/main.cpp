@@ -39,6 +39,7 @@
 #define BEMF_FB_B	LL_ADC_CHANNEL_11
 #define BEMF_FB_C	LL_ADC_CHANNEL_10
 
+#define VM_ADC		LL_ADC_CHANNEL_13
 
 #define LED_WARN PD_14
 #define LED_STATUS PD_15
@@ -150,11 +151,16 @@ Adc adc1({
 		{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		{PA_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PC_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		},
+		{
+				VM_ADC,
 		},
 		{
 				CURRENT_FB_A, // CURRENT_FB_B, CURRENT_FB_C,
 		},
-		ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, 0);
+		ADC1, DMA2, LL_DMA_STREAM_4, LL_DMA_CHANNEL_0, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES,
+		LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0);
 
 #if 1
 Adc adc2({
@@ -163,9 +169,13 @@ Adc adc2({
 		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		},
 		{
+
+		},
+		{
 				CURRENT_FB_B,
 		},
-		ADC2, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, 0);
+		ADC2, DMA2, LL_DMA_STREAM_2, LL_DMA_CHANNEL_1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES,
+		LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0);
 
 Adc adc3({
 		{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
@@ -173,9 +183,13 @@ Adc adc3({
 		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		},
 		{
+
+		},
+		{
 				CURRENT_FB_C,
 		},
-		ADC3, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, 0);
+		ADC3, DMA2, LL_DMA_STREAM_0, LL_DMA_CHANNEL_2, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES,
+		LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0);
 
 #endif
 
@@ -250,7 +264,7 @@ void CallbackPWMCC(uint32_t pulse, uint32_t period)
 	float throttle = pwm3.GetPulseLength().seconds_float() * 1000.0 - 0.7;
 	pwm1.SetThrottle(throttle);
 	if (!pwm1.IsEnabledCounter() && throttle > PWM6Step::MIN_THROTTLE)
-		pwm1.Start();
+		pwm1.Enable();
 	if (pwm1.IsEnabledCounter() && throttle < PWM6Step::MIN_THROTTLE)
 		pwm1.Stop();
 #endif
@@ -375,16 +389,16 @@ void main_task(void *pvParameters)
 	encoder_z.Callback([&](){ p_encoder->CallbackIndex(); });
 	pwm4.Start();
 
-	adc1.Start();
-	adc2.Start();
-	adc3.Start();
+	adc1.Enable();
+	adc2.Enable();
+	adc3.Enable();
 
 
 #ifdef USE_6STEP
 	pwm1.SetThrottle(0.35);
 	adc.CallbackJEOS(&pwm1, &PWM6Step::HandleCurrentJEOS);
 	adc_current.CallbackJEOS(&pwm1, &PWM6Step::HandleCurrentJEOS);
-	adc_current.Start();
+	adc_current.Enable();
 #else
 	pwm1.SetElectricalRotationsPerSecond(Frequency::from_millihertz(500 * PWMSine::M2E_RATIO));
 	pwm1.SetThrottle(0.05);
@@ -411,14 +425,53 @@ void main_task(void *pvParameters)
 
 #endif
 
+#if 0
+    /* Set ADC group regular trigger source */
+    LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_SOFTWARE);
+
+    /* Set ADC group regular trigger polarity */
+    // LL_ADC_REG_SetTriggerEdge(ADC1, LL_ADC_REG_TRIG_EXT_RISING);
+
+    /* Set ADC group regular continuous mode */
+    LL_ADC_REG_SetContinuousMode(ADC1, LL_ADC_REG_CONV_SINGLE);
+
+    /* Set ADC group regular conversion data transfer */
+    // LL_ADC_REG_SetDMATransfer(ADC1, LL_ADC_REG_DMA_TRANSFER_NONE);
+
+    /* Specify which ADC flag between EOC (end of unitary conversion)         */
+    /* or EOS (end of sequence conversions) is used to indicate               */
+    /* the end of conversion.                                                 */
+    // LL_ADC_REG_SetFlagEndOfConversion(ADC1, LL_ADC_REG_FLAG_EOC_SEQUENCE_CONV);
+
+    /* Set ADC group regular sequencer */
+    /* Note: On this STM32 serie, ADC group regular sequencer is              */
+    /*       fully configurable: sequencer length and each rank               */
+    /*       affectation to a channel are configurable.                       */
+    /*       Refer to description of function                                 */
+    /*       "LL_ADC_REG_SetSequencerLength()".                               */
+
+    /* Set ADC group regular sequencer length and scan direction */
+    LL_ADC_REG_SetSequencerLength(ADC1, LL_ADC_REG_SEQ_SCAN_DISABLE);
+
+    /* Set ADC group regular sequencer discontinuous mode */
+    // LL_ADC_REG_SetSequencerDiscont(ADC1, LL_ADC_REG_SEQ_DISCONT_DISABLE);
+
+    /* Set ADC group regular sequence: channel on the selected sequence rank. */
+    LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_13);
+
+    LL_ADC_SetChannelSamplingTime(ADC1, LL_ADC_CHANNEL_13, LL_ADC_SAMPLINGTIME_56CYCLES);
+#endif
+
 	while (1) {
 		std::string tmp;
 		vTaskDelay(10 / portTICK_RATE_MS);
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 
-//#define ECHO_TEST
+//		std::cout << "VM: " << adc1.GetRegularData(0) << " : " << adc1.GetRegularDataConv(0) << std::endl;
+//	    adc1.RegularSWTrigger();
 
+//#define ECHO_TEST
 #ifdef ECHO_TEST
 		char buf[128];
 		int ret = 0;
