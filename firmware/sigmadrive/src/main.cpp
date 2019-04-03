@@ -214,47 +214,17 @@ SPIMaster spi3(SPI3, SPIMaster::Data16Bit, SPIMaster::Div32, SPIMaster::Polarity
 		{DRV2_CS, LL_GPIO_MODE_OUTPUT, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, 0},
 });
 
+extern USART* ptrUsart1;
 Drv8323 drv1(spi3, 0);
 Drv8323 drv2(spi3, 1);
-
 volatile uint64_t jiffies = 0;
 
-
-uint32_t drv_read_reg(uint32_t cs, uint32_t addr)
-{
-	uint16_t data = (0x1 << 15) | ((addr & 0xF) << 11);
-	spi3.spi_chip_select(cs, true);
-	data = spi3.spi_write_read16(data);
-	spi3.spi_chip_select(cs, false);
-	return data & 0x7FF;
-}
-
-uint32_t drv_write_reg(uint32_t cs, uint32_t addr, uint32_t data)
-{
-	uint16_t data16 = (uint16_t)(((addr & 0xF) << 11) | (data & 0x7FF));
-	spi3.spi_chip_select(cs, true);
-	data = spi3.spi_write_read16(data16);
-	spi3.spi_chip_select(cs, false);
-	return data & 0x7FF;
-}
-
-
-void drv_dump_regs(uint32_t cs)
-{
-	for (int i = 0; i < 7; i++) {
-		printf("DRV: Reg %d: 0x%x\n", i, (unsigned int) drv_read_reg(cs, i));
-	}
-	printf("\n\n");
-}
 
 void emergency_stop()
 {
 	pwm1.DisableOutputs();
 	pwm1.DisableCounter();
 }
-
-
-extern USART* ptrUsart1;
 
 void pwm1_toggle()
 {
@@ -264,7 +234,6 @@ void pwm1_toggle()
 		pwm1.Stop();
 	}
 }
-
 
 void CallbackPWMCC(uint32_t pulse, uint32_t period)
 {
@@ -442,43 +411,6 @@ void main_task(void *pvParameters)
 	HAL_Delay(100UL);
 	std::cout << usart3.Read() << std::endl;
 
-#endif
-
-#if 0
-    /* Set ADC group regular trigger source */
-    LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_SOFTWARE);
-
-    /* Set ADC group regular trigger polarity */
-    // LL_ADC_REG_SetTriggerEdge(ADC1, LL_ADC_REG_TRIG_EXT_RISING);
-
-    /* Set ADC group regular continuous mode */
-    LL_ADC_REG_SetContinuousMode(ADC1, LL_ADC_REG_CONV_SINGLE);
-
-    /* Set ADC group regular conversion data transfer */
-    // LL_ADC_REG_SetDMATransfer(ADC1, LL_ADC_REG_DMA_TRANSFER_NONE);
-
-    /* Specify which ADC flag between EOC (end of unitary conversion)         */
-    /* or EOS (end of sequence conversions) is used to indicate               */
-    /* the end of conversion.                                                 */
-    // LL_ADC_REG_SetFlagEndOfConversion(ADC1, LL_ADC_REG_FLAG_EOC_SEQUENCE_CONV);
-
-    /* Set ADC group regular sequencer */
-    /* Note: On this STM32 serie, ADC group regular sequencer is              */
-    /*       fully configurable: sequencer length and each rank               */
-    /*       affectation to a channel are configurable.                       */
-    /*       Refer to description of function                                 */
-    /*       "LL_ADC_REG_SetSequencerLength()".                               */
-
-    /* Set ADC group regular sequencer length and scan direction */
-    LL_ADC_REG_SetSequencerLength(ADC1, LL_ADC_REG_SEQ_SCAN_DISABLE);
-
-    /* Set ADC group regular sequencer discontinuous mode */
-    // LL_ADC_REG_SetSequencerDiscont(ADC1, LL_ADC_REG_SEQ_DISCONT_DISABLE);
-
-    /* Set ADC group regular sequence: channel on the selected sequence rank. */
-    LL_ADC_REG_SetSequencerRanks(ADC1, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_13);
-
-    LL_ADC_SetChannelSamplingTime(ADC1, LL_ADC_CHANNEL_13, LL_ADC_SAMPLINGTIME_56CYCLES);
 #endif
 
 	while (1) {
