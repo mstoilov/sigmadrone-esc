@@ -10,11 +10,12 @@ USART::USART(const std::vector<GPIOPin>& data_pins,
 		uint32_t rx_stream,
 		uint32_t dma_channel,
 		uint32_t hwflowctrl,
-		uint32_t irq_priority
+		uint32_t irq_priority,
+		uint32_t dma_irq_priority
 		)
 	: USARTx_(usart_device)
-	, dma_tx_(dma_device, tx_stream, dma_channel, LL_DMA_DIRECTION_MEMORY_TO_PERIPH | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE, irq_priority)
-	, dma_rx_(dma_device, rx_stream, dma_channel, LL_DMA_MODE_CIRCULAR | LL_DMA_DIRECTION_PERIPH_TO_MEMORY | LL_DMA_PRIORITY_HIGH | LL_DMA_MODE_NORMAL | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE, irq_priority)
+	, dma_tx_(dma_device, tx_stream, dma_channel, LL_DMA_MODE_NORMAL | LL_DMA_DIRECTION_MEMORY_TO_PERIPH | LL_DMA_PRIORITY_HIGH | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE, dma_irq_priority)
+	, dma_rx_(dma_device, rx_stream, dma_channel, LL_DMA_MODE_CIRCULAR | LL_DMA_DIRECTION_PERIPH_TO_MEMORY | LL_DMA_PRIORITY_HIGH | LL_DMA_PERIPH_NOINCREMENT | LL_DMA_MEMORY_INCREMENT | LL_DMA_PDATAALIGN_BYTE | LL_DMA_MDATAALIGN_BYTE, dma_irq_priority)
 {
 	for (auto& pin : data_pins)
 		pin.Init();
