@@ -118,18 +118,26 @@ Adc adc({
 	{PC_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 	{PC_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},},
 	{
+
+	},
+	{
 			BEMF_FB_A, BEMF_FB_B, BEMF_FB_C,
 	},
-	ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_15CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, 0);
+	ADC1, DMA2, LL_DMA_STREAM_4, LL_DMA_CHANNEL_0, 3300, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_15CYCLES,
+	LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, Adc::RegConvModeSingle, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0, 0);
 
 Adc adc_current({
 	{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 	{PA_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 	{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},},
 	{
+
+	},
+	{
 			 CURRENT_FB_A, CURRENT_FB_B, CURRENT_FB_C, CURRENT_FB_A
 	},
-	ADC2, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_3CYCLES, LL_ADC_INJ_TRIG_EXT_TIM3_CH2, 0);
+	ADC2, DMA2, LL_DMA_STREAM_2, LL_DMA_CHANNEL_1, 3300, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES,
+	LL_ADC_INJ_TRIG_EXT_TIM3_CH2, LL_ADC_INJ_TRIG_EXT_RISING, Adc::RegConvModeSingle, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0, 0);
 
 Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(750), Frequency::from_hertz(SystemCoreClock));
 
@@ -154,7 +162,7 @@ Adc adc1({
 		{PC_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		},
 		{
-				VM_ADC,
+				CURRENT_FB_A, CURRENT_FB_B, CURRENT_FB_C, VM_ADC,
 		},
 		{
 				CURRENT_FB_A, // CURRENT_FB_B, CURRENT_FB_C,
@@ -264,7 +272,7 @@ void CallbackPWMCC(uint32_t pulse, uint32_t period)
 	float throttle = pwm3.GetPulseLength().seconds_float() * 1000.0 - 0.7;
 	pwm1.SetThrottle(throttle);
 	if (!pwm1.IsEnabledCounter() && throttle > PWM6Step::MIN_THROTTLE)
-		pwm1.Enable();
+		pwm1.Start();
 	if (pwm1.IsEnabledCounter() && throttle < PWM6Step::MIN_THROTTLE)
 		pwm1.Stop();
 #endif
@@ -375,10 +383,6 @@ void main_task(void *pvParameters)
 	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
-	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C);
-	HAL_Delay(500);
-	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, 0);
-
 	printf("DRV1: \n");
 	drv1.DumpRegs();
 
@@ -389,17 +393,32 @@ void main_task(void *pvParameters)
 	encoder_z.Callback([&](){ p_encoder->CallbackIndex(); });
 	pwm4.Start();
 
-	adc1.Enable();
-	adc2.Enable();
-	adc3.Enable();
-
 
 #ifdef USE_6STEP
 	pwm1.SetThrottle(0.35);
-	adc.CallbackJEOS(&pwm1, &PWM6Step::HandleCurrentJEOS);
+	adc.CallbackJEOS(&pwm1, &PWM6Step::HandleJEOS);
 	adc_current.CallbackJEOS(&pwm1, &PWM6Step::HandleCurrentJEOS);
 	adc_current.Enable();
+	adc.Enable();
 #else
+	adc1.Enable();
+	adc2.Enable();
+	adc3.Enable();
+	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C);
+	std::vector<int32_t> opamp_bias(PWMSine::CURRENT_SAMPLES, 0);
+	constexpr int bias_samples = 30;
+	for (int i = 0; i < bias_samples; i++) {
+		vTaskDelay(10 / portTICK_RATE_MS);
+		opamp_bias[0] += adc1.SWTrigGetRegularData(0);
+		opamp_bias[1] += adc1.GetRegularData(1);
+		opamp_bias[2] += adc1.GetRegularData(2);
+	}
+	std::cout << "OpAmp Bias:" << std::endl;
+	std::for_each(opamp_bias.begin(), opamp_bias.end(), [&](auto &a){ a = a / bias_samples; });
+	std::cout << opamp_bias[0] << "  " << opamp_bias[1] << "  " << opamp_bias[2] << std::endl;
+	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, 0);
+
+	pwm1.SetOpAmpBias(opamp_bias);
 	pwm1.SetElectricalRotationsPerSecond(Frequency::from_millihertz(500 * PWMSine::M2E_RATIO));
 	pwm1.SetThrottle(0.05);
 	adc1.CallbackJEOS([=](int32_t *injdata, size_t size){pwm1.HandleCurrentJEOS(injdata, 0, size);});
@@ -468,8 +487,6 @@ void main_task(void *pvParameters)
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 
-//		std::cout << "VM: " << adc1.GetRegularData(0) << " : " << adc1.GetRegularDataConv(0) << std::endl;
-//	    adc1.RegularSWTrigger();
 
 //#define ECHO_TEST
 #ifdef ECHO_TEST

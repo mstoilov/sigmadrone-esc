@@ -233,7 +233,7 @@ void Adc::InitRegularChannels(uint32_t samplingTime, const std::vector<uint32_t>
 		LL_ADC_REG_SetSequencerRanks(ADCx_, LL_ADC_REG_RANK_1, regChannels[0]);
 	}
 	if (regChannels.size() >= 2) {
-		LL_ADC_REG_SetSequencerRanks(ADCx_, LL_ADC_INJ_RANK_2, regChannels[1]);
+		LL_ADC_REG_SetSequencerRanks(ADCx_, LL_ADC_REG_RANK_2, regChannels[1]);
 	}
 	if (regChannels.size() >= 3) {
 		LL_ADC_REG_SetSequencerRanks(ADCx_, LL_ADC_REG_RANK_3, regChannels[2]);
