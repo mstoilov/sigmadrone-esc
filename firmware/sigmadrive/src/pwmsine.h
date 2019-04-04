@@ -81,7 +81,7 @@ public:
 	Frequency switching_freq_;
 	uint32_t update_counter_ = 0;
 	TimeSpan duty_;
-	uint32_t duty_oc_;
+	uint32_t duty_oc_ = 0;
 	OCMode pwm_mode_;
 	OCPolarity polarity_;
 	OCPolarity npolarity_;

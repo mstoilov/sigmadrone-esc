@@ -15,10 +15,7 @@
 #define WH_PIN		PA_10
 #define WL_PIN		PB_1
 
-extern Adc *p_adc;
 extern QuadratureDecoder *p_encoder;
-
-extern volatile uint64_t jiffies;
 
 PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 		TIM_TypeDef *TIMx,
@@ -63,23 +60,9 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 	 */
 	run_stack_.push_back([&]()->bool {
 		v = std::polar<float>(1.0f, 0.0f);
-		p_encoder->SetIndexOffset(-1);
+		p_encoder->InvalidateIndexOffset();
 		p_encoder->ResetPosition(0);
 		if (update_counter_++ >= 1 * SINE_STEPS) {
-			update_counter_ = 0;
-			std::cout << "Starting: " << update_counter_ << " (" << jiffies << ")"<< std::endl;
-			return true;
-		}
-		return false;
-	});
-
-	/*
-	 * Rotate 2 full mechanical turns. i.e. 2 * M2E_RATIO * SINE_STEPS
-	 */
-	run_stack_.push_back([&]()->bool {
-		v = v * r;
-		if (update_counter_++ >= 2 * M2E_RATIO * SINE_STEPS) {
-			std::cout << "Stopping: " << update_counter_ << " (" << jiffies << ")"<< std::endl;
 			update_counter_ = 0;
 			return true;
 		}
@@ -93,30 +76,6 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 		return false;
 	});
 
-	/*
-	 * Wait
-	 */
-	run_stack_.push_back([&]()->bool {
-		if (update_counter_++ >= 1 * SINE_STEPS) {
-			update_counter_ = 0;
-			std::cout << "Starting: "  << update_counter_ << " (" << jiffies << ")"<< std::endl;
-			return true;
-		}
-		return false;
-	});
-
-	/*
-	 * Rotate 2 full mechanical turns. i.e. 2 * M2E_RATIO * SINE_STEPS
-	 */
-	run_stack_.push_back([&]()->bool {
-		v = v / r;
-		if (update_counter_++ >= 2 * M2E_RATIO * SINE_STEPS) {
-			std::cout << "Stopping: " << update_counter_ << " (" << jiffies << ")"<< std::endl;
-			Stop();
-			return true;
-		}
-		return false;
-	});
 
 }
 

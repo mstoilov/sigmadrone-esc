@@ -72,6 +72,11 @@ void QuadratureDecoder::CallbackIndex()
 	ResetCounter(index_offset_);
 }
 
+void QuadratureDecoder::InvalidateIndexOffset()
+{
+	SetIndexOffset(-1);
+}
+
 void QuadratureDecoder::SetIndexOffset(int32_t cpr)
 {
 	index_offset_ = cpr;
