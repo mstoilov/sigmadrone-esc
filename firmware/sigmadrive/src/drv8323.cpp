@@ -5,6 +5,7 @@
  *      Author: mstoilov
  */
 
+#include <stdio.h>
 #include <assert.h>
 #include "drv8323.h"
 
