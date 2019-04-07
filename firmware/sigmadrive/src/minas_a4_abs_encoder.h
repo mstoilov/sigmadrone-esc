@@ -159,6 +159,8 @@ public:
 	MA4Almc get_last_error() const;
 	bool update();
 	bool reset_all_errors();
+	bool reset_single_revolution_data() { return reset_error_code(MA4_DATA_ID_F); }
+	bool reset_multiple_revolution_data() { return reset_error_code(MA4_DATA_ID_B); }
 
 private:
 	bool send_command(uint8_t command, void* reply, size_t reply_size);

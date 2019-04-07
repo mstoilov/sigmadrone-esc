@@ -28,7 +28,8 @@ bool MinasA4AbsEncoder::init()
 {
 	MA4EncoderReplyA replyA;
 	MA4EncoderReplyF replyF;
-	send_command(MA4_DATA_ID_F, &replyF, sizeof(replyF));
+
+	reset_all_errors();
 	if (!send_command(MA4_DATA_ID_A, &replyA, sizeof(replyA))) {
 		return false;
 	}
