@@ -18,6 +18,9 @@ BOOST_PYTHON_MODULE(sigmadrive_ext)
         .add_property("Ki", &PidControllerFloat::GetKi, &PidControllerFloat::SetKi)
         .add_property("Kd", &PidControllerFloat::GetKd, &PidControllerFloat::SetKd)
 		.add_property("Kl", &PidControllerFloat::GetKl, &PidControllerFloat::SetKl)
+        .add_property("P", &PidControllerFloat::P)
+        .add_property("I", &PidControllerFloat::I)
+        .add_property("D", &PidControllerFloat::D)
     ;
 
 }
