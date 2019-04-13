@@ -13,7 +13,7 @@
 #include <sstream>
 #include "timer.h"
 #include "digitalout.h"
-#include "stm32f4xx_ll_adc.h"
+#include "sigmadrive.h"
 
 
 class PWM6Step : public Timer {

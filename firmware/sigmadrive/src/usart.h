@@ -8,10 +8,7 @@
 #include <string>
 #include <stdexcept>
 
-#include "stm32f4xx_ll_usart.h"
-#include "stm32f4xx_ll_dma.h"
-#include "stm32f4xx_ll_bus.h"
-#include "stm32f4xx.h"
+#include "sigmadrive.h"
 
 #include "gpiopin.h"
 #include "pinnames.h"

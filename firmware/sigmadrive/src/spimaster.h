@@ -24,8 +24,7 @@
 
 #include <stdint.h>
 #include <vector>
-#include "stm32f4xx.h"
-#include "stm32f4xx_ll_spi.h"
+#include "sigmadrive.h"
 #include "gpiopin.h"
 
 class SPIMaster

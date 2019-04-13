@@ -25,9 +25,9 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef STM32F4_CMSIS_DEVICE_H_
-#define STM32F4_CMSIS_DEVICE_H_
+#ifndef STM32F7_CMSIS_DEVICE_H_
+#define STM32F7_CMSIS_DEVICE_H_
 
-#include "stm32f4xx.h"
+#include "stm32f7xx.h"
 
-#endif // STM32F4_CMSIS_DEVICE_H_
+#endif // STM32F7_CMSIS_DEVICE_H_

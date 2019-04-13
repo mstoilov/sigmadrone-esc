@@ -1,9 +1,7 @@
 #ifndef DIGITALOUT_H_
 #define DIGITALOUT_H_
 
-#include "stm32f4xx_ll_gpio.h"
-#include "stm32f4xx_ll_bus.h"
-#include "stm32f4xx_ll_rcc.h"
+#include "sigmadrive.h"
 #include "pinnames.h"
 
 

@@ -75,7 +75,7 @@ void USART::IrqHandlerUSART(void)
 
 void USART::StartDmaRx()
 {
-	dma_rx_.ConfigAddresses(LL_USART_DMA_GetRegAddr(USARTx_), (uint32_t)input_queue_.get_data_ptr(), dma_rx_.GetDataTransferDirection());
+	dma_rx_.ConfigAddresses(LL_USART_DMA_GetRegAddr(USARTx_, LL_USART_DMA_REG_DATA_RECEIVE), (uint32_t)input_queue_.get_data_ptr(), dma_rx_.GetDataTransferDirection());
 	dma_rx_.SetDataLength(input_queue_.capacity());
 	EnableDMAReq_RX();
 	dma_rx_.Enable();
@@ -95,7 +95,7 @@ void USART::StartDmaTx(size_t nbytes)
 	outputNDT_ = nbytes;
 	if (outputNDT_ > 0) {
 		dma_tx_.EnableIT_TC();
-		dma_tx_.ConfigAddresses((uint32_t)output_queue_.get_read_ptr(), LL_USART_DMA_GetRegAddr(USARTx_), dma_tx_.GetDataTransferDirection());
+		dma_tx_.ConfigAddresses((uint32_t)output_queue_.get_read_ptr(), LL_USART_DMA_GetRegAddr(USARTx_, LL_USART_DMA_REG_DATA_TRANSMIT), dma_tx_.GetDataTransferDirection());
 		dma_tx_.SetDataLength(outputNDT_);
 		EnableDMAReq_TX();
 		dma_tx_.Enable();

@@ -42,8 +42,8 @@
 #define VM_ADC		LL_ADC_CHANNEL_13
 
 #define LED_WARN PD_14
-#define LED_STATUS PD_15
-#define BTN_USER PD_11
+#define LED_STATUS PC_9
+#define BTN_USER PA_8
 #define GATE_ENABLE PE_14
 #define DRV_FAULT PC_15
 
@@ -57,7 +57,7 @@ DigitalOut gate_enable(GATE_ENABLE, DigitalOut::SpeedDefault, DigitalOut::Output
 DigitalOut led_warn(LED_WARN, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullDown, DigitalOut::ActiveDefault, 0);
 DigitalOut led_status(LED_STATUS, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullNone, DigitalOut::ActiveLow, 0);
 DigitalIn btn_user(BTN_USER, DigitalIn::PullDefault, DigitalIn::InterruptFalling);
-DigitalIn encoder_z(PB_5, DigitalIn::PullDown, DigitalIn::InterruptRising);
+DigitalIn encoder_z(PD_7, DigitalIn::PullDown, DigitalIn::InterruptRising);
 DigitalIn drv_fault(DRV_FAULT, DigitalIn::PullNone, DigitalIn::InterruptNone);
 
 //#define TEST_RS485
@@ -137,7 +137,7 @@ Adc adc_current({
 			 CURRENT_FB_A, CURRENT_FB_B, CURRENT_FB_C, CURRENT_FB_A
 	},
 	ADC2, DMA2, LL_DMA_STREAM_2, LL_DMA_CHANNEL_1, 3300, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES,
-	LL_ADC_INJ_TRIG_EXT_TIM3_CH2, LL_ADC_INJ_TRIG_EXT_RISING, Adc::RegConvModeSingle, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0, 0);
+	LL_ADC_INJ_TRIG_EXT_TIM3_CH4, LL_ADC_INJ_TRIG_EXT_RISING, Adc::RegConvModeSingle, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0, 0);
 
 Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(750), Frequency::from_hertz(SystemCoreClock));
 
@@ -331,6 +331,7 @@ void main_task(void *pvParameters)
 	drv1.WriteReg(5, 0x0);
 	drv1.WriteReg(6, 0x0);
 
+	printf("main_task 1\n");
 	drv1.SetIDriveP_HS(Drv8323::IDRIVEP_370mA);
 	drv1.SetIDriveN_HS(Drv8323::IDRIVEN_1360mA);
 	drv1.SetIDriveP_LS(Drv8323::IDRIVEP_370mA);
@@ -415,7 +416,7 @@ void main_task(void *pvParameters)
 
 	while (1) {
 		std::string tmp;
-		vTaskDelay(10 / portTICK_RATE_MS);
+		vTaskDelay(100 / portTICK_RATE_MS);
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 
@@ -517,6 +518,7 @@ void main_task(void *pvParameters)
 
 }
 
+
 int main(int argc, char* argv[])
 {
 	InterruptManager& im = InterruptManager::instance();
@@ -524,7 +526,8 @@ int main(int argc, char* argv[])
 	TaskHandle_t main_task_handle = 0;
 	TaskHandle_t encoder_reader_task_handle = 0;
 
-	vTaskSuspendAll();
+//	vTaskSuspendAll();
+	printf("System clock: %lu Hz\n", SystemCoreClock);
 
 	/* Create tasks */
 	xTaskCreate(
@@ -548,12 +551,15 @@ int main(int argc, char* argv[])
 	);
 #endif
 
-	im.VectorHandler(SVCall_IRQn, vPortSVCHandler);
-	im.VectorHandler(PendSV_IRQn, xPortPendSVHandler);
-	im.VectorHandler(SysTick_IRQn, xPortSysTickHandler);
+//	im.VectorHandler(SVCall_IRQn, vPortSVCHandler);
+//	im.VectorHandler(PendSV_IRQn, xPortPendSVHandler);
+//	im.VectorHandler(SysTick_IRQn, xPortSysTickHandler);
 
+
+	printf("xTaskResumeAll\n");
 	xTaskResumeAll();
 
+	printf("vTaskStartScheduler\n");
 	vTaskStartScheduler();
 	vTaskSuspendAll();
 

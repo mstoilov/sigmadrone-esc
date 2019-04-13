@@ -20,8 +20,7 @@
  */
 
 #include <assert.h>
-#include "stm32f4xx_ll_bus.h"
-#include "stm32f4xx_ll_rcc.h"
+#include "sigmadrive.h"
 
 #include "interruptmanager.h"
 #include "timer.h"
@@ -281,6 +280,10 @@ void Timer::IrqHandlerTRG_COM()
 
 void Timer::IrqHandlerCC()
 {
+	if (!TIMx_) {
+		return;
+	}
+
 	if (LL_TIM_IsActiveFlag_CC1(TIMx_)) {
 		LL_TIM_ClearFlag_CC1(TIMx_);
 		HandleCC1();

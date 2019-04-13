@@ -20,7 +20,6 @@ void relocate_interrupt_table()
 
 	for (size_t i = 0; i < 256; i++) {
 		newtable[i] = oldtable[i];
-		trace_printf("0x%X <--> 0x%X\n", oldtable[i], newtable[i]);
 	}
 
 	__DMB();

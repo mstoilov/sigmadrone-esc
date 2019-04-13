@@ -7,7 +7,7 @@
 
 #include "minas_a4_abs_encoder.h"
 
-#include "stm32f4xx.h"
+#include "sigmadrive.h"
 #include "diag/Trace.h"
 #include <cstring>
 

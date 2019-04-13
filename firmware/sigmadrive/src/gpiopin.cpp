@@ -19,7 +19,7 @@
  *  Svetoslav Vassilev <svassilev@sigmadrone.org>
  */
 
-#include "stm32f4xx_ll_bus.h"
+#include "sigmadrive.h"
 #include "gpiopin.h"
 
 #ifndef GET_GPIO_SOURCE
