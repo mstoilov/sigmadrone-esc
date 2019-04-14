@@ -8,6 +8,7 @@
 
 #include "cortexm/ExceptionHandlers.h"
 #include "arm/semihosting.h"
+#include "usb_device.h"
 
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
@@ -102,7 +103,7 @@ QuadratureDecoder pwm4({
 
 QuadratureDecoder *p_encoder = &pwm4;
 
-#undef USE_6STEP
+#define USE_6STEP
 #ifdef USE_6STEP
 PWM6Step pwm1({
 		{PE_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
@@ -523,6 +524,13 @@ int main(int argc, char* argv[])
 {
 	InterruptManager& im = InterruptManager::instance();
 
+	extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+	im.Callback(OTG_FS_IRQn, [&](void){HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);});
+	/*
+	 * Init USB
+	 */
+	MX_USB_DEVICE_Init();
+
 	TaskHandle_t main_task_handle = 0;
 	TaskHandle_t encoder_reader_task_handle = 0;
 
@@ -555,11 +563,7 @@ int main(int argc, char* argv[])
 //	im.VectorHandler(PendSV_IRQn, xPortPendSVHandler);
 //	im.VectorHandler(SysTick_IRQn, xPortSysTickHandler);
 
-
-	printf("xTaskResumeAll\n");
 	xTaskResumeAll();
-
-	printf("vTaskStartScheduler\n");
 	vTaskStartScheduler();
 	vTaskSuspendAll();
 
@@ -569,6 +573,21 @@ int main(int argc, char* argv[])
 	while(1) {
 	}
 }
+
+#if 0
+extern "C" void OTG_FS_IRQHandler()
+{
+	extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+
+	HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+	return;
+#if defined(DEBUG)
+	__DEBUG_BKPT();
+#endif
+	while (1) {
+	}
+}
+#endif
 
 
 extern "C" void

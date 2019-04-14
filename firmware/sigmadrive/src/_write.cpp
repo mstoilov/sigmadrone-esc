@@ -33,6 +33,7 @@
 #include <errno.h>
 #include "diag/Trace.h"
 #include "usart.h"
+#include "usbd_cdc_if.h"
 
 /*
  * Set up the remote terminal like this:
@@ -72,6 +73,9 @@ extern "C" ssize_t _write(int fd __attribute__((unused)),
 	// STDOUT and STDERR are routed to the trace device
 	if (fd == 1 || fd == 2) {
 		ret = usart.WriteDMA(buf, nbyte);
+
+		nbyte = ret;
+		CDC_Transmit_FS((uint8_t*)buf, nbyte);
 #if defined(TRACE)
 		nbyte = ret;
 		for (ret = 0; ret < nbyte; ret += tmp) {

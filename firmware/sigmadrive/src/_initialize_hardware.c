@@ -162,7 +162,7 @@ SystemClock_Config (void)
 
 //  RCC_OscInitStruct.PLL.PLLN = 384; /* 192 MHz  org*/
 
-  RCC_OscInitStruct.PLL.PLLN = 220; /* 176 MHz */
+  RCC_OscInitStruct.PLL.PLLN = 240; /* 192 MHz */
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 8; /* To make USB work. */
 #if defined (STM32F765xx) || defined (STM32F767xx) || defined (STM32F769xx) || defined (STM32F777xx) || defined (STM32F779xx)
