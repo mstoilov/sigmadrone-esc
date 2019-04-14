@@ -335,10 +335,10 @@ AR Path="/58BF599E/5C70F366" Ref="R?"  Part="1"
 AR Path="/58BE27E6/5C70F366" Ref="R?"  Part="1" 
 AR Path="/58BF664D/5C70F366" Ref="R18"  Part="1" 
 F 0 "R18" V 7730 4750 50  0000 C CNN
-F 1 "18k" V 7650 4750 50  0000 C CNN
+F 1 "20k" V 7650 4750 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 7580 4750 50  0001 C CNN
 F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 7650 4750 50  0001 C CNN
-F 4 "311-18.0KHRCT-ND" V 7650 4750 60  0001 C CNN "Part"
+F 4 "311-20.0KHRTR-ND" V 7650 4750 60  0001 C CNN "Part"
 F 5 "DigiKey" V 7650 4750 60  0001 C CNN "Provider"
 	1    7650 4750
 	-1   0    0    1   
