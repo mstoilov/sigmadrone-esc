@@ -162,9 +162,9 @@ SystemClock_Config (void)
 
 //  RCC_OscInitStruct.PLL.PLLN = 384; /* 192 MHz  org*/
 
-  RCC_OscInitStruct.PLL.PLLN = 240; /* 192 MHz */
+  RCC_OscInitStruct.PLL.PLLN = 210; /* 168 MHz */
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 8; /* To make USB work. */
+  RCC_OscInitStruct.PLL.PLLQ = 7; /* To make USB work. */
 #if defined (STM32F765xx) || defined (STM32F767xx) || defined (STM32F769xx) || defined (STM32F777xx) || defined (STM32F779xx)
   /* PLLR: Division factor for DSI clock.
      This parameter must be a number between Min_Data = 2 and Max_Data = 7    */
