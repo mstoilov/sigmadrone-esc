@@ -212,7 +212,7 @@ __initialize_hardware (void)
   // Enable HSE Oscillator and activate PLL with HSE as source
   SystemClock_Config();
 
-  HAL_Delay(50);
+  HAL_Delay(250);
 
   // Call the CSMSIS system clock routine to store the clock frequency
   // in the SystemCoreClock global RAM location.
