@@ -8,7 +8,7 @@ extern volatile uint64_t jiffies;
 extern "C" void vApplicationTickHook(void)
 {
     /* Increment HAL counter */
-    HAL_IncTick();
+//    HAL_IncTick();
     jiffies += 1;
 }
 

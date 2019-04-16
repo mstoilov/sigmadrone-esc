@@ -23,8 +23,12 @@ void relocate_interrupt_table()
 	}
 
 	__DMB();
-	SCB->VTOR = ((unsigned int)newtable);
 	__DSB();
+	__disable_irq();
+	SCB->VTOR = ((unsigned int)newtable);
+	__DMB();
+	__DSB();
+	__enable_irq();
 }
 
 inline void InterruptManageVectorHandler()

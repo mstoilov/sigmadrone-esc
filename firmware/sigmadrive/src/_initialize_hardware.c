@@ -190,9 +190,9 @@ SystemClock_Config (void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
   HAL_RCC_ClockConfig (&RCC_ClkInitStruct, FLASH_LATENCY_6);
 
-  HAL_SYSTICK_Config (HAL_RCC_GetHCLKFreq () / 1000);
-
-  HAL_SYSTICK_CLKSourceConfig (SYSTICK_CLKSOURCE_HCLK);
+//  HAL_SYSTICK_Config (HAL_RCC_GetHCLKFreq () / 1000);
+//
+//  HAL_SYSTICK_CLKSourceConfig (SYSTICK_CLKSOURCE_HCLK);
 }
 
 void
@@ -202,7 +202,7 @@ __initialize_hardware (void)
   SCB_EnableICache ();
   SCB_EnableDCache ();
 
-  vTaskSuspendAll();
+//  vTaskSuspendAll();
 
   // Initialise the HAL Library; it must be the first function
   // to be executed before the call of any HAL function.
@@ -211,6 +211,8 @@ __initialize_hardware (void)
 
   // Enable HSE Oscillator and activate PLL with HSE as source
   SystemClock_Config();
+
+  HAL_Delay(50);
 
   // Call the CSMSIS system clock routine to store the clock frequency
   // in the SystemCoreClock global RAM location.

@@ -519,6 +519,36 @@ void main_task(void *pvParameters)
 
 }
 
+#if 0
+volatile static uint32_t RTOS_Enabled = 0;
+
+extern "C" void
+SysTick_Handler(void)
+{
+	if (RTOS_Enabled) {
+		xPortSysTickHandler();
+	} else {
+		HAL_IncTick();
+	}
+}
+
+extern "C" void
+SVC_Handler(void)
+{
+	if (RTOS_Enabled) {
+		vPortSVCHandler();
+	}
+}
+
+extern "C" void
+PendSV_Handler(void)
+{
+	if (RTOS_Enabled) {
+		xPortPendSVHandler();
+	}
+}
+
+#endif
 
 int main(int argc, char* argv[])
 {
@@ -533,9 +563,6 @@ int main(int argc, char* argv[])
 
 	TaskHandle_t main_task_handle = 0;
 	TaskHandle_t encoder_reader_task_handle = 0;
-
-//	vTaskSuspendAll();
-	printf("System clock: %lu Hz\n", SystemCoreClock);
 
 	/* Create tasks */
 	xTaskCreate(
@@ -559,13 +586,7 @@ int main(int argc, char* argv[])
 	);
 #endif
 
-//	im.VectorHandler(SVCall_IRQn, vPortSVCHandler);
-//	im.VectorHandler(PendSV_IRQn, xPortPendSVHandler);
-//	im.VectorHandler(SysTick_IRQn, xPortSysTickHandler);
-
-	xTaskResumeAll();
 	vTaskStartScheduler();
-	vTaskSuspendAll();
 
 #if defined(DEBUG)
   __DEBUG_BKPT();
@@ -637,6 +658,30 @@ HardFault_Handler_C (ExceptionStackFrame* frame __attribute__((unused)),
   while (1)
     {
     }
+}
+
+extern "C" void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+
+	/* NOTE : This function should not be modified, when the callback is needed,
+	 * the HAL_TIM_PeriodElapsedCallback could be implemented in the user file
+	 */
+	if (htim->Instance == TIM14) {
+		HAL_IncTick();
+	}
+
+}
+
+
+extern TIM_HandleTypeDef htim14;
+extern "C" void TIM8_TRG_COM_TIM14_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM8_TRG_COM_TIM14_IRQn 0 */
+
+  /* USER CODE END TIM8_TRG_COM_TIM14_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim14);
+  /* USER CODE BEGIN TIM8_TRG_COM_TIM14_IRQn 1 */
+
+  /* USER CODE END TIM8_TRG_COM_TIM14_IRQn 1 */
 }
 
 #pragma GCC diagnostic pop
