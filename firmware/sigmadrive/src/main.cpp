@@ -402,15 +402,15 @@ void main_task(void *pvParameters)
 #ifdef TEST_RS485
 
 	usart2.Write("Do you see this? From RS485 ... 1\n");
-	HAL_Delay(100UL);
+	vTaskDelay(100 / portTICK_RATE_MS);
 	std::cout << usart3.Read() << std::endl;
 
 	usart2.Write("Do you see this? From RS485 ... 2\n");
-	HAL_Delay(100UL);
+	vTaskDelay(100 / portTICK_RATE_MS);
 	std::cout << usart3.Read() << std::endl;
 
 	usart2.Write("Do you see this? From RS485 ... 3\n");
-	HAL_Delay(100UL);
+	vTaskDelay(100 / portTICK_RATE_MS);
 	std::cout << usart3.Read() << std::endl;
 
 #endif
