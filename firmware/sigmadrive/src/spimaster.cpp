@@ -22,7 +22,7 @@
 #include <cstring>
 #include <stdexcept>
 #include "spimaster.h"
-#include "stm32f4xx_ll_bus.h"
+#include "stm32f7xx_ll_bus.h"
 
 SPIMaster::SPIMaster(SPI_TypeDef* spi_device,
 		DataWidth data_width,
@@ -63,15 +63,15 @@ SPIMaster::SPIMaster(SPI_TypeDef* spi_device,
 		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI3);
 #ifdef SPI4
 	else if (spi_device == SPI4)
-		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI4);
+		LL_APB1_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SPI4);
 #endif
 #ifdef SPI5
 	else if (spi_device == SPI5)
-		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI5);
+		LL_APB1_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SPI5);
 #endif
 #ifdef SPI6
 	else if (spi_device == SPI6)
-		LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_SPI5);
+		LL_APB1_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SPI5);
 #endif
 	ErrorStatus error = LL_SPI_Init(SPIx_, &spi_init);
 	if (error != SUCCESS) {

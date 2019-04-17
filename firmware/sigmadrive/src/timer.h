@@ -25,9 +25,7 @@
 #include <stdint.h>
 #include <vector>
 #include <functional>
-#include "stm32f4xx.h"
-#include "stm32f4xx_ll_tim.h"
-#include "stm32f4xx_ll_dma.h"
+#include "sigmadrive.h"
 #include "gpiopin.h"
 #include "units.h"
 

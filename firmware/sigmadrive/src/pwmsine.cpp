@@ -15,10 +15,7 @@
 #define WH_PIN		PA_10
 #define WL_PIN		PB_1
 
-extern Adc *p_adc;
 extern QuadratureDecoder *p_encoder;
-
-extern volatile uint64_t jiffies;
 
 PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 		TIM_TypeDef *TIMx,
@@ -35,6 +32,7 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 	, pwm_mode_(pwm_mode)
 	, polarity_(polarity)
 	, npolarity_(npolarity)
+	, opamp_bias_(CURRENT_SAMPLES, 0)
 {
 	SetAutoReloadPeriod(switching_freq_.period());
 
@@ -62,23 +60,9 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 	 */
 	run_stack_.push_back([&]()->bool {
 		v = std::polar<float>(1.0f, 0.0f);
-		p_encoder->SetIndexOffset(-1);
+		p_encoder->InvalidateIndexOffset();
 		p_encoder->ResetPosition(0);
 		if (update_counter_++ >= 1 * SINE_STEPS) {
-			update_counter_ = 0;
-			std::cout << "Starting: " << update_counter_ << " (" << jiffies << ")"<< std::endl;
-			return true;
-		}
-		return false;
-	});
-
-	/*
-	 * Rotate 2 full mechanical turns. i.e. 2 * M2E_RATIO * SINE_STEPS
-	 */
-	run_stack_.push_back([&]()->bool {
-		v = v * r;
-		if (update_counter_++ >= 2 * M2E_RATIO * SINE_STEPS) {
-			std::cout << "Stopping: " << update_counter_ << " (" << jiffies << ")"<< std::endl;
 			update_counter_ = 0;
 			return true;
 		}
@@ -92,30 +76,6 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 		return false;
 	});
 
-	/*
-	 * Wait
-	 */
-	run_stack_.push_back([&]()->bool {
-		if (update_counter_++ >= 1 * SINE_STEPS) {
-			update_counter_ = 0;
-			std::cout << "Starting: "  << update_counter_ << " (" << jiffies << ")"<< std::endl;
-			return true;
-		}
-		return false;
-	});
-
-	/*
-	 * Rotate 2 full mechanical turns. i.e. 2 * M2E_RATIO * SINE_STEPS
-	 */
-	run_stack_.push_back([&]()->bool {
-		v = v / r;
-		if (update_counter_++ >= 2 * M2E_RATIO * SINE_STEPS) {
-			std::cout << "Stopping: " << update_counter_ << " (" << jiffies << ")"<< std::endl;
-			Stop();
-			return true;
-		}
-		return false;
-	});
 
 }
 
@@ -231,13 +191,18 @@ void PWMSine::SetElectricalRotationsPerSecond(const Frequency& f)
 	r = std::polar<float>(1.0f, 2.0f * M_PI / SINE_STEPS);
 }
 
+void PWMSine::SetOpAmpBias(const std::vector<int32_t> bias)
+{
+	assert(bias.size() >= CURRENT_SAMPLES); opamp_bias_ = bias;
+}
+
 void PWMSine::HandleCurrentJEOS(int32_t *injdata, size_t idx, size_t size)
 {
 	assert(idx + size <= CURRENT_SAMPLES);
 
 	if (GetDirection() == CountDirectionUp) {
 		std::copy(injdata, injdata + size, adc_data_ + idx);
-		std::for_each(adc_data_ + idx, adc_data_ + idx + size, [](auto &a){ a = -(a - 1658);});
+		std::for_each(adc_data_ + idx, adc_data_ + idx + size, [&](auto &a){ a = -(a - opamp_bias_[idx]);});
 	}
 }
 

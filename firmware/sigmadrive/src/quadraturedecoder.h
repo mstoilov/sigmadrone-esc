@@ -16,7 +16,7 @@ public:
 	QuadratureDecoder(
 			const std::vector<GPIOPin>& pins,
 			TIM_TypeDef *TIMx,
-			uint32_t counter_max,
+			uint32_t cpr_max,
 			uint32_t irq_priority = 0
 	);
 
@@ -28,13 +28,14 @@ public:
 	uint32_t GetPosition();
 	void ResetPosition(uint32_t position);
 	uint32_t GetMaxPosition();
+	void InvalidateIndexOffset();
 	void SetIndexOffset(int32_t cpr);
 	int32_t GetIndexOffset();
 	void CallbackIndex();
 
 
 protected:
-	/* The maximum value the counter can have. */
+	/* Counts Per Revolution(CPR). The maximum value the counter can have. */
 	uint32_t cpr_max_;
 
 	/*

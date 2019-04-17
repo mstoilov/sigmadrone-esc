@@ -8,10 +8,7 @@
 #include <string>
 #include <stdexcept>
 
-#include "stm32f4xx_ll_usart.h"
-#include "stm32f4xx_ll_dma.h"
-#include "stm32f4xx_ll_bus.h"
-#include "stm32f4xx.h"
+#include "sigmadrive.h"
 
 #include "gpiopin.h"
 #include "pinnames.h"
@@ -30,7 +27,8 @@ public:
 			uint32_t rx_stream = LL_DMA_STREAM_5,
 			uint32_t dma_channel = LL_DMA_CHANNEL_4,
 			uint32_t hwflowctrl = LL_USART_HWCONTROL_NONE,
-			uint32_t irq_priority = 0);
+			uint32_t irq_priority = 0,
+			uint32_t dma_irq_priority = 0);
 	virtual ~USART();
 
 	void Enable(void)			{ LL_USART_Enable(USARTx_); }

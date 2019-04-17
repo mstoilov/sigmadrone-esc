@@ -39,10 +39,11 @@
 #define BEMF_FB_B	LL_ADC_CHANNEL_11
 #define BEMF_FB_C	LL_ADC_CHANNEL_10
 
+#define VM_ADC		LL_ADC_CHANNEL_13
 
 #define LED_WARN PD_14
-#define LED_STATUS PD_15
-#define BTN_USER PD_11
+#define LED_STATUS PC_9
+#define BTN_USER PA_8
 #define GATE_ENABLE PE_14
 #define DRV_FAULT PC_15
 
@@ -56,10 +57,10 @@ DigitalOut gate_enable(GATE_ENABLE, DigitalOut::SpeedDefault, DigitalOut::Output
 DigitalOut led_warn(LED_WARN, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullDown, DigitalOut::ActiveDefault, 0);
 DigitalOut led_status(LED_STATUS, DigitalOut::SpeedHigh, DigitalOut::OutputDefault, DigitalOut::PullNone, DigitalOut::ActiveLow, 0);
 DigitalIn btn_user(BTN_USER, DigitalIn::PullDefault, DigitalIn::InterruptFalling);
-DigitalIn encoder_z(PB_5, DigitalIn::PullDown, DigitalIn::InterruptRising);
+DigitalIn encoder_z(PD_7, DigitalIn::PullDown, DigitalIn::InterruptRising);
 DigitalIn drv_fault(DRV_FAULT, DigitalIn::PullNone, DigitalIn::InterruptNone);
 
-#define TEST_RS485
+//#define TEST_RS485
 #ifdef TEST_RS485
 
 USARTDE usart2(PD_4,
@@ -117,18 +118,26 @@ Adc adc({
 	{PC_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 	{PC_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},},
 	{
+
+	},
+	{
 			BEMF_FB_A, BEMF_FB_B, BEMF_FB_C,
 	},
-	ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_15CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, 0);
+	ADC1, DMA2, LL_DMA_STREAM_4, LL_DMA_CHANNEL_0, 3300, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_15CYCLES,
+	LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, Adc::RegConvModeSingle, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0, 0);
 
 Adc adc_current({
 	{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 	{PA_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 	{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},},
 	{
+
+	},
+	{
 			 CURRENT_FB_A, CURRENT_FB_B, CURRENT_FB_C, CURRENT_FB_A
 	},
-	ADC2, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_3CYCLES, LL_ADC_INJ_TRIG_EXT_TIM3_CH2, 0);
+	ADC2, DMA2, LL_DMA_STREAM_2, LL_DMA_CHANNEL_1, 3300, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES,
+	LL_ADC_INJ_TRIG_EXT_TIM3_CH4, LL_ADC_INJ_TRIG_EXT_RISING, Adc::RegConvModeSingle, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0, 0);
 
 Trigger adc_trigger(TIM2, TimeSpan::from_nanoseconds(750), Frequency::from_hertz(SystemCoreClock));
 
@@ -150,11 +159,16 @@ Adc adc1({
 		{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		{PA_1,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		{PC_3,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
+		},
+		{
+				CURRENT_FB_A, CURRENT_FB_B, CURRENT_FB_C, VM_ADC,
 		},
 		{
 				CURRENT_FB_A, // CURRENT_FB_B, CURRENT_FB_C,
 		},
-		ADC1, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, 0);
+		ADC1, DMA2, LL_DMA_STREAM_4, LL_DMA_CHANNEL_0, 3300, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES,
+		LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, Adc::RegConvModeSingle, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0, 0);
 
 #if 1
 Adc adc2({
@@ -163,9 +177,13 @@ Adc adc2({
 		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		},
 		{
+
+		},
+		{
 				CURRENT_FB_B,
 		},
-		ADC2, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, 0);
+		ADC2, DMA2, LL_DMA_STREAM_2, LL_DMA_CHANNEL_1, 3300, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES,
+		LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, Adc::RegConvModeSingle, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0, 0);
 
 Adc adc3({
 		{PA_0,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
@@ -173,9 +191,13 @@ Adc adc3({
 		{PA_2,  LL_GPIO_MODE_ANALOG, LL_GPIO_PULL_NO, LL_GPIO_SPEED_FREQ_LOW, LL_GPIO_AF_0},
 		},
 		{
+
+		},
+		{
 				CURRENT_FB_C,
 		},
-		ADC3, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES, LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, 0);
+		ADC3, DMA2, LL_DMA_STREAM_0, LL_DMA_CHANNEL_2, 3300, LL_ADC_RESOLUTION_12B, LL_ADC_SAMPLINGTIME_28CYCLES,
+		LL_ADC_INJ_TRIG_EXT_TIM2_CH1, LL_ADC_INJ_TRIG_EXT_FALLING, Adc::RegConvModeSingle, LL_ADC_REG_TRIG_SOFTWARE, LL_ADC_REG_TRIG_EXT_RISING, 0, 0);
 
 #endif
 
@@ -192,47 +214,17 @@ SPIMaster spi3(SPI3, SPIMaster::Data16Bit, SPIMaster::Div32, SPIMaster::Polarity
 		{DRV2_CS, LL_GPIO_MODE_OUTPUT, LL_GPIO_PULL_UP, LL_GPIO_SPEED_FREQ_HIGH, 0},
 });
 
+extern USART* ptrUsart1;
 Drv8323 drv1(spi3, 0);
 Drv8323 drv2(spi3, 1);
-
 volatile uint64_t jiffies = 0;
 
-
-uint32_t drv_read_reg(uint32_t cs, uint32_t addr)
-{
-	uint16_t data = (0x1 << 15) | ((addr & 0xF) << 11);
-	spi3.spi_chip_select(cs, true);
-	data = spi3.spi_write_read16(data);
-	spi3.spi_chip_select(cs, false);
-	return data & 0x7FF;
-}
-
-uint32_t drv_write_reg(uint32_t cs, uint32_t addr, uint32_t data)
-{
-	uint16_t data16 = (uint16_t)(((addr & 0xF) << 11) | (data & 0x7FF));
-	spi3.spi_chip_select(cs, true);
-	data = spi3.spi_write_read16(data16);
-	spi3.spi_chip_select(cs, false);
-	return data & 0x7FF;
-}
-
-
-void drv_dump_regs(uint32_t cs)
-{
-	for (int i = 0; i < 7; i++) {
-		printf("DRV: Reg %d: 0x%x\n", i, (unsigned int) drv_read_reg(cs, i));
-	}
-	printf("\n\n");
-}
 
 void emergency_stop()
 {
 	pwm1.DisableOutputs();
 	pwm1.DisableCounter();
 }
-
-
-extern USART* ptrUsart1;
 
 void pwm1_toggle()
 {
@@ -242,7 +234,6 @@ void pwm1_toggle()
 		pwm1.Stop();
 	}
 }
-
 
 void CallbackPWMCC(uint32_t pulse, uint32_t period)
 {
@@ -291,9 +282,6 @@ void RunFloatingPointTest()
 #endif
 }
 
-//#define DUMP_MINAS_A4_STATE
-#define DUMP_DRV_FAULT
-
 MinasA4AbsEncoder* ma4_abs_encoder_ptr = nullptr;
 
 void encoder_reader_task(void *pvParameters)
@@ -315,6 +303,7 @@ void encoder_reader_task(void *pvParameters)
 	ma4_abs_encoder_ptr = &ma4_abs_encoder;
 
 	while (1) {
+		vTaskDelay(4 / portTICK_RATE_MS);
 		if (!ma4_abs_encoder.update()) {
 			ma4_abs_encoder.reset_all_errors();
 		}
@@ -342,6 +331,7 @@ void main_task(void *pvParameters)
 	drv1.WriteReg(5, 0x0);
 	drv1.WriteReg(6, 0x0);
 
+	printf("main_task 1\n");
 	drv1.SetIDriveP_HS(Drv8323::IDRIVEP_370mA);
 	drv1.SetIDriveN_HS(Drv8323::IDRIVEN_1360mA);
 	drv1.SetIDriveP_LS(Drv8323::IDRIVEP_370mA);
@@ -363,10 +353,6 @@ void main_task(void *pvParameters)
 	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
-	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C);
-	HAL_Delay(500);
-	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, 0);
-
 	printf("DRV1: \n");
 	drv1.DumpRegs();
 
@@ -377,17 +363,32 @@ void main_task(void *pvParameters)
 	encoder_z.Callback([&](){ p_encoder->CallbackIndex(); });
 	pwm4.Start();
 
-	adc1.Start();
-	adc2.Start();
-	adc3.Start();
-
 
 #ifdef USE_6STEP
 	pwm1.SetThrottle(0.35);
-	adc.CallbackJEOS(&pwm1, &PWM6Step::HandleCurrentJEOS);
+	adc.CallbackJEOS(&pwm1, &PWM6Step::HandleJEOS);
 	adc_current.CallbackJEOS(&pwm1, &PWM6Step::HandleCurrentJEOS);
-	adc_current.Start();
+	adc_current.Enable();
+	adc.Enable();
 #else
+	adc1.Enable();
+	adc2.Enable();
+	adc3.Enable();
+	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C);
+	std::vector<int32_t> opamp_bias(PWMSine::CURRENT_SAMPLES, 0);
+	constexpr int bias_samples = 30;
+	for (int i = 0; i < bias_samples; i++) {
+		vTaskDelay(10 / portTICK_RATE_MS);
+		opamp_bias[0] += adc1.SWTrigGetRegularData(0);
+		opamp_bias[1] += adc1.GetRegularData(1);
+		opamp_bias[2] += adc1.GetRegularData(2);
+	}
+	std::cout << "OpAmp Bias:" << std::endl;
+	std::for_each(opamp_bias.begin(), opamp_bias.end(), [&](auto &a){ a = a / bias_samples; });
+	std::cout << opamp_bias[0] << "  " << opamp_bias[1] << "  " << opamp_bias[2] << std::endl;
+	drv1.ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, 0);
+
+	pwm1.SetOpAmpBias(opamp_bias);
 	pwm1.SetElectricalRotationsPerSecond(Frequency::from_millihertz(500 * PWMSine::M2E_RATIO));
 	pwm1.SetThrottle(0.05);
 	adc1.CallbackJEOS([=](int32_t *injdata, size_t size){pwm1.HandleCurrentJEOS(injdata, 0, size);});
@@ -415,12 +416,12 @@ void main_task(void *pvParameters)
 
 	while (1) {
 		std::string tmp;
-		vTaskDelay(10 / portTICK_RATE_MS);
+		vTaskDelay(100 / portTICK_RATE_MS);
 		led_status.Toggle();
 		led_warn.Write(pwm1.IsEnabledCounter());
 
-//#define ECHO_TEST
 
+//#define ECHO_TEST
 #ifdef ECHO_TEST
 		char buf[128];
 		int ret = 0;
@@ -430,6 +431,7 @@ void main_task(void *pvParameters)
 		}
 #endif
 
+#define DUMP_DRV_FAULT
 		if (drv_fault.Read() == 0) {
 			pwm1.Stop();
 #ifdef DUMP_DRV_FAULT
@@ -442,6 +444,7 @@ void main_task(void *pvParameters)
 
 		count++;
 
+//#define DUMP_MINAS_A4_STATE
 #ifdef DUMP_MINAS_A4_STATE
 		if (count % 20 == 0 && !!ma4_abs_encoder_ptr) {
 			printf("Servo Angle: %3.4f\n", ma4_abs_encoder_ptr->get_absolute_angle_deg());
@@ -515,6 +518,7 @@ void main_task(void *pvParameters)
 
 }
 
+
 int main(int argc, char* argv[])
 {
 	InterruptManager& im = InterruptManager::instance();
@@ -522,7 +526,8 @@ int main(int argc, char* argv[])
 	TaskHandle_t main_task_handle = 0;
 	TaskHandle_t encoder_reader_task_handle = 0;
 
-	vTaskSuspendAll();
+//	vTaskSuspendAll();
+	printf("System clock: %lu Hz\n", SystemCoreClock);
 
 	/* Create tasks */
 	xTaskCreate(
@@ -534,24 +539,27 @@ int main(int argc, char* argv[])
 			&main_task_handle /* Task handle */
 	);
 
-#undef SUPPORT_MINAS_A4
+//#define SUPPORT_MINAS_A4
 #ifdef SUPPORT_MINAS_A4
 	xTaskCreate(
 			encoder_reader_task, /* Function pointer */
 			"encoder_reader_task", /* Task name - for debugging only*/
 			4 * configMINIMAL_STACK_SIZE, /* Stack depth in words */
 			(void*) NULL, /* Pointer to tasks arguments (parameter) */
-			tskIDLE_PRIORITY + 1UL, /* Task priority*/
+			tskIDLE_PRIORITY + 4UL, /* Task priority*/
 			&encoder_reader_task_handle /* Task handle */
 	);
 #endif
 
-	im.VectorHandler(SVCall_IRQn, vPortSVCHandler);
-	im.VectorHandler(PendSV_IRQn, xPortPendSVHandler);
-	im.VectorHandler(SysTick_IRQn, xPortSysTickHandler);
+//	im.VectorHandler(SVCall_IRQn, vPortSVCHandler);
+//	im.VectorHandler(PendSV_IRQn, xPortPendSVHandler);
+//	im.VectorHandler(SysTick_IRQn, xPortSysTickHandler);
 
+
+	printf("xTaskResumeAll\n");
 	xTaskResumeAll();
 
+	printf("vTaskStartScheduler\n");
 	vTaskStartScheduler();
 	vTaskSuspendAll();
 

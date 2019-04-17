@@ -7,7 +7,7 @@
 
 #include "minas_a4_abs_encoder.h"
 
-#include "stm32f4xx.h"
+#include "sigmadrive.h"
 #include "diag/Trace.h"
 #include <cstring>
 
@@ -28,7 +28,8 @@ bool MinasA4AbsEncoder::init()
 {
 	MA4EncoderReplyA replyA;
 	MA4EncoderReplyF replyF;
-	send_command(MA4_DATA_ID_F, &replyF, sizeof(replyF));
+
+	reset_all_errors();
 	if (!send_command(MA4_DATA_ID_A, &replyA, sizeof(replyA))) {
 		return false;
 	}
@@ -92,14 +93,14 @@ bool MinasA4AbsEncoder::update()
 	}
 
 	if (reply5.ctrl_field_.as_byte != MA4_DATA_ID_5) {
-		trace_printf("PanasonicMA4Encoder received incorrect control field 0x%x, expected value was 0x%x\n",
+		printf("PanasonicMA4Encoder received incorrect control field 0x%x, expected value was 0x%x\n",
 				reply5.ctrl_field_.as_byte, MA4_DATA_ID_5);
 		return false;
 	}
 
 	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply5, sizeof(reply5)-1);
 	if (crc != reply5.crc_) {
-		trace_printf("WARNING: mismatched crc!\n");
+		printf("WARNING: mismatched crc!\n");
 		return false;
 	}
 
@@ -123,15 +124,15 @@ bool MinasA4AbsEncoder::update()
 
 bool MinasA4AbsEncoder::send_command(uint8_t command, void* reply, size_t reply_size)
 {
-	size_t bytes_written = usart_.WriteDMA((char*)&command, sizeof(command));
+	size_t bytes_written = usart_.Write((char*)&command, sizeof(command));
 	if (bytes_written != sizeof(command)) {
-		trace_printf("PanasonicMA4Encoder failed to send command 0x%x\n", command);
+		printf("PanasonicMA4Encoder failed to send command 0x%x\n", command);
 		return false;
 	}
 	memset(reply,0,reply_size);
 	size_t bytes_read = read_usart_data(reply, reply_size, TimeSpan::from_milliseconds(1));
 	if (bytes_read != reply_size) {
-		trace_printf("PanasonicMA4Encoder read only %u bytes, when sending command 0x%x\n", bytes_read, command);
+		printf("PanasonicMA4Encoder read only %u bytes, when sending command 0x%x\n", bytes_read, command);
 		return false;
 	}
 	return true;

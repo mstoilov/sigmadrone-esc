@@ -74,17 +74,19 @@ public:
 	void SetElectricalRotationsPerSecond(const Frequency& f);
 	Frequency GetSwitchingFrequency();
 	void Toggle();
+	void SetOpAmpBias(const std::vector<int32_t> bias);
 
 public:
 	int32_t adc_data_[CURRENT_SAMPLES];
 	Frequency switching_freq_;
 	uint32_t update_counter_ = 0;
 	TimeSpan duty_;
-	uint32_t duty_oc_;
+	uint32_t duty_oc_ = 0;
 	OCMode pwm_mode_;
 	OCPolarity polarity_;
 	OCPolarity npolarity_;
 	uint32_t SINE_STEPS = 1024;
+	std::vector<int32_t> opamp_bias_;
 	std::complex<float> p1;
 	std::complex<float> p2;
 	std::complex<float> p3;

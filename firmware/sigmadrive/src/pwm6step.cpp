@@ -84,13 +84,11 @@ void PWM6Step::Start()
 
 	EnableARRPreload();
 	EnableOutputs();
-//	DisableOutputs();
 
 	SetJeosState(JEOS_STATE_BOOTSTRAP_INIT);
 	SetJeosState(JEOS_STATE_MEASUREMENT1);
 	bootstrap_coundown_ = 20;
 	EnableCounter();
-
 }
 
 void PWM6Step::Stop()
@@ -257,7 +255,6 @@ bool PWM6Step::Bootstrap()
 			return true;
 #endif
 			DisableCCPreload();
-			DisableOutputs();
 			DisableChannel(CH1 | CH2 | CH3 | CH1N | CH2N| CH3N);
 			uint32_t arr = GetAutoReloadValue();
 			SetOCValue(CH1, arr * 20 / 100);
@@ -266,7 +263,6 @@ bool PWM6Step::Bootstrap()
 			counter_ = 0;
 			state_ = 1;
 			SetupChannels(state_);
-			EnableOutputs();
 			EnableCCPreload();
 			SetupChannels((state_ + 1) % 6);
 			return true;

@@ -22,8 +22,7 @@
 #ifndef GPIOINIT_H_
 #define GPIOINIT_H_
 
-//#include "stm32f4xx_hal.h"
-#include "stm32f4xx_ll_gpio.h"
+#include "sigmadrive.h"
 #include "pinnames.h"
 
 class GPIOPin : public LL_GPIO_InitTypeDef {

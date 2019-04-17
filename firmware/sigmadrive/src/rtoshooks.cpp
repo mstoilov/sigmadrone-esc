@@ -1,7 +1,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-#include "stm32f4xx_hal.h"
+#include "sigmadrive.h"
 
 extern volatile uint64_t jiffies;
 
