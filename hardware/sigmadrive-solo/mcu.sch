@@ -3332,4 +3332,6 @@ F 5 "DigiKey" H 1400 7650 50  0001 C CNN "Provider"
 	1    1400 7650
 	-1   0    0    -1  
 $EndComp
+Text Notes 1900 6000 0    40   ~ 0
+CL = (CX1 * CX2) / (CX1 + CX2) + Cstray\nCX1 = CX2 = 2(CL - Cstray)\nCL=18pF, Cstray = 2pF to 5pF\nCX1 = CX2 = 2*(18 - 4.5) = 27pF\n(27pF * 27pF)/(27pF * 27pF) + 4.5pF = 18pF
 $EndSCHEMATC
