@@ -15,7 +15,8 @@ MinasA4AbsEncoder::MinasA4AbsEncoder(
 		USART& usart) :
 		usart_(usart),
 		revolutions_(0),
-		angle_deg_(0.0f)
+		angle_deg_(0.0f),
+		error_count_(0)
 {
 	almc_.as_byte_ = 0;
 }
@@ -27,7 +28,9 @@ MinasA4AbsEncoder::~MinasA4AbsEncoder()
 bool MinasA4AbsEncoder::init()
 {
 	MA4EncoderReplyA replyA;
-	MA4EncoderReplyF replyF;
+
+	usart_.EnableDEMode();
+	usart_.Enable();
 
 	reset_all_errors();
 	if (!send_command(MA4_DATA_ID_A, &replyA, sizeof(replyA))) {
@@ -89,18 +92,21 @@ bool MinasA4AbsEncoder::update()
 	MA4EncoderReply5 reply5;
 	almc_.as_byte_ = 0xff;
 	if (!send_command(MA4_DATA_ID_5, &reply5, sizeof(reply5))) {
+		++error_count_;
 		return false;
 	}
 
 	if (reply5.ctrl_field_.as_byte != MA4_DATA_ID_5) {
 		printf("PanasonicMA4Encoder received incorrect control field 0x%x, expected value was 0x%x\n",
 				reply5.ctrl_field_.as_byte, MA4_DATA_ID_5);
+		++error_count_;
 		return false;
 	}
 
 	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply5, sizeof(reply5)-1);
 	if (crc != reply5.crc_) {
 		printf("WARNING: mismatched crc!\n");
+		++error_count_;
 		return false;
 	}
 

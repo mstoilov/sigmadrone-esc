@@ -23,7 +23,6 @@
 #include "pwm6step.h"
 #include "trigger.h"
 #include "adc.h"
-#include "usartde.h"
 #include "mathtest.h"
 #include "spimaster.h"
 #include "drv8323.h"
@@ -64,8 +63,9 @@ DigitalIn drv_fault(DRV_FAULT, DigitalIn::PullNone, DigitalIn::InterruptNone);
 //#define TEST_RS485
 #ifdef TEST_RS485
 
-USARTDE usart2(PD_4,
-	{{PD_5, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART2},
+USART usart2({
+	{PD_4, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART2},
+	{PD_5, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART2},
 	{PD_6, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART2}},
 	2500000,
 	USART2,
@@ -76,9 +76,10 @@ USARTDE usart2(PD_4,
 	LL_USART_HWCONTROL_NONE,
 	0);
 
-USARTDE usart3(PD_12,
-	{{PD_8, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3},
-	{PD_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3}},
+USART usart3({
+	{PD_8, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FAST, GPIO_AF7_USART3},
+	{PD_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3},
+	{PD_12, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3}},
 	2500000,
 	USART3,
 	DMA1,
@@ -287,9 +288,10 @@ MinasA4AbsEncoder* ma4_abs_encoder_ptr = nullptr;
 
 void encoder_reader_task(void *pvParameters)
 {
-	USARTDE usart3(PD_12, {
+	USART usart3({
 			{PD_8, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FAST, GPIO_AF7_USART3},
-			{PD_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3}},
+			{PD_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3},
+			{PD_12, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3}},
 			2500000, // 2.5 Mbps
 			USART3,
 			DMA1,
@@ -400,6 +402,8 @@ void main_task(void *pvParameters)
 	PWM6Step::LogEntry log;
 
 #ifdef TEST_RS485
+	usart2.EnableDEMode();
+	usart3.EnableDEMode();
 
 	usart2.Write("Do you see this? From RS485 ... 1\n");
 	vTaskDelay(100 / portTICK_RATE_MS);
@@ -447,9 +451,10 @@ void main_task(void *pvParameters)
 
 //#define DUMP_MINAS_A4_STATE
 #ifdef DUMP_MINAS_A4_STATE
-		if (count % 20 == 0 && !!ma4_abs_encoder_ptr) {
+		if (count % 3 == 0 && !!ma4_abs_encoder_ptr) {
 			printf("Servo Angle: %3.4f\n", ma4_abs_encoder_ptr->get_absolute_angle_deg());
 			printf("Servo Revs:  %u\n", ma4_abs_encoder_ptr->get_revolutions());
+			printf("Error count: %u\n", ma4_abs_encoder_ptr->get_error_count());
 			MA4Almc almc = ma4_abs_encoder_ptr->get_last_error();
 			printf("OS: %u, FS: %u, CE: %u, OF: %u, ME: %u, SYD: %u, BA: %u\n\n",
 					almc.overspeed_, almc.full_abs_status_, almc.count_error_,

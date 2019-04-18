@@ -1,4 +1,5 @@
 #include <string.h>
+#include <cassert>
 #include "cortexm/ExceptionHandlers.h"
 #include "usart.h"
 
@@ -202,3 +203,36 @@ void USART::Write(const std::string& str)
 		ret = WriteDMA(str.c_str() + i, n);
 	}
 }
+
+bool USART::EnableDEMode(
+		uint32_t assertion_time,
+		uint32_t deassertion_time)
+{
+	assert(assertion_time < 32);
+	assert(deassertion_time < 32);
+	if (IS_UART_DRIVER_ENABLE_INSTANCE(USARTx_)) {
+		bool was_usart_enabled = IsEnabled();
+		Disable();
+		LL_USART_SetDESignalPolarity(USARTx_, LL_USART_DE_POLARITY_HIGH);
+		LL_USART_SetDEAssertionTime(USARTx_, assertion_time);
+		LL_USART_SetDEDeassertionTime(USARTx_, deassertion_time);
+		LL_USART_EnableDEMode(USARTx_);
+		if (was_usart_enabled) {
+			Enable();
+		}
+		assert(IsDEModeEnabled());
+	}
+	return IsDEModeEnabled();
+}
+
+void USART::DisableDEMode()
+{
+	bool was_usart_enabled = IsEnabled();
+	Disable();
+	LL_USART_DisableDEMode(USARTx_);
+	if (was_usart_enabled) {
+		Enable();
+	}
+	assert(!IsDEModeEnabled());
+}
+
