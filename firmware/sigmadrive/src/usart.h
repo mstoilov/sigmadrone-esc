@@ -33,7 +33,7 @@ public:
 
 	void Enable(void)			{ LL_USART_Enable(USARTx_); }
 	void Disable(void)			{ LL_USART_Disable(USARTx_); }
-	bool IsEnable(void)			{ return LL_USART_IsEnabled(USARTx_) ? true : false; }
+	bool IsEnabled(void)			{ return LL_USART_IsEnabled(USARTx_) ? true : false; }
 
 	ssize_t Write(const char* buf, size_t nbytes);
 	ssize_t WriteDMA(const char* buf, size_t nbytes);
@@ -42,6 +42,18 @@ public:
 	size_t GetRxSize();
 	std::string Read();
 	void Write(const std::string& str);
+
+	// Enables DE mode on the USART. Returns true if DE mode was successfully enabled.
+	// Parameters:
+	// - assertion_time is the No. of sample time units (1/8 or 1/16 bit duration, depending on the oversampling rate)
+	// from the time the DE signal is asserted to the beginning of the start bit; valid range is 0-31
+	// - deassertion_time is the No of sample time units from the end of the last stop bit and the de-activation of
+	// the DE signal; valid range is 0-31
+	bool EnableDEMode(
+			uint32_t assertion_time = 8,
+			uint32_t deassertion_time = 4);
+	void DisableDEMode();
+	bool IsDEModeEnabled() { return LL_USART_IsEnabledDEMode(USARTx_);}
 
 
 private:

@@ -161,6 +161,7 @@ public:
 	bool reset_all_errors();
 	bool reset_single_revolution_data() { return reset_error_code(MA4_DATA_ID_F); }
 	bool reset_multiple_revolution_data() { return reset_error_code(MA4_DATA_ID_B); }
+	uint32_t get_error_count() const { return error_count_; }
 
 private:
 	bool send_command(uint8_t command, void* reply, size_t reply_size);
@@ -176,6 +177,7 @@ private:
 	uint16_t revolutions_;
 	float angle_deg_;
 	MA4Almc almc_;
+	uint32_t error_count_;
 };
 
 #endif /* MINAS_A4_ABS_ENCODER_H_ */
