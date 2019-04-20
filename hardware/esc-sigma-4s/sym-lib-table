@@ -1,3 +1,4 @@
 (sym_lib_table
   (lib (name sigmadrone)(type Legacy)(uri ${KIPRJMOD}/../sigmadrone.lib/sigmadrone.lib)(options "")(descr ""))
+  (lib (name esc-sigma-4s-rescue)(type Legacy)(uri ${KIPRJMOD}/esc-sigma-4s-rescue.lib)(options "")(descr ""))
 )
