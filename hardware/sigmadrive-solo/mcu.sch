@@ -210,29 +210,16 @@ PC12
 Text Label 17550 8250 2    60   ~ 0
 PC13
 $Comp
-L Device:Crystal Y1
-U 1 1 58ED7267
-P 3050 5150
-F 0 "Y1" H 3050 5300 50  0000 C CNN
-F 1 "ABM3-8.000MHZ-D2Y-T" H 3050 5000 50  0000 C CNN
-F 2 "Crystal:Crystal_SMD_Abracon_ABM3-2Pin_5.0x3.2mm" H 3050 5150 50  0001 C CNN
-F 3 "http://www.abracon.com/Resonators/abm3.pdf" H 3050 5150 50  0001 C CNN
-F 4 "535-10630-1-ND" H 3050 5150 60  0001 C CNN "Part"
-F 5 "DigiKey" H 3050 5150 60  0001 C CNN "Provider"
-	1    3050 5150
-	0    1    1    0   
-$EndComp
-$Comp
 L Device:C C27
 U 1 1 58EFF4C6
-P 2550 4950
-F 0 "C27" V 2500 5050 50  0000 C CNN
-F 1 "27pF/50V/1%" V 2700 4950 50  0000 C CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 2588 4800 50  0001 C CNN
-F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 2550 4950 50  0001 C CNN
-F 4 "490-9719-1-ND" V 2550 4950 60  0001 C CNN "Part"
-F 5 "DigiKey" V 2550 4950 60  0001 C CNN "Provider"
-	1    2550 4950
+P 2250 4950
+F 0 "C27" V 2200 5050 50  0000 C CNN
+F 1 "10pF/50V/1%" V 2400 4950 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 2288 4800 50  0001 C CNN
+F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 2250 4950 50  0001 C CNN
+F 4 "490-9713-1-ND" V 2250 4950 60  0001 C CNN "Part"
+F 5 "DigiKey" V 2250 4950 60  0001 C CNN "Provider"
+	1    2250 4950
 	0    1    1    0   
 $EndComp
 $Comp
@@ -412,15 +399,15 @@ Wire Wire Line
 Wire Wire Line
 	17550 4950 17150 4950
 Wire Wire Line
-	2700 4950 3050 4950
+	2400 4950 3050 4950
 Wire Wire Line
 	3050 5300 3050 5350
 Connection ~ 3050 4950
 Connection ~ 3050 5350
 Wire Wire Line
-	1950 4950 2400 4950
+	1950 4950 2100 4950
 Wire Wire Line
-	1950 5350 2400 5350
+	1950 5350 2100 5350
 Wire Wire Line
 	15400 12300 15400 12500
 Wire Wire Line
@@ -428,9 +415,9 @@ Wire Wire Line
 Wire Wire Line
 	4600 3150 4600 2900
 Wire Wire Line
-	2700 5350 3050 5350
+	2400 5350 3050 5350
 Wire Wire Line
-	3450 5350 3450 5050
+	3800 5350 3800 5050
 Wire Wire Line
 	2850 4050 3150 4050
 Wire Wire Line
@@ -547,19 +534,6 @@ Wire Wire Line
 	3750 3600 4150 3600
 Connection ~ 4150 3600
 $Comp
-L Device:C C32
-U 1 1 5AB8ECA0
-P 2550 5350
-F 0 "C32" V 2500 5450 50  0000 C CNN
-F 1 "27pF/50V/1%" V 2700 5350 50  0000 C CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 2588 5200 50  0001 C CNN
-F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 2550 5350 50  0001 C CNN
-F 4 "490-9719-1-ND" V 2550 5350 60  0001 C CNN "Part"
-F 5 "DigiKey" V 2550 5350 60  0001 C CNN "Provider"
-	1    2550 5350
-	0    1    1    0   
-$EndComp
-$Comp
 L Device:C C15
 U 1 1 5A3A53E5
 P 4600 4500
@@ -586,7 +560,7 @@ F 5 "DigiKey" H 3750 3300 60  0001 C CNN "Provider"
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	3050 5350 3450 5350
+	3050 5350 3800 5350
 Wire Wire Line
 	9950 1900 10500 1900
 Wire Wire Line
@@ -1205,11 +1179,9 @@ F 5 "DigiKey" H 6450 14300 50  0001 C CNN "Provider"
 	1    6450 14300
 	-1   0    0    -1  
 $EndComp
-Text HLabel 22000 3750 2    60   Input ~ 0
-IC_FB
-Wire Wire Line
-	19150 7250 17150 7250
 Text HLabel 22000 3550 2    60   Input ~ 0
+IC_FB
+Text HLabel 22000 3750 2    60   Input ~ 0
 IA_FB
 Text HLabel 22000 3650 2    60   Input ~ 0
 IB_FB
@@ -1702,14 +1674,14 @@ Connection ~ 12050 2900
 $Comp
 L Device:C C53
 U 1 1 5CA0207F
-P 13700 1500
-F 0 "C53" H 13550 1400 50  0000 L CNN
-F 1 "100nF 50V" H 13250 1600 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 13738 1350 50  0001 C CNN
-F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 13700 1500 50  0001 C CNN
-F 4 "490-4779-2-ND" H 13700 1500 60  0001 C CNN "Part"
-F 5 "DigiKey" H 13700 1500 60  0001 C CNN "Provider"
-	1    13700 1500
+P 11650 1500
+F 0 "C53" H 11500 1400 50  0000 L CNN
+F 1 "100nF 50V" H 11200 1600 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 11688 1350 50  0001 C CNN
+F 3 "http://psearch.en.murata.com/capacitor/product/GCM188R71H104KA57%23.pdf" H 11650 1500 50  0001 C CNN
+F 4 "490-4779-2-ND" H 11650 1500 60  0001 C CNN "Part"
+F 5 "DigiKey" H 11650 1500 60  0001 C CNN "Provider"
+	1    11650 1500
 	-1   0    0    1   
 $EndComp
 $Comp
@@ -2660,8 +2632,6 @@ F 5 "DigiKey" V 19350 3550 60  0001 C CNN "Provider"
 	1    19350 3550
 	0    -1   -1   0   
 $EndComp
-Wire Wire Line
-	19500 3550 19900 3550
 $Comp
 L Device:R R29
 U 1 1 5CCA8210
@@ -2690,8 +2660,6 @@ F 5 "DigiKey" V 19350 3750 60  0001 C CNN "Provider"
 	1    19350 3750
 	0    -1   -1   0   
 $EndComp
-Wire Wire Line
-	19500 3750 20100 3750
 Text HLabel 19150 5350 2    60   Output ~ 0
 GATE2_ENABLE
 Wire Wire Line
@@ -2712,8 +2680,6 @@ $EndComp
 Wire Wire Line
 	20350 2650 19900 2650
 Wire Wire Line
-	19900 2650 19900 3550
-Wire Wire Line
 	20350 2750 20000 2750
 Wire Wire Line
 	20000 2750 20000 3650
@@ -2723,8 +2689,6 @@ Wire Wire Line
 	21550 2750 21550 3650
 Wire Wire Line
 	21150 2650 21650 2650
-Wire Wire Line
-	21650 2650 21650 3550
 $Comp
 L power:GND #PWR039
 U 1 1 5CE47435
@@ -2739,11 +2703,7 @@ $EndComp
 Wire Wire Line
 	21150 2850 21450 2850
 Wire Wire Line
-	21450 2850 21450 3750
-Wire Wire Line
 	20100 2850 20350 2850
-Wire Wire Line
-	20100 2850 20100 3750
 Text Label 20200 3450 1    60   ~ 0
 VBAT_ADC
 Text Label 21350 3450 1    60   ~ 0
@@ -2785,24 +2745,12 @@ Wire Wire Line
 Connection ~ 18450 3650
 Wire Wire Line
 	18450 3650 19200 3650
-Connection ~ 19900 3550
-Wire Wire Line
-	19900 3550 21650 3550
 Connection ~ 20000 3650
 Wire Wire Line
 	20000 3650 21550 3650
-Connection ~ 20100 3750
-Wire Wire Line
-	20100 3750 21450 3750
-Connection ~ 21450 3750
-Wire Wire Line
-	21450 3750 22000 3750
 Connection ~ 21550 3650
 Wire Wire Line
 	21550 3650 22000 3650
-Connection ~ 21650 3550
-Wire Wire Line
-	21650 3550 22000 3550
 $Comp
 L Device:Ferrite_Bead FB1
 U 1 1 5C9C9CF2
@@ -2861,20 +2809,6 @@ F 5 "DigiKey" H 18850 3250 60  0001 C CNN "Provider"
 	1    18850 3250
 	1    0    0    1   
 $EndComp
-Wire Wire Line
-	17150 3750 18000 3750
-Wire Wire Line
-	17150 3550 18850 3550
-Wire Wire Line
-	18000 3400 18000 3750
-Connection ~ 18000 3750
-Wire Wire Line
-	18000 3750 19200 3750
-Wire Wire Line
-	18850 3400 18850 3550
-Connection ~ 18850 3550
-Wire Wire Line
-	18850 3550 19200 3550
 $Comp
 L STM32LEGACY:STM32F745VETx U5
 U 1 1 5CA0FB06
@@ -2903,12 +2837,10 @@ Wire Wire Line
 Wire Wire Line
 	3050 4950 6950 4950
 Wire Wire Line
-	3450 5050 6950 5050
+	3800 5050 6950 5050
 NoConn ~ 6950 5650
 NoConn ~ 6950 5750
 NoConn ~ 6950 5850
-Wire Wire Line
-	12250 9200 12250 8950
 NoConn ~ 6950 6950
 NoConn ~ 6950 7050
 NoConn ~ 6950 7950
@@ -3179,68 +3111,10 @@ Wire Wire Line
 	12550 12700 12550 13250
 Wire Wire Line
 	3650 12200 3650 12600
-$Comp
-L power:GNDA #PWR?
-U 1 1 5E0C5542
-P 13700 2100
-AR Path="/58BF664D/5E0C5542" Ref="#PWR?"  Part="1" 
-AR Path="/58BE2779/5E0C5542" Ref="#PWR0144"  Part="1" 
-F 0 "#PWR0144" H 13700 1850 50  0001 C CNN
-F 1 "GNDA" H 13705 1927 50  0000 C CNN
-F 2 "" H 13700 2100 50  0001 C CNN
-F 3 "" H 13700 2100 50  0001 C CNN
-	1    13700 2100
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:+3.3VA #PWR?
-U 1 1 5E0C5548
-P 12250 2700
-AR Path="/58BF664D/5E0C5548" Ref="#PWR?"  Part="1" 
-AR Path="/58BE2779/5E0C5548" Ref="#PWR0145"  Part="1" 
-F 0 "#PWR0145" H 12250 2550 50  0001 C CNN
-F 1 "+3.3VA" H 12265 2873 50  0000 C CNN
-F 2 "" H 12250 2700 50  0001 C CNN
-F 3 "" H 12250 2700 50  0001 C CNN
-	1    12250 2700
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
-	12250 2700 12250 3050
+	11100 1900 11650 1900
 Wire Wire Line
-	11100 1900 12200 1900
-Wire Wire Line
-	11100 1050 12200 1050
-$Comp
-L power:+3.3VA #PWR?
-U 1 1 5E1D119A
-P 13700 900
-AR Path="/58BF664D/5E1D119A" Ref="#PWR?"  Part="1" 
-AR Path="/58BE2779/5E1D119A" Ref="#PWR0146"  Part="1" 
-F 0 "#PWR0146" H 13700 750 50  0001 C CNN
-F 1 "+3.3VA" H 13715 1073 50  0000 C CNN
-F 2 "" H 13700 900 50  0001 C CNN
-F 3 "" H 13700 900 50  0001 C CNN
-	1    13700 900 
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	13700 900  13700 1350
-Wire Wire Line
-	13700 2100 13700 1650
-$Comp
-L power:GNDA #PWR?
-U 1 1 5E2BC465
-P 12250 9200
-AR Path="/58BF664D/5E2BC465" Ref="#PWR?"  Part="1" 
-AR Path="/58BE2779/5E2BC465" Ref="#PWR0147"  Part="1" 
-F 0 "#PWR0147" H 12250 8950 50  0001 C CNN
-F 1 "GNDA" H 12255 9027 50  0000 C CNN
-F 2 "" H 12250 9200 50  0001 C CNN
-F 3 "" H 12250 9200 50  0001 C CNN
-	1    12250 9200
-	1    0    0    -1  
-$EndComp
+	11100 1050 11650 1050
 $Comp
 L Device:R R?
 U 1 1 5E48B9FC
@@ -3260,32 +3134,6 @@ F 5 "DigiKey" V 1400 8150 60  0001 C CNN "Provider"
 $EndComp
 Wire Wire Line
 	1400 7800 1400 7900
-$Comp
-L power:GNDA #PWR?
-U 1 1 5E6BC022
-P 1400 8450
-AR Path="/58BF664D/5E6BC022" Ref="#PWR?"  Part="1" 
-AR Path="/58BE2779/5E6BC022" Ref="#PWR036"  Part="1" 
-F 0 "#PWR036" H 1400 8200 50  0001 C CNN
-F 1 "GNDA" H 1405 8277 50  0000 C CNN
-F 2 "" H 1400 8450 50  0001 C CNN
-F 3 "" H 1400 8450 50  0001 C CNN
-	1    1400 8450
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:+3.3VA #PWR?
-U 1 1 5E6F5BEF
-P 1400 7300
-AR Path="/58BF664D/5E6F5BEF" Ref="#PWR?"  Part="1" 
-AR Path="/58BE2779/5E6F5BEF" Ref="#PWR035"  Part="1" 
-F 0 "#PWR035" H 1400 7150 50  0001 C CNN
-F 1 "+3.3VA" H 1415 7473 50  0000 C CNN
-F 2 "" H 1400 7300 50  0001 C CNN
-F 3 "" H 1400 7300 50  0001 C CNN
-	1    1400 7300
-	1    0    0    -1  
-$EndComp
 Wire Wire Line
 	1400 7300 1400 7500
 Wire Wire Line
@@ -3332,6 +3180,143 @@ F 5 "DigiKey" H 1400 7650 50  0001 C CNN "Provider"
 	1    1400 7650
 	-1   0    0    -1  
 $EndComp
-Text Notes 1900 6000 0    40   ~ 0
-CL = (CX1 * CX2) / (CX1 + CX2) + Cstray\nCX1 = CX2 = 2(CL - Cstray)\nCL=18pF, Cstray = 2pF to 5pF\nCX1 = CX2 = 2*(18 - 4.5) = 27pF\n(27pF * 27pF)/(27pF * 27pF) + 4.5pF = 18pF
+Text Notes 1400 4650 0    40   ~ 0
+CL = (CX1 * CX2) / (CX1 + CX2) + Cstray\nCX1 = CX2 = 2(CL - Cstray)\nCL=8pF, Cstray = 2pF to 5pF\nCX1 = CX2 = 2*(8 - 3) = 10pF\n(10pF * 10pF)/(10pF + 10pF) + 3pF = 8pF
+$Comp
+L Device:C C32
+U 1 1 5CBC7928
+P 2250 5350
+F 0 "C32" V 2200 5450 50  0000 C CNN
+F 1 "10pF/50V/1%" V 2400 5350 50  0000 C CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 2288 5200 50  0001 C CNN
+F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 2250 5350 50  0001 C CNN
+F 4 "490-9713-1-ND" V 2250 5350 60  0001 C CNN "Part"
+F 5 "DigiKey" V 2250 5350 60  0001 C CNN "Provider"
+	1    2250 5350
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:Crystal_GND24 Y1
+U 1 1 5CBCDE71
+P 3050 5150
+F 0 "Y1" V 3200 5000 50  0000 L CNN
+F 1 "NX3225SA-12.000M-STD-CSR-1" V 2800 4300 50  0000 L CNN
+F 2 "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm" H 3050 5150 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/NDK%20PDFs/NX3225SA_STD-CSR-3.pdf" H 3050 5150 50  0001 C CNN
+F 4 "‎644-1047-1-ND‎" H 3050 5150 50  0001 C CNN "Part"
+F 5 "DigiKey" H 3050 5150 50  0001 C CNN "Provider"
+	1    3050 5150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L power:GND #PWR0149
+U 1 1 5CCA715E
+P 2750 5150
+F 0 "#PWR0149" H 2750 4900 50  0001 C CNN
+F 1 "GND" H 2750 5000 50  0000 C CNN
+F 2 "" H 2750 5150 50  0001 C CNN
+F 3 "" H 2750 5150 50  0001 C CNN
+	1    2750 5150
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR0150
+U 1 1 5CCA7553
+P 3350 5150
+F 0 "#PWR0150" H 3350 4900 50  0001 C CNN
+F 1 "GND" H 3350 5000 50  0000 C CNN
+F 2 "" H 3350 5150 50  0001 C CNN
+F 3 "" H 3350 5150 50  0001 C CNN
+	1    3350 5150
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	3250 5150 3350 5150
+Wire Wire Line
+	2750 5150 2850 5150
+Wire Wire Line
+	17150 7250 19150 7250
+Wire Wire Line
+	21450 2850 21450 3550
+Connection ~ 21450 3550
+Wire Wire Line
+	21450 3550 22000 3550
+Wire Wire Line
+	21650 2650 21650 3750
+Connection ~ 21650 3750
+Wire Wire Line
+	21650 3750 22000 3750
+Wire Wire Line
+	19500 3750 19900 3750
+Wire Wire Line
+	19500 3550 20100 3550
+Wire Wire Line
+	19900 2650 19900 3750
+Connection ~ 19900 3750
+Wire Wire Line
+	19900 3750 21650 3750
+Wire Wire Line
+	20100 2850 20100 3550
+Connection ~ 20100 3550
+Wire Wire Line
+	20100 3550 21450 3550
+Wire Wire Line
+	17150 3550 18000 3550
+Wire Wire Line
+	17150 3750 18850 3750
+Wire Wire Line
+	18850 3400 18850 3750
+Connection ~ 18850 3750
+Wire Wire Line
+	18850 3750 19200 3750
+Wire Wire Line
+	18000 3400 18000 3550
+Connection ~ 18000 3550
+Wire Wire Line
+	18000 3550 19200 3550
+Wire Wire Line
+	12250 8950 12250 9100
+Wire Wire Line
+	12250 9100 12150 9100
+Connection ~ 12150 9100
+Wire Wire Line
+	11650 1350 11650 1050
+Connection ~ 11650 1050
+Wire Wire Line
+	11650 1050 12200 1050
+Wire Wire Line
+	11650 1650 11650 1900
+Connection ~ 11650 1900
+Wire Wire Line
+	11650 1900 12200 1900
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5D602C53
+P 1400 7300
+AR Path="/58BE27E6/5D602C53" Ref="#PWR?"  Part="1" 
+AR Path="/58BF664D/5D602C53" Ref="#PWR?"  Part="1" 
+AR Path="/58BE2779/5D602C53" Ref="#PWR0141"  Part="1" 
+F 0 "#PWR0141" H 1400 7150 50  0001 C CNN
+F 1 "+3V3" H 1415 7473 50  0000 C CNN
+F 2 "" H 1400 7300 50  0001 C CNN
+F 3 "" H 1400 7300 50  0001 C CNN
+	1    1400 7300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0142
+U 1 1 5D6065F8
+P 1400 8450
+F 0 "#PWR0142" H 1400 8200 50  0001 C CNN
+F 1 "GND" H 1400 8300 50  0000 C CNN
+F 2 "" H 1400 8450 50  0001 C CNN
+F 3 "" H 1400 8450 50  0001 C CNN
+	1    1400 8450
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	12250 3050 12250 2900
+Wire Wire Line
+	12250 2900 12150 2900
+Connection ~ 12150 2900
 $EndSCHEMATC
