@@ -104,7 +104,7 @@ F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.p
 F 4 "CRA2512-FZ-R010ELFCT-ND" V 12750 3450 60  0001 C CNN "Part"
 F 5 "DigiKey" V 12750 3450 60  0001 C CNN "Provider"
 	1    12750 3450
-	1    0    0    -1  
+	-1   0    0    1   
 $EndComp
 Wire Wire Line
 	12750 3600 12750 3850
@@ -927,7 +927,7 @@ VBAT_ADC
 Text Notes 2300 7550 0    60   ~ 0
 Voltage Sense
 Wire Wire Line
-	1950 8400 1950 8150
+	1950 8400 1950 8200
 Wire Wire Line
 	1950 7100 1950 7300
 $Comp
@@ -936,7 +936,7 @@ U 1 1 5D5E9150
 P 1950 7450
 AR Path="/58BE27E6/5D5E9150" Ref="R?"  Part="1" 
 AR Path="/58BF664D/5D5E9150" Ref="R23"  Part="1" 
-F 0 "R23" H 2100 7450 50  0000 C CNN
+F 0 "R23" V 1850 7450 50  0000 C CNN
 F 1 "47k" V 1950 7450 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 1880 7450 50  0001 C CNN
 F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 1950 7450 50  0001 C CNN
@@ -2412,26 +2412,26 @@ $EndComp
 $Comp
 L Device:R R?
 U 1 1 5CE917D9
-P 1950 8000
+P 1950 8050
 AR Path="/58BF599E/5CE917D9" Ref="R?"  Part="1" 
 AR Path="/58BE27E6/5CE917D9" Ref="R?"  Part="1" 
 AR Path="/58BF664D/5CE917D9" Ref="R24"  Part="1" 
-F 0 "R24" V 2030 8000 50  0000 C CNN
-F 1 "3.3k" V 1950 8000 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 1880 8000 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 1950 8000 50  0001 C CNN
-F 4 "311-3.30KHRCT-ND" V 1950 8000 60  0001 C CNN "Part"
-F 5 "DigiKey" V 1950 8000 60  0001 C CNN "Provider"
-	1    1950 8000
+F 0 "R24" V 2050 8050 50  0000 C CNN
+F 1 "3.3k" V 1950 8050 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 1880 8050 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 1950 8050 50  0001 C CNN
+F 4 "311-3.30KHRCT-ND" V 1950 8050 60  0001 C CNN "Part"
+F 5 "DigiKey" V 1950 8050 60  0001 C CNN "Provider"
+	1    1950 8050
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
 	1950 7600 1950 7750
 Wire Wire Line
-	3500 7750 1950 7750
+	3500 7750 2950 7750
 Connection ~ 1950 7750
 Wire Wire Line
-	1950 7750 1950 7850
+	1950 7750 1950 7900
 $Comp
 L sigmadrone:PGND #PWR0151
 U 1 1 5D3901D3
@@ -2470,4 +2470,54 @@ F 3 "" H 2550 5150 50  0001 C CNN
 	1    2550 5150
 	1    0    0    -1  
 $EndComp
+$Comp
+L Device:R R?
+U 1 1 5CD33422
+P 2450 7750
+AR Path="/58BE27E6/5CD33422" Ref="R?"  Part="1" 
+AR Path="/58BF664D/5CD33422" Ref="R34"  Part="1" 
+F 0 "R34" V 2400 7950 50  0000 C CNN
+F 1 "47k" V 2450 7750 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 2380 7750 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 2450 7750 50  0001 C CNN
+F 4 "311-47KDCT-ND" V 2450 7750 60  0001 C CNN "Part"
+F 5 "DigiKey" V 2450 7750 60  0001 C CNN "Provider"
+	1    2450 7750
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	2300 7750 1950 7750
+$Comp
+L Device:C C?
+U 1 1 5CD37F9B
+P 2950 8050
+AR Path="/58BE27E6/5CD37F9B" Ref="C?"  Part="1" 
+AR Path="/58BF664D/5CD37F9B" Ref="C45"  Part="1" 
+F 0 "C45" H 2950 8150 50  0000 L CNN
+F 1 "1uF 16V" V 2800 7800 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 2988 7900 50  0001 C CNN
+F 3 "https://product.tdk.com/info/en/catalog/datasheets/mlcc_commercial_soft_en.pdf" H 2950 8050 50  0001 C CNN
+F 4 "732-7971-1-ND" H 2950 8050 60  0001 C CNN "Part"
+F 5 "DigiKey" H 2950 8050 60  0001 C CNN "Provider"
+	1    2950 8050
+	1    0    0    -1  
+$EndComp
+$Comp
+L sigmadrone:PGND #PWR035
+U 1 1 5CD3C239
+P 2950 8400
+F 0 "#PWR035" H 2950 8150 50  0001 C CNN
+F 1 "PGND" H 2955 8227 50  0000 C CNN
+F 2 "" H 2950 8400 50  0001 C CNN
+F 3 "" H 2950 8400 50  0001 C CNN
+	1    2950 8400
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2950 7900 2950 7750
+Connection ~ 2950 7750
+Wire Wire Line
+	2950 7750 2600 7750
+Wire Wire Line
+	2950 8200 2950 8400
 $EndSCHEMATC
