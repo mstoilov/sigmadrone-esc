@@ -213,11 +213,11 @@ $Comp
 L Device:C C27
 U 1 1 58EFF4C6
 P 2250 4950
-F 0 "C27" V 2200 5050 50  0000 C CNN
-F 1 "10pF/50V/1%" V 2400 4950 50  0000 C CNN
+F 0 "C27" V 2200 5100 50  0000 C CNN
+F 1 "27pF/50V/1%" V 2400 4950 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2288 4800 50  0001 C CNN
 F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 2250 4950 50  0001 C CNN
-F 4 "490-9713-1-ND" V 2250 4950 60  0001 C CNN "Part"
+F 4 "490-9719-1-ND" V 2250 4950 60  0001 C CNN "Part"
 F 5 "DigiKey" V 2250 4950 60  0001 C CNN "Provider"
 	1    2250 4950
 	0    1    1    0   
@@ -1179,9 +1179,9 @@ F 5 "DigiKey" H 6450 14300 50  0001 C CNN "Provider"
 	1    6450 14300
 	-1   0    0    -1  
 $EndComp
-Text HLabel 22000 3550 2    60   Input ~ 0
-IC_FB
 Text HLabel 22000 3750 2    60   Input ~ 0
+IC_FB
+Text HLabel 22000 3550 2    60   Input ~ 0
 IA_FB
 Text HLabel 22000 3650 2    60   Input ~ 0
 IB_FB
@@ -2583,42 +2583,42 @@ Wire Wire Line
 $Comp
 L Device:C C42
 U 1 1 5CAFE6A1
-P 18000 3250
+P 18000 2900
 AR Path="/58BE2779/5CAFE6A1" Ref="C42"  Part="1" 
 AR Path="/58BF664D/5CAFE6A1" Ref="C?"  Part="1" 
-F 0 "C42" H 18000 3350 50  0000 L CNN
-F 1 "1000pF/50V" V 17850 3050 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 18038 3100 50  0001 C CNN
-F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2018/06/11/CL10C102JB8NNNC.pdf" H 18000 3250 50  0001 C CNN
-F 4 "1276-1091-2-ND" H 18000 3250 60  0001 C CNN "Part"
-F 5 "DigiKey" H 18000 3250 60  0001 C CNN "Provider"
-	1    18000 3250
+F 0 "C42" H 18000 3000 50  0000 L CNN
+F 1 "1000pF/50V" V 17850 2700 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 18038 2750 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2018/06/11/CL10C102JB8NNNC.pdf" H 18000 2900 50  0001 C CNN
+F 4 "1276-1091-2-ND" H 18000 2900 60  0001 C CNN "Part"
+F 5 "DigiKey" H 18000 2900 60  0001 C CNN "Provider"
+	1    18000 2900
 	1    0    0    1   
 $EndComp
 $Comp
 L power:GND #PWR017
 U 1 1 5CC09724
-P 18450 2900
-F 0 "#PWR017" H 18450 2650 50  0001 C CNN
-F 1 "GND" H 18450 2750 50  0000 C CNN
-F 2 "" H 18450 2900 50  0001 C CNN
-F 3 "" H 18450 2900 50  0001 C CNN
-	1    18450 2900
+P 18450 2550
+F 0 "#PWR017" H 18450 2300 50  0001 C CNN
+F 1 "GND" H 18450 2400 50  0000 C CNN
+F 2 "" H 18450 2550 50  0001 C CNN
+F 3 "" H 18450 2550 50  0001 C CNN
+	1    18450 2550
 	1    0    0    1   
 $EndComp
 Wire Wire Line
-	18000 3100 18000 3000
+	18000 2750 18000 2650
 Wire Wire Line
-	18000 3000 18450 3000
+	18000 2650 18450 2650
 Wire Wire Line
-	18850 3000 18850 3100
+	18850 2650 18850 2750
 Wire Wire Line
-	18450 3100 18450 3000
-Connection ~ 18450 3000
+	18450 2750 18450 2650
+Connection ~ 18450 2650
 Wire Wire Line
-	18450 3000 18850 3000
+	18450 2650 18850 2650
 Wire Wire Line
-	18450 3000 18450 2900
+	18450 2650 18450 2550
 $Comp
 L Device:R R27
 U 1 1 5CCA7B7A
@@ -2645,8 +2645,6 @@ F 5 "DigiKey" V 19350 3650 60  0001 C CNN "Provider"
 	1    19350 3650
 	0    -1   -1   0   
 $EndComp
-Wire Wire Line
-	19500 3650 20000 3650
 $Comp
 L Device:R R31
 U 1 1 5CCA82C4
@@ -2681,8 +2679,6 @@ Wire Wire Line
 	20350 2650 19900 2650
 Wire Wire Line
 	20350 2750 20000 2750
-Wire Wire Line
-	20000 2750 20000 3650
 Wire Wire Line
 	21150 2750 21550 2750
 Wire Wire Line
@@ -2741,13 +2737,10 @@ Wire Wire Line
 Wire Wire Line
 	17150 3650 18450 3650
 Wire Wire Line
-	18450 3400 18450 3650
+	18450 3050 18450 3650
 Connection ~ 18450 3650
 Wire Wire Line
 	18450 3650 19200 3650
-Connection ~ 20000 3650
-Wire Wire Line
-	20000 3650 21550 3650
 Connection ~ 21550 3650
 Wire Wire Line
 	21550 3650 22000 3650
@@ -2782,31 +2775,31 @@ $EndComp
 $Comp
 L Device:C C43
 U 1 1 5CD712BE
-P 18450 3250
+P 18450 2900
 AR Path="/58BE2779/5CD712BE" Ref="C43"  Part="1" 
 AR Path="/58BF664D/5CD712BE" Ref="C?"  Part="1" 
-F 0 "C43" H 18450 3350 50  0000 L CNN
-F 1 "1000pF/50V" V 18300 3050 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 18488 3100 50  0001 C CNN
-F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2018/06/11/CL10C102JB8NNNC.pdf" H 18450 3250 50  0001 C CNN
-F 4 "1276-1091-2-ND" H 18450 3250 60  0001 C CNN "Part"
-F 5 "DigiKey" H 18450 3250 60  0001 C CNN "Provider"
-	1    18450 3250
+F 0 "C43" H 18450 3000 50  0000 L CNN
+F 1 "1000pF/50V" V 18300 2700 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 18488 2750 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2018/06/11/CL10C102JB8NNNC.pdf" H 18450 2900 50  0001 C CNN
+F 4 "1276-1091-2-ND" H 18450 2900 60  0001 C CNN "Part"
+F 5 "DigiKey" H 18450 2900 60  0001 C CNN "Provider"
+	1    18450 2900
 	1    0    0    1   
 $EndComp
 $Comp
 L Device:C C44
 U 1 1 5CD72252
-P 18850 3250
+P 18850 2900
 AR Path="/58BE2779/5CD72252" Ref="C44"  Part="1" 
 AR Path="/58BF664D/5CD72252" Ref="C?"  Part="1" 
-F 0 "C44" H 18850 3350 50  0000 L CNN
-F 1 "1000pF/50V" V 18700 3050 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0603_1608Metric" H 18888 3100 50  0001 C CNN
-F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2018/06/11/CL10C102JB8NNNC.pdf" H 18850 3250 50  0001 C CNN
-F 4 "1276-1091-2-ND" H 18850 3250 60  0001 C CNN "Part"
-F 5 "DigiKey" H 18850 3250 60  0001 C CNN "Provider"
-	1    18850 3250
+F 0 "C44" H 18850 3000 50  0000 L CNN
+F 1 "1000pF/50V" V 18700 2700 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0603_1608Metric" H 18888 2750 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/__icsFiles/afieldfile/2018/06/11/CL10C102JB8NNNC.pdf" H 18850 2900 50  0001 C CNN
+F 4 "1276-1091-2-ND" H 18850 2900 60  0001 C CNN "Part"
+F 5 "DigiKey" H 18850 2900 60  0001 C CNN "Provider"
+	1    18850 2900
 	1    0    0    1   
 $EndComp
 $Comp
@@ -3180,97 +3173,47 @@ F 5 "DigiKey" H 1400 7650 50  0001 C CNN "Provider"
 	1    1400 7650
 	-1   0    0    -1  
 $EndComp
-Text Notes 1400 4650 0    40   ~ 0
-CL = (CX1 * CX2) / (CX1 + CX2) + Cstray\nCX1 = CX2 = 2(CL - Cstray)\nCL=8pF, Cstray = 2pF to 5pF\nCX1 = CX2 = 2*(8 - 3) = 10pF\n(10pF * 10pF)/(10pF + 10pF) + 3pF = 8pF
+Text Notes 1650 5950 0    40   ~ 0
+CL = (CX1 * CX2) / (CX1 + CX2) + Cstray\nCX1 = CX2 = 2(CL - Cstray)\nCL=18pF, Cstray = 2pF to 5pF\nCX1 = CX2 = 2*(18 - 4.5) = 27pF\n(27pF * 27pF)/(27pF + 27pF) + 4.5pF = 18pF
 $Comp
 L Device:C C32
 U 1 1 5CBC7928
 P 2250 5350
-F 0 "C32" V 2200 5450 50  0000 C CNN
-F 1 "10pF/50V/1%" V 2400 5350 50  0000 C CNN
+F 0 "C32" V 2200 5500 50  0000 C CNN
+F 1 "27pF/50V/1%" V 2400 5350 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2288 5200 50  0001 C CNN
 F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 2250 5350 50  0001 C CNN
-F 4 "490-9713-1-ND" V 2250 5350 60  0001 C CNN "Part"
+F 4 "490-9719-1-ND" V 2250 5350 60  0001 C CNN "Part"
 F 5 "DigiKey" V 2250 5350 60  0001 C CNN "Provider"
 	1    2250 5350
 	0    1    1    0   
 $EndComp
 $Comp
-L Device:Crystal_GND24 Y1
+L Device:Crystal Y1
 U 1 1 5CBCDE71
 P 3050 5150
-F 0 "Y1" V 3200 5000 50  0000 L CNN
-F 1 "NX3225SA-12.000M-STD-CSR-1" V 2800 4300 50  0000 L CNN
-F 2 "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm" H 3050 5150 50  0001 C CNN
-F 3 "https://media.digikey.com/pdf/Data%20Sheets/NDK%20PDFs/NX3225SA_STD-CSR-3.pdf" H 3050 5150 50  0001 C CNN
-F 4 "‎644-1047-1-ND‎" H 3050 5150 50  0001 C CNN "Part"
+F 0 "Y1" V 3150 4950 50  0000 L CNN
+F 1 "ABM3-8.000MHZ-D2Y-T" V 2750 4550 50  0000 L CNN
+F 2 "Crystal:Crystal_SMD_Abracon_ABM3-2Pin_5.0x3.2mm" H 3050 5150 50  0001 C CNN
+F 3 "http://www.abracon.com/Resonators/abm3.pdf" H 3050 5150 50  0001 C CNN
+F 4 "535-10630-1-ND" H 3050 5150 50  0001 C CNN "Part"
 F 5 "DigiKey" H 3050 5150 50  0001 C CNN "Provider"
 	1    3050 5150
 	0    -1   -1   0   
 $EndComp
-$Comp
-L power:GND #PWR0149
-U 1 1 5CCA715E
-P 2750 5150
-F 0 "#PWR0149" H 2750 4900 50  0001 C CNN
-F 1 "GND" H 2750 5000 50  0000 C CNN
-F 2 "" H 2750 5150 50  0001 C CNN
-F 3 "" H 2750 5150 50  0001 C CNN
-	1    2750 5150
-	0    1    1    0   
-$EndComp
-$Comp
-L power:GND #PWR0150
-U 1 1 5CCA7553
-P 3350 5150
-F 0 "#PWR0150" H 3350 4900 50  0001 C CNN
-F 1 "GND" H 3350 5000 50  0000 C CNN
-F 2 "" H 3350 5150 50  0001 C CNN
-F 3 "" H 3350 5150 50  0001 C CNN
-	1    3350 5150
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	3250 5150 3350 5150
-Wire Wire Line
-	2750 5150 2850 5150
 Wire Wire Line
 	17150 7250 19150 7250
-Wire Wire Line
-	21450 2850 21450 3550
-Connection ~ 21450 3550
-Wire Wire Line
-	21450 3550 22000 3550
-Wire Wire Line
-	21650 2650 21650 3750
-Connection ~ 21650 3750
-Wire Wire Line
-	21650 3750 22000 3750
-Wire Wire Line
-	19500 3750 19900 3750
-Wire Wire Line
-	19500 3550 20100 3550
-Wire Wire Line
-	19900 2650 19900 3750
-Connection ~ 19900 3750
-Wire Wire Line
-	19900 3750 21650 3750
-Wire Wire Line
-	20100 2850 20100 3550
-Connection ~ 20100 3550
-Wire Wire Line
-	20100 3550 21450 3550
 Wire Wire Line
 	17150 3550 18000 3550
 Wire Wire Line
 	17150 3750 18850 3750
 Wire Wire Line
-	18850 3400 18850 3750
+	18850 3050 18850 3750
 Connection ~ 18850 3750
 Wire Wire Line
 	18850 3750 19200 3750
 Wire Wire Line
-	18000 3400 18000 3550
+	18000 3050 18000 3550
 Connection ~ 18000 3550
 Wire Wire Line
 	18000 3550 19200 3550
@@ -3319,4 +3262,35 @@ Wire Wire Line
 Wire Wire Line
 	12250 2900 12150 2900
 Connection ~ 12150 2900
+Wire Wire Line
+	21450 2850 21450 3750
+Connection ~ 21450 3750
+Wire Wire Line
+	21450 3750 22000 3750
+Wire Wire Line
+	21650 2650 21650 3550
+Connection ~ 21650 3550
+Wire Wire Line
+	21650 3550 22000 3550
+Wire Wire Line
+	19500 3750 20100 3750
+Wire Wire Line
+	20000 3650 21550 3650
+Wire Wire Line
+	19500 3650 20000 3650
+Connection ~ 20000 3650
+Wire Wire Line
+	20000 2750 20000 3650
+Wire Wire Line
+	19500 3550 19900 3550
+Wire Wire Line
+	20100 2850 20100 3750
+Connection ~ 20100 3750
+Wire Wire Line
+	20100 3750 21450 3750
+Wire Wire Line
+	19900 2650 19900 3550
+Connection ~ 19900 3550
+Wire Wire Line
+	19900 3550 21650 3550
 $EndSCHEMATC
