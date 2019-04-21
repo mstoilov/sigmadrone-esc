@@ -1048,7 +1048,7 @@ F 3 "" H 6900 7600 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	6900 7100 6900 7400
+	6900 7100 6900 7250
 $Comp
 L sigmadrone:VIN #PWR?
 U 1 1 5D5E91C9
@@ -2010,7 +2010,7 @@ F 3 "" H 7450 7600 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	7450 7100 7450 7400
+	7450 7100 7450 7250
 $Comp
 L Device:R R?
 U 1 1 5CD745A7
@@ -2059,24 +2059,24 @@ Wire Wire Line
 $Comp
 L Device:Net-Tie_2 NT1
 U 1 1 5D4D5931
-P 7200 7400
-F 0 "NT1" H 7200 7578 50  0000 C CNN
-F 1 "Net-Tie_2" H 7200 7487 50  0000 C CNN
-F 2 "NetTie:NetTie-2_SMD_Pad0.5mm" H 7200 7400 50  0001 C CNN
-F 3 "~" H 7200 7400 50  0001 C CNN
-	1    7200 7400
+P 7200 7250
+F 0 "NT1" H 7200 7428 50  0000 C CNN
+F 1 "Net-Tie_2" H 7200 7337 50  0000 C CNN
+F 2 "NetTie:NetTie-2_SMD_Pad0.5mm" H 7200 7250 50  0001 C CNN
+F 3 "~" H 7200 7250 50  0001 C CNN
+	1    7200 7250
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7100 7400 6900 7400
-Connection ~ 6900 7400
+	7100 7250 6900 7250
+Connection ~ 6900 7250
 Wire Wire Line
-	6900 7400 6900 7600
+	6900 7250 6900 7500
 Wire Wire Line
-	7300 7400 7450 7400
-Connection ~ 7450 7400
+	7300 7250 7450 7250
+Connection ~ 7450 7250
 Wire Wire Line
-	7450 7400 7450 7600
+	7450 7250 7450 7500
 Wire Wire Line
 	1450 12550 3950 12550
 $Comp
@@ -2520,4 +2520,25 @@ Wire Wire Line
 	2950 7750 2600 7750
 Wire Wire Line
 	2950 8200 2950 8400
+$Comp
+L Device:Net-Tie_2 NT3
+U 1 1 5CBF51EC
+P 7200 7500
+F 0 "NT3" H 7200 7678 50  0000 C CNN
+F 1 "Net-Tie_2" H 7200 7587 50  0000 C CNN
+F 2 "NetTie:NetTie-2_SMD_Pad0.5mm" H 7200 7500 50  0001 C CNN
+F 3 "~" H 7200 7500 50  0001 C CNN
+	1    7200 7500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7300 7500 7450 7500
+Connection ~ 7450 7500
+Wire Wire Line
+	7450 7500 7450 7600
+Wire Wire Line
+	7100 7500 6900 7500
+Connection ~ 6900 7500
+Wire Wire Line
+	6900 7500 6900 7600
 $EndSCHEMATC
