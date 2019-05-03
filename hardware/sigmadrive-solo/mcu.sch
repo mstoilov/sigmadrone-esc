@@ -214,10 +214,10 @@ L Device:C C27
 U 1 1 58EFF4C6
 P 2250 4950
 F 0 "C27" V 2200 5100 50  0000 C CNN
-F 1 "27pF/50V/1%" V 2400 4950 50  0000 C CNN
+F 1 "7pF/50V/1%" V 2400 4950 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2288 4800 50  0001 C CNN
 F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 2250 4950 50  0001 C CNN
-F 4 "490-9719-1-ND" V 2250 4950 60  0001 C CNN "Part"
+F 4 "‎1276-2137-1-ND‎" V 2250 4950 60  0001 C CNN "Part"
 F 5 "DigiKey" V 2250 4950 60  0001 C CNN "Provider"
 	1    2250 4950
 	0    1    1    0   
@@ -358,12 +358,12 @@ $EndComp
 $Comp
 L power:GND #PWR022
 U 1 1 58F52F40
-P 10500 2100
-F 0 "#PWR022" H 10500 1850 50  0001 C CNN
-F 1 "GND" H 10500 1950 50  0000 C CNN
-F 2 "" H 10500 2100 50  0001 C CNN
-F 3 "" H 10500 2100 50  0001 C CNN
-	1    10500 2100
+P 9350 2100
+F 0 "#PWR022" H 9350 1850 50  0001 C CNN
+F 1 "GND" H 9350 1950 50  0000 C CNN
+F 2 "" H 9350 2100 50  0001 C CNN
+F 3 "" H 9350 2100 50  0001 C CNN
+	1    9350 2100
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -438,7 +438,7 @@ Connection ~ 10500 1900
 Wire Wire Line
 	11100 1050 11100 1350
 Wire Wire Line
-	9950 850  9950 1050
+	9350 850  9350 1050
 Connection ~ 9950 1050
 Wire Wire Line
 	10500 1350 10500 1050
@@ -564,7 +564,7 @@ Wire Wire Line
 Wire Wire Line
 	9950 1900 10500 1900
 Wire Wire Line
-	10500 1900 10500 2100
+	9350 1900 9350 2100
 Wire Wire Line
 	10500 1900 11100 1900
 Wire Wire Line
@@ -2290,15 +2290,15 @@ $EndComp
 $Comp
 L power:+3V3 #PWR?
 U 1 1 5CA1A305
-P 9950 850
+P 9350 850
 AR Path="/58BE27E6/5CA1A305" Ref="#PWR?"  Part="1" 
 AR Path="/58BF664D/5CA1A305" Ref="#PWR?"  Part="1" 
 AR Path="/58BE2779/5CA1A305" Ref="#PWR0106"  Part="1" 
-F 0 "#PWR0106" H 9950 700 50  0001 C CNN
-F 1 "+3V3" H 9965 1023 50  0000 C CNN
-F 2 "" H 9950 850 50  0001 C CNN
-F 3 "" H 9950 850 50  0001 C CNN
-	1    9950 850 
+F 0 "#PWR0106" H 9350 700 50  0001 C CNN
+F 1 "+3V3" H 9365 1023 50  0000 C CNN
+F 2 "" H 9350 850 50  0001 C CNN
+F 3 "" H 9350 850 50  0001 C CNN
+	1    9350 850 
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -3174,32 +3174,19 @@ F 5 "DigiKey" H 1400 7650 50  0001 C CNN "Provider"
 	-1   0    0    -1  
 $EndComp
 Text Notes 1650 5950 0    40   ~ 0
-CL = (CX1 * CX2) / (CX1 + CX2) + Cstray\nCX1 = CX2 = 2(CL - Cstray)\nCL=18pF, Cstray = 2pF to 5pF\nCX1 = CX2 = 2*(18 - 4.5) = 27pF\n(27pF * 27pF)/(27pF + 27pF) + 4.5pF = 18pF
+CL = (CX1 * CX2) / (CX1 + CX2) + Cstray\nCX1 = CX2 = 2(CL - Cstray)\nCL=8pF, Cstray = 2pF to 5pF\nCX1 = CX2 = 2*(8 - 4.5) = 7pF\n(7pF * 7pF)/(7pF + 7pF) + 4.5pF = 8pF
 $Comp
 L Device:C C32
 U 1 1 5CBC7928
 P 2250 5350
 F 0 "C32" V 2200 5500 50  0000 C CNN
-F 1 "27pF/50V/1%" V 2400 5350 50  0000 C CNN
+F 1 "7pF/50V/1%" V 2400 5350 50  0000 C CNN
 F 2 "Capacitor_SMD:C_0603_1608Metric" H 2288 5200 50  0001 C CNN
 F 3 "http://search.murata.co.jp/Ceramy/image/img/A01X/partnumbering_e_01.pdf" H 2250 5350 50  0001 C CNN
-F 4 "490-9719-1-ND" V 2250 5350 60  0001 C CNN "Part"
+F 4 "‎1276-2137-1-ND‎" V 2250 5350 60  0001 C CNN "Part"
 F 5 "DigiKey" V 2250 5350 60  0001 C CNN "Provider"
 	1    2250 5350
 	0    1    1    0   
-$EndComp
-$Comp
-L Device:Crystal Y1
-U 1 1 5CBCDE71
-P 3050 5150
-F 0 "Y1" V 3150 4950 50  0000 L CNN
-F 1 "ABM3-8.000MHZ-D2Y-T" V 2750 4550 50  0000 L CNN
-F 2 "Crystal:Crystal_SMD_Abracon_ABM3-2Pin_5.0x3.2mm" H 3050 5150 50  0001 C CNN
-F 3 "http://www.abracon.com/Resonators/abm3.pdf" H 3050 5150 50  0001 C CNN
-F 4 "535-10630-1-ND" H 3050 5150 50  0001 C CNN "Part"
-F 5 "DigiKey" H 3050 5150 50  0001 C CNN "Provider"
-	1    3050 5150
-	0    -1   -1   0   
 $EndComp
 Wire Wire Line
 	17150 7250 19150 7250
@@ -3293,4 +3280,66 @@ Wire Wire Line
 Connection ~ 19900 3550
 Wire Wire Line
 	19900 3550 21650 3550
+$Comp
+L Device:Crystal_GND24 Y1
+U 1 1 5CCE088E
+P 3050 5150
+F 0 "Y1" V 2900 5200 50  0000 L CNN
+F 1 "NX3225SA-12.000M-STD-CSR-1" V 3350 4800 50  0000 L CNN
+F 2 "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm" H 3050 5150 50  0001 C CNN
+F 3 "https://media.digikey.com/pdf/Data%20Sheets/NDK%20PDFs/NX3225SA.pdf" H 3050 5150 50  0001 C CNN
+F 4 "644-1047-1-ND" H 3050 5150 50  0001 C CNN "Part"
+F 5 "DigiKey" H 3050 5150 50  0001 C CNN "Provider"
+	1    3050 5150
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR036
+U 1 1 5CCE856F
+P 2850 5150
+F 0 "#PWR036" H 2850 4900 50  0001 C CNN
+F 1 "GND" H 2850 5000 50  0000 C CNN
+F 2 "" H 2850 5150 50  0001 C CNN
+F 3 "" H 2850 5150 50  0001 C CNN
+	1    2850 5150
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR043
+U 1 1 5CCE8973
+P 3250 5150
+F 0 "#PWR043" H 3250 4900 50  0001 C CNN
+F 1 "GND" H 3250 5000 50  0000 C CNN
+F 2 "" H 3250 5150 50  0001 C CNN
+F 3 "" H 3250 5150 50  0001 C CNN
+	1    3250 5150
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5CCF79F2
+P 9350 1500
+AR Path="/58BE27E6/5CCF79F2" Ref="C?"  Part="1" 
+AR Path="/58BF664D/5CCF79F2" Ref="C?"  Part="1" 
+AR Path="/58BE2779/5CCF79F2" Ref="C46"  Part="1" 
+F 0 "C46" H 9350 1600 50  0000 L CNN
+F 1 "4.7uF 50V" V 9200 1250 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 9388 1350 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 9350 1500 50  0001 C CNN
+F 4 "490-10751-2-ND" H 9350 1500 60  0001 C CNN "Part"
+F 5 "DigiKey" H 9350 1500 60  0001 C CNN "Provider"
+	1    9350 1500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9350 1350 9350 1050
+Wire Wire Line
+	9350 1050 9950 1050
+Wire Wire Line
+	9350 1650 9350 1900
+Wire Wire Line
+	9350 1900 9950 1900
+Connection ~ 9950 1900
+Connection ~ 9350 1050
+Connection ~ 9350 1900
 $EndSCHEMATC
