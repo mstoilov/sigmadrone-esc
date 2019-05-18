@@ -60,7 +60,7 @@ DigitalIn btn_user(BTN_USER, DigitalIn::PullDefault, DigitalIn::InterruptFalling
 DigitalIn encoder_z(PD_7, DigitalIn::PullDown, DigitalIn::InterruptRising);
 DigitalIn drv_fault(DRV_FAULT, DigitalIn::PullNone, DigitalIn::InterruptNone);
 
-//#define TEST_RS485
+#undef TEST_RS485
 #ifdef TEST_RS485
 
 USART usart2({
@@ -104,7 +104,7 @@ QuadratureDecoder pwm4({
 
 QuadratureDecoder *p_encoder = &pwm4;
 
-#define USE_6STEP
+#undef USE_6STEP
 #ifdef USE_6STEP
 PWM6Step pwm1({
 		{PE_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},

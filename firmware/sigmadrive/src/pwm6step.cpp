@@ -235,6 +235,11 @@ bool PWM6Step::Bootstrap()
 		SetOCValue(CH1, arr * BOOTSTRAP_INIT_POSITION_THROTTLE * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
 		SetOCValue(CH2, arr * BOOTSTRAP_INIT_POSITION_THROTTLE * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
 		SetOCValue(CH3, arr * BOOTSTRAP_INIT_POSITION_THROTTLE * (BOOTSTRAP_DELAY - boots_.delay_counter) / BOOTSTRAP_DELAY);
+
+//		SetOCValue(CH1, arr * BOOTSTRAP_INIT_POSITION_THROTTLE);
+//		SetOCValue(CH2, arr * BOOTSTRAP_INIT_POSITION_THROTTLE);
+//		SetOCValue(CH3, arr * BOOTSTRAP_INIT_POSITION_THROTTLE);
+
 		EnableCCPreload();
 		return false;
 	}
