@@ -500,7 +500,9 @@ void
 __initialize_hardware (void)
 {
   // Enable instruction & data cache.
+//  SCB_InvalidateICache ();
 //  SCB_EnableICache ();
+//  SCB_InvalidateDCache ();
 //  SCB_EnableDCache ();
 
 //  vTaskSuspendAll();
@@ -516,7 +518,6 @@ __initialize_hardware (void)
   // Call the CSMSIS system clock routine to store the clock frequency
   // in the SystemCoreClock global RAM location.
   SystemCoreClockUpdate ();
-
 }
 
 // ----------------------------------------------------------------------------

@@ -570,7 +570,10 @@ int main(int argc, char* argv[])
 	TaskHandle_t encoder_reader_task_handle = 0;
 
 	// Enable instruction & data cache.
+	// Invalidate each cache before enabling. See AN4839
+	SCB_InvalidateICache ();
 	SCB_EnableICache ();
+	SCB_InvalidateDCache ();
 	SCB_EnableDCache ();
 
 	/* Create tasks */
