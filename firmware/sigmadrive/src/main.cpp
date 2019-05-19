@@ -569,6 +569,10 @@ int main(int argc, char* argv[])
 	TaskHandle_t main_task_handle = 0;
 	TaskHandle_t encoder_reader_task_handle = 0;
 
+	// Enable instruction & data cache.
+	SCB_EnableICache ();
+	SCB_EnableDCache ();
+
 	/* Create tasks */
 	xTaskCreate(
 			main_task, /* Function pointer */
