@@ -571,10 +571,16 @@ int main(int argc, char* argv[])
 
 	// Enable instruction & data cache.
 	// Invalidate each cache before enabling. See AN4839
+#define ENABLE_ICACHE
+#undef ENABLE_DCACHE
+#ifdef ENABLE_ICACHE
 	SCB_InvalidateICache ();
 	SCB_EnableICache ();
+#endif
+#ifdef ENABLE_DCACHE
 	SCB_InvalidateDCache ();
 	SCB_EnableDCache ();
+#endif
 
 	/* Create tasks */
 	xTaskCreate(
