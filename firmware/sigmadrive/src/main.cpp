@@ -104,7 +104,7 @@ QuadratureDecoder pwm4({
 
 QuadratureDecoder *p_encoder = &pwm4;
 
-#undef USE_6STEP
+#define USE_6STEP
 #ifdef USE_6STEP
 PWM6Step pwm1({
 		{PE_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
@@ -368,7 +368,11 @@ void main_task(void *pvParameters)
 
 
 #ifdef USE_6STEP
+#ifdef PANASONIC_MOTOR
+	pwm1.SetThrottle(0.60);
+#else
 	pwm1.SetThrottle(0.35);
+#endif
 	adc.CallbackJEOS(&pwm1, &PWM6Step::HandleJEOS);
 	adc_current.CallbackJEOS(&pwm1, &PWM6Step::HandleCurrentJEOS);
 	adc_current.Enable();
@@ -393,7 +397,11 @@ void main_task(void *pvParameters)
 
 	pwm1.SetOpAmpBias(opamp_bias);
 	pwm1.SetElectricalRotationsPerSecond(Frequency::from_millihertz(500 * PWMSine::M2E_RATIO));
+#ifdef PANASONIC_MOTOR
+	pwm1.SetThrottle(0.15);
+#else
 	pwm1.SetThrottle(0.05);
+#endif
 	adc1.CallbackJEOS([=](int32_t *injdata, size_t size){pwm1.HandleCurrentJEOS(injdata, 0, size);});
 	adc2.CallbackJEOS([=](int32_t *injdata, size_t size){pwm1.HandleCurrentJEOS(injdata, 1, size);});
 	adc3.CallbackJEOS([=](int32_t *injdata, size_t size){pwm1.HandleCurrentJEOS(injdata, 2, size);});

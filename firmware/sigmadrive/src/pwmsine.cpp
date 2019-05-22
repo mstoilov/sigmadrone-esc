@@ -70,6 +70,14 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 	});
 
 	run_stack_.push_back([&]()->bool {
+		v = v * r;
+		if (update_counter_++ >= 1 * M2E_RATIO * SINE_STEPS) {
+			return true;
+		}
+		return false;
+	});
+
+	run_stack_.push_back([&]()->bool {
 		update_counter_++;
 		float enc_theta = 2 * M_PI * (p_encoder->GetPosition() % (2048 / M2E_RATIO)) / (2048 / M2E_RATIO);
 		v = std::polar<float>(1.0f, enc_theta) * std::complex<float>(0.0f, 1.0f);

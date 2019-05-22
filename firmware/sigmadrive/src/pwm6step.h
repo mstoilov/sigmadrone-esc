@@ -16,19 +16,27 @@
 #include "sigmadrive.h"
 
 
+//#define PANASONIC_MOTOR
+#ifdef PANASONIC_MOTOR
+#define MOTOR_POLES_NUMBER 8
+#else
+#define MOTOR_POLES_NUMBER 14
+#endif
+
 class PWM6Step : public Timer {
 public:
 	typedef Timer base;
 
+	static constexpr unsigned int NUMBER_OF_POLES = MOTOR_POLES_NUMBER;
+	static constexpr unsigned int M2E_RATIO = NUMBER_OF_POLES / 2;
 	static constexpr unsigned int SINE_STATES = 6;
 	static constexpr unsigned int MAX_HERTZ = 150;
 	static constexpr unsigned int MIN_MILLIHERTZ = 1100;
-	static constexpr unsigned int M2E_RATIO = 7;
 	static constexpr unsigned int BEMF_INTEGRAL_THRESHOLD = 3300;
 	static constexpr unsigned int ADC_A = 0;
 	static constexpr unsigned int ADC_B = 1;
 	static constexpr unsigned int ADC_C = 2;
-	static constexpr float MAX_THROTTLE = 0.65;
+	static constexpr float MAX_THROTTLE = 0.70;
 	static constexpr float MIN_THROTTLE = 0.05;
 	static constexpr unsigned int adc_data_counter1 = 1;
 	static constexpr unsigned int adc_data_counter2 = 5;

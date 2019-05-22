@@ -38,12 +38,20 @@ struct RunState {
 	std::function<bool(void)> rs_function;
 };
 
+
+//#define PANASONIC_MOTOR
+#ifdef PANASONIC_MOTOR
+#define MOTOR_POLES_NUMBER 8
+#else
+#define MOTOR_POLES_NUMBER 14
+#endif
+
 class PWMSine : public Timer
 {
 public:
 	using base = Timer;
 
-	static constexpr unsigned int NUMBER_OF_POLES = 14;
+	static constexpr unsigned int NUMBER_OF_POLES = MOTOR_POLES_NUMBER;
 	static constexpr unsigned int M2E_RATIO = NUMBER_OF_POLES / 2;
 	static constexpr unsigned int SINE_SAMPLES = 1024;
 	static constexpr unsigned int CURRENT_SAMPLES = 3;

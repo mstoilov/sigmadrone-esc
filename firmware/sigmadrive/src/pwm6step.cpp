@@ -211,14 +211,18 @@ void PWM6Step::SetJeosState(JeosState state)
 	jeos_state_ = state;
 }
 
-
-#define BOOTSTRAP_INIT_POSITION_THROTTLE 0.35
-#define BOOTSTRAP_BASE_THROTTLE 0.10f
-
 #undef ODRIVE_MOTOR
 #ifdef ODRIVE_MOTOR
+#define BOOTSTRAP_BASE_THROTTLE 0.10f
+#define BOOTSTRAP_THROTTLE_INCFACTOR 0.005f
 #define BOOTSTRAP_THROTTLE_INCFACTOR 0.011f
+#elif defined(PANASONIC_MOTOR)
+#define BOOTSTRAP_INIT_POSITION_THROTTLE 0.65
+#define BOOTSTRAP_BASE_THROTTLE 0.55f
+#define BOOTSTRAP_THROTTLE_INCFACTOR 0.005f
 #else
+#define BOOTSTRAP_INIT_POSITION_THROTTLE 0.35
+#define BOOTSTRAP_BASE_THROTTLE 0.10f
 #define BOOTSTRAP_THROTTLE_INCFACTOR 0.005f
 #endif
 
@@ -324,6 +328,8 @@ void PWM6Step::HandleJEOS(int32_t *injdata, size_t size)
 	switch(jeos_state_) {
 	default:
 	case JEOS_STATE_MEASUREMENT1:
+		if (counter_ < 3)
+			break;
 		msr_[0].bemf = bemf;
 		msr_[0].counter = counter_;
 		if (counter_ > 0)
