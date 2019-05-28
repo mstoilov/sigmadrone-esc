@@ -16,6 +16,7 @@ MinasA4AbsEncoder::MinasA4AbsEncoder(
 		usart_(usart),
 		revolutions_(0),
 		angle_deg_(0.0f),
+		counter_(0),
 		error_count_(0)
 {
 	almc_.as_byte_ = 0;
@@ -114,7 +115,8 @@ bool MinasA4AbsEncoder::update()
 	uint32_t abs_data = ((uint32_t)reply5.absolute_data_[2] << 16) +
 			((uint32_t)reply5.absolute_data_[1] << 8) +
 			reply5.absolute_data_[0];
-	angle_deg_ = (float)(abs_data & 0x1ffff) * 360.0f / ((float)(1<<17));
+	counter_ = abs_data & 0x1ffff;
+	angle_deg_ = (float)(counter_) * 360.0f / (float)MA4_ABS_ENCODER_RESOLUTION;
 
 	if (reply5.status_field_.ea0 || reply5.status_field_.ea1) {
 		MA4EncoderReplyA replyA;

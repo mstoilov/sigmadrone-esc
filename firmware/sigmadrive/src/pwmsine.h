@@ -83,6 +83,7 @@ public:
 	Frequency GetSwitchingFrequency();
 	void Toggle();
 	void SetOpAmpBias(const std::vector<int32_t> bias);
+	static float GetEncoderTheta();
 
 public:
 	int32_t adc_data_[CURRENT_SAMPLES];

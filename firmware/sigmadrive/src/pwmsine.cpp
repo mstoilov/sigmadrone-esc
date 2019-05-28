@@ -5,6 +5,7 @@
 #include "pwmsine.h"
 #include "adc.h"
 #include "quadraturedecoder.h"
+#include "minas_a4_abs_encoder.h"
 
 #define UH_PIN		PA_8
 #define UL_PIN		PA_7
@@ -16,6 +17,9 @@
 #define WL_PIN		PB_1
 
 extern QuadratureDecoder *p_encoder;
+#ifdef PANASONIC_MOTOR
+extern MinasA4AbsEncoder *ma4_abs_encoder_ptr;
+#endif
 
 PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 		TIM_TypeDef *TIMx,
@@ -60,8 +64,10 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 	 */
 	run_stack_.push_back([&]()->bool {
 		v = std::polar<float>(1.0f, 0.0f);
+#ifndef PANASONIC_MOTOR
 		p_encoder->InvalidateIndexOffset();
 		p_encoder->ResetPosition(0);
+#endif
 		if (update_counter_++ >= 1 * SINE_STEPS) {
 			update_counter_ = 0;
 			return true;
@@ -79,8 +85,7 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 
 	run_stack_.push_back([&]()->bool {
 		update_counter_++;
-		float enc_theta = 2 * M_PI * (p_encoder->GetPosition() % (2048 / M2E_RATIO)) / (2048 / M2E_RATIO);
-		v = std::polar<float>(1.0f, enc_theta) * std::complex<float>(0.0f, 1.0f);
+		v = std::polar<float>(1.0f, GetEncoderTheta()) * std::complex<float>(0.0f, 1.0f);
 		return false;
 	});
 
@@ -171,6 +176,16 @@ float PWMSine::GetDutyCycle()
 	return 100.0 * duty_.nanoseconds()/switching_freq_.period().nanoseconds() / 100.0;
 }
 
+float PWMSine::GetEncoderTheta()
+{
+#ifdef PANASONIC_MOTOR
+		float enc_theta = 2 * M_PI * (ma4_abs_encoder_ptr->get_counter() % (MA4_ABS_ENCODER_RESOLUTION / M2E_RATIO)) / (MA4_ABS_ENCODER_RESOLUTION / M2E_RATIO);
+#else
+		float enc_theta = 2 * M_PI * (p_encoder->GetPosition() % (2048 / M2E_RATIO)) / (2048 / M2E_RATIO);
+#endif
+		return enc_theta;
+}
+
 void PWMSine::SetThrottle(float percent)
 {
 	percent = std::max(std::min(percent, (float)MAX_THROTTLE), (float)MIN_THROTTLE);
@@ -233,7 +248,7 @@ void PWMSine::SineDriving()
 
 void PWMSine::HandleUpdate()
 {
-	float enc_theta = 2 * M_PI * (p_encoder->GetPosition() % (2048 / M2E_RATIO)) / (2048 / M2E_RATIO) ;
+		float enc_theta = GetEncoderTheta();
 
 #if 0
 	if (update_counter_ < 2 * M2E_RATIO * SINE_STEPS) {

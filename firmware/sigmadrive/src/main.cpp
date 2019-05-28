@@ -104,7 +104,7 @@ QuadratureDecoder pwm4({
 
 QuadratureDecoder *p_encoder = &pwm4;
 
-#define USE_6STEP
+//#define USE_6STEP
 #ifdef USE_6STEP
 PWM6Step pwm1({
 		{PE_8,  LL_GPIO_MODE_ALTERNATE, LL_GPIO_PULL_DOWN, LL_GPIO_SPEED_FREQ_HIGH, LL_GPIO_AF_1},
@@ -284,11 +284,7 @@ void RunFloatingPointTest()
 #endif
 }
 
-MinasA4AbsEncoder* ma4_abs_encoder_ptr = nullptr;
-
-void encoder_reader_task(void *pvParameters)
-{
-	USART usart3({
+USART usart3({
 			{PD_8, GPIO_MODE_AF_PP, GPIO_PULLUP, GPIO_SPEED_FAST, GPIO_AF7_USART3},
 			{PD_9, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3},
 			{PD_12, GPIO_MODE_AF_PP, GPIO_NOPULL, GPIO_SPEED_FAST, GPIO_AF7_USART3}},
@@ -299,8 +295,12 @@ void encoder_reader_task(void *pvParameters)
 			LL_DMA_STREAM_1,
 			LL_DMA_CHANNEL_4);
 
-	MinasA4AbsEncoder ma4_abs_encoder(usart3);
+MinasA4AbsEncoder ma4_abs_encoder(usart3);
 
+MinasA4AbsEncoder* ma4_abs_encoder_ptr = &ma4_abs_encoder;
+
+void encoder_reader_task(void *pvParameters)
+{
 	ma4_abs_encoder.init();
 
 	ma4_abs_encoder_ptr = &ma4_abs_encoder;
@@ -600,8 +600,7 @@ int main(int argc, char* argv[])
 			&main_task_handle /* Task handle */
 	);
 
-//#define SUPPORT_MINAS_A4
-#ifdef SUPPORT_MINAS_A4
+#ifdef PANASONIC_MOTOR
 	xTaskCreate(
 			encoder_reader_task, /* Function pointer */
 			"encoder_reader_task", /* Task name - for debugging only*/
