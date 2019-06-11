@@ -398,7 +398,7 @@ void main_task(void *pvParameters)
 	pwm1.SetOpAmpBias(opamp_bias);
 	pwm1.SetElectricalRotationsPerSecond(Frequency::from_millihertz(500 * PWMSine::M2E_RATIO));
 #ifdef PANASONIC_MOTOR
-	pwm1.SetThrottle(0.15);
+	pwm1.SetThrottle(0.5);
 #else
 	pwm1.SetThrottle(0.05);
 #endif
