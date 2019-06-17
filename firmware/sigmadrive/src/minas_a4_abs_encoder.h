@@ -165,7 +165,7 @@ public:
 	bool reset_single_revolution_data() { return reset_error_code(MA4_DATA_ID_F); }
 	bool reset_multiple_revolution_data() { return reset_error_code(MA4_DATA_ID_B); }
 	uint32_t get_error_count() const { return error_count_; }
-	uint32_t get_counter() const { return counter_; }
+	uint32_t get_counter() const { return (counter_ + MA4_ABS_ENCODER_RESOLUTION - MA4_ABS_ENCODER_RESOLUTION/20) % MA4_ABS_ENCODER_RESOLUTION; }
 
 private:
 	bool send_command(uint8_t command, void* reply, size_t reply_size);
