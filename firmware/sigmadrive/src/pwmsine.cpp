@@ -2,6 +2,7 @@
 #include <complex>
 #include <algorithm>
 #include <math.h>
+#include "d3math.h"
 #include "pwmsine.h"
 #include "adc.h"
 #include "quadraturedecoder.h"
@@ -53,8 +54,8 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 
 
 	p1 = std::polar<float>(1.0f, 0.0f);
-	p2 = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
-	p3 = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
+	p2 = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
+	p3 = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
 	v = std::polar<float>(1.0f, 0.0f);
 	r = std::polar<float>(1.0f, 0.0f);
 
@@ -62,30 +63,30 @@ PWMSine::PWMSine(const std::vector<GPIOPin>& pins,
 	 * Initialize v and the encoder.
 	 * Wait for the time of one full 360 electrical degree cycle.
 	 */
-	run_stack_.push_back([&]()->bool {
-		v = std::polar<float>(1.0f, 0.0f);
 #ifndef PANASONIC_MOTOR
+	run_stack_.push_back([&]()->bool {
+		v = std::polar<float>(1.0f, DEG2RAD(0.0f));
 		p_encoder->InvalidateIndexOffset();
 		p_encoder->ResetPosition(0);
-#endif
 		if (update_counter_++ >= 1 * SINE_STEPS) {
 			update_counter_ = 0;
 			return true;
 		}
 		return false;
 	});
+#endif
 
-	run_stack_.push_back([&]()->bool {
-		v = v * r;
-		if (update_counter_++ >= 1 * M2E_RATIO * SINE_STEPS) {
-			return true;
-		}
-		return false;
-	});
+//	run_stack_.push_back([&]()->bool {
+//		v = v * r;
+//		if (update_counter_++ >= 1 * M2E_RATIO * SINE_STEPS) {
+//			return true;
+//		}
+//		return false;
+//	});
 
 	run_stack_.push_back([&]()->bool {
 		update_counter_++;
-		v = std::polar<float>(1.0f, GetEncoderTheta()) * std::complex<float>(0.0f, 1.0f);
+		v = std::polar<float>(1.0f, GetEncoderElectricTheta()) * std::complex<float>(0.0f, 1.0f);
 		return false;
 	});
 
@@ -176,7 +177,7 @@ float PWMSine::GetDutyCycle()
 	return 100.0 * duty_.nanoseconds()/switching_freq_.period().nanoseconds() / 100.0;
 }
 
-float PWMSine::GetEncoderTheta()
+float PWMSine::GetEncoderElectricTheta()
 {
 #ifdef PANASONIC_MOTOR
 		float enc_theta = 2 * M_PI * (ma4_abs_encoder_ptr->get_counter() % (MA4_ABS_ENCODER_RESOLUTION / M2E_RATIO)) / (MA4_ABS_ENCODER_RESOLUTION / M2E_RATIO);
@@ -185,6 +186,17 @@ float PWMSine::GetEncoderTheta()
 #endif
 		return enc_theta;
 }
+
+float PWMSine::GetEncoderMechanicalTheta()
+{
+#ifdef PANASONIC_MOTOR
+		float enc_theta = 2 * M_PI * ma4_abs_encoder_ptr->get_counter() / MA4_ABS_ENCODER_RESOLUTION;
+#else
+		float enc_theta = 2 * M_PI * p_encoder->GetPosition() / 2048;
+#endif
+		return enc_theta;
+}
+
 
 void PWMSine::SetThrottle(float percent)
 {
@@ -248,7 +260,8 @@ void PWMSine::SineDriving()
 
 void PWMSine::HandleUpdate()
 {
-		float enc_theta = GetEncoderTheta();
+		float electric_theta = GetEncoderElectricTheta();
+		float mechanical_theta = GetEncoderMechanicalTheta();
 
 #if 0
 	if (update_counter_ < 2 * M2E_RATIO * SINE_STEPS) {
@@ -263,7 +276,7 @@ void PWMSine::HandleUpdate()
 	} else {
 //		Stop();
 
-		v = std::polar<float>(1.0f, enc_theta) * std::polar<float>(1.0f, M_PI/2);
+		v = std::polar<float>(1.0f, electric_theta) * std::polar<float>(1.0f, M_PI/2);
 	}
 #endif
 
@@ -282,9 +295,9 @@ void PWMSine::HandleUpdate()
 		if (theta < 0.0f)
 			theta += 2.0f * M_PI;
 
-		printf("%6ld : Elec: %7.3f -> Enc: %7.3f (Delta: %7.3f )   %6ld, Current: %6ld, %6ld, %6ld ( %6ld )\n",
-				update_counter_, theta, enc_theta, theta - enc_theta, p_encoder->GetIndexOffset(), adc_data_[0], adc_data_[1], adc_data_[2],
-				adc_data_[0] + adc_data_[1] + adc_data_[2]);
+		printf("%7.2f : Elec: %7.3f -> Enc: %7.3f (Delta: %7.3f )   %6ld, Current: %6ld, %6ld, %6ld ( %6ld ) v: (%6.2f, %6.2f)\n",
+				RAD2DEG(mechanical_theta), theta, electric_theta, theta - electric_theta, p_encoder->GetIndexOffset(), adc_data_[0], adc_data_[1], adc_data_[2],
+				adc_data_[0] + adc_data_[1] + adc_data_[2], std::real(v), std::imag(v));
 	}
 
 #endif

@@ -39,7 +39,7 @@ struct RunState {
 };
 
 
-//#define PANASONIC_MOTOR
+#define PANASONIC_MOTOR
 #ifdef PANASONIC_MOTOR
 #define MOTOR_POLES_NUMBER 8
 #else
@@ -83,7 +83,8 @@ public:
 	Frequency GetSwitchingFrequency();
 	void Toggle();
 	void SetOpAmpBias(const std::vector<int32_t> bias);
-	static float GetEncoderTheta();
+	static float GetEncoderElectricTheta();
+	static float GetEncoderMechanicalTheta();
 
 public:
 	int32_t adc_data_[CURRENT_SAMPLES];
