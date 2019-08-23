@@ -17,6 +17,7 @@ MinasA4AbsEncoder::MinasA4AbsEncoder(
 		revolutions_(0),
 		angle_deg_(0.0f),
 		counter_(0),
+		offset_(0),
 		error_count_(0)
 {
 	almc_.as_byte_ = 0;
