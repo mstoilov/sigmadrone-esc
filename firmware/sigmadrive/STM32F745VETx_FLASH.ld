@@ -57,6 +57,7 @@ ENTRY(Reset_Handler)
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
+_Max_Stack_Size = 0x4000;
 
 /* Specify the memory areas */
 MEMORY
@@ -69,6 +70,11 @@ FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 512K
  * Relocated interrupt vectors - 1K
  */
 __relocated_vectors = ORIGIN(RAM) + LENGTH(RAM) - 1K;
+
+/*
+ * Set the max heap address.
+ */
+_Heap_Limit = ORIGIN(RAM) + LENGTH(RAM) - 1K - _Max_Stack_Size;
 
 
 /*

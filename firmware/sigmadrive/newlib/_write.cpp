@@ -23,7 +23,7 @@ ssize_t _write(int fd __attribute__((unused)),
 {
 	// STDOUT and STDERR are routed to the trace device
 	if (fd == 1 || fd == 2) {
-		return uart1.transmit(buf, nbyte);
+		return uart1.Transmit(buf, nbyte);
 	}
 	errno = ENOSYS;
 	return -1;

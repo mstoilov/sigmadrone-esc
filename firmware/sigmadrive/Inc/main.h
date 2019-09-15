@@ -39,6 +39,7 @@ extern "C" {
 /* USER CODE BEGIN ET */
 extern UART_HandleTypeDef huart1;
 extern SPI_HandleTypeDef hspi3;
+extern TIM_HandleTypeDef htim4;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -66,6 +67,9 @@ void Error_Handler(void);
 #define USER_BTN_Pin GPIO_PIN_8
 #define USER_BTN_GPIO_Port GPIOA
 #define USER_BTN_EXTI_IRQn EXTI9_5_IRQn
+#define ENCODER_Z_Pin GPIO_PIN_7
+#define ENCODER_Z_GPIO_Port GPIOD
+#define ENCODER_Z_EXTI_IRQn EXTI9_5_IRQn
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
