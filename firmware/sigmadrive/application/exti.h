@@ -18,8 +18,8 @@ public:
 	using exti_map_type = std::map<uint16_t, Exti*>;
 	Exti(uint16_t gpio_pin, const std::function<void(void)>& callback);
 	virtual ~Exti();
-	void set_callback(const std::function<void(void)>& callback);
-	static void gpio_exti_callback(uint16_t line);
+	void SetCallback(const std::function<void(void)>& callback);
+	static void GpioExtiCallback(uint16_t line);
 
 	std::function<void(void)> callback_;
 	static exti_map_type map_;

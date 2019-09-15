@@ -21,13 +21,13 @@ public:
 	SPIMaster();
 	virtual ~SPIMaster();
 
-	void attach(SPI_HandleTypeDef* hspi);
-	void detach();
-	void chip_select(GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin, bool select);
+	void Attach(SPI_HandleTypeDef* hspi);
+	void Detach();
+	void ChipSelect(GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin, bool select);
 
-	bool transmit(uint8_t *pData, uint16_t Size);
-	bool receive(uint8_t *pData, uint16_t Size);
-	bool transmit_receive(uint8_t *pTxData, uint8_t *pRxData, uint16_t Size);
+	bool Transmit(uint8_t *pData, uint16_t Size);
+	bool Receive(uint8_t *pData, uint16_t Size);
+	bool TransmitReceive(uint8_t *pTxData, uint8_t *pRxData, uint16_t Size);
 
 public:
 	SPI_HandleTypeDef* hspi_;

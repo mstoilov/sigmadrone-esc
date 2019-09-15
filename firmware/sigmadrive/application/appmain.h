@@ -5,14 +5,18 @@
 extern "C" {
 #endif
 
-#include "uart.h"
-
-extern Uart uart1;
-
 int application_main();
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+
+#include "uart.h"
+
+extern Uart uart1;
+
 #endif
 
 #endif

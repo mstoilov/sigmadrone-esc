@@ -8,12 +8,14 @@
 #include "spimaster.h"
 #include "drv8323.h"
 #include "exti.h"
-
+#include "quadrature_encoder.h"
 
 Uart uart1;
 SPIMaster spi3;
+QuadratureEncoder tim4(0x2000);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
+Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 
 
 extern "C"
@@ -26,8 +28,9 @@ int application_main()
 	 * C++ wrapper objects. At this point the HAL handles
 	 * should be fully initialized.
 	 */
-	uart1.attach(&huart1);
-	spi3.attach(&hspi3);
+	uart1.Attach(&huart1);
+	spi3.Attach(&hspi3);
+	tim4.Attach(&htim4);
 
 	Hello h("World, hello: This is a message from the sigmadrive UART console.");
 	h.print();
@@ -64,15 +67,22 @@ int application_main()
 	drv1.DumpRegs();
 
 	char buffer[120];
+	uint32_t old_counter = 0, new_counter = 0;
 
+	tim4.Start();
 	for (;;) {
 //		HAL_Delay(10);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
-//		h.print();
-		memset(buffer, 0, sizeof(buffer));
-		int size = uart1.receive(buffer, sizeof(buffer) - 1);
-		if (size)
-			printf("%s", buffer);
+
+		std::string *str = new std::string("Counter");
+
+		new_counter = tim4.GetPosition();
+		if (new_counter != old_counter) {
+			printf("%s: %d\n", str->c_str(), new_counter);
+			old_counter = new_counter;
+		}
+
+		delete str;
 //		HAL_Delay(10);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
 	}

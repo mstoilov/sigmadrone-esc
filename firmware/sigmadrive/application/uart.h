@@ -22,12 +22,12 @@ public:
 	using handle_map_type = std::map<UART_HandleTypeDef*, Uart*>;
 	Uart();
 	virtual ~Uart();
-	void attach(UART_HandleTypeDef* huart);
-	void detach();
-	ssize_t transmit(const char* buffer, size_t nsize);
-	void transmit_complete();
-	ssize_t receive(char* buffer, size_t nsize);
-	void receive_complete();
+	void Attach(UART_HandleTypeDef* huart);
+	void Detach();
+	ssize_t Transmit(const char* buffer, size_t nsize);
+	void TransmitCompleteCallback();
+	ssize_t Receive(char* buffer, size_t nsize);
+	void ReceiveCompleteCallback();
 
 	static handle_map_type handle_map_;
 

@@ -29,9 +29,9 @@ uint32_t Drv8323::ReadReg(uint32_t addr)
 
 	assert(spi_.hspi_->Init.DataSize == SPI_DATASIZE_16BIT);
 
-	spi_.chip_select(NSS_GPIOx_, NSS_GPIO_Pin_, true);
-	spi_.transmit_receive((uint8_t *)&data, (uint8_t *)&ret, 1);
-	spi_.chip_select(NSS_GPIOx_, NSS_GPIO_Pin_, false);
+	spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, true);
+	spi_.TransmitReceive((uint8_t *)&data, (uint8_t *)&ret, 1);
+	spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, false);
 	return ret & 0x7FF;
 }
 
@@ -42,9 +42,9 @@ void Drv8323::WriteReg(uint32_t addr, uint32_t value)
 
 	assert(spi_.hspi_->Init.DataSize == SPI_DATASIZE_16BIT);
 
-	spi_.chip_select(NSS_GPIOx_, NSS_GPIO_Pin_, true);
-	spi_.transmit_receive((uint8_t *)&data, (uint8_t *)&ret, 1);
-	spi_.chip_select(NSS_GPIOx_, NSS_GPIO_Pin_, false);
+	spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, true);
+	spi_.TransmitReceive((uint8_t *)&data, (uint8_t *)&ret, 1);
+	spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, false);
 }
 
 void Drv8323::ModifyReg(uint32_t addr, uint32_t clear_mask, uint32_t set_mask)

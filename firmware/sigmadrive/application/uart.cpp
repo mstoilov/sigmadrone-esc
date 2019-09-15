@@ -14,7 +14,7 @@ extern "C" void tx_complete(UART_HandleTypeDef* huart)
 {
 	Uart* ptr = Uart::handle_map_[huart];
 	if (ptr) {
-		ptr->transmit_complete();
+		ptr->TransmitCompleteCallback();
 	}
 }
 
@@ -22,7 +22,7 @@ extern "C" void rx_complete(UART_HandleTypeDef* huart)
 {
 	Uart* ptr = Uart::handle_map_[huart];
 	if (ptr) {
-		ptr->receive_complete();
+		ptr->ReceiveCompleteCallback();
 	}
 }
 
@@ -32,10 +32,10 @@ Uart::Uart()
 
 Uart::~Uart()
 {
-	detach();
+	Detach();
 }
 
-void Uart::attach(UART_HandleTypeDef* huart)
+void Uart::Attach(UART_HandleTypeDef* huart)
 {
 	assert(huart);
 	assert(huart_->hdmatx);
@@ -58,7 +58,7 @@ void Uart::attach(UART_HandleTypeDef* huart)
 	}
 }
 
-void Uart::detach()
+void Uart::Detach()
 {
 	handle_map_type::iterator it = handle_map_.find(huart_);
 
@@ -69,7 +69,7 @@ void Uart::detach()
 	huart_ = nullptr;
 }
 
-ssize_t Uart::transmit(const char* buffer, size_t nsize)
+ssize_t Uart::Transmit(const char* buffer, size_t nsize)
 {
 	uint32_t vector = __get_xPSR() & 0xFF;
 	if ((vector && !tx_ringbuf_.write_size()) || !nsize) {
@@ -98,7 +98,7 @@ ssize_t Uart::transmit(const char* buffer, size_t nsize)
 	return nsize;
 }
 
-void Uart::transmit_complete()
+void Uart::TransmitCompleteCallback()
 {
 	tx_ringbuf_.read_update(huart_->TxXferSize);
 	if (tx_ringbuf_.read_size()) {
@@ -110,7 +110,7 @@ void Uart::transmit_complete()
 	}
 }
 
-ssize_t Uart::receive(char* buffer, size_t nsize)
+ssize_t Uart::Receive(char* buffer, size_t nsize)
 {
 	if (!nsize)
 		return 0;
@@ -123,6 +123,6 @@ ssize_t Uart::receive(char* buffer, size_t nsize)
 	return nsize;
 }
 
-void Uart::receive_complete()
+void Uart::ReceiveCompleteCallback()
 {
 }
