@@ -23,7 +23,8 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-
+#include <string.h>
+#include "appmain.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -65,8 +66,8 @@
 /* USER CODE BEGIN PRIVATE_DEFINES */
 /* Define size for the receive and transmit buffer over CDC */
 /* It's up to user to redefine and/or remove those define */
-#define APP_RX_DATA_SIZE  2048
-#define APP_TX_DATA_SIZE  2048
+#define APP_RX_DATA_SIZE  1024
+#define APP_TX_DATA_SIZE  0
 /* USER CODE END PRIVATE_DEFINES */
 
 /**
@@ -132,6 +133,7 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Receive_FS(uint8_t* pbuf, uint32_t *Len);
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
+
 
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
 
@@ -227,8 +229,14 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
     break;
 
     case CDC_GET_LINE_CODING:
-
-    break;
+        pbuf[0] = (uint8_t)(115200);
+        pbuf[1] = (uint8_t)(115200 >> 8);
+        pbuf[2] = (uint8_t)(115200 >> 16);
+        pbuf[3] = (uint8_t)(115200 >> 24);
+        pbuf[4] = 0;  // stop bits (1)
+        pbuf[5] = 0;  // parity (none)
+        pbuf[6] = 8;  // number of bits (8)
+        break;
 
     case CDC_SET_CONTROL_LINE_STATE:
 
@@ -263,9 +271,16 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
-  USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
-  USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-  return (USBD_OK);
+	if (cdc_iface_rx_complete(&hUsbDeviceFS, Buf, *Len) == USBD_OK)
+		return USBD_OK;
+
+	/*
+	 * The only way we can get here is if the
+	 * cdc_iface_rx_complete fails to find the
+	 * C++ cdc_iface object in the global map.
+	 */
+	CDC_Receive_Initiate();
+	return (USBD_OK);
   /* USER CODE END 6 */
 }
 
@@ -295,6 +310,12 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */
+
+void CDC_Receive_Initiate()
+{
+	USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &UserRxBufferFS[0]);
+	USBD_CDC_ReceivePacket(&hUsbDeviceFS);
+}
 
 /* USER CODE END PRIVATE_FUNCTIONS_IMPLEMENTATION */
 

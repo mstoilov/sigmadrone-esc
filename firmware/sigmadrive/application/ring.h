@@ -20,6 +20,11 @@ public:
 	size_t data_size()		{ return ((wp_ + bufsize_ - rp_) % bufsize_); }
 	size_t space_size()		{ return (bufsize_ - data_size() - 1); }
 
+	size_t space_to_end()
+	{
+		return bufsize_ - wp_;
+	}
+
 	size_t write_size()
 	{
 		size_t ret;

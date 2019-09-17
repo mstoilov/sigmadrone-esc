@@ -36,8 +36,8 @@ public:
 
 protected:
 	volatile bool transmitting_ = false;
-	Ring<char, 200> tx_ringbuf_;
-	Ring<char, 50> rx_ringbuf_;
+	Ring<char, 1024> tx_ringbuf_;
+	Ring<char, 1024> rx_ringbuf_;
 };
 
 #endif /* APPLICATION_UART_H_ */

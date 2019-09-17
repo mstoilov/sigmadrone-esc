@@ -4,14 +4,18 @@
 #include <iostream>
 #include "hello.h"
 #include "main.h"
+#include "appmain.h"
 #include "uart.h"
 #include "spimaster.h"
 #include "drv8323.h"
 #include "exti.h"
 #include "quadrature_encoder.h"
+#include "ring.h"
+#include "cdc_iface.h"
 
 Uart uart1;
 SPIMaster spi3;
+CdcIface usb_cdc;
 QuadratureEncoder tim4(0x2000);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
@@ -31,6 +35,7 @@ int application_main()
 	uart1.Attach(&huart1);
 	spi3.Attach(&hspi3);
 	tim4.Attach(&htim4);
+	usb_cdc.Attach(&hUsbDeviceFS);
 
 	Hello h("World, hello: This is a message from the sigmadrive UART console.");
 	h.print();
@@ -70,6 +75,17 @@ int application_main()
 	uint32_t old_counter = 0, new_counter = 0;
 
 	tim4.Start();
+
+	for (;;) {
+		ssize_t siz = usb_cdc.Receive(buffer, sizeof(buffer));
+		size_t offset = 0;
+		while (siz) {
+			size_t ret = usb_cdc.Transmit(buffer + offset, siz);
+			siz -= ret;
+			offset += ret;
+		}
+	}
+
 	for (;;) {
 //		HAL_Delay(10);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
