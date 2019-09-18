@@ -31,7 +31,7 @@ void CdcIface::Attach(USBD_HandleTypeDef* usbd)
 
 }
 
-ssize_t CdcIface::Transmit(const char* buffer, size_t nsize)
+size_t CdcIface::Transmit(const char* buffer, size_t nsize)
 {
 	if (nsize > 0xFFFF)
 		nsize = 0xFFFF;
@@ -40,7 +40,7 @@ ssize_t CdcIface::Transmit(const char* buffer, size_t nsize)
 	return nsize;
 }
 
-ssize_t CdcIface::Receive(char* buffer, size_t nsize)
+size_t CdcIface::Receive(char* buffer, size_t nsize)
 {
 	size_t readsize = std::min(rx_ringbuf_.read_size(), nsize);
 	std::copy(rx_ringbuf_.get_read_ptr(), rx_ringbuf_.get_read_ptr() + readsize, buffer);
@@ -57,11 +57,13 @@ int8_t CdcIface::ReceiveComplete(uint8_t* buf, uint32_t len)
 {
 	assert(len < rx_ringbuf_.space_size());
 
+	size_t offset = 0;
 	while (len) {
 		size_t copy_size = std::min((size_t)len, rx_ringbuf_.write_size());
-		std::copy(buf, buf + copy_size, rx_ringbuf_.get_write_ptr());
+		std::copy(buf + offset, buf + offset + copy_size, rx_ringbuf_.get_write_ptr());
 		rx_ringbuf_.write_update(copy_size);
 		len -= copy_size;
+		offset += copy_size;
 	}
 
 	if (rx_ringbuf_.space_size() > rx_ringbuf_.capacity()/2) {
