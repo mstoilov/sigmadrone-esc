@@ -157,12 +157,14 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
+-Iapplication \
+-Irexjson \
+-Ilinenoise \
 -IInc \
 -IDrivers/STM32F7xx_HAL_Driver/Inc \
 -IDrivers/STM32F7xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F7xx/Include \
 -IDrivers/CMSIS/Include \
--Iapplication \
 -IMiddlewares/ST/STM32_USB_Device_Library/Core/Inc \
 -IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
 -IMiddlewares/Third_Party/FreeRTOS/Source/include \
@@ -192,7 +194,7 @@ LDSCRIPT = STM32F745VETx_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys 
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
@@ -219,8 +221,15 @@ vpath %.c newlib
 OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp,%.o,$(notdir $(wildcard newlib/*.cpp))))
 vpath %.cpp newlib
 
+OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp,%.o,$(notdir $(wildcard rexjson/*.cpp))))
+vpath %.cpp rexjson
+
+OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.c,%.o,$(notdir $(wildcard linenoise/*.c))))
+vpath %.c linenoise
+
+
 $(BUILD_DIR)/%.o: %.cpp Makefile | $(BUILD_DIR) 
-	$(CPP) -std=gnu++14 -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
+	$(CPP) -std=gnu++14 -c $(CFLAGS) -fexceptions -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@

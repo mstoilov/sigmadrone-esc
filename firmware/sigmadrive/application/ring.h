@@ -51,7 +51,7 @@ public:
 	void reset_rp(size_t rp) { rp_ = rp; }
 
 
-	T front()				{ return buffer_[rp_]; }
+	T tail()				{ return buffer_[rp_]; }
 	void push(const T& e)	{ buffer_[wp_] = e; wp_ = (wp_ + 1) % bufsize_; }
 	void pop()				{ rp_ = (rp_ + 1) % bufsize_; }
 	bool empty()			{ return wp_ == rp_ ? true : false; }

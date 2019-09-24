@@ -2,6 +2,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <iostream>
+#include <cstring>
+#include <string>
 #include "hello.h"
 #include "main.h"
 #include "appmain.h"
@@ -13,6 +15,9 @@
 #include "ring.h"
 #include "cdc_iface.h"
 
+#include "rexjson++.h"
+#include "linenoise.h"
+
 Uart uart1;
 SPIMaster spi3;
 CdcIface usb_cdc;
@@ -20,6 +25,104 @@ QuadratureEncoder tim4(0x2000);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
+
+
+
+#include <iostream>
+#include <streambuf>
+#include <locale>
+#include <cstdio>
+
+class cdcbuf: public std::streambuf {
+public:
+	char buffer_[128];
+	const size_t put_back_ = 16;
+
+	cdcbuf() {
+		setg(buffer_ + sizeof(buffer_), buffer_ + sizeof(buffer_), buffer_ + sizeof(buffer_));
+	}
+protected:
+	/*
+	 * central output function
+	 */
+	virtual int_type overflow(int_type c)
+	{
+		if (c != EOF) {
+			// convert lowercase to uppercase
+			char txc = c;
+			send(&txc, sizeof(txc));
+		}
+		return c;
+	}
+
+	virtual std::streamsize xsputn( const char_type* s, std::streamsize count)
+	{
+		return send(s, count);
+	}
+
+	virtual std::streamsize send( const char_type* s, std::streamsize count)
+	{
+		std::streamsize offset = 0;
+		std::streamsize siz = count;
+
+		while (siz) {
+			size_t ret = usb_cdc.Transmit(s + offset, siz);
+			siz -= ret;
+			offset += ret;
+		}
+		return count;
+	}
+
+	virtual int_type underflow()
+	{
+		char_type* begin = gptr();
+		char_type* end = egptr();
+		char_type* back = eback();
+
+	    if (gptr() < egptr()) // buffer not exhausted
+	        return traits_type::to_int_type(*gptr());
+
+	    char *base = &buffer_[0];
+	    char *start = base;
+
+	    if (eback() == base) // true when this isn't the first fill
+	    {
+	        // Make arrangements for putback characters
+	        std::memmove(base, egptr() - put_back_, put_back_);
+	        start += put_back_;
+	    }
+
+	    // start is now the start of the buffer, proper.
+	    // Read from fptr_ in to the provided buffer
+	    std::streamsize n = recv(start, sizeof(buffer_) - (start - base));
+	    if (n == 0)
+	        return traits_type::eof();
+
+	    // Set buffer pointers
+	    setg(base, start, start + n);
+
+	    return traits_type::to_int_type(*gptr());
+	}
+
+	virtual std::streamsize xsgetn( char_type* s, std::streamsize count )
+	{
+		return recv(s, count);
+	}
+
+	virtual std::streamsize recv( char_type* s, std::streamsize count)
+	{
+		std::streamsize offset = 0;
+		std::streamsize ret = 0;
+		while ((ret = usb_cdc.Receive(s, count)) == 0)
+			;
+		count -= ret;
+		offset += ret;
+		if (count)
+			ret += usb_cdc.Receive(s + offset, count);
+		return ret;
+	}
+
+};
 
 
 extern "C"
@@ -76,11 +179,61 @@ int application_main()
 
 	tim4.Start();
 
+	cdcbuf ob;
+	cdcbuf ib;
+	std::ostream cdc_out(&ob);
+	std::istream cdc_in(&ib);
+
+#if 0
+	while (1) {
+		std::cout << std::string(1,cdc_in.get());
+		std::cout << "*** text1 ***\n" << rexjson::read(text1).write(false) << std::endl << std::endl;
+	}
+#endif
+
+	char *line;
+	while((line = linenoise("hello> ")) != NULL) {
+	    printf("You wrote: %s\n", line);
+	    linenoiseFree(line); /* Or just free(line) if you use libc malloc. */
+	}
+
+	while (1) {
+		try {
+			std::string str;
+//			std::getline(cdc_in, str);
+			char c = 0;
+			while ((c = std::cin.get())) {
+				if (c == '\r') {
+					std::cout << "\r\n";
+					std::cout << str;
+					str.clear();
+				} else {
+					str += c;
+				}
+				std::string temp;
+				temp = c;
+				std::cout << temp;
+			}
+
+			rexjson::value v = rexjson::read(str);
+			std::cout << v.write(false) << std::endl;
+		} catch (std::runtime_error& e) {
+			std::cout << e.what() << std::endl;
+		}
+	}
+
+
 	for (;;) {
-		ssize_t siz = usb_cdc.Receive(buffer, sizeof(buffer));
+		ssize_t siz;
+		std::string in;
+		while ((siz = usb_cdc.Receive(buffer, sizeof(buffer))) > 0) {
+			in += std::string(buffer, siz);
+		}
+
 		size_t offset = 0;
+		siz = in.size();
 		while (siz) {
-			size_t ret = usb_cdc.Transmit(buffer + offset, siz);
+			size_t ret = usb_cdc.Transmit(in.c_str() + offset, siz);
 			siz -= ret;
 			offset += ret;
 		}
@@ -92,6 +245,7 @@ int application_main()
 
 		std::string *str = new std::string("Counter");
 
+		std::cout << "help" << std::endl;
 		new_counter = tim4.GetPosition();
 		if (new_counter != old_counter) {
 			printf("%s: %d\n", str->c_str(), new_counter);

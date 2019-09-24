@@ -77,6 +77,10 @@ _wait(int* status);
 int
 _write(int file, char* ptr, int len);
 
+int
+_read(int file, char* ptr, int len);
+
+
 // Definitions
 
 int __attribute__((weak))
@@ -165,14 +169,6 @@ _lseek(int file __attribute__((unused)), int ptr __attribute__((unused)),
 int __attribute__((weak))
 _open(char* file __attribute__((unused)), int flags __attribute__((unused)),
     int mode __attribute__((unused)))
-{
-  errno = ENOSYS;
-  return -1;
-}
-
-int __attribute__((weak))
-_read(int file __attribute__((unused)), char* ptr __attribute__((unused)),
-    int len __attribute__((unused)))
 {
   errno = ENOSYS;
   return -1;
