@@ -4,9 +4,14 @@
 #include <iostream>
 #include <cstring>
 #include <string>
+#include <assert.h>
 #include "hello.h"
 #include "main.h"
 #include "appmain.h"
+
+#include "ClEditLine.h"
+#include "ClHistory.h"
+#include "ClPort.h"
 #include "uart.h"
 #include "spimaster.h"
 #include "drv8323.h"
@@ -17,6 +22,7 @@
 
 #include "rexjson++.h"
 #include "linenoise.h"
+
 
 Uart uart1;
 SPIMaster spi3;
@@ -124,6 +130,7 @@ protected:
 
 };
 
+char cl_heap[4096];
 
 extern "C"
 int application_main()
@@ -149,7 +156,7 @@ int application_main()
 	drv1.WriteReg(5, 0x0);
 	drv1.WriteReg(6, 0x0);
 
-	printf("main_task 1\n");
+	printf("main_task 1\r\n");
 	drv1.SetIDriveP_HS(Drv8323::IDRIVEP_370mA);
 	drv1.SetIDriveN_HS(Drv8323::IDRIVEN_1360mA);
 	drv1.SetIDriveP_LS(Drv8323::IDRIVEP_370mA);
@@ -171,7 +178,7 @@ int application_main()
 	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
-	printf("DRV1: \n");
+	printf("DRV1: \r\n");
 	drv1.DumpRegs();
 
 	char buffer[120];
@@ -191,9 +198,25 @@ int application_main()
 	}
 #endif
 
+	cl_mem_init(cl_heap, sizeof(cl_heap), 100);
+	cl_history_init();
+	char szBuffer[1024];
+	int elret;
+	while (1) {
+		if ((elret = cl_editline("# ", szBuffer, sizeof(szBuffer), 5)) > 0) {
+			assert(elret == (int)strlen(szBuffer));
+			printf("\r\nYou wrote: %s", szBuffer);
+		}
+		printf("\r\n");
+	}
+
+
 	char *line;
+	linenoiseSetMultiLine(1);
+	linenoiseHistorySetMaxLen(3);
 	while((line = linenoise("hello> ")) != NULL) {
-	    printf("You wrote: %s\n", line);
+	    printf("You wrote: %s\r\n", line);
+	    linenoiseHistoryAdd(line);
 	    linenoiseFree(line); /* Or just free(line) if you use libc malloc. */
 	}
 
