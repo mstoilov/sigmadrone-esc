@@ -150,8 +150,7 @@ static int cl_term_cursor_col()
 
 	cl_printf("\033[6n");
 	while ((c = cl_getchar()) != 27)
-		if (c != -1)
-			return 0;
+		;
 	
 	if (cl_getchar() == '[')
 	{
