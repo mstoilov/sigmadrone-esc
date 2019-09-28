@@ -59,26 +59,17 @@ static int cl_term_width();
 
 static int cl_term_width()
 {
-	int iLastW = -1, iCurW = -1;
-
-	if ((iCurW = cl_term_cursor_col(iCurW)) <= 0)
-		return 0;
+	int iWidth = 0;
 
 	cl_printf("\0337");		 // Save cursor position
 	cl_printf("\033[?25l");	 // Hide cursor
-
-	for ( ;iCurW != iLastW; )
-	{
-		iLastW = iCurW;
-		cl_term_cursor_right(80);
-		if ((iCurW = cl_term_cursor_col()) == 0)
-			break;
-	}
-
+	cl_term_cursor_right(999);
+	if ((iWidth = cl_term_cursor_col()) == 0)
+		iWidth = 80;
 	cl_printf("\0338");		 // Restore cursor position
 	cl_printf("\033[?25h");	 // Show cursor
 
-	return iLastW;
+	return iWidth;
 }
 
 

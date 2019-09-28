@@ -152,6 +152,14 @@ int cl_history_add(const char *pszText)
 	unsigned int uSize = sizeof(HISTNODE) + iStrSize;
 	HISTNODE *pNode = (void*)0;
 
+	for (pNode = (HISTNODE *)pHist->head.pNext; ((struct DLIST_HEAD *)pNode) != &pHist->head; pNode = (HISTNODE *)pNode->list.pNext) {
+		if (cl_strcmp(pNode->szText, pszText) == 0) {
+			cl_dlist_remove(&pNode->list);
+			cl_dlist_add(&pHist->head, &pNode->list);
+			return 0;
+		}
+	}
+
 	if ((pNode = cl_mem_alloc(uSize)) == (void*)0)
 		return -1;
 	pHist->uSize += uSize;
@@ -159,15 +167,8 @@ int cl_history_add(const char *pszText)
 	pNode->uSize = uSize;
 	cl_strcpy(pNode->szText, pszText);
 	cl_dlist_add(&pHist->head, &pNode->list);
-	for (pNode = (HISTNODE *)pNode->list.pNext; ((struct DLIST_HEAD *)pNode) != &pHist->head; pNode = (HISTNODE *)pNode->list.pNext) {
-		if (cl_strcmp(pNode->szText, pszText) == 0) {
-			cl_history_remove_node(&pNode->list);
-			break;
-		}
-	}
 	return 0;
 }
-
 
 int cl_history_size()
 {
