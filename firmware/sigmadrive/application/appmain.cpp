@@ -21,6 +21,7 @@
 #include "cdc_iface.h"
 
 #include "rexjson++.h"
+#include "uartrpcserver.h"
 
 
 Uart uart1;
@@ -199,6 +200,7 @@ int application_main()
 
 	cl_mem_init(cl_heap, sizeof(cl_heap), 100);
 	cl_history_init();
+	UartRpcServer rpc_server;
 	char szBuffer[1024];
 	int elret;
 	while (1) {
@@ -207,8 +209,7 @@ int application_main()
 			assert(elret == (int)strlen(szBuffer));
 			try {
 				std::string str(szBuffer, 0, elret);
-				rexjson::value v = rexjson::read(str);
-				std::cout << v.write(true) << std::endl;
+				std::cout << rpc_server.call(str).write(true, true, 4, 4) << std::endl;
 			} catch (std::runtime_error& e) {
 				std::cout << e.what() << std::endl;
 			}

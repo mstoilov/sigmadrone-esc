@@ -1,6 +1,6 @@
 /*
  *  Sigmadrone
- *  Copyright (c) 2013-2019 The Sigmadrone Developers
+ *  Copyright (c) 2013-2015 The Sigmadrone Developers
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *  Martin Stoilov <martin@sigmadrone.org>
+ *  Svetoslav Vassilev <svassilev@sigmadrone.org>
  */
 #ifndef _RPCSERVER_H_
 #define _RPCSERVER_H_
@@ -44,9 +45,8 @@ enum rpc_error_code
 };
 
 struct rpc_server_dummy { };
-struct rpc_connection_dummy { };
 
-template<typename T = rpc_server_dummy, typename R = rpc_connection_dummy>
+template<typename T = rpc_server_dummy>
 class rpc_server
 {
 public:
@@ -77,7 +77,7 @@ public:
 		helpspec, 		// produce a human readable parameter specification
 		help, 			// produce a help message
 	};
-	typedef rexjson::value (T::*rpc_method_type)(R connection, rexjson::array& params, rpc_exec_mode mode);
+	typedef rexjson::value (T::*rpc_method_type)(rexjson::array& params, rpc_exec_mode mode);
 	typedef std::map<std::string, rpc_method_type> method_map_type;
 
 	rpc_server()
@@ -85,12 +85,13 @@ public:
 		add("help", &rpc_server::rpc_help);
 		add("spec", &rpc_server::rpc_spec);
 	}
+
 	~rpc_server()
 	{
 
 	}
 
-	rexjson::value rpc_spec(R connection, rexjson::array& params, rpc_exec_mode mode)
+	rexjson::value rpc_spec(rexjson::array& params, rpc_exec_mode mode)
 	{
 		static unsigned int types[] = { rpc_str_type };
 		if (mode != execute) {
@@ -109,10 +110,10 @@ public:
 
 		verify_parameters(params, types, ARRAYSIZE(types));
 		rexjson::array ignored;
-		return call_method_name(connection, params[0], ignored, spec);
+		return call_method_name(params[0], ignored, spec);
 	}
 
-	rexjson::value rpc_help(R connection, rexjson::array& params, rpc_exec_mode mode)
+	rexjson::value rpc_help(rexjson::array& params, rpc_exec_mode mode)
 	{
 		static unsigned int types[] = { (rpc_str_type | rpc_null_type) };
 		if (mode != execute) {
@@ -134,13 +135,13 @@ public:
 			std::string result;
 			for (typename method_map_type::const_iterator it = map_.begin(); it != map_.end(); it++) {
 				rexjson::array ignored;
-				std::string ret = call_method_name(connection, rexjson::value(it->first), ignored, help).get_str();
+				std::string ret = call_method_name(rexjson::value(it->first), ignored, help).get_str();
 				result += ret.substr(0, ret.find('\n')) + "\n";
 			}
 			return result;
 		}
 		rexjson::array ignored;
-		return call_method_name(connection, params[0], ignored, help);
+		return call_method_name(params[0], ignored, help);
 	}
 
 
@@ -227,17 +228,17 @@ public:
 		map_[name] = method;
 	}
 
-	rexjson::value call_method_name(R connection, const rexjson::value& methodname, rexjson::array& params, rpc_exec_mode mode = execute)
+	rexjson::value call_method_name(const rexjson::value& methodname, rexjson::array& params, rpc_exec_mode mode = execute)
 	{
 		if (methodname.get_type() != rexjson::str_type)
 			throw create_rpc_error(RPC_INVALID_REQUEST, "method must be a string");
 		typename method_map_type::const_iterator method_entry = map_.find(methodname.get_str());
 		if (method_entry == map_.end())
 			throw create_rpc_error(RPC_METHOD_NOT_FOUND, "method not found");
-		return (static_cast<T*>(this)->*(method_entry->second))(connection, params, mode);
+		return (static_cast<T*>(this)->*(method_entry->second))(params, mode);
 	}
 
-	rexjson::value call(R connection, const rexjson::value& val, rpc_exec_mode mode = execute)
+	rexjson::value call(const rexjson::value& val, rpc_exec_mode mode = execute)
 	{
 		rexjson::object ret;
 		rexjson::value result;
@@ -259,7 +260,7 @@ public:
 			rexjson::object::const_iterator method_it = val.get_obj().find("method");
 			if (method_it == val.get_obj().end())
 				throw create_rpc_error(RPC_INVALID_REQUEST, "missing method");
-			result = call_method_name(connection, method_it->second, params, mode);
+			result = call_method_name(method_it->second, params, mode);
 		} catch (rexjson::object& e) {
 			error = e;
 		} catch (std::exception& e) {
@@ -274,16 +275,16 @@ public:
 		return ret;
 	}
 
-	rexjson::value call(R connection, const std::string& name, const rexjson::value& id, const rexjson::array& params, rpc_exec_mode mode = execute)
+	rexjson::value call(const std::string& name, const rexjson::value& id, const rexjson::array& params, rpc_exec_mode mode = execute)
 	{
 		rexjson::object req;
 		req["id"] = id;
 		req["method"] = rexjson::value(name);
 		req["params"] = rexjson::value(params);
-		return call(connection, rexjson::value(req), mode);
+		return call(rexjson::value(req), mode);
 	}
 
-	rexjson::value call(R connection, const std::string& request, rpc_exec_mode mode = execute)
+	rexjson::value call(const std::string& request, rpc_exec_mode mode = execute)
 	{
 		rexjson::object ret;
 		rexjson::value result;
@@ -293,7 +294,7 @@ public:
 		try {
 			rexjson::value val;
 			val.read(request);
-			return call(connection, val, mode);
+			return call(val, mode);
 		} catch (rexjson::object& e) {
 			error = e;
 		} catch (std::exception& e) {

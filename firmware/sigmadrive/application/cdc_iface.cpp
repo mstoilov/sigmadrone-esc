@@ -42,6 +42,11 @@ size_t CdcIface::Transmit(const char* buffer, size_t nsize)
 
 size_t CdcIface::Receive(char* buffer, size_t nsize)
 {
+	if (!nsize)
+		return 0;
+
+	while (rx_ringbuf_.read_size() == 0)
+		;
 	size_t readsize = std::min(rx_ringbuf_.read_size(), nsize);
 	std::copy(rx_ringbuf_.get_read_ptr(), rx_ringbuf_.get_read_ptr() + readsize, buffer);
 	rx_ringbuf_.read_update(readsize);
