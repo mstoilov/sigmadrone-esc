@@ -159,7 +159,6 @@ AS_INCLUDES =
 C_INCLUDES =  \
 -Iapplication \
 -Irexjson \
--Ilinenoise \
 -Icommandline \
 -IInc \
 -IDrivers/STM32F7xx_HAL_Driver/Inc \
@@ -224,9 +223,6 @@ vpath %.cpp newlib
 
 OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp,%.o,$(notdir $(wildcard rexjson/*.cpp))))
 vpath %.cpp rexjson
-
-OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.c,%.o,$(notdir $(wildcard linenoise/*.c))))
-vpath %.c linenoise
 
 OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.c,%.o,$(notdir $(wildcard commandline/*.c))))
 vpath %.c commandline

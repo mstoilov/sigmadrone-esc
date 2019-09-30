@@ -21,7 +21,6 @@
 #include "cdc_iface.h"
 
 #include "rexjson++.h"
-#include "linenoise.h"
 
 
 Uart uart1;
@@ -204,47 +203,18 @@ int application_main()
 	int elret;
 	while (1) {
 		if ((elret = cl_editline("# ", szBuffer, sizeof(szBuffer), 5)) > 0) {
+			printf("\r\n");
 			assert(elret == (int)strlen(szBuffer));
-			printf("\r\nYou wrote: %s", szBuffer);
+			try {
+				std::string str(szBuffer, 0, elret);
+				rexjson::value v = rexjson::read(str);
+				std::cout << v.write(true) << std::endl;
+			} catch (std::runtime_error& e) {
+				std::cout << e.what() << std::endl;
+			}
 		}
 		printf("\r\n");
 	}
-
-
-	char *line;
-	linenoiseSetMultiLine(1);
-	linenoiseHistorySetMaxLen(3);
-	while((line = linenoise("hello> ")) != NULL) {
-	    printf("You wrote: %s\r\n", line);
-	    linenoiseHistoryAdd(line);
-	    linenoiseFree(line); /* Or just free(line) if you use libc malloc. */
-	}
-
-	while (1) {
-		try {
-			std::string str;
-//			std::getline(cdc_in, str);
-			char c = 0;
-			while ((c = std::cin.get())) {
-				if (c == '\r') {
-					std::cout << "\r\n";
-					std::cout << str;
-					str.clear();
-				} else {
-					str += c;
-				}
-				std::string temp;
-				temp = c;
-				std::cout << temp;
-			}
-
-			rexjson::value v = rexjson::read(str);
-			std::cout << v.write(false) << std::endl;
-		} catch (std::runtime_error& e) {
-			std::cout << e.what() << std::endl;
-		}
-	}
-
 
 	for (;;) {
 		ssize_t siz;
