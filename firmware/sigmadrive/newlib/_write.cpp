@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include "uart.h"
+#include "cdc_iface.h"
 
 /*
  * Set up the remote terminal like this:
@@ -12,7 +13,7 @@
  * uart1 is defined in appmain.cpp file.
  */
 extern Uart uart1;
-
+extern CdcIface usb_cdc;
 
 #ifdef __cplusplus
 extern "C"
@@ -26,7 +27,18 @@ int _write(int fd __attribute__((unused)),
 	size_t ret = 0;
 
 	// STDOUT and STDERR are routed to the trace device
-	if (fd == 1 || fd == 2) {
+	if (fd == 2) {
+		for (ret = 0; ret < nbyte; ret++) {
+			if (buf[ret] != '\n' || last_char == cr) {
+				usb_cdc.Transmit(&buf[ret], 1);
+			} else {
+				usb_cdc.Transmit(&cr, 1);
+				usb_cdc.Transmit(&buf[ret], 1);
+				last_char = buf[ret];
+			}
+		}
+		return ret;
+	} else if (fd == 1) {
 		for (ret = 0; ret < nbyte; ret++) {
 			if (buf[ret] != '\n' || last_char == cr) {
 				uart1.Transmit(&buf[ret], 1);
@@ -38,6 +50,7 @@ int _write(int fd __attribute__((unused)),
 		}
 		return ret;
 	}
+
 	errno = ENOSYS;
 	return -1;
 }

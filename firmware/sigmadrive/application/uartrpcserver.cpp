@@ -20,7 +20,9 @@
  */
 #include <memory>
 #include "uartrpcserver.h"
+#include "cdc_iface.h"
 
+extern CdcIface usb_cdc;
 
 UartRpcServer::UartRpcServer()
 	: rpc_server<UartRpcServer>()
@@ -54,5 +56,12 @@ rexjson::value UartRpcServer::rpc_position_kp(rexjson::array& params, rpc_exec_m
 	if (params[0].type() != rexjson::null_type) {
 		kp_ = params[0].get_real();
 	}
+	const char *out = "\033[6n";
+	char in[64];
+	memset(in, 0, sizeof(in));
+	int ret = usb_cdc.Transmit(out, strlen(out));
+	if ((ret = usb_cdc.Receive(in, sizeof(in))) <= 0)
+		;
+	kp_ = ret;
 	return kp_;
 }

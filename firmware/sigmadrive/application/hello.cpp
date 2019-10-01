@@ -7,5 +7,5 @@ Hello::Hello(const std::string& hello)
 }
 void Hello::print()
 {
-	printf("%s %ld\r\n", hello_msg_.c_str(), counter_++);
+	fprintf(stderr, "%s %ld\r\n", hello_msg_.c_str(), counter_++);
 }

@@ -156,7 +156,7 @@ int application_main()
 	drv1.WriteReg(5, 0x0);
 	drv1.WriteReg(6, 0x0);
 
-	printf("main_task 1\r\n");
+	fprintf(stderr, "main_task 1\r\n");
 	drv1.SetIDriveP_HS(Drv8323::IDRIVEP_370mA);
 	drv1.SetIDriveN_HS(Drv8323::IDRIVEN_1360mA);
 	drv1.SetIDriveP_LS(Drv8323::IDRIVEP_370mA);
@@ -178,7 +178,7 @@ int application_main()
 	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
-	printf("DRV1: \r\n");
+	fprintf(stderr, "DRV1: \r\n");
 	drv1.DumpRegs();
 
 	char buffer[120];
