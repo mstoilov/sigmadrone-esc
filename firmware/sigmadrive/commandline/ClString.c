@@ -528,3 +528,17 @@ void cl_printhex(unsigned char uNum)
 	cl_putchar(szHex[(uNum >> 4) & 0x0f]);
 	cl_putchar(szHex[uNum & 0x0f]);
 }
+
+int cl_putchar(int c)
+{
+	char ch = (char)c;
+	cl_write(&ch, sizeof(ch));
+	return c;
+}
+
+int cl_getchar()
+{
+	char c = 0;
+	cl_read(&c, sizeof(c));
+	return c;
+}

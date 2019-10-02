@@ -56,19 +56,6 @@ static int cl_term_output(SLEDITLINE *pEL, int iChar);
 static int cl_term_cursor_col();
 static int cl_term_width();
 
-static int cl_putchar(int c)
-{
-	char ch = (char)c;
-	cl_write(&ch, sizeof(ch));
-	return c;
-}
-
-static int cl_getchar()
-{
-	char c = 0;
-	cl_read(&c, sizeof(c));
-	return c;
-}
 
 static int cl_term_width()
 {
@@ -447,7 +434,7 @@ int cl_editline(const char *pszPrompt, char *pszBuffer, unsigned int uBufferSize
 	cl_history_head();
 
 	if (pszPrompt)
-		cl_printf("%s", pszPrompt);
+		cl_printf("%d, %s", EL.uTermWidth, pszPrompt);
 
 	EL.uColPos = cl_term_cursor_col();
 

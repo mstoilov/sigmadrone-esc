@@ -73,6 +73,8 @@ long cl_atol(char const *pszStr);
 unsigned long cl_ahtoulong(const char* pszNum);
 unsigned long cl_atoulong(const char* pszNum);
 void cl_printhex(unsigned char uNum);
+int cl_putchar(int c);
+int cl_getchar();
 
 #ifdef __cplusplus
 }
