@@ -25,8 +25,8 @@
 extern "C" {
 #endif
 
-int cl_putchar(int c);
-int cl_getchar();
+int cl_read(char *buf, unsigned int count);
+int cl_write(const char *buf, unsigned int count);
 
 /*
  * Don't need to call this function if CL_HAS_MALLOC is defined,

@@ -56,6 +56,19 @@ static int cl_term_output(SLEDITLINE *pEL, int iChar);
 static int cl_term_cursor_col();
 static int cl_term_width();
 
+static int cl_putchar(int c)
+{
+	char ch = (char)c;
+	cl_write(&ch, sizeof(ch));
+	return c;
+}
+
+static int cl_getchar()
+{
+	char c = 0;
+	cl_read(&c, sizeof(c));
+	return c;
+}
 
 static int cl_term_width()
 {
@@ -140,8 +153,8 @@ static int cl_term_cursor_col()
 	int iCol = 0;
 
 	cl_printf("\033[6n");
-	while ((c = cl_getchar()) != 27)
-		;
+	if ((c = cl_getchar()) != 27)
+		return 0;
 	
 	if (cl_getchar() == '[')
 	{
@@ -450,6 +463,31 @@ int cl_editline(const char *pszPrompt, char *pszBuffer, unsigned int uBufferSize
 			if ((iChar = cl_getchar()) == 91)
 			{
 				iChar = cl_getchar();
+				if (iChar >= '0' && iChar <= '9')
+				{
+					char c = 0;
+					int iLine = 0;
+					int iCol = 0;
+					for(;;)
+					{
+						c = cl_getchar(&EL);
+						if (c >= '0'&& c <= '9')
+							iLine = 10*iLine + c - '0';
+						else if (c == ';')
+							break;
+					}
+
+					for(;;)
+					{
+						c = cl_getchar(&EL);
+						if (c >= '0' && c <= '9')
+							iCol = 10*iCol + c - '0';
+						else if (c == 'R')
+							break;
+					}
+					continue;
+				}
+
 				switch (iChar)
 				{
 				case 'A': /* Up */

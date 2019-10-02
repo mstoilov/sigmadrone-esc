@@ -55,17 +55,15 @@ void cl_mem_free(void *pAddr)
 #endif
 }
 
-int cl_putchar(int c)
+int cl_read(char *buf, unsigned int count)
 {
-	char ch = (char)c;
-	write(1, &ch, sizeof(ch));
-	return c;
+	return read(0, buf, count);
 }
 
-int cl_getchar()
+int cl_write(const char *buf, unsigned int count)
 {
-	char c = 0;
-	read(0, &c, sizeof(c));
-	return c;
+	return write(1, buf, count);
 }
+
+
 
