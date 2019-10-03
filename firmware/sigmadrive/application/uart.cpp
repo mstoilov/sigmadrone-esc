@@ -110,7 +110,7 @@ void Uart::TransmitCompleteCallback()
 	}
 }
 
-ssize_t Uart::Receive(char* buffer, size_t nsize)
+ssize_t Uart::ReceiveOnce(char* buffer, size_t nsize)
 {
 	if (!nsize)
 		return 0;
@@ -121,6 +121,22 @@ ssize_t Uart::Receive(char* buffer, size_t nsize)
 		rx_ringbuf_.read_update(nsize);
 	}
 	return nsize;
+}
+
+ssize_t Uart::Receive(char* buffer, size_t nsize)
+{
+	ssize_t recvsiz = 0;
+	size_t ret = 0;
+	size_t offset = 0;
+	while (nsize) {
+		recvsiz = ReceiveOnce(buffer + offset, nsize);
+		if (recvsiz <= 0)
+			break;
+		ret += recvsiz;
+		offset += recvsiz;
+		nsize -= recvsiz;
+	}
+	return ret;
 }
 
 void Uart::ReceiveCompleteCallback()

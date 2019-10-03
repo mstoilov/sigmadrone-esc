@@ -31,6 +31,9 @@ public:
 
 	static handle_map_type handle_map_;
 
+protected:
+	ssize_t ReceiveOnce(char* buffer, size_t nsize);
+
 public:
 	UART_HandleTypeDef* huart_ = nullptr;
 

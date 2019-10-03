@@ -35,16 +35,17 @@ size_t CdcIface::Transmit(const char* buffer, size_t nsize)
 {
 	if (nsize > 0xFFFF)
 		nsize = 0xFFFF;
-	if (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
-		return 0;
+//	if (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
+//		return 0;
+	while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
+		;
 	return nsize;
 }
 
-size_t CdcIface::Receive(char* buffer, size_t nsize)
+size_t CdcIface::ReceiveOnce(char* buffer, size_t nsize)
 {
 	if (!nsize)
 		return 0;
-
 	size_t readsize = std::min(rx_ringbuf_.read_size(), nsize);
 	std::copy(rx_ringbuf_.get_read_ptr(), rx_ringbuf_.get_read_ptr() + readsize, buffer);
 	rx_ringbuf_.read_update(readsize);
@@ -54,6 +55,22 @@ size_t CdcIface::Receive(char* buffer, size_t nsize)
 		CDC_Receive_Initiate();
 	}
 	return readsize;
+}
+
+size_t CdcIface::Receive(char* buffer, size_t nsize)
+{
+	ssize_t recvsiz = 0;
+	size_t ret = 0;
+	size_t offset = 0;
+	while (nsize) {
+		recvsiz = ReceiveOnce(buffer + offset, nsize);
+		if (recvsiz <= 0)
+			break;
+		ret += recvsiz;
+		offset += recvsiz;
+		nsize -= recvsiz;
+	}
+	return ret;
 }
 
 int8_t CdcIface::ReceiveComplete(uint8_t* buf, uint32_t len)

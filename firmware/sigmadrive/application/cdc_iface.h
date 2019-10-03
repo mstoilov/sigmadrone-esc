@@ -27,6 +27,9 @@ public:
 
 	static handle_map_type handle_map_;
 
+protected:
+	size_t ReceiveOnce(char* buffer, size_t nsize);
+
 private:
 	USBD_HandleTypeDef* usbd_;
 	Ring<char, 4096> rx_ringbuf_;

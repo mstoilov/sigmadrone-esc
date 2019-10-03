@@ -5,7 +5,6 @@
 #include <cstring>
 #include <string>
 #include <assert.h>
-#include "hello.h"
 #include "main.h"
 #include "appmain.h"
 
@@ -147,9 +146,6 @@ int application_main()
 	tim4.Attach(&htim4);
 	usb_cdc.Attach(&hUsbDeviceFS);
 
-	Hello h("World, hello: This is a message from the sigmadrive UART console.");
-	h.print();
-
 	drv1.WriteReg(2, 0x0);
 	drv1.WriteReg(3, 0x0);
 	drv1.WriteReg(4, 0x0);
@@ -204,7 +200,7 @@ int application_main()
 	char szBuffer[1024];
 	int elret;
 	while (1) {
-		if ((elret = cl_editline("# ", szBuffer, sizeof(szBuffer), 5)) > 0) {
+		if ((elret = cl_editline("sigmadrive # ", szBuffer, sizeof(szBuffer), 5)) > 0) {
 			printf("\r\n");
 			assert(elret == (int)strlen(szBuffer));
 			try {
@@ -216,6 +212,23 @@ int application_main()
 		}
 		printf("\r\n");
 	}
+
+
+//	for (;;) {
+//		ssize_t siz;
+//		std::string in;
+//		while ((siz = uart1.Receive(buffer, sizeof(buffer))) > 0) {
+//			in += std::string(buffer, siz);
+//		}
+//
+//		size_t offset = 0;
+//		siz = in.size();
+//		while (siz) {
+//			size_t ret = uart1.Transmit(in.c_str() + offset, siz);
+//			siz -= ret;
+//			offset += ret;
+//		}
+//	}
 
 	for (;;) {
 		ssize_t siz;
