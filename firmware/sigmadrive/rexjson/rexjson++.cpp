@@ -40,6 +40,14 @@ value::~value()
 	destroy();
 }
 
+std::string value::get_typename(unsigned int type)
+{
+	std::string ret;
+	if (type <= real_type)
+		ret = value_type_name[type];
+	return ret;
+}
+
 static void escape_str_val(const value& v, std::ostream& os)
 {
 	for (std::string::const_iterator it = v.get_str().begin(); it != v.get_str().end(); it++) {

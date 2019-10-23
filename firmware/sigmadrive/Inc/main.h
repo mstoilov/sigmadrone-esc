@@ -37,8 +37,10 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+extern ADC_HandleTypeDef hadc1;
 extern UART_HandleTypeDef huart1;
 extern SPI_HandleTypeDef hspi3;
+extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim4;
 /* USER CODE END ET */
 
@@ -52,6 +54,8 @@ extern TIM_HandleTypeDef htim4;
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -60,6 +64,7 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define TIM_PERIOD_CLOCKS 2000 //3840
 #define LED_WARN_Pin GPIO_PIN_14
 #define LED_WARN_GPIO_Port GPIOD
 #define LED_STATUS_Pin GPIO_PIN_9

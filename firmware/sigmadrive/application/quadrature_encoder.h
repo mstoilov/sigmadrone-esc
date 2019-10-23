@@ -15,27 +15,34 @@
 #include "stm32f7xx.h"
 #include "stm32f7xx_hal_tim.h"
 
+#include "iencoder.h"
 
-class QuadratureEncoder {
+class QuadratureEncoder : public IEncoder {
 public:
-	QuadratureEncoder(uint32_t cpr_max);
+	QuadratureEncoder(uint32_t cpr_max, uint32_t motor_pole_pairs);
 	virtual ~QuadratureEncoder();
 	void Attach(TIM_HandleTypeDef* htim);
-
-	void Start();
-	void Stop();
-	void ResetCounter(uint32_t cpr);
-	uint32_t GetPosition();
-	void ResetPosition(uint32_t position);
-	uint32_t GetMaxPosition();
+	uint32_t GetMaxCounter();
 	void InvalidateIndexOffset();
 	void SetIndexOffset(int32_t cpr);
 	int32_t GetIndexOffset();
 	void CallbackIndex();
 
+public:
+	virtual void Start() override;
+	virtual void Stop() override;
+	virtual uint32_t GetCountsPerRotation() override;
+	virtual void ResetCounter(uint32_t cpr) override;
+	virtual uint32_t GetCounter();
+	virtual uint32_t GetMotorPolePairs() override;
+	virtual void SetMotorPolePairs(uint32_t motor_pole_pairs) override;
+	virtual float GetElectricPosition() override;
+	virtual float GetMechanicalPosition() override;
+
 
 protected:
 	uint32_t cpr_max_;
+	uint32_t motor_pole_pairs_;
 	int32_t index_offset_;
 	TIM_HandleTypeDef* htim_;
 };

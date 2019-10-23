@@ -155,8 +155,13 @@ public:
 	void SetOCPMode(uint32_t ocp_mode);
 	void SetOCPDeglitch(uint32_t ocp_deg);
 	void SetVDSLevel(uint32_t vds_lvl);
+	uint32_t GetCSAGain();
+	uint32_t GetCSAGainValue();
 	void SetCSAGain(uint32_t csa_gain);
 	void SetOCPSenseLevel(uint32_t sen_lvl);
+
+	void EnableCalibration();
+	void DisableCalibration();
 
 	void EnableCPUV();
 	void DisableCPUV();

@@ -33,6 +33,17 @@ public:
 
 protected:
 	rexjson::value rpc_position_kp(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_clock_hz(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_pwm_timings(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_pwm_start(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_pwm_stop(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_adc_injswstart(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_adc_injhistory(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_adc_injdata(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_adc_injcurrent(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_adc_injbias(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_drv_calibration(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_drv_csagain(rexjson::array& params, rpc_exec_mode mode = execute);
 
 protected:
 	float kp_ = 0.0;

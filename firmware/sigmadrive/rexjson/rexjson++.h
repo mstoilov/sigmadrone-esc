@@ -82,6 +82,8 @@ public:
 	value_type type() const { return get_type(); }
 	std::string get_typename() const;
 	std::string to_string() const;
+	static std::string get_typename(unsigned int type);
+
 
 	void set_object(const object& v) {
 		operator=(v);

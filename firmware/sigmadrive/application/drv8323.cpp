@@ -112,6 +112,30 @@ void Drv8323::SetCSAGain(uint32_t csa_gain)
 	ModifyReg(0x6, CSA_GAIN_MASK << CSA_SHIFT_BIT, csa_gain << CSA_SHIFT_BIT);
 }
 
+uint32_t Drv8323::GetCSAGain()
+{
+	uint32_t csareg = ReadReg(0x6);
+	uint32_t ret = (csareg >> CSA_SHIFT_BIT) & CSA_GAIN_MASK;
+	return ret;
+}
+
+uint32_t Drv8323::GetCSAGainValue()
+{
+	uint32_t csagain = GetCSAGain();
+	switch (csagain) {
+	default:
+	case 0:
+		return 5;
+	case 1:
+		return 10;
+	case 2:
+		return 20;
+	case 3:
+		return 40;
+	}
+}
+
+
 void Drv8323::SetOCPSenseLevel(uint32_t sen_lvl)
 {
 	assert(sen_lvl <= SEN_LVL_100V);
@@ -295,4 +319,14 @@ void Drv8323::DumpRegs()
 		fprintf(stderr, "DRV: Reg %d: 0x%x\r\n", i, (unsigned int) ReadReg(i));
 	}
 	fprintf(stderr, "\r\n\r\n");
+}
+
+void Drv8323::EnableCalibration()
+{
+	ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C);
+}
+
+void Drv8323::DisableCalibration()
+{
+	ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, 0);
 }

@@ -84,6 +84,7 @@ public:
 	{
 		add("help", &rpc_server::rpc_help);
 		add("spec", &rpc_server::rpc_spec);
+		add("helpspec", &rpc_server::rpc_helpspec);
 	}
 
 	~rpc_server()
@@ -113,6 +114,29 @@ public:
 		return call_method_name(params[0], ignored, spec);
 	}
 
+	rexjson::value rpc_helpspec(rexjson::array& params, rpc_exec_mode mode)
+	{
+		static unsigned int types[] = { rpc_str_type };
+		if (mode != execute) {
+			if (mode == spec)
+				return create_json_spec(types, ARRAYSIZE(types));
+			if (mode == helpspec)
+				return create_json_helpspec(types, ARRAYSIZE(types));
+			return
+					"helpspec <\"name\">\n"
+					"\nGet the helpspec for the specified rpc name.\n"
+					"\nArguments:\n"
+					"1. \"name\"     (string, required) The name of of the rpc method to get the spec on\n"
+					"\nResult:\n"
+					"\"json\"     (string) The rpc call helpspec\n";
+		}
+
+		verify_parameters(params, types, ARRAYSIZE(types));
+		rexjson::array ignored;
+		return call_method_name(params[0], ignored, helpspec);
+	}
+
+
 	rexjson::value rpc_help(rexjson::array& params, rpc_exec_mode mode)
 	{
 		static unsigned int types[] = { (rpc_str_type | rpc_null_type) };
@@ -136,6 +160,7 @@ public:
 			for (typename method_map_type::const_iterator it = map_.begin(); it != map_.end(); it++) {
 				rexjson::array ignored;
 				std::string ret = call_method_name(rexjson::value(it->first), ignored, help).get_str();
+				ret = ret.substr(ret.find('\n') + 1);
 				result += ret.substr(0, ret.find('\n')) + "\n";
 			}
 			return result;
@@ -207,6 +232,15 @@ public:
 		rexjson::value ret = create_json_spec(arr, n);
 		convert_types_to_strings(ret);
 		return ret;
+	}
+
+	static rexjson::value noexec(rexjson::array& params, rpc_exec_mode mode, unsigned int *types, size_t ntypes, const std::string& help_msg)
+	{
+		if (mode == spec)
+			return create_json_spec(types, ARRAYSIZE(types));
+		if (mode == helpspec)
+			return create_json_helpspec(types, ARRAYSIZE(types));
+		return help_msg;
 	}
 
 	static rexjson::object create_rpc_error(
@@ -312,8 +346,8 @@ public:
 protected:
 	static void convert_types_to_strings(rexjson::value& val)
 	{
-		if (val.get_type() == rexjson::int_type && val.get_int() >= rexjson::obj_type && val.get_int() <= rexjson::null_type) {
-			std::string strtypename = val.get_typename();
+		if (val.get_type() == rexjson::int_type && val.get_int() >= rexjson::null_type && val.get_int() <= rexjson::real_type) {
+			std::string strtypename = rexjson::value::get_typename(val.get_int());
 			val = strtypename;
 		} else if (val.get_type() == rexjson::array_type) {
 			for (size_t i = 0; i < val.get_array().size(); i++) {

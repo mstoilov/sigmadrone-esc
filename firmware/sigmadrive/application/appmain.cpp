@@ -1,135 +1,83 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stddef.h>
 #include <iostream>
 #include <cstring>
 #include <string>
+#include <vector>
+#include <type_traits>
+#include <algorithm>
+#include <iterator>
 #include <assert.h>
+#include "cmsis_os2.h"
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "task.h"
+
 #include "main.h"
 #include "appmain.h"
+#include "command_task.h"
 
-#include "ClEditLine.h"
-#include "ClHistory.h"
-#include "ClPort.h"
+
+#include "adc.h"
 #include "uart.h"
 #include "spimaster.h"
 #include "drv8323.h"
 #include "exti.h"
+#include "pwm_generator.h"
 #include "quadrature_encoder.h"
+#include "servo_drive.h"
 #include "ring.h"
 #include "cdc_iface.h"
 
-#include "rexjson++.h"
-#include "uartrpcserver.h"
+#define MOTOR_POLE_PAIRS 7
 
-
+ServoDrive servo;
+osThreadId_t commandTaskHandle;
+Adc adc1;
 Uart uart1;
 SPIMaster spi3;
+PwmGenerator tim1;
 CdcIface usb_cdc;
-QuadratureEncoder tim4(0x2000);
+QuadratureEncoder tim4(0x2000, MOTOR_POLE_PAIRS);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
+std::vector<IServoDrive*> g_motors;
 
 
 
-#include <iostream>
-#include <streambuf>
-#include <locale>
-#include <cstdio>
 
-class cdcbuf: public std::streambuf {
-public:
-	char buffer_[128];
-	const size_t put_back_ = 16;
-
-	cdcbuf() {
-		setg(buffer_ + sizeof(buffer_), buffer_ + sizeof(buffer_), buffer_ + sizeof(buffer_));
-	}
-protected:
-	/*
-	 * central output function
-	 */
-	virtual int_type overflow(int_type c)
-	{
-		if (c != EOF) {
-			// convert lowercase to uppercase
-			char txc = c;
-			send(&txc, sizeof(txc));
-		}
-		return c;
+extern "C"
+void TIM1_IRQHandler()
+{
+	if (LL_TIM_IsActiveFlag_UPDATE(htim1.Instance)) {
+		LL_TIM_ClearFlag_UPDATE(htim1.Instance);
+		servo.PeriodElapsedCallback();
 	}
 
-	virtual std::streamsize xsputn( const char_type* s, std::streamsize count)
-	{
-		return send(s, count);
+}
+
+void AdcBiasSetup()
+{
+	drv1.EnableCalibration();
+	for (size_t i = 0; i < Adc::ADC_HISTORY_SIZE; i++) {
+		vTaskDelay(10 / portTICK_RATE_MS);
+		adc1.InjectedSwTrig();
 	}
+	drv1.DisableCalibration();
 
-	virtual std::streamsize send( const char_type* s, std::streamsize count)
-	{
-		std::streamsize offset = 0;
-		std::streamsize siz = count;
-
-		while (siz) {
-			size_t ret = usb_cdc.Transmit(s + offset, siz);
-			siz -= ret;
-			offset += ret;
-		}
-		return count;
+	memset(adc1.bias_, 0, sizeof(adc1.bias_));
+	for (size_t i = 0; i < Adc::ADC_HISTORY_SIZE; i++) {
+		adc1.bias_[0] += adc1.injhistory_[i][0];
+		adc1.bias_[1] += adc1.injhistory_[i][1];
+		adc1.bias_[2] += adc1.injhistory_[i][2];
 	}
-
-	virtual int_type underflow()
-	{
-		char_type* begin = gptr();
-		char_type* end = egptr();
-		char_type* back = eback();
-
-	    if (gptr() < egptr()) // buffer not exhausted
-	        return traits_type::to_int_type(*gptr());
-
-	    char *base = &buffer_[0];
-	    char *start = base;
-
-	    if (eback() == base) // true when this isn't the first fill
-	    {
-	        // Make arrangements for putback characters
-	        std::memmove(base, egptr() - put_back_, put_back_);
-	        start += put_back_;
-	    }
-
-	    // start is now the start of the buffer, proper.
-	    // Read from fptr_ in to the provided buffer
-	    std::streamsize n = recv(start, sizeof(buffer_) - (start - base));
-	    if (n == 0)
-	        return traits_type::eof();
-
-	    // Set buffer pointers
-	    setg(base, start, start + n);
-
-	    return traits_type::to_int_type(*gptr());
-	}
-
-	virtual std::streamsize xsgetn( char_type* s, std::streamsize count )
-	{
-		return recv(s, count);
-	}
-
-	virtual std::streamsize recv( char_type* s, std::streamsize count)
-	{
-		std::streamsize offset = 0;
-		std::streamsize ret = 0;
-		while ((ret = usb_cdc.Receive(s, count)) == 0)
-			;
-		count -= ret;
-		offset += ret;
-		if (count)
-			ret += usb_cdc.Receive(s + offset, count);
-		return ret;
-	}
-
-};
-
-char cl_heap[4096];
+	adc1.bias_[0] = adc1.bias_[0]/Adc::ADC_HISTORY_SIZE;
+	adc1.bias_[1] = adc1.bias_[1]/Adc::ADC_HISTORY_SIZE;
+	adc1.bias_[2] = adc1.bias_[2]/Adc::ADC_HISTORY_SIZE;
+}
 
 extern "C"
 int application_main()
@@ -141,8 +89,10 @@ int application_main()
 	 * C++ wrapper objects. At this point the HAL handles
 	 * should be fully initialized.
 	 */
+	adc1.Attach(&hadc1);
 	uart1.Attach(&huart1);
 	spi3.Attach(&hspi3);
+	tim1.Attach(&htim1);
 	tim4.Attach(&htim4);
 	usb_cdc.Attach(&hUsbDeviceFS);
 
@@ -152,7 +102,6 @@ int application_main()
 	drv1.WriteReg(5, 0x0);
 	drv1.WriteReg(6, 0x0);
 
-	fprintf(stderr, "main_task 1\r\n");
 	drv1.SetIDriveP_HS(Drv8323::IDRIVEP_370mA);
 	drv1.SetIDriveN_HS(Drv8323::IDRIVEN_1360mA);
 	drv1.SetIDriveP_LS(Drv8323::IDRIVEP_370mA);
@@ -174,77 +123,30 @@ int application_main()
 	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
+
+	fprintf(stderr, "main_task 1\r\n");
 	fprintf(stderr, "DRV1: \r\n");
 	drv1.DumpRegs();
 
-	char buffer[120];
+	AdcBiasSetup();
+
+	osThreadAttr_t commandTask_attributes;
+	memset(&commandTask_attributes, 0, sizeof(commandTask_attributes));
+	commandTask_attributes.name = "commandTask";
+	commandTask_attributes.priority = (osPriority_t) osPriorityNormal;
+	commandTask_attributes.stack_size = 4096;
+	commandTaskHandle = osThreadNew(StartCommandTask, NULL, &commandTask_attributes);
+
 	uint32_t old_counter = 0, new_counter = 0;
 
 	tim4.Start();
-
-	cdcbuf ob;
-	cdcbuf ib;
-	std::ostream cdc_out(&ob);
-	std::istream cdc_in(&ib);
-
-#if 0
-	while (1) {
-		std::cout << std::string(1,cdc_in.get());
-		std::cout << "*** text1 ***\n" << rexjson::read(text1).write(false) << std::endl << std::endl;
-	}
-#endif
-
-	cl_mem_init(cl_heap, sizeof(cl_heap), 100);
-	cl_history_init();
-	UartRpcServer rpc_server;
-	char szBuffer[1024];
-	int elret;
-	while (1) {
-		if ((elret = cl_editline("sigmadrive # ", szBuffer, sizeof(szBuffer), 5)) > 0) {
-			printf("\r\n");
-			assert(elret == (int)strlen(szBuffer));
-			try {
-				std::string str(szBuffer, 0, elret);
-				std::cout << rpc_server.call(str).write(true, true, 4, 4) << std::endl;
-			} catch (std::runtime_error& e) {
-				std::cout << e.what() << std::endl;
-			}
-		}
-		printf("\r\n");
-	}
+//	g_motors[0].Start();
 
 
-//	for (;;) {
-//		ssize_t siz;
-//		std::string in;
-//		while ((siz = uart1.Receive(buffer, sizeof(buffer))) > 0) {
-//			in += std::string(buffer, siz);
-//		}
-//
-//		size_t offset = 0;
-//		siz = in.size();
-//		while (siz) {
-//			size_t ret = uart1.Transmit(in.c_str() + offset, siz);
-//			siz -= ret;
-//			offset += ret;
-//		}
-//	}
+	servo.SetEncoder(&tim4);
+	servo.SetPwmGenerator(&tim1);
 
-	for (;;) {
-		ssize_t siz;
-		std::string in;
-		while ((siz = usb_cdc.Receive(buffer, sizeof(buffer))) > 0) {
-			in += std::string(buffer, siz);
-		}
-
-		size_t offset = 0;
-		siz = in.size();
-		while (siz) {
-			size_t ret = usb_cdc.Transmit(in.c_str() + offset, siz);
-			siz -= ret;
-			offset += ret;
-		}
-	}
+	g_motors.push_back(&servo);
 
 	for (;;) {
 //		HAL_Delay(10);
@@ -252,10 +154,9 @@ int application_main()
 
 		std::string *str = new std::string("Counter");
 
-		std::cout << "help" << std::endl;
-		new_counter = tim4.GetPosition();
+		new_counter = tim4.GetCounter();
 		if (new_counter != old_counter) {
-			printf("%s: %d\n", str->c_str(), new_counter);
+//			printf("%s: %lu\n", str->c_str(), new_counter);
 			old_counter = new_counter;
 		}
 
