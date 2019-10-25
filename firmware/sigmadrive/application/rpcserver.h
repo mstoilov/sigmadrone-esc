@@ -158,10 +158,12 @@ public:
 		if (params[0].type() == rexjson::null_type) {
 			std::string result;
 			for (typename method_map_type::const_iterator it = map_.begin(); it != map_.end(); it++) {
-				rexjson::array ignored;
-				std::string ret = call_method_name(rexjson::value(it->first), ignored, help).get_str();
-				ret = ret.substr(ret.find('\n') + 1);
-				result += ret.substr(0, ret.find('\n')) + "\n";
+				result += it->first + "\n";
+
+//				rexjson::array ignored;
+//				std::string ret = call_method_name(rexjson::value(it->first), ignored, help).get_str();
+//				ret = ret.substr(ret.find('\n') + 1);
+//				result += ret.substr(0, ret.find('\n')) + "\n";
 			}
 			return result;
 		}

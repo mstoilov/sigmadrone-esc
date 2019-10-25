@@ -10,6 +10,8 @@
 
 #include "iservodrive.h"
 #include "torque_loop.h"
+#include "rpcproperty.h"
+
 
 class ServoDrive : public IServoDrive {
 public:
@@ -20,6 +22,9 @@ public:
 	virtual bool IsStarted() override;
 
 	void PeriodElapsedCallback();
+
+public:
+	RpcProperty props_;
 
 protected:
 	uint32_t update_counter_ = 0;

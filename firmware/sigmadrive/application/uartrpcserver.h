@@ -44,6 +44,7 @@ protected:
 	rexjson::value rpc_adc_injbias(rexjson::array& params, rpc_exec_mode mode = execute);
 	rexjson::value rpc_drv_calibration(rexjson::array& params, rpc_exec_mode mode = execute);
 	rexjson::value rpc_drv_csagain(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_getset_property(rexjson::array& params, rpc_exec_mode mode = execute);
 
 protected:
 	float kp_ = 0.0;

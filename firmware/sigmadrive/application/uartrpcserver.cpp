@@ -25,8 +25,10 @@
 #include "torque_loop.h"
 #include "adc.h"
 #include "drv8323.h"
-#include "iservodrive.h"
+#include "servo_drive.h"
 
+extern RpcProperty g_properties;
+//extern ServoDrive servo;
 extern CdcIface usb_cdc;
 extern std::vector<IServoDrive*> g_motors;
 extern Adc adc1;
@@ -48,6 +50,7 @@ UartRpcServer::UartRpcServer()
 	add("adc_injcurrent", &UartRpcServer::rpc_adc_injcurrent);
 	add("drv_calibration", &UartRpcServer::rpc_drv_calibration);
 	add("drv_csagain", &UartRpcServer::rpc_drv_csagain);
+	add("getset_property", &UartRpcServer::rpc_getset_property);
 }
 
 UartRpcServer::~UartRpcServer()
@@ -196,7 +199,7 @@ rexjson::value UartRpcServer::rpc_adc_injhistory(rexjson::array& params, rpc_exe
 {
 	static unsigned int types[] = {rpc_int_type};
 	static const char *help_msg = R"desc(
-adc_injdata
+adc_injhistory
 Get injected data for the specified channel
 
 Arguments:
@@ -334,3 +337,29 @@ Arguments:
 	return (int) drv1.GetCSAGain();
 }
 
+rexjson::value UartRpcServer::rpc_getset_property(rexjson::array& params, rpc_exec_mode mode)
+{
+	static std::string prefix = "props";
+	std::ostringstream oss;
+	static unsigned int types[] = {rpc_str_type, rpc_str_type|rpc_int_type|rpc_real_type|rpc_bool_type|rpc_null_type};
+	static const char *help_msg = R"desc(
+Get/Set property.
+
+)desc";
+
+	if (mode != execute) {
+		g_properties.EnumChildren(prefix, [&](const std::string& path, RpcProperty& prop)->void
+				{
+					oss << path << " : " << prop.GetProp().to_string() << std::endl;
+				});
+		std::string help = help_msg;
+		help += oss.str();
+		return noexec(params, mode, types, ARRAYSIZE(types), help);
+	}
+	verify_parameters(params, types, ARRAYSIZE(types));
+	std::string path = params[0].get_str();
+	if (params[1].type() != rexjson::null_type) {
+		g_properties.Navigate(path.substr(prefix.size())).SetProp(params[1]);
+	}
+	return g_properties.Navigate(path.substr(prefix.size())).GetProp();
+}

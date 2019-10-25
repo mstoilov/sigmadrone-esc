@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <complex>
 #include "pwm_generator.h"
+#include "rpcproperty.h"
 
 class PwmGenerator;
 
@@ -24,7 +25,23 @@ public:
 	float GetThrottle() const			{ return throttle_; }
 	void GetTimings(float throttle, const std::complex<float>& vec, uint32_t period, uint32_t *timings, size_t timings_size);
 
+public:
+	RpcProperty props_;
+
 protected:
+	enum E {
+		E0 = 0,
+		E1,
+		E2,
+		E3,
+	};
+
+	int i = 1;
+	float f = 2.2;
+	std::string s = "this is a string";
+	bool b = true;
+	E e = E2;
+
 	float throttle_;
 	std::complex<float> p1_;
 	std::complex<float> p2_;

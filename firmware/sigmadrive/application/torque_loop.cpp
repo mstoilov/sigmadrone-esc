@@ -16,6 +16,21 @@ TorqueLoop::TorqueLoop()
 	p2_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
 	p3_ = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
 
+	props_= RpcPropertyMap({
+		{"throttle", RpcProperty(&throttle_, RpcObjectAccess::readwrite)},
+		{"i", RpcProperty(&i)},
+		{"f", RpcProperty(&f,
+				RpcObjectAccess::readwrite,
+				[](const rexjson::value& v)->void{if (v.get_real() > 10.0f) throw std::range_error("value is too big");},
+				[](void *ctx)->void {std::cout << "f was modified" << std::endl;},
+				nullptr),
+		},
+		{"s", RpcProperty(&s)},
+		{"b", RpcProperty(&b,
+				RpcObjectAccess::readwrite,
+				[](const rexjson::value& v)->void{throw std::runtime_error("Can't set");})},
+		{"e", RpcProperty(&e)},
+	});
 }
 
 TorqueLoop::~TorqueLoop()

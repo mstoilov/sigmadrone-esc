@@ -30,6 +30,7 @@
 #include "servo_drive.h"
 #include "ring.h"
 #include "cdc_iface.h"
+#include "rpcproperty.h"
 
 #define MOTOR_POLE_PAIRS 7
 
@@ -46,7 +47,11 @@ Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 std::vector<IServoDrive*> g_motors;
 
-
+RpcProperty g_properties =
+		RpcPropertyMap {
+			{"clock_hz", RpcProperty(&SystemCoreClock, RpcObjectAccess::readonly)},
+			{"servo", RpcPropertyArray({servo.props_, })}
+		};
 
 
 extern "C"
@@ -134,14 +139,14 @@ int application_main()
 	memset(&commandTask_attributes, 0, sizeof(commandTask_attributes));
 	commandTask_attributes.name = "commandTask";
 	commandTask_attributes.priority = (osPriority_t) osPriorityNormal;
-	commandTask_attributes.stack_size = 4096;
+	commandTask_attributes.stack_size = 10000;
 	commandTaskHandle = osThreadNew(StartCommandTask, NULL, &commandTask_attributes);
 
 	uint32_t old_counter = 0, new_counter = 0;
 
-	tim4.Start();
-//	g_motors[0].Start();
+	servo.props_.EnumChildren("servo", [](const std::string& path, RpcProperty& prop)->void{std::cout << path << " : " << prop.GetProp().to_string() << std::endl;});
 
+	tim4.Start();
 
 	servo.SetEncoder(&tim4);
 	servo.SetPwmGenerator(&tim1);

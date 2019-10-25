@@ -11,6 +11,14 @@ ServoDrive::ServoDrive()
 {
 	// TODO Auto-generated constructor stub
 
+	props_= RpcPropertyMap({
+		{"clock_hz", RpcProperty(&SystemCoreClock, RpcObjectAccess::readonly)},
+		{"update_counter", RpcProperty(&update_counter_)},
+		{"period", RpcProperty(&period_)},
+
+		{"torque_loop", tql_.props_}
+	});
+
 }
 
 ServoDrive::~ServoDrive()
