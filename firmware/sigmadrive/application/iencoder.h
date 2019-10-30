@@ -2,6 +2,7 @@
 #define _IENCODER_H_
 
 #include <stdint.h>
+#include "rpcproperty.h"
 
 class IEncoder {
 public:
@@ -16,7 +17,7 @@ public:
 	virtual void SetMotorPolePairs(uint32_t motor_pole_pairs) = 0;
 	virtual float GetElectricPosition() = 0;
 	virtual float GetMechanicalPosition() = 0;
-
+	virtual RpcProperty GetProperties() = 0;
 public:
 
 

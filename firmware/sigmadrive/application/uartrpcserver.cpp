@@ -26,9 +26,9 @@
 #include "adc.h"
 #include "drv8323.h"
 #include "servo_drive.h"
+#include "rpcproperty.h"
 
-extern RpcProperty g_properties;
-//extern ServoDrive servo;
+extern RpcProperty *g_properties;
 extern CdcIface usb_cdc;
 extern std::vector<IServoDrive*> g_motors;
 extern Adc adc1;
@@ -38,8 +38,6 @@ extern TorqueLoop tql;
 UartRpcServer::UartRpcServer()
 	: rpc_server<UartRpcServer>()
 {
-	add("kp", &UartRpcServer::rpc_position_kp);
-	add("clock_hz", &UartRpcServer::rpc_clock_hz);
 	add("pwm_timings", &UartRpcServer::rpc_pwm_timings);
 	add("pwm_start", &UartRpcServer::rpc_pwm_start);
 	add("pwm_stop", &UartRpcServer::rpc_pwm_stop);
@@ -58,43 +56,6 @@ UartRpcServer::~UartRpcServer()
 
 }
 
-rexjson::value UartRpcServer::rpc_position_kp(rexjson::array& params, rpc_exec_mode mode)
-{
-	static unsigned int types[] = {rpc_real_type|rpc_int_type|rpc_null_type};
-	static const char *help_msg = R"desc(
-sd_position_kp
-Get/Set Kp for the PID controller.
-If the new coefficient is not specified, the current Kp will be returned.
-
-Arguments:
-1. Kp          (real, optional) The Kp of the PID controller.
-)desc";
-
-	if (mode != execute) {
-		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-	}
-	verify_parameters(params, types, ARRAYSIZE(types));
-	if (params[0].type() != rexjson::null_type) {
-		kp_ = params[0].get_real();
-	}
-	return kp_;
-}
-
-
-rexjson::value UartRpcServer::rpc_clock_hz(rexjson::array& params, rpc_exec_mode mode)
-{
-	static unsigned int types[] = {};
-	static const char *help_msg = R"desc(
-clock_hz
-Get clock frequency in hertz.
-)desc";
-
-	if (mode != execute) {
-		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-	}
-	verify_parameters(params, types, ARRAYSIZE(types));
-	return rexjson::value((int)SystemCoreClock);
-}
 
 rexjson::value UartRpcServer::rpc_pwm_timings(rexjson::array& params, rpc_exec_mode mode)
 {
@@ -348,7 +309,7 @@ Get/Set property.
 )desc";
 
 	if (mode != execute) {
-		g_properties.EnumChildren(prefix, [&](const std::string& path, RpcProperty& prop)->void
+		g_properties->EnumChildren(prefix, [&](const std::string& path, RpcProperty& prop)->void
 				{
 					oss << path << " : " << prop.GetProp().to_string() << std::endl;
 				});
@@ -359,7 +320,7 @@ Get/Set property.
 	verify_parameters(params, types, ARRAYSIZE(types));
 	std::string path = params[0].get_str();
 	if (params[1].type() != rexjson::null_type) {
-		g_properties.Navigate(path.substr(prefix.size())).SetProp(params[1]);
+		g_properties->Navigate(path.substr(prefix.size())).SetProp(params[1]);
 	}
-	return g_properties.Navigate(path.substr(prefix.size())).GetProp();
+	return g_properties->Navigate(path.substr(prefix.size())).GetProp();
 }

@@ -34,7 +34,6 @@
 
 #define MOTOR_POLE_PAIRS 7
 
-ServoDrive servo;
 osThreadId_t commandTaskHandle;
 Adc adc1;
 Uart uart1;
@@ -45,13 +44,30 @@ QuadratureEncoder tim4(0x2000, MOTOR_POLE_PAIRS);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
-std::vector<IServoDrive*> g_motors;
+ServoDrive servo(&tim4, &tim1);
+std::vector<IServoDrive*> g_motors{&servo};
 
-RpcProperty g_properties =
+
+//RpcProperty props = RpcPropertyMap({
+//	{"throttle", RpcProperty(&servo.throttle_)},
+//});
+
+float throttle = 0;
+//RpcProperty props = RpcPropertyMap({
+//	{"throttle", RpcProperty(&throttle, RpcObjectAccess::readwrite)},
+//});
+
+
+
+//RpcProperty g_properties = RpcPropertyMap{{"0", servo.props_}, };
+
+RpcProperty props =
 		RpcPropertyMap {
+			{"throttle", RpcProperty(&throttle, RpcObjectAccess::readwrite, [](const rexjson::value& v)->void{}, [](void *ctx)->void{}, nullptr)},
 			{"clock_hz", RpcProperty(&SystemCoreClock, RpcObjectAccess::readonly)},
-			{"servo", RpcPropertyArray({servo.props_, })}
+			{"servo", RpcPropertyArray({servo.props_})},
 		};
+RpcProperty* g_properties = &props;
 
 
 extern "C"
@@ -139,19 +155,19 @@ int application_main()
 	memset(&commandTask_attributes, 0, sizeof(commandTask_attributes));
 	commandTask_attributes.name = "commandTask";
 	commandTask_attributes.priority = (osPriority_t) osPriorityNormal;
-	commandTask_attributes.stack_size = 10000;
+	commandTask_attributes.stack_size = 16000;
 	commandTaskHandle = osThreadNew(StartCommandTask, NULL, &commandTask_attributes);
 
 	uint32_t old_counter = 0, new_counter = 0;
 
-	servo.props_.EnumChildren("servo", [](const std::string& path, RpcProperty& prop)->void{std::cout << path << " : " << prop.GetProp().to_string() << std::endl;});
+#if 1
+	g_properties->EnumChildren("props", [](const std::string& path, RpcProperty& prop)->void{std::cout << path << " : " << prop.GetProp().to_string() << std::endl;});
+#endif
 
 	tim4.Start();
 
-	servo.SetEncoder(&tim4);
-	servo.SetPwmGenerator(&tim1);
 
-	g_motors.push_back(&servo);
+//	g_motors.push_back(&servo);
 
 	for (;;) {
 //		HAL_Delay(10);

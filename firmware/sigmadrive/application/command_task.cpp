@@ -21,7 +21,7 @@ void StartCommandTask(void *argument)
 	/*
 	 * wait for input from the terminal.
 	 */
-	getchar();
+//	getchar();
 	while (1) {
 		if ((elret = cl_editline("sigmadrive # ", szBuffer, sizeof(szBuffer), 5)) > 0) {
 			printf("\r\n");

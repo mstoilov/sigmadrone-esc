@@ -8,6 +8,7 @@
 #include <math.h>
 #include "quadrature_encoder.h"
 
+
 QuadratureEncoder::QuadratureEncoder(uint32_t cpr_max, uint32_t motor_pole_pairs)
 	: cpr_max_(cpr_max)
 	, motor_pole_pairs_(motor_pole_pairs)
@@ -103,4 +104,14 @@ float QuadratureEncoder::GetMechanicalPosition()
 {
 	uint32_t cpr = GetCountsPerRotation();
 	return 2.0f * M_PI * (GetCounter() % (cpr)) / (cpr);
+}
+
+RpcProperty QuadratureEncoder::GetProperties()
+{
+	RpcProperty props = RpcPropertyMap {
+		{"motor_pole_pairs", RpcProperty(&motor_pole_pairs_)},
+		{"cpr_max", RpcProperty(&cpr_max_)},
+	};
+
+	return props;
 }

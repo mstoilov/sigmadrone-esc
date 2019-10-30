@@ -31,10 +31,10 @@ class RpcPropertyObject : public IRpcPropertyObject {
 public:
 	RpcPropertyObject(
 			PropType* propaddr,
-			RpcObjectAccess access = RpcObjectAccess::readwrite,
-			const std::function<void(const rexjson::value&)>& check_hook = {},
-			const std::function<void(void *ctx)>& modified_hook = {},
-			void *ctx = nullptr)
+			RpcObjectAccess access,
+			const std::function<void(const rexjson::value&)>& check_hook,
+			const std::function<void(void *ctx)>& modified_hook,
+			void *ctx)
 	: propaddr_(propaddr)
 	, access_(access)
 	, check_hook_(check_hook)
@@ -43,8 +43,8 @@ public:
 	{}
 	PropType* propaddr_;
 	RpcObjectAccess access_ = readwrite;
-	std::function<void(const rexjson::value&)> check_hook_;
-	std::function<void(void *ctx)> modified_hook_;
+	std::function<void(const rexjson::value&)> check_hook_ = {};
+	std::function<void(void *ctx)> modified_hook_ = {};
 	void *ctx_ = nullptr;
 
 	virtual IRpcPropertyObject* duplicate()
@@ -139,8 +139,8 @@ public:
 	{}
 	bool* propaddr_;
 	RpcObjectAccess access_ = readwrite;
-	std::function<void(const rexjson::value&)> check_hook_;
-	std::function<void(void *ctx)> modified_hook_;
+	std::function<void(const rexjson::value&)> check_hook_ = {};
+	std::function<void(void *ctx)> modified_hook_ = {};
 	void *ctx_ = nullptr;
 
 
@@ -180,8 +180,8 @@ public:
 	RpcProperty(
 			T* propaddr,
 			RpcObjectAccess access = RpcObjectAccess::readwrite,
-			const std::function<void(const rexjson::value&)>& check_hook = {},
-			const std::function<void(void *ctx)>& modified_hook = {},
+			const std::function<void(const rexjson::value&)>& check_hook = [](const rexjson::value& v)->void{},
+			const std::function<void(void *ctx)>& modified_hook = [](void *ctx)->void{},
 			void *ctx = nullptr)
 	{
 		object_ = static_cast<IRpcPropertyObject*>(new RpcPropertyObject<T>(propaddr, access, check_hook, modified_hook, ctx));

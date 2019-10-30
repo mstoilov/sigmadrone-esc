@@ -51,7 +51,6 @@ std::string value::get_typename(unsigned int type)
 static void escape_str_val(const value& v, std::ostream& os)
 {
 	for (std::string::const_iterator it = v.get_str().begin(); it != v.get_str().end(); it++) {
-		std::string::const_iterator next = it + 1;
 		if (*it == '\\' && (it + 1) != v.get_str().end()) {
 			os << *it++;
 			os << *it;
@@ -78,7 +77,6 @@ static std::string unescape_str(const std::string& s)
 	std::ostringstream os;
 
 	for (std::string::const_iterator it = s.begin(); it < s.end(); it++) {
-		std::string::const_iterator next = it + 1;
 		if (*it == '\\' && (it + 1) < s.end() && *(it + 1) == '"') {
 			os << '"';
 			it++;

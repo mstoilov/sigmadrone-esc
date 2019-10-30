@@ -6,17 +6,15 @@
  */
 
 #include "servo_drive.h"
+#include "quadrature_encoder.h"
 
-ServoDrive::ServoDrive()
+ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm)
 {
-	// TODO Auto-generated constructor stub
-
+	encoder_ = encoder;
+	pwm_ = pwm;
 	props_= RpcPropertyMap({
-		{"clock_hz", RpcProperty(&SystemCoreClock, RpcObjectAccess::readonly)},
-		{"update_counter", RpcProperty(&update_counter_)},
-		{"period", RpcProperty(&period_)},
-
-		{"torque_loop", tql_.props_}
+		{"torque_loop", tql_.props_},
+		{"encoder", encoder->GetProperties()},
 	});
 
 }
