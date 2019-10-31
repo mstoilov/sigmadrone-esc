@@ -106,11 +106,11 @@ float QuadratureEncoder::GetMechanicalPosition()
 	return 2.0f * M_PI * (GetCounter() % (cpr)) / (cpr);
 }
 
-RpcProperty QuadratureEncoder::GetProperties()
+rexjson::property QuadratureEncoder::GetProperties()
 {
-	RpcProperty props = RpcPropertyMap {
-		{"motor_pole_pairs", RpcProperty(&motor_pole_pairs_)},
-		{"cpr_max", RpcProperty(&cpr_max_)},
+	rexjson::property props = rexjson::property_map {
+		{"motor_pole_pairs", rexjson::property(&motor_pole_pairs_)},
+		{"cpr_max", rexjson::property(&cpr_max_)},
 	};
 
 	return props;

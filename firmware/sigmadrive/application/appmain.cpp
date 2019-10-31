@@ -30,7 +30,7 @@
 #include "servo_drive.h"
 #include "ring.h"
 #include "cdc_iface.h"
-#include "rpcproperty.h"
+#include "property.h"
 
 #define MOTOR_POLE_PAIRS 7
 
@@ -48,26 +48,13 @@ ServoDrive servo(&tim4, &tim1);
 std::vector<IServoDrive*> g_motors{&servo};
 
 
-//RpcProperty props = RpcPropertyMap({
-//	{"throttle", RpcProperty(&servo.throttle_)},
-//});
 
-float throttle = 0;
-//RpcProperty props = RpcPropertyMap({
-//	{"throttle", RpcProperty(&throttle, RpcObjectAccess::readwrite)},
-//});
-
-
-
-//RpcProperty g_properties = RpcPropertyMap{{"0", servo.props_}, };
-
-RpcProperty props =
-		RpcPropertyMap {
-			{"throttle", RpcProperty(&throttle, RpcObjectAccess::readwrite, [](const rexjson::value& v)->void{}, [](void *ctx)->void{}, nullptr)},
-			{"clock_hz", RpcProperty(&SystemCoreClock, RpcObjectAccess::readonly)},
-			{"servo", RpcPropertyArray({servo.props_})},
+rexjson::property props =
+		rexjson::property_map {
+			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
+			{"servo", rexjson::property({servo.props_})},
 		};
-RpcProperty* g_properties = &props;
+rexjson::property* g_properties = &props;
 
 
 extern "C"
@@ -75,8 +62,8 @@ void TIM1_IRQHandler()
 {
 	if (LL_TIM_IsActiveFlag_UPDATE(htim1.Instance)) {
 		LL_TIM_ClearFlag_UPDATE(htim1.Instance);
-		servo.PeriodElapsedCallback();
 	}
+	servo.PeriodElapsedCallback();
 
 }
 
@@ -161,7 +148,7 @@ int application_main()
 	uint32_t old_counter = 0, new_counter = 0;
 
 #if 1
-	g_properties->EnumChildren("props", [](const std::string& path, RpcProperty& prop)->void{std::cout << path << " : " << prop.GetProp().to_string() << std::endl;});
+	g_properties->enumerate_children("props", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
 #endif
 
 	tim4.Start();

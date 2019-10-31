@@ -38,7 +38,7 @@ public:
 	virtual void SetMotorPolePairs(uint32_t motor_pole_pairs) override;
 	virtual float GetElectricPosition() override;
 	virtual float GetMechanicalPosition() override;
-	virtual RpcProperty GetProperties() override;
+	virtual rexjson::property GetProperties() override;
 
 protected:
 	uint32_t cpr_max_;

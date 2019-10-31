@@ -26,9 +26,9 @@
 #include "adc.h"
 #include "drv8323.h"
 #include "servo_drive.h"
-#include "rpcproperty.h"
+#include "property.h"
 
-extern RpcProperty *g_properties;
+extern rexjson::property *g_properties;
 extern CdcIface usb_cdc;
 extern std::vector<IServoDrive*> g_motors;
 extern Adc adc1;
@@ -309,9 +309,9 @@ Get/Set property.
 )desc";
 
 	if (mode != execute) {
-		g_properties->EnumChildren(prefix, [&](const std::string& path, RpcProperty& prop)->void
+		g_properties->enumerate_children(prefix, [&](const std::string& path, rexjson::property& prop)->void
 				{
-					oss << path << " : " << prop.GetProp().to_string() << std::endl;
+					oss << path << " : " << prop.get_prop().to_string() << std::endl;
 				});
 		std::string help = help_msg;
 		help += oss.str();
@@ -320,7 +320,7 @@ Get/Set property.
 	verify_parameters(params, types, ARRAYSIZE(types));
 	std::string path = params[0].get_str();
 	if (params[1].type() != rexjson::null_type) {
-		g_properties->Navigate(path.substr(prefix.size())).SetProp(params[1]);
+		g_properties->navigate(path.substr(prefix.size())).set_prop(params[1]);
 	}
-	return g_properties->Navigate(path.substr(prefix.size())).GetProp();
+	return g_properties->navigate(path.substr(prefix.size())).get_prop();
 }

@@ -9,7 +9,7 @@
 #define _SERVO_DRIVE_H_
 
 #include "iservodrive.h"
-#include "rpcproperty.h"
+#include "property.h"
 #include "torque_loop.h"
 
 
@@ -26,10 +26,10 @@ public:
 	void PeriodElapsedCallback();
 
 public:
-	RpcProperty props_;
+	rexjson::property props_;
 
 public:
-	float throttle_ = 0;
+	float throttle_ = 0.05;
 	uint32_t update_counter_ = 0;
 	uint32_t period_ = 0;
 	TorqueLoop tql_;

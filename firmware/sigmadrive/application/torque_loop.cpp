@@ -16,8 +16,8 @@ TorqueLoop::TorqueLoop()
 	p2_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
 	p3_ = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
 
-	props_= RpcPropertyMap({
-		{"throttle", RpcProperty(&throttle_)},
+	props_= rexjson::property_map({
+		{"throttle", rexjson::property(&throttle_)},
 //		{"i", RpcProperty(&i, RpcObjectAccess::readwrite
 //				[](const rexjson::value& v){},
 //				[](void *ctx)->void {std::cout << "i was modified" << std::endl;},
