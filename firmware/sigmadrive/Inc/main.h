@@ -64,7 +64,7 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define TIM_PERIOD_CLOCKS 2000 //3840
+#define TIM_PERIOD_CLOCKS 2000
 #define LED_WARN_Pin GPIO_PIN_14
 #define LED_WARN_GPIO_Port GPIOD
 #define LED_STATUS_Pin GPIO_PIN_9
