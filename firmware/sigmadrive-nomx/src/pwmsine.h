@@ -41,6 +41,11 @@ struct RunState {
 
 #define PANASONIC_MOTOR
 #ifdef PANASONIC_MOTOR
+/*
+ * U -> Black
+ * V -> Red
+ * W -> White
+ */
 #define MOTOR_POLES_NUMBER 8
 #else
 #define MOTOR_POLES_NUMBER 14
