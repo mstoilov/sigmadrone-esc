@@ -23,7 +23,7 @@ void StartCommandTask(void *argument)
 	 */
 //	getchar();
 	while (1) {
-		if ((elret = cl_editline("sigmadrive # ", szBuffer, sizeof(szBuffer), 5)) > 0) {
+		if ((elret = cl_editline("sigmadrive # ", szBuffer, sizeof(szBuffer), 15)) > 0) {
 			printf("\r\n");
 			assert(elret == (int)strlen(szBuffer));
 			try {

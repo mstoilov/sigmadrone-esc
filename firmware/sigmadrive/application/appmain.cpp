@@ -131,9 +131,8 @@ int application_main()
 	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
-
-	fprintf(stderr, "main_task 1\r\n");
-	fprintf(stderr, "DRV1: \r\n");
+	fprintf(stdout, "main_task 1\r\n");
+	fprintf(stdout, "DRV1: \r\n");
 	drv1.DumpRegs();
 
 	AdcBiasSetup();
@@ -151,25 +150,24 @@ int application_main()
 	g_properties->enumerate_children("props", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
 #endif
 
+	/*
+	 * Set the callback Hz
+	 */
+	servo.SetCallbackFrequency(SystemCoreClock/TIM_PERIOD_CLOCKS/(TIM_RCR+1));
+
 	tim4.Start();
 
-
-//	g_motors.push_back(&servo);
-
 	for (;;) {
-//		HAL_Delay(10);
+		HAL_Delay(150);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
-
-		std::string *str = new std::string("Counter");
 
 		new_counter = tim4.GetCounter();
 		if (new_counter != old_counter) {
-//			printf("%s: %lu\n", str->c_str(), new_counter);
+//			printf("Counter: %lu\n", new_counter);
 			old_counter = new_counter;
 		}
 
-		delete str;
-//		HAL_Delay(10);
+		HAL_Delay(100);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
 	}
 

@@ -35,8 +35,6 @@ size_t CdcIface::Transmit(const char* buffer, size_t nsize)
 {
 	if (nsize > 0xFFFF)
 		nsize = 0xFFFF;
-//	if (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
-//		return 0;
 	while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
 		;
 	return nsize;

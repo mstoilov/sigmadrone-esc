@@ -316,9 +316,9 @@ void Drv8323::DisableSenseOvercurrent()
 void Drv8323::DumpRegs()
 {
 	for (int i = 0; i < 7; i++) {
-		fprintf(stderr, "DRV: Reg %d: 0x%x\r\n", i, (unsigned int) ReadReg(i));
+		fprintf(stdout, "DRV: Reg %d: 0x%x\r\n", i, (unsigned int) ReadReg(i));
 	}
-	fprintf(stderr, "\r\n\r\n");
+	fprintf(stdout, "\r\n\r\n");
 }
 
 void Drv8323::EnableCalibration()

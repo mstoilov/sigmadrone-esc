@@ -26,9 +26,11 @@ public:
 	Adc();
 	virtual ~Adc();
 	void Attach(ADC_HandleTypeDef* hadc);
-	void InjectedConvCpltCallback();
-	void InjectedSwTrig();
 
+	void InjectedConvCpltCallback();
+	void ConvCpltCallback();
+	void InjectedSwTrig();
+	void StartRegularConversions();
 	static handle_map_type handle_map_;
 
 public:
@@ -36,6 +38,8 @@ public:
 	uint32_t injhistory_[ADC_HISTORY_SIZE][3];
 	int32_t injdata_[3];
 	int32_t bias_[3];
+	int32_t regdata_[16];
+	int32_t regvolt_[16];
 	uint32_t injdata_counter_ = 0;
 };
 

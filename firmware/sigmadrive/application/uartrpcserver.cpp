@@ -87,6 +87,7 @@ Arguments:
 	ret.push_back((int)g_motors[motor]->GetPwmGenerator()->GetTiming(2));
 	ret.push_back((int)g_motors[motor]->GetPwmGenerator()->GetTiming(3));
 	ret.push_back((int)g_motors[motor]->GetPwmGenerator()->GetTiming(4));
+
 	return ret;
 }
 
