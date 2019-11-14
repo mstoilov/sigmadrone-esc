@@ -34,7 +34,7 @@
 
 #define MOTOR_POLE_PAIRS 7
 
-osThreadId_t commandTaskHandle;
+osThreadId commandTaskHandle;
 Adc adc1;
 Uart uart1;
 SPIMaster spi3;
@@ -100,8 +100,8 @@ int application_main()
 	adc1.Attach(&hadc1);
 	uart1.Attach(&huart1);
 	spi3.Attach(&hspi3);
-	tim1.Attach(&htim1);
 	tim4.Attach(&htim4);
+	tim1.Attach(&htim1);
 	usb_cdc.Attach(&hUsbDeviceFS);
 
 	drv1.WriteReg(2, 0x0);

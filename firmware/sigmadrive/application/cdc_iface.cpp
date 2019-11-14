@@ -28,16 +28,71 @@ void CdcIface::Attach(USBD_HandleTypeDef* usbd)
 	usbd_ = usbd;
 	assert(handle_map_.find(usbd) == handle_map_.end());
 	handle_map_[usbd_] = this;
+	StartTxThread();
 
 }
 
 size_t CdcIface::Transmit(const char* buffer, size_t nsize)
 {
-	if (nsize > 0xFFFF)
-		nsize = 0xFFFF;
-	while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
+	uint32_t vector = __get_xPSR() & 0xFF;
+	if ((vector && !tx_ringbuf_.write_size()) || !nsize) {
+		/* Nothing to send
+		 *
+		 * or
+		 *
+		 * If this is called from interrupt and the queue is out of space
+		 * just drop the write request.
+		 */
+		return nsize;
+	}
+
+
+	while (!tx_ringbuf_.write_size())
 		;
+	nsize = std::min(tx_ringbuf_.write_size(), nsize);
+	std::copy(buffer, buffer + nsize, tx_ringbuf_.get_write_ptr());
+	tx_ringbuf_.write_update(nsize);
+	SignalDataToTransmit();
 	return nsize;
+}
+
+void CdcIface::RunTxLoop()
+{
+	for (;;) {
+		if (WaitDataToTransmit()) {
+			size_t nsize;
+			while ((nsize = tx_ringbuf_.read_size()) != 0) {
+				char* buffer = tx_ringbuf_.get_read_ptr();
+				while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
+					;
+				tx_ringbuf_.read_update(nsize);
+			}
+		}
+	}
+
+	tx_thread_ = 0;
+}
+
+static void RunTxLoopWrapper(void const* ctx)
+{
+	reinterpret_cast<CdcIface*>(const_cast<void*>(ctx))->RunTxLoop();
+}
+
+bool CdcIface::WaitDataToTransmit()
+{
+	return (osSignalWait(SIGNAL_TX_DATA_READY, tx_timeout_).status == osEventSignal) ? true : false;
+}
+
+void CdcIface::SignalDataToTransmit()
+{
+	if (tx_thread_)
+		osSignalSet(tx_thread_, SIGNAL_TX_DATA_READY);
+}
+
+void CdcIface::StartTxThread()
+{
+	osThreadDef(RunTxLoopWrapper, osPriorityNormal, 0, 2048);
+	tx_thread_ = osThreadCreate(&os_thread_def_RunTxLoopWrapper, this);
 }
 
 size_t CdcIface::ReceiveOnce(char* buffer, size_t nsize)
