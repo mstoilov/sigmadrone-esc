@@ -15,10 +15,10 @@ extern Drv8323 drv1;
 
 ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm)
 	: callback_hz_(0)
-	, lpf_speed_(0.85)
+	, lpf_speed_(0.15)
 	, lpf_R(0.5)
-	, lpf_I(0.4)
-	, lpf_Ipwm(0.2)
+	, lpf_I(0.6)
+	, lpf_Ipwm(0.8)
 {
 	encoder_ = encoder;
 	pwm_ = pwm;
@@ -83,6 +83,38 @@ void ServoDrive::UpdateSpeed()
 
 void ServoDrive::PeriodElapsedCallback()
 {
+	SignalThreadUpdate();
+}
+
+void ServoDrive::UpdateHandlerNoFb()
+{
+	if (update_counter_++ < callback_hz_ / 4) {
+		/*
+		 * Reset the rotor for 1/4 Second
+		 */
+
+		GetTimings(std::polar<float>(1.0, 0.0));
+		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
+		encoder_->ResetCounter(0);
+		position_temp_ = theta_old_ = encoder_->GetElectricPosition();
+	} else {
+		std::complex<float> rotor = lpf_R.DoFilter(std::polar(1.0f, GetEncoder()->GetElectricPosition()));
+		theta_cur_ = std::arg(rotor);
+		if (theta_cur_ < 0)
+			theta_cur_ += 2.0 * M_PI;
+		GetTimings(rotor * std::complex<float>(0.0f, 1.0f));
+		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
+		UpdateSpeed();
+
+		if ((update_counter_ % 37) == 0) {
+			fprintf(stderr, "%7lu, %7lu, %7lu, %7lu (%7lu)\n", adc1.injdata_[0], adc1.injdata_[1], adc1.injdata_[2], adc1.injdata_[3], adc1.regdata_[4]);
+			adc1.regdata_[4] = 0;
+		}
+	}
+}
+
+void ServoDrive::UpdateHandler_wip()
+{
 	if (update_counter_ < callback_hz_ / 4) {
 		/*
 		 * Reset the rotor for 1/4 Second
@@ -96,7 +128,7 @@ void ServoDrive::PeriodElapsedCallback()
 		std::complex<float> rotor = lpf_R.DoFilter(std::polar(1.0f, GetEncoder()->GetElectricPosition()));
 		theta_cur_ = std::arg(rotor);
 		if (theta_cur_ < 0)
-			theta_cur_ += 2.0f * static_cast<float>(M_PI);
+			theta_cur_ += 2.0 * M_PI;
 		tql_.GetTimings(throttle_, rotor * std::complex<float>(0.0f, 1.0f), period_, timings_, sizeof(timings_)/sizeof(timings_[0]));
 		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
 		UpdateSpeed();
@@ -107,8 +139,6 @@ void ServoDrive::PeriodElapsedCallback()
 
 		float Ialpha = 3.0f/2.0f * Ia;
 		float Ibeta = 0.866025404f * (Ib - Ic);
-//		std::complex<float> I = lpf_I.DoFilter(std::complex<float>(Ialpha, Ibeta));
-//		I = I/std::abs(I);
 
 		float cos_theta = cos(theta_cur_);
 		float sin_theta = sin(theta_cur_);
@@ -126,13 +156,68 @@ void ServoDrive::PeriodElapsedCallback()
 		Ipwm = Ipwm/std::abs(Ipwm);
 */
 
-//		float diff = acos((I.real() * rotor.real() + I.imag() * rotor.imag())/(std::abs(I) * std::abs(rotor)));
-//		fprintf(stderr, "%lu : R = %5.2f (%5.2f), speed: %5.2f\n", update_counter_, std::arg(rotor), diff, speed_);
-
+		std::complex<float> I = lpf_I.DoFilter(std::complex<float>(Ialpha, Ibeta));
+		I = I/std::abs(I);
+		float diff = acos((I.real() * rotor.real() + I.imag() * rotor.imag())/(std::abs(I) * std::abs(rotor)));
 		if ((update_counter_ % 37) == 0) {
-			fprintf(stderr, "%lu : Id = %5.2f, Iq = %5.2f, speed: %5.2f\n", update_counter_, Id, Iq, speed_);
+			fprintf(stderr, "%lu : R = %5.2f (%5.2f), speed: %5.2f\n", update_counter_, std::arg(rotor), diff, speed_);
 		}
+
+//		if ((update_counter_ % 37) == 0) {
+//			fprintf(stderr, "%lu : Id = %5.2f, Iq = %5.2f, speed: %5.2f\n", update_counter_, Id, Iq, speed_);
+//		}
 	}
 	update_counter_++;
 
 }
+
+void ServoDrive::RunControlLoop()
+{
+	for (;;) {
+		if (WaitUpdate()) {
+			UpdateHandlerNoFb();
+		}
+	}
+}
+
+static void RunControlLoopWrapper(void const* ctx)
+{
+	reinterpret_cast<ServoDrive*>(const_cast<void*>(ctx))->RunControlLoop();
+	reinterpret_cast<ServoDrive*>(const_cast<void*>(ctx))->control_thread_id_ = 0;
+	osThreadExit();
+}
+
+
+bool ServoDrive::WaitUpdate()
+{
+	return (osSignalWait(THREAD_SIGNAL_UPDATE, wait_timeout_).status == osEventSignal) ? true : false;
+}
+
+void ServoDrive::SignalThreadUpdate()
+{
+	if (control_thread_id_)
+		osSignalSet(control_thread_id_, THREAD_SIGNAL_UPDATE);
+
+}
+
+void ServoDrive::StartControlThread()
+{
+	osThreadDef(RunControlLoopWrapper, osPriorityRealtime, 0, 2048);
+	control_thread_id_ = osThreadCreate(&os_thread_def_RunControlLoopWrapper, this);
+}
+
+
+void ServoDrive::GetTimings(const std::complex<float>& vec)
+{
+	static std::complex<float> p1_ = std::polar<float>(1.0f, 0.0f);
+	static std::complex<float> p2_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
+	static std::complex<float> p3_ = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
+
+	uint32_t half_pwm = period_ / 2;
+	uint32_t throttle_duty = half_pwm * throttle_;
+
+	timings_[0] = half_pwm + throttle_duty * ((vec.real()*p1_.real() + vec.imag()*p1_.imag()));
+	timings_[1] = half_pwm + throttle_duty * ((vec.real()*p2_.real() + vec.imag()*p2_.imag()));
+	timings_[2] = half_pwm + throttle_duty * ((vec.real()*p3_.real() + vec.imag()*p3_.imag()));
+}
+

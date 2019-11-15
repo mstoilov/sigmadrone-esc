@@ -34,15 +34,16 @@ void CdcIface::Attach(USBD_HandleTypeDef* usbd)
 
 size_t CdcIface::Transmit(const char* buffer, size_t nsize)
 {
-	uint32_t vector = __get_xPSR() & 0xFF;
-	if ((vector && !tx_ringbuf_.write_size()) || !nsize) {
+	size_t space_size = tx_ringbuf_.space_size();
+	if ((space_size < tx_ringbuf_.capacity() / 2) || !nsize) {
 		/* Nothing to send
 		 *
 		 * or
 		 *
-		 * If this is called from interrupt and the queue is out of space
+		 * If the queue is out of space
 		 * just drop the write request.
 		 */
+		SignalDataToTransmit();
 		return nsize;
 	}
 
@@ -60,7 +61,7 @@ void CdcIface::RunTxLoop()
 {
 	for (;;) {
 		if (WaitDataToTransmit()) {
-			size_t nsize;
+			size_t nsize = tx_ringbuf_.read_size();
 			while ((nsize = tx_ringbuf_.read_size()) != 0) {
 				char* buffer = tx_ringbuf_.get_read_ptr();
 				while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)

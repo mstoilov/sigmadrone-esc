@@ -41,6 +41,7 @@ extern ADC_HandleTypeDef hadc1;
 extern UART_HandleTypeDef huart1;
 extern SPI_HandleTypeDef hspi3;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim4;
 /* USER CODE END ET */
 
@@ -64,8 +65,9 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define TIM_PERIOD_CLOCKS 2000
-#define TIM_RCR 4
+#define TIM1_PERIOD_CLOCKS 2000
+#define TIM1_RCR 6
+#define TIM2_PERIOD_CLOCKS 4000
 #define LED_WARN_Pin GPIO_PIN_14
 #define LED_WARN_GPIO_Port GPIOD
 #define LED_STATUS_Pin GPIO_PIN_9

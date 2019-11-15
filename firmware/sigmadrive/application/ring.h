@@ -16,9 +16,9 @@ public:
 	Ring& operator=(const Ring&) = delete;
 	Ring& operator=(Ring&&) = delete;
 
-	size_t capacity()		{ return bufsize_; }
-	size_t data_size()		{ return ((wp_ + bufsize_ - rp_) % bufsize_); }
-	size_t space_size()		{ return (bufsize_ - data_size() - 1); }
+	constexpr size_t capacity()	{ return bufsize_; }
+	size_t data_size()			{ return ((wp_ + bufsize_ - rp_) % bufsize_); }
+	size_t space_size()			{ return (bufsize_ - data_size() - 1); }
 
 	size_t space_to_end()
 	{

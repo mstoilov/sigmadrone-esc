@@ -72,7 +72,7 @@ void Uart::Detach()
 ssize_t Uart::Transmit(const char* buffer, size_t nsize)
 {
 	uint32_t vector = __get_xPSR() & 0xFF;
-	if ((vector && !tx_ringbuf_.write_size()) || !nsize) {
+	if ((vector && !tx_ringbuf_.space_size()) || !nsize) {
 		/* Nothing to send
 		 *
 		 * or

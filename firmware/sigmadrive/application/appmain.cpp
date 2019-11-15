@@ -25,6 +25,7 @@
 #include "spimaster.h"
 #include "drv8323.h"
 #include "exti.h"
+#include "motor.h"
 #include "pwm_generator.h"
 #include "quadrature_encoder.h"
 #include "servo_drive.h"
@@ -39,6 +40,7 @@ Adc adc1;
 Uart uart1;
 SPIMaster spi3;
 PwmGenerator tim1;
+PwmGenerator tim2;
 CdcIface usb_cdc;
 QuadratureEncoder tim4(0x2000, MOTOR_POLE_PAIRS);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
@@ -46,8 +48,7 @@ Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 ServoDrive servo(&tim4, &tim1);
 std::vector<IServoDrive*> g_motors{&servo};
-
-
+//Motor g_motor(&tim4, &tim1);
 
 rexjson::property props =
 		rexjson::property_map {
@@ -64,8 +65,27 @@ void TIM1_IRQHandler()
 		LL_TIM_ClearFlag_UPDATE(htim1.Instance);
 	}
 	servo.PeriodElapsedCallback();
+}
+
+extern "C"
+void ADC1_IRQHandler()
+{
+	if (LL_ADC_IsActiveFlag_JEOS(hadc1.Instance)) {
+		LL_ADC_ClearFlag_JEOS(hadc1.Instance);
+		adc1.InjectedConvCpltCallback();
+	}
+	if (LL_ADC_IsActiveFlag_EOCS(hadc1.Instance)) {
+		LL_ADC_ClearFlag_EOCS(hadc1.Instance);
+	}
+	if (LL_ADC_IsActiveFlag_OVR(hadc1.Instance)) {
+		LL_ADC_ClearFlag_OVR(hadc1.Instance);
+	}
+	if (LL_ADC_IsActiveFlag_AWD1(hadc1.Instance)) {
+		LL_ADC_ClearFlag_AWD1(hadc1.Instance);
+	}
 
 }
+
 
 void AdcBiasSetup()
 {
@@ -102,6 +122,8 @@ int application_main()
 	spi3.Attach(&hspi3);
 	tim4.Attach(&htim4);
 	tim1.Attach(&htim1);
+	tim2.Attach(&htim2);
+//	tim2.Start();
 	usb_cdc.Attach(&hUsbDeviceFS);
 
 	drv1.WriteReg(2, 0x0);
@@ -153,7 +175,8 @@ int application_main()
 	/*
 	 * Set the callback Hz
 	 */
-	servo.SetCallbackFrequency(SystemCoreClock/TIM_PERIOD_CLOCKS/(TIM_RCR+1));
+	servo.SetCallbackFrequency(SystemCoreClock/TIM1_PERIOD_CLOCKS/(TIM1_RCR+1));
+	servo.StartControlThread();
 
 	tim4.Start();
 
