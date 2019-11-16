@@ -40,7 +40,6 @@ Adc adc1;
 Uart uart1;
 SPIMaster spi3;
 PwmGenerator tim1;
-PwmGenerator tim2;
 CdcIface usb_cdc;
 QuadratureEncoder tim4(0x2000, MOTOR_POLE_PAIRS);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
@@ -50,18 +49,10 @@ ServoDrive servo(&tim4, &tim1);
 std::vector<IServoDrive*> g_motors{&servo};
 //Motor g_motor(&tim4, &tim1);
 
-bool tim2_run = false;
-
 rexjson::property props =
 		rexjson::property_map {
 			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
 			{"servo", rexjson::property({servo.props_})},
-			{"tim2_run", rexjson::property(
-					&tim2_run,
-					rexjson::property_access::readwrite,
-					[](const rexjson::value& v)->void{},
-					[](void *ctx)->void{tim2_run ? reinterpret_cast<PwmGenerator*>(ctx)->Start() : reinterpret_cast<PwmGenerator*>(ctx)->Stop();},
-					&tim2)}
 		};
 rexjson::property* g_properties = &props;
 
@@ -135,10 +126,7 @@ int application_main()
 	spi3.Attach(&hspi3);
 	tim4.Attach(&htim4);
 	tim1.Attach(&htim1);
-	tim2.Attach(&htim2);
-//	tim2.Start();
 //	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
-//	LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_EXT_TIM2_CH2);
 	usb_cdc.Attach(&hUsbDeviceFS);
 
 	drv1.WriteReg(2, 0x0);
