@@ -36,6 +36,7 @@ public:
 public:
 	ADC_HandleTypeDef* hadc_;
 	uint32_t injhistory_[ADC_HISTORY_SIZE][3];
+	uint32_t dir_ = 0;
 	int32_t injdata_[4];
 	int32_t bias_[3];
 	int32_t regdata_[16];

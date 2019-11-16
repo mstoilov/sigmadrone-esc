@@ -51,8 +51,6 @@ void Adc::Attach(ADC_HandleTypeDef* hadc)
 
 	__HAL_ADC_ENABLE(hadc_);
 	__HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
-	__HAL_ADC_ENABLE_IT(hadc_, ADC_IT_EOC);
-
 
 	if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) &regdata_, 5) != HAL_OK) {
 		/* Start Conversation Error */
@@ -76,7 +74,7 @@ void Adc::ConvCpltCallback()
 //		regvolt_[i] = __LL_ADC_CALC_DATA_TO_VOLTAGE(3300, regdata_[i], LL_ADC_RESOLUTION_12B);
 
 	if ((regdata_counter_++ % 37) == 0) {
-		fprintf(stderr, "%7lu, %7lu, %7lu, %7lu (%7lu)\n", regdata_[0], regdata_[1], regdata_[2], regdata_[3], regdata_[4]);
+		fprintf(stderr, "%7lu: %7lu, %7lu, %7lu, %7lu (%7lu)\n", regdata_counter_, regdata_[0], regdata_[1], regdata_[2], regdata_[3], regdata_[4]);
 	}
 
 }

@@ -72,25 +72,29 @@ void TIM1_IRQHandler()
 	if (LL_TIM_IsActiveFlag_UPDATE(htim1.Instance)) {
 		LL_TIM_ClearFlag_UPDATE(htim1.Instance);
 	}
-	servo.PeriodElapsedCallback();
+//	servo.PeriodElapsedCallback();
 }
 
 extern "C"
 void ADC1_IRQHandler()
 {
-	if (LL_ADC_IsActiveFlag_JEOS(hadc1.Instance)) {
-		LL_ADC_ClearFlag_JEOS(hadc1.Instance);
+	ADC_TypeDef* ADCx = adc1.hadc_->Instance;
+
+	if (LL_ADC_IsActiveFlag_JEOS(ADCx) && LL_ADC_IsEnabledIT_JEOS(ADCx)) {
+		LL_ADC_ClearFlag_JEOS(ADCx);
 		adc1.InjectedConvCpltCallback();
+		adc1.dir_ = LL_TIM_GetDirection(htim1.Instance);
+		servo.SignalThreadUpdate();
 	}
-	if (LL_ADC_IsActiveFlag_EOCS(hadc1.Instance)) {
-		LL_ADC_ClearFlag_EOCS(hadc1.Instance);
+	if (LL_ADC_IsActiveFlag_EOCS(ADCx) && LL_ADC_IsEnabledIT_EOCS(ADCx)) {
+		LL_ADC_ClearFlag_EOCS(ADCx);
 		adc1.ConvCpltCallback();
 	}
-	if (LL_ADC_IsActiveFlag_OVR(hadc1.Instance)) {
-		LL_ADC_ClearFlag_OVR(hadc1.Instance);
+	if (LL_ADC_IsActiveFlag_OVR(ADCx) && LL_ADC_IsEnabledIT_OVR(ADCx)) {
+		LL_ADC_ClearFlag_OVR(ADCx);
 	}
-	if (LL_ADC_IsActiveFlag_AWD1(hadc1.Instance)) {
-		LL_ADC_ClearFlag_AWD1(hadc1.Instance);
+	if (LL_ADC_IsActiveFlag_AWD1(ADCx) && LL_ADC_IsEnabledIT_AWD1(ADCx)) {
+		LL_ADC_ClearFlag_AWD1(ADCx);
 	}
 
 }
@@ -133,6 +137,8 @@ int application_main()
 	tim1.Attach(&htim1);
 	tim2.Attach(&htim2);
 //	tim2.Start();
+//	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
+//	LL_ADC_REG_SetTriggerSource(ADC1, LL_ADC_REG_TRIG_EXT_TIM2_CH2);
 	usb_cdc.Attach(&hUsbDeviceFS);
 
 	drv1.WriteReg(2, 0x0);

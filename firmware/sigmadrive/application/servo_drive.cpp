@@ -107,7 +107,8 @@ void ServoDrive::UpdateHandlerNoFb()
 		UpdateSpeed();
 
 		if ((update_counter_ % 37) == 0) {
-			fprintf(stderr, "%7lu, %7lu, %7lu, %7lu (%7lu)\n", adc1.injdata_[0], adc1.injdata_[1], adc1.injdata_[2], adc1.injdata_[3], adc1.regdata_[4]);
+			fprintf(stderr, "dir: %2lu,  %7lu, %7lu, %7lu, %7lu (%7lu, %7lu, %7lu, %7lu)\n",
+					adc1.dir_, adc1.injdata_[0], adc1.injdata_[1], adc1.injdata_[2], adc1.injdata_[3], adc1.regdata_[0], adc1.regdata_[1], adc1.regdata_[2], adc1.regdata_[4]);
 		}
 	}
 }

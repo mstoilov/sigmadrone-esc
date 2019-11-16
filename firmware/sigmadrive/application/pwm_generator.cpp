@@ -113,6 +113,7 @@ void PwmGenerator::Start()
 			LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH2N |
 			LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N |
 			LL_TIM_CHANNEL_CH4);
+	LL_TIM_GenerateEvent_UPDATE(htim_->Instance);
 	LL_TIM_EnableCounter(htim_->Instance);
 	EnableOutputs(true);
 }
