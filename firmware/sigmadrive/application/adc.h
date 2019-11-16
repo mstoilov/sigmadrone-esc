@@ -41,6 +41,8 @@ public:
 	int32_t regdata_[16];
 	int32_t regvolt_[16];
 	uint32_t injdata_counter_ = 0;
+	uint32_t regdata_counter_ = 0;
+
 };
 
 #endif /* APPLICATION_ADC_H_ */

@@ -50,10 +50,18 @@ ServoDrive servo(&tim4, &tim1);
 std::vector<IServoDrive*> g_motors{&servo};
 //Motor g_motor(&tim4, &tim1);
 
+bool tim2_run = false;
+
 rexjson::property props =
 		rexjson::property_map {
 			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
 			{"servo", rexjson::property({servo.props_})},
+			{"tim2_run", rexjson::property(
+					&tim2_run,
+					rexjson::property_access::readwrite,
+					[](const rexjson::value& v)->void{},
+					[](void *ctx)->void{tim2_run ? reinterpret_cast<PwmGenerator*>(ctx)->Start() : reinterpret_cast<PwmGenerator*>(ctx)->Stop();},
+					&tim2)}
 		};
 rexjson::property* g_properties = &props;
 
@@ -76,6 +84,7 @@ void ADC1_IRQHandler()
 	}
 	if (LL_ADC_IsActiveFlag_EOCS(hadc1.Instance)) {
 		LL_ADC_ClearFlag_EOCS(hadc1.Instance);
+		adc1.ConvCpltCallback();
 	}
 	if (LL_ADC_IsActiveFlag_OVR(hadc1.Instance)) {
 		LL_ADC_ClearFlag_OVR(hadc1.Instance);
