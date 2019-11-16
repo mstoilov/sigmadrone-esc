@@ -66,7 +66,7 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 #define TIM1_PERIOD_CLOCKS 4000
-#define TIM1_RCR 3
+#define TIM1_RCR 6
 #define TIM2_PERIOD_CLOCKS 4000
 #define LED_WARN_Pin GPIO_PIN_14
 #define LED_WARN_GPIO_Port GPIOD
