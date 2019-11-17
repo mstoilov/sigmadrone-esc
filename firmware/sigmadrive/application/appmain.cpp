@@ -181,16 +181,16 @@ int application_main()
 	tim4.Start();
 
 	for (;;) {
-		HAL_Delay(150);
+		HAL_Delay(50);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
 
 		new_counter = tim4.GetCounter();
 		if (new_counter != old_counter) {
-//			printf("Counter: %lu\n", new_counter);
+//			fprintf(stderr, "Counter: %lu\n", new_counter);
 			old_counter = new_counter;
 		}
 
-		HAL_Delay(100);
+		HAL_Delay(50);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
 	}
 

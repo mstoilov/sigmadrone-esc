@@ -98,7 +98,8 @@ void ServoDrive::UpdateHandlerNoFb()
 		encoder_->ResetCounter(0);
 		position_temp_ = theta_old_ = encoder_->GetElectricPosition();
 	} else {
-		std::complex<float> rotor = lpf_R.DoFilter(std::polar(1.0f, GetEncoder()->GetElectricPosition()));
+		float theta = GetEncoder()->GetElectricPosition();
+		std::complex<float> rotor = lpf_R.DoFilter(std::polar(1.0f, theta));
 		theta_cur_ = std::arg(rotor);
 		if (theta_cur_ < 0)
 			theta_cur_ += 2.0 * M_PI;

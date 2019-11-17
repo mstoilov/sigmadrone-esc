@@ -60,7 +60,7 @@ void PwmGenerator::Attach(TIM_HandleTypeDef* htim)
 	assert(handle_map_.find(htim_) == handle_map_.end());
 	handle_map_[htim_] = this;
 //	LL_TIM_EnableIT_UPDATE(htim_->Instance);
-//	EnableCounter(true);
+	EnableCounter(true);
 }
 
 uint32_t PwmGenerator::GetTiming(uint32_t ch)
@@ -107,30 +107,39 @@ void PwmGenerator::SetTiming(uint32_t ch, uint32_t value)
 	}
 }
 
+void PwmGenerator::LoadSafeTimings()
+{
+	uint32_t half_period = GetPeriod() / 2;
+	SetTiming(1, half_period);
+	SetTiming(2, half_period);
+	SetTiming(3, half_period);
+	SetTiming(4, half_period);
+}
+
 void PwmGenerator::Start()
 {
-	LL_TIM_EnableIT_UPDATE(htim_->Instance);
+	LoadSafeTimings();
+	LL_TIM_GenerateEvent_UPDATE(htim_->Instance);
 	LL_TIM_CC_EnableChannel(htim_->Instance,
 			LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH1N |
 			LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH2N |
 			LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N |
 			LL_TIM_CHANNEL_CH4);
-	LL_TIM_GenerateEvent_UPDATE(htim_->Instance);
-	LL_TIM_EnableCounter(htim_->Instance);
+//	LL_TIM_EnableIT_UPDATE(htim_->Instance);
 	EnableOutputs(true);
 }
 
 void PwmGenerator::Stop()
 {
 	EnableOutputs(false);
-	LL_TIM_DisableIT_UPDATE(htim_->Instance);
 	LL_TIM_CC_DisableChannel(htim_->Instance,
 			LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH1N |
 			LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH2N |
 			LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N |
 			LL_TIM_CHANNEL_CH4);
-	LL_TIM_DisableCounter(htim_->Instance);
-
+//	LL_TIM_DisableIT_UPDATE(htim_->Instance);
+	LoadSafeTimings();
+	LL_TIM_GenerateEvent_UPDATE(htim_->Instance);
 }
 
 bool PwmGenerator::IsStarted()
