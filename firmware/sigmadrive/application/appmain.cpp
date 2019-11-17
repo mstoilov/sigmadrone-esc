@@ -25,7 +25,6 @@
 #include "spimaster.h"
 #include "drv8323.h"
 #include "exti.h"
-#include "motor.h"
 #include "pwm_generator.h"
 #include "quadrature_encoder.h"
 #include "servo_drive.h"
@@ -47,7 +46,6 @@ Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 ServoDrive servo(&tim4, &tim1);
 std::vector<IServoDrive*> g_motors{&servo};
-//Motor g_motor(&tim4, &tim1);
 
 rexjson::property props =
 		rexjson::property_map {
@@ -79,7 +77,6 @@ void ADC1_IRQHandler()
 	}
 	if (LL_ADC_IsActiveFlag_EOCS(ADCx) && LL_ADC_IsEnabledIT_EOCS(ADCx)) {
 		LL_ADC_ClearFlag_EOCS(ADCx);
-		adc1.ConvCpltCallback();
 	}
 	if (LL_ADC_IsActiveFlag_OVR(ADCx) && LL_ADC_IsEnabledIT_OVR(ADCx)) {
 		LL_ADC_ClearFlag_OVR(ADCx);

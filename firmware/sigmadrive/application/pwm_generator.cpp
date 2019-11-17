@@ -59,6 +59,8 @@ void PwmGenerator::Attach(TIM_HandleTypeDef* htim)
 	htim_ = htim;
 	assert(handle_map_.find(htim_) == handle_map_.end());
 	handle_map_[htim_] = this;
+//	LL_TIM_EnableIT_UPDATE(htim_->Instance);
+//	EnableCounter(true);
 }
 
 uint32_t PwmGenerator::GetTiming(uint32_t ch)
@@ -128,6 +130,7 @@ void PwmGenerator::Stop()
 			LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N |
 			LL_TIM_CHANNEL_CH4);
 	LL_TIM_DisableCounter(htim_->Instance);
+
 }
 
 bool PwmGenerator::IsStarted()

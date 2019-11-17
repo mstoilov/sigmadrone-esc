@@ -28,7 +28,6 @@ public:
 	void Attach(ADC_HandleTypeDef* hadc);
 
 	void InjectedConvCpltCallback();
-	void ConvCpltCallback();
 	void InjectedSwTrig();
 	void StartRegularConversions();
 	static handle_map_type handle_map_;
