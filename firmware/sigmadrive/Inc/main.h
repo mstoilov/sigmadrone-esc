@@ -38,6 +38,8 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc2;
+extern ADC_HandleTypeDef hadc3;
 extern UART_HandleTypeDef huart1;
 extern SPI_HandleTypeDef hspi3;
 extern TIM_HandleTypeDef htim1;

@@ -11,6 +11,8 @@
 #include "drv8323.h"
 
 extern Adc adc1;
+extern Adc adc2;
+extern Adc adc3;
 extern Drv8323 drv1;
 
 ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm)
@@ -19,7 +21,16 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm)
 	, lpf_R(0.5)
 	, lpf_I(0.6)
 	, lpf_Ipwm(0.8)
+//	, lpf_bias_a(0.00005)
+//	, lpf_bias_b(0.00005)
+//	, lpf_bias_c(0.00005)
+	, lpf_bias_a(6.0/48000, 0.3)
+	, lpf_bias_b(6.0/48000, 0.3)
+	, lpf_bias_c(6.0/48000, 0.3)
 {
+	lpf_bias_a.Reset(1 << 11);
+	lpf_bias_b.Reset(1 << 11);
+	lpf_bias_c.Reset(1 << 11);
 	encoder_ = encoder;
 	pwm_ = pwm;
 	props_= rexjson::property_map({
@@ -46,6 +57,9 @@ void ServoDrive::SetCallbackFrequency(uint32_t callback_hz)
 
 void ServoDrive::Start()
 {
+//	calibration_mode_ = false;
+//	drv1.DisableCalibration();
+	osDelay(20);
 	update_counter_ = 0;
 	period_ = GetPwmGenerator()->GetPeriod();
 	GetPwmGenerator()->Start();
@@ -54,6 +68,10 @@ void ServoDrive::Start()
 void ServoDrive::Stop()
 {
 	GetPwmGenerator()->Stop();
+//	drv1.EnableCalibration();
+	osDelay(20);
+//	calibration_mode_ = true;
+
 }
 
 bool ServoDrive::IsStarted()
@@ -107,9 +125,53 @@ void ServoDrive::UpdateHandlerNoFb()
 		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
 		UpdateSpeed();
 
-		if ((update_counter_ % 37) == 0) {
-			fprintf(stderr, "dir: %2lu,  %7lu, %7lu, %7lu, %7lu (%7lu, %7lu, %7lu, %7lu)\n",
-					adc1.dir_, adc1.injdata_[0], adc1.injdata_[1], adc1.injdata_[2], adc1.injdata_[3], adc1.regdata_[0], adc1.regdata_[1], adc1.regdata_[2], adc1.regdata_[4]);
+		uint32_t Vbus = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
+		int32_t injdata[] = {
+				LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1),
+				LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1),
+				LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1),
+		};
+
+
+//		if (calibration_mode_) {
+			lpf_bias_a.DoFilter(injdata[0]);
+			lpf_bias_b.DoFilter(injdata[1]);
+			lpf_bias_c.DoFilter(injdata[2]);
+//		}
+
+//		if ((update_counter_ % 19) == 0) {
+//
+//			float Ia = -(float)(((float)lpf_bias_a.Output() - (float)injdata[0]) / 1000.0f / (csa_gain_ * Rsense_));
+//			float Ib = -(float)(((float)lpf_bias_b.Output() - (float)injdata[1]) / 1000.0f / (csa_gain_ * Rsense_));
+//			float Ic = -(float)(((float)lpf_bias_c.Output() - (float)injdata[2]) / 1000.0f / (csa_gain_ * Rsense_));
+//
+//			fprintf(stderr, "%5.2f, %5.2f, %5.2f (%5.2f)\n", Ia, Ib, Ic, Ia + Ib + Ic);
+//		}
+//		return;
+
+		if ((update_counter_ % 19) == 0) {
+			float Ia = -(float)(((float)lpf_bias_a.Output() - (float)injdata[0]) / 1000.0f / (csa_gain_ * Rsense_));
+			float Ib = -(float)(((float)lpf_bias_b.Output() - (float)injdata[1]) / 1000.0f / (csa_gain_ * Rsense_));
+			float Ic = -(float)(((float)lpf_bias_c.Output() - (float)injdata[2]) / 1000.0f / (csa_gain_ * Rsense_));
+
+			fprintf(stderr, "dir: %2lu,  VBUS: %5lu, INJDATA: (%5lu, %5lu, %5lu) BIAS: (%5.2f, %5.2f, %5.2f) (%5lu, %5lu, %5lu) I: %5.2f, %5.2f, %5.2f (%5.2f)\n",
+					adc1.dir_, Vbus, (uint32_t) injdata[0], (uint32_t) injdata[1], (uint32_t) injdata[2],
+					lpf_bias_a.Output(), lpf_bias_b.Output(), lpf_bias_c.Output(),
+					adc1.bias_[0], adc1.bias_[1], adc1.bias_[2],
+					Ia, Ib, Ic, Ia + Ib + Ic);
+
+//			float Ia1 = -(float)(((float)lpf_bias_a.Output() - (float)adc1.injdata_[0]) / 1000.0f / (csa_gain_ * Rsense_));
+//			float Ib1 = -(float)(((float)lpf_bias_b.Output() - (float)adc1.injdata_[1]) / 1000.0f / (csa_gain_ * Rsense_));
+//			float Ic1 = -(float)(((float)lpf_bias_c.Output() - (float)adc1.injdata_[2]) / 1000.0f / (csa_gain_ * Rsense_));
+
+//			fprintf(stderr, "dir: %2lu,  VBUS: %5lu, Current: %5lu, %5lu, %5lu (%5lu, %5lu, %5lu) I: %5.2f, %5.2f, %5.2f (%5.2f), Iadc1: %5.2f, %5.2f, %5.2f (%5.2f)\n",
+//					adc1.dir_, adc1.injdata_[3], adc1.injdata_[0], adc1.injdata_[1], adc1.injdata_[2],
+//					(uint32_t) injdata_1[0], (uint32_t) injdata_1[1], (uint32_t) injdata_1[2],
+//					Ia, Ib, Ic, Ia + Ib + Ic,
+//					Ia1, Ib1, Ic1, Ia1 + Ib1 + Ic1);
+
+
+
 		}
 	}
 }
@@ -203,6 +265,8 @@ void ServoDrive::SignalThreadUpdate()
 
 void ServoDrive::StartControlThread()
 {
+//	drv1.EnableCalibration();
+//	calibration_mode_ = true;
 	osThreadDef(RunControlLoopWrapper, osPriorityRealtime, 0, 2048);
 	control_thread_id_ = osThreadCreate(&os_thread_def_RunControlLoopWrapper, this);
 }

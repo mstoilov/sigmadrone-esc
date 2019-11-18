@@ -74,6 +74,10 @@ public:
 	LowPassFilter<std::complex<float>, float> lpf_R;
 	LowPassFilter<std::complex<float>, float> lpf_I;
 	LowPassFilter<std::complex<float>, float> lpf_Ipwm;
+	LowPassFilter<float, float> lpf_bias_a;
+	LowPassFilter<float, float> lpf_bias_b;
+	LowPassFilter<float, float> lpf_bias_c;
+	bool calibration_mode_ = false;
 	float throttle_ = 0.05;
 	uint32_t update_counter_ = 0;
 	uint32_t period_ = 0;

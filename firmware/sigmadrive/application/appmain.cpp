@@ -36,6 +36,8 @@
 
 osThreadId commandTaskHandle;
 Adc adc1;
+Adc adc2;
+Adc adc3;
 Uart uart1;
 SPIMaster spi3;
 PwmGenerator tim1;
@@ -65,15 +67,17 @@ void TIM1_IRQHandler()
 }
 
 extern "C"
-void ADC1_IRQHandler()
+void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 {
-	ADC_TypeDef* ADCx = adc1.hadc_->Instance;
+	ADC_TypeDef* ADCx = hadc->Instance;
 
 	if (LL_ADC_IsActiveFlag_JEOS(ADCx) && LL_ADC_IsEnabledIT_JEOS(ADCx)) {
 		LL_ADC_ClearFlag_JEOS(ADCx);
-		adc1.InjectedConvCpltCallback();
-		adc1.dir_ = LL_TIM_GetDirection(htim1.Instance);
-		servo.SignalThreadUpdate();
+		if (hadc == &hadc1) {
+			adc1.InjectedConvCpltCallback();
+			adc1.dir_ = LL_TIM_GetDirection(htim1.Instance);
+			servo.SignalThreadUpdate();
+		}
 	}
 	if (LL_ADC_IsActiveFlag_EOCS(ADCx) && LL_ADC_IsEnabledIT_EOCS(ADCx)) {
 		LL_ADC_ClearFlag_EOCS(ADCx);
@@ -119,6 +123,8 @@ int application_main()
 	 * should be fully initialized.
 	 */
 	adc1.Attach(&hadc1);
+	adc2.Attach(&hadc2);
+	adc3.Attach(&hadc3);
 	uart1.Attach(&huart1);
 	spi3.Attach(&hspi3);
 	tim4.Attach(&htim4);

@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <string.h>
 #include "adc.h"
+#include "main.h"
 
 Adc::handle_map_type Adc::handle_map_;
 
@@ -37,15 +38,15 @@ void Adc::Attach(ADC_HandleTypeDef* hadc)
 	assert(handle_map_.find(hadc_) == handle_map_.end());
 	handle_map_[hadc_] = this;
 	hadc_->InjectedConvCpltCallback = AdcInjectedConvCpltCallback;
-//	LL_ADC_EnableIT_JEOS(hadc_->Instance);
-//	LL_ADC_Enable(hadc_->Instance);
 
 	__HAL_ADC_ENABLE(hadc_);
-	__HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
 
-	if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) &regdata_, 5) != HAL_OK) {
-		/* Start Conversation Error */
-		printf("Failed to start regular conversions\n");
+	if (hadc == &hadc1) {
+		__HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
+		if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) &regdata_, 5) != HAL_OK) {
+			/* Start Conversation Error */
+			printf("Failed to start regular conversions\n");
+		}
 	}
 
 }
