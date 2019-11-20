@@ -46,7 +46,7 @@ QuadratureEncoder tim4(0x2000, MOTOR_POLE_PAIRS);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
-ServoDrive servo(&tim4, &tim1);
+ServoDrive servo(&tim4, &tim1, SYSTEM_CORE_CLOCK / TIM1_PERIOD_CLOCKS / (TIM1_RCR + 1));
 std::vector<IServoDrive*> g_motors{&servo};
 
 rexjson::property props =
@@ -58,10 +58,16 @@ rexjson::property* g_properties = &props;
 
 
 extern "C"
-void TIM1_IRQHandler()
+void SD_TIM1_IRQHandler(TIM_HandleTypeDef* htim)
 {
-	if (LL_TIM_IsActiveFlag_UPDATE(htim1.Instance)) {
-		LL_TIM_ClearFlag_UPDATE(htim1.Instance);
+	TIM_TypeDef* TIMx = htim->Instance;
+
+	if (LL_TIM_IsActiveFlag_UPDATE(TIMx)) {
+		LL_TIM_ClearFlag_UPDATE(TIMx);
+//		if (TIMx == TIM1) {
+//			fprintf(stderr, "TIM1_IRQHandler:\n");
+//			servo.SignalThreadUpdate();
+//		}
 	}
 //	servo.PeriodElapsedCallback();
 }
@@ -75,7 +81,7 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 		LL_ADC_ClearFlag_JEOS(ADCx);
 		if (hadc == &hadc1) {
 			adc1.InjectedConvCpltCallback();
-			adc1.dir_ = LL_TIM_GetDirection(htim1.Instance);
+//			fprintf(stderr, "SD_ADC_IRQHandler:\n");
 			servo.SignalThreadUpdate();
 		}
 	}
@@ -181,7 +187,6 @@ int application_main()
 	/*
 	 * Set the callback Hz
 	 */
-	servo.SetCallbackFrequency(SystemCoreClock/TIM1_PERIOD_CLOCKS/(TIM1_RCR+1));
 	servo.StartControlThread();
 
 	tim4.Start();

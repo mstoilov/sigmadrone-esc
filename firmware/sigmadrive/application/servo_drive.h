@@ -18,7 +18,16 @@
 
 class ServoDrive : public IServoDrive {
 public:
-	ServoDrive(IEncoder* encoder, IPwmGenerator *pwm);
+	struct SampledData {
+		int32_t injdata_[3];
+		int32_t vbus_ = 0;
+		uint32_t counter_dir_ = 0;
+		float theta_ = 0.0f;
+		uint32_t processing_ = 0;
+	};
+
+
+	ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz);
 	virtual ~ServoDrive();
 	virtual IEncoder* GetEncoder() const override { return encoder_; }
 	virtual IPwmGenerator* GetPwmGenerator() const override { return pwm_; }
@@ -26,7 +35,6 @@ public:
 	virtual void Stop() override;
 	virtual bool IsStarted() override;
 
-	void SetCallbackFrequency(uint32_t callback_hz);
 	void PeriodElapsedCallback();
 	void UpdateSpeed();
 
@@ -56,7 +64,7 @@ public:
 	rexjson::property props_;
 
 public:
-	uint32_t callback_hz_;
+	uint32_t update_hz_;
 	float csa_gain_ = 10.0f;
 	float Rsense_ = 0.010f;
 	float position_temp_ = 0.0;
@@ -68,6 +76,8 @@ public:
 	float voltage_bus_ = 15.0f;
 	float resistance_ = 0.0f;
 	float inductance_ = 0.0f;
+	float bias_alpha_ = 0.00035f;
+	float i_alpha_ = 0.25f;
 	osThreadId control_thread_id_ = 0;
 
 	LowPassFilter<decltype(speed_), float> lpf_speed_;
@@ -77,15 +87,19 @@ public:
 	LowPassFilter<float, float> lpf_bias_a;
 	LowPassFilter<float, float> lpf_bias_b;
 	LowPassFilter<float, float> lpf_bias_c;
-	bool calibration_mode_ = false;
+	LowPassFilter<float, float> lpf_i_a;
+	LowPassFilter<float, float> lpf_i_b;
+	LowPassFilter<float, float> lpf_i_c;
+	LowPassFilter<float, float> lpf_i_abs;
 	float throttle_ = 0.05;
+	float ri_angle = M_PI / 2.0;
 	uint32_t update_counter_ = 0;
 	uint32_t period_ = 0;
 	TorqueLoop tql_;
 	uint32_t timings_[3];
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
-
+	SampledData data_;
 };
 
 #endif /* _SERVO_DRIVE_H_ */

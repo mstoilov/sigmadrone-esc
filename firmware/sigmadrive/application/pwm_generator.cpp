@@ -59,7 +59,7 @@ void PwmGenerator::Attach(TIM_HandleTypeDef* htim)
 	htim_ = htim;
 	assert(handle_map_.find(htim_) == handle_map_.end());
 	handle_map_[htim_] = this;
-//	LL_TIM_EnableIT_UPDATE(htim_->Instance);
+	LL_TIM_EnableIT_UPDATE(htim_->Instance);
 	EnableCounter(true);
 }
 
