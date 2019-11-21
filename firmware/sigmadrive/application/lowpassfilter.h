@@ -27,7 +27,6 @@ class LowPassFilter
 {
 public:
 	LowPassFilter(const CoeffType& alpha = 0, const DataType& val = 0) : alpha_(alpha) { Reset(val); }
-	LowPassFilter(CoeffType T, CoeffType RC) : alpha_(0) { SetAlpha(T, RC); Reset(); }
 	~LowPassFilter() = default;
 
 	void Reset(const DataType& out = {0})

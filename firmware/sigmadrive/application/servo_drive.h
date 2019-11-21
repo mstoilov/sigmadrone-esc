@@ -40,9 +40,11 @@ public:
 
 	float PhaseCurrent(float adc_val, float adc_bias);
 
+	void UpdateRotor();
 	void UpdateSpeed();
 	void UpdateVbus();
-
+	void UpdateCurrent();
+	void UpdateCurrentBias();
 
 	void UpdateHandler_wip();
 
@@ -86,6 +88,7 @@ public:
 	float inductance_ = 0.0f;
 	float bias_alpha_ = 0.00035f;
 	float i_alpha_ = 0.25f;
+	float rotor_alpha_ = 1.0f;
 	osThreadId control_thread_id_ = 0;
 
 	float throttle_ = 0.05;
@@ -108,15 +111,11 @@ public:
 	LowPassFilter<float, float> lpf_i_b;
 	LowPassFilter<float, float> lpf_i_c;
 	LowPassFilter<float, float> lpf_i_abs;
+	LowPassFilter<std::complex<float>, float> lpf_e_rotor_;
 	LowPassFilter<std::complex<float>, float> lpf_Iab_;
 	LowPassFilter<std::complex<float>, float> lpf_Idq_;
 	LowPassFilter<float, float> lpf_vbus_;
 	LowPassFilter<float, float> lpf_speed_;
-
-//	float speed_ = 0;
-//	float Vbus_ = 15.0f;
-	std::complex<float> Iab_;
-	std::complex<float> Idq_;
 
 };
 

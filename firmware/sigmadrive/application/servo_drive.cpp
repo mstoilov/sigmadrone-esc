@@ -25,7 +25,10 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	, lpf_i_b(i_alpha_)
 	, lpf_i_c(i_alpha_)
 	, lpf_i_abs(0.01)
-	, lpf_vbus_(0.02)
+	, lpf_e_rotor_(rotor_alpha_)
+	, lpf_Iab_(i_alpha_)
+	, lpf_Idq_(i_alpha_)
+	, lpf_vbus_(0.02f, 15.0f)
 	, lpf_speed_(0.05f)
 {
 	lpf_bias_a.Reset(1 << 11);
@@ -34,7 +37,7 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	encoder_ = encoder;
 	pwm_ = pwm;
 	props_= rexjson::property_map({
-		{"speed", rexjson::property(&speed_, rexjson::property_access::readonly)},
+		{"speed", rexjson::property(&lpf_speed_.out_, rexjson::property_access::readonly)},
 		{"throttle", rexjson::property(
 				&throttle_,
 				rexjson::property_access::readwrite,
@@ -57,6 +60,14 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 					lpf_i_b.SetAlpha(i_alpha_);
 					lpf_i_c.SetAlpha(i_alpha_);
 				})},
+		{"rotor_alpha", rexjson::property(
+				&rotor_alpha_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+				[&](void*)->void {
+					lpf_e_rotor_.SetAlpha(rotor_alpha_);
+				})},
+
 		{"csa_gain", rexjson::property(
 				&csa_gain_,
 				rexjson::property_access::readwrite,
@@ -117,13 +128,36 @@ void ServoDrive::UpdateSpeed()
 		position_delta += M_PI * 2.0;
 	else if (position_delta > M_PI_2)
 		position_delta -= M_PI * 2.0;
-	speed_ = lpf_speed_.DoFilter(position_delta * update_hz_);
+	lpf_speed_.DoFilter(position_delta * update_hz_);
 	theta_old_ = theta_cur_;
+}
+
+void ServoDrive::UpdateRotor()
+{
+	lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
 }
 
 void ServoDrive::UpdateVbus()
 {
-	Vbus_ = lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * Vbus_resistor_ratio_);
+	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * Vbus_resistor_ratio_);
+}
+
+void ServoDrive::UpdateCurrentBias()
+{
+	lpf_bias_a.DoFilter(data_.injdata_[0]);
+	lpf_bias_b.DoFilter(data_.injdata_[1]);
+	lpf_bias_c.DoFilter(data_.injdata_[2]);
+}
+
+
+void ServoDrive::UpdateCurrent()
+{
+	float Ia = PhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
+	float Ib = PhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
+	float Ic = -(Ia + Ib);
+	float Ialpha = 3.0f/2.0f * Ia;
+	float Ibeta = 0.866025404f * (Ib - Ic);
+	lpf_Iab_.DoFilter(std::complex<float>(Ialpha, Ibeta));
 }
 
 float ServoDrive::PhaseCurrent(float adc_val, float adc_bias)
@@ -138,6 +172,13 @@ void ServoDrive::PeriodElapsedCallback()
 
 void ServoDrive::UpdateHandlerNoFb()
 {
+	if (data_.counter_dir_)
+		UpdateCurrentBias();
+	else
+		UpdateCurrent();
+	UpdateRotor();
+	UpdateVbus();
+	UpdateSpeed();
 
 	if (update_counter_ < update_hz_ ) {
 		/*
@@ -148,41 +189,14 @@ void ServoDrive::UpdateHandlerNoFb()
 		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
 		encoder_->ResetCounter(0);
 	} else {
-		std::complex<float> rotor = std::polar(1.0f, data_.theta_);
+		std::complex<float> rotor = lpf_e_rotor_.Output();
 		theta_cur_ = std::arg(rotor);
 		if (theta_cur_ < 0)
 			theta_cur_ += 2.0 * M_PI;
 		GetTimings(rotor * std::polar<float>(1.0f, ri_angle));
 		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
-		UpdateSpeed();
-		UpdateVbus();
 
-#if LOCAL_INJDATA
-		int32_t injdata[] = {
-			   LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1),
-			   LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1),
-			   LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1),
-		};
-#endif
-
-		if (data_.counter_dir_) {
-			lpf_bias_a.DoFilter(data_.injdata_[0]);
-			lpf_bias_b.DoFilter(data_.injdata_[1]);
-			lpf_bias_c.DoFilter(data_.injdata_[2]);
-		} else {
-			float Ia = PhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
-			float Ib = PhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
-			float Ic = -(Ia + Ib);
-		}
-
-		float Ia = lpf_i_a.Output();
-		float Ib = lpf_i_b.Output();
-		float Ic = -(Ia + Ib);
-
-		float Ialpha = 3.0f/2.0f * Ia;
-		float Ibeta = 0.866025404f * (Ib - Ic);
-
-		std::complex<float> I = std::complex<float>(Ialpha, Ibeta);
+		std::complex<float> I = lpf_Iab_.Output();
 		float diff = acos((I.real() * rotor.real() + I.imag() * rotor.imag())/(std::abs(I) * std::abs(rotor)));
 		float argR = std::arg(rotor);
 		float argI = std::arg(I);
@@ -194,7 +208,7 @@ void ServoDrive::UpdateHandlerNoFb()
 
 		if (!data_.counter_dir_ && (update_counter_ % 13) == 0) {
 			fprintf(stderr, "Vbus: %4.2f, SP: %5.1f Rad/s, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %6.1f\n",
-					(float)Vbus_, speed_, argR / M_PI * 180.0f, argI / M_PI * 180.0f, lpf_i_abs.DoFilter(std::abs(I)), diff / M_PI * 180.0f);
+					lpf_vbus_.Output(), lpf_speed_.Output(), argR / M_PI * 180.0f, argI / M_PI * 180.0f, lpf_i_abs.DoFilter(std::abs(I)), diff / M_PI * 180.0f);
 		}
 
 #if 0
