@@ -165,11 +165,13 @@ int application_main()
 	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
-	fprintf(stdout, "main_task 1\r\n");
-	fprintf(stdout, "DRV1: \r\n");
+	fprintf(stdout, "\n\nmain_task 1\n");
+	fprintf(stdout, "DRV1: \n");
 	drv1.DumpRegs();
-
-	AdcBiasSetup();
+#if 1
+	g_properties->enumerate_children("props", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
+#endif
+	HAL_Delay(50);
 
 	osThreadAttr_t commandTask_attributes;
 	memset(&commandTask_attributes, 0, sizeof(commandTask_attributes));
@@ -180,9 +182,6 @@ int application_main()
 
 	uint32_t old_counter = 0, new_counter = 0;
 
-#if 1
-	g_properties->enumerate_children("props", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
-#endif
 
 	servo.Attach();
 	/*

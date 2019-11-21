@@ -89,10 +89,11 @@ public:
 	float bias_alpha_ = 0.00035f;
 	float i_alpha_ = 0.25f;
 	float rotor_alpha_ = 1.0f;
+	float speed_alpha_ = 1.0f;
 	osThreadId control_thread_id_ = 0;
 
 	float throttle_ = 0.05;
-	float ri_angle = 1.77;
+	float ri_angle_ = 1.77;
 	uint32_t update_counter_ = 0;
 	uint32_t period_ = 0;
 	TorqueLoop tql_;
@@ -116,6 +117,8 @@ public:
 	LowPassFilter<std::complex<float>, float> lpf_Idq_;
 	LowPassFilter<float, float> lpf_vbus_;
 	LowPassFilter<float, float> lpf_speed_;
+	LowPassFilter<float, float> lpf_speed2_;
+
 
 };
 

@@ -18,16 +18,16 @@ extern CdcIface usb_cdc;
 #ifdef __cplusplus
 extern "C"
 #endif
-int _write(int fd __attribute__((unused)),
-		const char* buf __attribute__((unused)),
-		size_t nbyte __attribute__((unused)))
+int _write(int fd,
+		const char* buf,
+		size_t nbyte)
 {
-	static char last_char = 0;
 	static const char cr = '\r';
 	size_t ret = 0;
 
 	// STDOUT and STDERR are routed to the trace device
 	if (fd == 1) {
+		static char last_char = 0;
 		for (ret = 0; ret < nbyte; ret++) {
 			if (buf[ret] != '\n' || last_char == cr) {
 				uart1.Transmit(&buf[ret], 1);
@@ -39,6 +39,7 @@ int _write(int fd __attribute__((unused)),
 		}
 		return ret;
 	} else if (fd == 2) {
+		static char last_char = 0;
 		for (ret = 0; ret < nbyte; ret++) {
 			if (buf[ret] != '\n' || last_char == cr) {
 				usb_cdc.Transmit(&buf[ret], 1);

@@ -29,7 +29,8 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	, lpf_Iab_(i_alpha_)
 	, lpf_Idq_(i_alpha_)
 	, lpf_vbus_(0.02f, 15.0f)
-	, lpf_speed_(0.05f)
+	, lpf_speed_(speed_alpha_)
+	, lpf_speed2_(speed_alpha_)
 {
 	lpf_bias_a.Reset(1 << 11);
 	lpf_bias_b.Reset(1 << 11);
@@ -67,7 +68,14 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[&](void*)->void {
 					lpf_e_rotor_.SetAlpha(rotor_alpha_);
 				})},
-
+		{"speed_alpha", rexjson::property(
+				&speed_alpha_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+				[&](void*)->void {
+					lpf_speed_.SetAlpha(speed_alpha_);
+					lpf_speed2_.SetAlpha(speed_alpha_);
+				})},
 		{"csa_gain", rexjson::property(
 				&csa_gain_,
 				rexjson::property_access::readwrite,
@@ -76,7 +84,7 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 		)},
 
 
-		{"ri_angle", &ri_angle},
+		{"ri_angle", &ri_angle_},
 		{"torque_loop", tql_.props_},
 		{"encoder", encoder->GetProperties()},
 	});
@@ -132,9 +140,43 @@ void ServoDrive::UpdateSpeed()
 	theta_old_ = theta_cur_;
 }
 
+template<typename T>
+T Cross(const std::complex<T>& a, const std::complex<T>& b)
+{
+	return a.real() * b.imag() - a.imag() * b.real();
+}
+
+template<typename T>
+T Dot(const std::complex<T>& a, const std::complex<T>& b)
+{
+	return a.real() * b.real() + a.imag() * b.imag();
+}
+
+float Acos(float x)
+{
+	if (x > 1.0f)
+		return 0;
+	if (x < -1.0f)
+		return M_PI;
+	return acos(x);
+}
+
+float Asin(float x)
+{
+	if (x > 1.0f)
+		return M_PI_2;
+	if (x < -1.0f)
+		return -M_PI_2;
+	return asin(x);
+}
+
+
 void ServoDrive::UpdateRotor()
 {
-	lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
+	std::complex<float> r_prev = lpf_e_rotor_.Output();
+	std::complex<float> r_cur = lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
+	float delta = Cross(r_prev, r_cur) < 0 ? -Acos(Dot(r_prev, r_cur)) : Acos(Dot(r_prev, r_cur));
+	lpf_speed_.DoFilter(delta * update_hz_);
 }
 
 void ServoDrive::UpdateVbus()
@@ -178,7 +220,7 @@ void ServoDrive::UpdateHandlerNoFb()
 		UpdateCurrent();
 	UpdateRotor();
 	UpdateVbus();
-	UpdateSpeed();
+//	UpdateSpeed();
 
 	if (update_counter_ < update_hz_ ) {
 		/*
@@ -193,26 +235,33 @@ void ServoDrive::UpdateHandlerNoFb()
 		theta_cur_ = std::arg(rotor);
 		if (theta_cur_ < 0)
 			theta_cur_ += 2.0 * M_PI;
-		GetTimings(rotor * std::polar<float>(1.0f, ri_angle));
+		GetTimings(rotor * std::polar<float>(1.0f, ri_angle_));
 		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
 
-		std::complex<float> I = lpf_Iab_.Output();
-		float diff = acos((I.real() * rotor.real() + I.imag() * rotor.imag())/(std::abs(I) * std::abs(rotor)));
-		float argR = std::arg(rotor);
-		float argI = std::arg(I);
 
-		if (argR < 0.0f)
-			argR += M_PI * 2.0f;
-		if (argI < 0.0f)
-			argI += M_PI * 2.0f;
+		std::complex<float> I = lpf_Iab_.Output();
+		float argI = std::arg(I);
+		std::complex<float> Inorm = std::polar<float>(1.0f, argI);
+		float argR = std::arg(rotor);
+		float diff = (Cross(rotor, Inorm) < 0) ? -Acos(Dot(rotor, Inorm)) : Acos(Dot(rotor, Inorm));
 
 		if (!data_.counter_dir_ && (update_counter_ % 13) == 0) {
-			fprintf(stderr, "Vbus: %4.2f, SP: %5.1f Rad/s, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %6.1f\n",
-					lpf_vbus_.Output(), lpf_speed_.Output(), argR / M_PI * 180.0f, argI / M_PI * 180.0f, lpf_i_abs.DoFilter(std::abs(I)), diff / M_PI * 180.0f);
+			if (argR < 0.0f)
+				argR += M_PI * 2.0f;
+			if (argI < 0.0f)
+				argI += M_PI * 2.0f;
+
+			fprintf(stderr, "Vbus: %4.2f, SP: %5.1f (%5.1f) Rad/s, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %6.1f\n",
+					lpf_vbus_.Output(), lpf_speed_.Output(), lpf_speed2_.Output(), argR / M_PI * 180.0f, argI / M_PI * 180.0f, lpf_i_abs.DoFilter(std::abs(I)), diff / M_PI * 180.0f);
 		}
 
 #if 0
 		if (!data_.counter_dir_ && (update_counter_ % 13) == 0) {
+			if (argR < 0.0f)
+				argR += M_PI * 2.0f;
+			if (argI < 0.0f)
+				argI += M_PI * 2.0f;
+
 			fprintf(stderr, "dir: %2lu,  VBUS: %5lu, INJDATA_: (%5lu, %5lu, %5lu)"
 #if LOCAL_INJDATA
 					" INJDATA: (%5lu, %5lu, %5lu)"
@@ -306,7 +355,7 @@ void ServoDrive::RunControlLoop()
 	}
 }
 
-static void RunControlLoopWrapper(void const* ctx)
+static void RunControlLoopWrapper(const void* ctx)
 {
 	reinterpret_cast<ServoDrive*>(const_cast<void*>(ctx))->RunControlLoop();
 	reinterpret_cast<ServoDrive*>(const_cast<void*>(ctx))->control_thread_id_ = 0;
@@ -337,7 +386,7 @@ void ServoDrive::SignalThreadUpdate()
 
 void ServoDrive::StartControlThread()
 {
-	osThreadDef(RunControlLoopWrapper, osPriorityRealtime, 0, 2048);
+	osThreadDef(RunControlLoopWrapper, osPriorityHigh, 0, 16000);
 	control_thread_id_ = osThreadCreate(&os_thread_def_RunControlLoopWrapper, this);
 }
 
