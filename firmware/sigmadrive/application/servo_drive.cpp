@@ -18,17 +18,15 @@ extern Drv8323 drv1;
 
 ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
 	: update_hz_(update_hz)
-	, lpf_speed_(0.00035f)
-	, lpf_R(0.5)
-	, lpf_I(0.6)
-	, lpf_Ipwm(0.8)
 	, lpf_bias_a(bias_alpha_)
 	, lpf_bias_b(bias_alpha_)
 	, lpf_bias_c(bias_alpha_)
 	, lpf_i_a(i_alpha_)
 	, lpf_i_b(i_alpha_)
 	, lpf_i_c(i_alpha_)
-	, lpf_i_abs(1.0/update_hz, 0.1)
+	, lpf_i_abs(0.01)
+	, lpf_vbus_(0.02)
+	, lpf_speed_(0.05f)
 {
 	lpf_bias_a.Reset(1 << 11);
 	lpf_bias_b.Reset(1 << 11);
@@ -59,6 +57,14 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 					lpf_i_b.SetAlpha(i_alpha_);
 					lpf_i_c.SetAlpha(i_alpha_);
 				})},
+		{"csa_gain", rexjson::property(
+				&csa_gain_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
+				[&](void*){drv1.SetCSAGainValue(csa_gain_);}
+		)},
+
+
 		{"ri_angle", &ri_angle},
 		{"torque_loop", tql_.props_},
 		{"encoder", encoder->GetProperties()},
@@ -69,6 +75,11 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 ServoDrive::~ServoDrive()
 {
 	// TODO Auto-generated destructor stub
+}
+
+void ServoDrive::Attach()
+{
+	csa_gain_ = drv1.GetCSAGainValue();
 }
 
 void ServoDrive::Start()
@@ -106,9 +117,18 @@ void ServoDrive::UpdateSpeed()
 		position_delta += M_PI * 2.0;
 	else if (position_delta > M_PI_2)
 		position_delta -= M_PI * 2.0;
-	lpf_speed_.DoFilter(position_delta * 1000.0);
-	speed_ = lpf_speed_.Output() * update_hz_;
+	speed_ = lpf_speed_.DoFilter(position_delta * update_hz_);
 	theta_old_ = theta_cur_;
+}
+
+void ServoDrive::UpdateVbus()
+{
+	Vbus_ = lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * Vbus_resistor_ratio_);
+}
+
+float ServoDrive::PhaseCurrent(float adc_val, float adc_bias)
+{
+	return ((adc_bias - adc_val) * Vref_ / adc_full_scale) / Rsense_ / csa_gain_;
 }
 
 void ServoDrive::PeriodElapsedCallback()
@@ -135,6 +155,7 @@ void ServoDrive::UpdateHandlerNoFb()
 		GetTimings(rotor * std::polar<float>(1.0f, ri_angle));
 		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
 		UpdateSpeed();
+		UpdateVbus();
 
 #if LOCAL_INJDATA
 		int32_t injdata[] = {
@@ -149,14 +170,9 @@ void ServoDrive::UpdateHandlerNoFb()
 			lpf_bias_b.DoFilter(data_.injdata_[1]);
 			lpf_bias_c.DoFilter(data_.injdata_[2]);
 		} else {
-//			lpf_i_a.DoFilter(-(float)(((float)lpf_bias_a.Output() - (float)data_.injdata_[0]) / 1000.0f / (csa_gain_ * Rsense_)));
-//			lpf_i_b.DoFilter(-(float)(((float)lpf_bias_b.Output() - (float)data_.injdata_[1]) / 1000.0f / (csa_gain_ * Rsense_)));
-//			lpf_i_c.DoFilter(-(float)(((float)lpf_bias_c.Output() - (float)data_.injdata_[2]) / 1000.0f / (csa_gain_ * Rsense_)));
-
-			lpf_i_a.DoFilter((float)(((float)lpf_bias_a.Output() - (float)data_.injdata_[0]) / 1000.0f / (csa_gain_ * Rsense_)));
-			lpf_i_b.DoFilter((float)(((float)lpf_bias_b.Output() - (float)data_.injdata_[1]) / 1000.0f / (csa_gain_ * Rsense_)));
-			lpf_i_c.DoFilter((float)(((float)lpf_bias_c.Output() - (float)data_.injdata_[2]) / 1000.0f / (csa_gain_ * Rsense_)));
-
+			float Ia = PhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
+			float Ib = PhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
+			float Ic = -(Ia + Ib);
 		}
 
 		float Ia = lpf_i_a.Output();
@@ -176,10 +192,9 @@ void ServoDrive::UpdateHandlerNoFb()
 		if (argI < 0.0f)
 			argI += M_PI * 2.0f;
 
-
 		if (!data_.counter_dir_ && (update_counter_ % 13) == 0) {
-			fprintf(stderr, "SP: %5.1f mRad/s, arg(R): %6.1f, arg(I): %6.1f, abs(I): %4.1f, DIFF: %6.1f\n",
-					lpf_speed_.Output(), argR / M_PI * 180.0f, argI / M_PI * 180.0f, lpf_i_abs.DoFilter(std::abs(I)), diff / M_PI * 180.0f);
+			fprintf(stderr, "Vbus: %4.2f, SP: %5.1f Rad/s, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %6.1f\n",
+					(float)Vbus_, speed_, argR / M_PI * 180.0f, argI / M_PI * 180.0f, lpf_i_abs.DoFilter(std::abs(I)), diff / M_PI * 180.0f);
 		}
 
 #if 0
@@ -188,7 +203,7 @@ void ServoDrive::UpdateHandlerNoFb()
 #if LOCAL_INJDATA
 					" INJDATA: (%5lu, %5lu, %5lu)"
 #endif
-					" BIAS: (%5.2f, %5.2f, %5.2f) I: %5.2f, %5.2f, %5.2f (%5.2f)"
+					" BIAS: (%5.2f, %5.2f, %5.2f) I: %6.3f, %6.3f, %6.3f (%6.3f)"
 					" R: %5.2f, DIFF: %5.2f\n",
 					data_.counter_dir_, data_.vbus_,
 					(uint32_t) data_.injdata_[0], (uint32_t) data_.injdata_[1], (uint32_t) data_.injdata_[2],
@@ -210,6 +225,7 @@ void ServoDrive::UpdateHandlerNoFb()
 
 void ServoDrive::UpdateHandler_wip()
 {
+#if 0
 	if (update_counter_ < update_hz_ / 4) {
 		/*
 		 * Reset the rotor for 1/4 Second
@@ -263,7 +279,7 @@ void ServoDrive::UpdateHandler_wip()
 //		}
 	}
 	update_counter_++;
-
+#endif
 }
 
 void ServoDrive::RunControlLoop()

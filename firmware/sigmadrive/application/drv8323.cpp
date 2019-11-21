@@ -106,10 +106,11 @@ void Drv8323::SetVDSLevel(uint32_t vds_lvl)
 	ModifyReg(0x5, VDS_LVL_MASK, vds_lvl);
 }
 
-void Drv8323::SetCSAGain(uint32_t csa_gain)
+uint32_t Drv8323::SetCSAGain(uint32_t csa_gain)
 {
 	assert(csa_gain <= CSA_GAIN_40VV);
 	ModifyReg(0x6, CSA_GAIN_MASK << CSA_SHIFT_BIT, csa_gain << CSA_SHIFT_BIT);
+	return GetCSAGain();
 }
 
 uint32_t Drv8323::GetCSAGain()
@@ -118,6 +119,22 @@ uint32_t Drv8323::GetCSAGain()
 	uint32_t ret = (csareg >> CSA_SHIFT_BIT) & CSA_GAIN_MASK;
 	return ret;
 }
+
+uint32_t Drv8323::SetCSAGainValue(uint32_t csa_gain_value)
+{
+	switch (csa_gain_value) {
+	case 5:
+		return SetCSAGain(0);
+	case 10:
+		return SetCSAGain(1);
+	case 20:
+		return SetCSAGain(2);
+	case 40:
+		return SetCSAGain(3);
+	}
+	return GetCSAGain();
+}
+
 
 uint32_t Drv8323::GetCSAGainValue()
 {

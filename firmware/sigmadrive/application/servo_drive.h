@@ -35,8 +35,14 @@ public:
 	virtual void Stop() override;
 	virtual bool IsStarted() override;
 
+	void Attach();
 	void PeriodElapsedCallback();
+
+	float PhaseCurrent(float adc_val, float adc_bias);
+
 	void UpdateSpeed();
+	void UpdateVbus();
+
 
 	void UpdateHandler_wip();
 
@@ -60,39 +66,30 @@ protected:
 
 
 
+
 public:
 	rexjson::property props_;
 
 public:
 	uint32_t update_hz_;
+	uint32_t adc_full_scale = (1<<12);
+	float Vref_ = 2.9;
+	float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
 	float csa_gain_ = 10.0f;
 	float Rsense_ = 0.010f;
 	float position_temp_ = 0.0;
 	float theta_old_ = 0;
 	float theta_cur_ = 0;
-	float speed_ = 0.0;		// counts per time slice
 	uint32_t wait_timeout_ = (uint32_t)-1; // msec
 	int32_t pole_pairs = 7;
-	float voltage_bus_ = 15.0f;
 	float resistance_ = 0.0f;
 	float inductance_ = 0.0f;
 	float bias_alpha_ = 0.00035f;
 	float i_alpha_ = 0.25f;
 	osThreadId control_thread_id_ = 0;
 
-	LowPassFilter<decltype(speed_), float> lpf_speed_;
-	LowPassFilter<std::complex<float>, float> lpf_R;
-	LowPassFilter<std::complex<float>, float> lpf_I;
-	LowPassFilter<std::complex<float>, float> lpf_Ipwm;
-	LowPassFilter<float, float> lpf_bias_a;
-	LowPassFilter<float, float> lpf_bias_b;
-	LowPassFilter<float, float> lpf_bias_c;
-	LowPassFilter<float, float> lpf_i_a;
-	LowPassFilter<float, float> lpf_i_b;
-	LowPassFilter<float, float> lpf_i_c;
-	LowPassFilter<float, float> lpf_i_abs;
 	float throttle_ = 0.05;
-	float ri_angle = M_PI / 2.0;
+	float ri_angle = 1.77;
 	uint32_t update_counter_ = 0;
 	uint32_t period_ = 0;
 	TorqueLoop tql_;
@@ -100,6 +97,27 @@ public:
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
 	SampledData data_;
+
+/*
+ * Derived Data
+ */
+	LowPassFilter<float, float> lpf_bias_a;
+	LowPassFilter<float, float> lpf_bias_b;
+	LowPassFilter<float, float> lpf_bias_c;
+	LowPassFilter<float, float> lpf_i_a;
+	LowPassFilter<float, float> lpf_i_b;
+	LowPassFilter<float, float> lpf_i_c;
+	LowPassFilter<float, float> lpf_i_abs;
+	LowPassFilter<std::complex<float>, float> lpf_Iab_;
+	LowPassFilter<std::complex<float>, float> lpf_Idq_;
+	LowPassFilter<float, float> lpf_vbus_;
+	LowPassFilter<float, float> lpf_speed_;
+
+//	float speed_ = 0;
+//	float Vbus_ = 15.0f;
+	std::complex<float> Iab_;
+	std::complex<float> Idq_;
+
 };
 
 #endif /* _SERVO_DRIVE_H_ */

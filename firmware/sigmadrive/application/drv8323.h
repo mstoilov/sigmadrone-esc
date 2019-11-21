@@ -157,7 +157,8 @@ public:
 	void SetVDSLevel(uint32_t vds_lvl);
 	uint32_t GetCSAGain();
 	uint32_t GetCSAGainValue();
-	void SetCSAGain(uint32_t csa_gain);
+	uint32_t SetCSAGain(uint32_t csa_gain);
+	uint32_t SetCSAGainValue(uint32_t csa_gain_value);
 	void SetOCPSenseLevel(uint32_t sen_lvl);
 
 	void EnableCalibration();

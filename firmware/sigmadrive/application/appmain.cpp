@@ -184,6 +184,7 @@ int application_main()
 	g_properties->enumerate_children("props", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
 #endif
 
+	servo.Attach();
 	/*
 	 * Set the callback Hz
 	 */
