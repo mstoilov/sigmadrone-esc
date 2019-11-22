@@ -267,8 +267,9 @@ void ServoDrive::UpdateHandlerNoFb()
 				Rarg += M_PI * 2.0f;
 			if (Iarg < 0.0f)
 				Iarg += M_PI * 2.0f;
-			fprintf(stderr, "Vbus: %4.2f, SP: %6.5f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
-					lpf_vbus_.Output(), lpf_speed_.Output(), Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
+			float speed = asinf(lpf_speed_.Output()) * update_hz_;
+			fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
+					lpf_vbus_.Output(), speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
 					diff / M_PI * 180.0f, lpf_RIdot_.Output());
 		}
 

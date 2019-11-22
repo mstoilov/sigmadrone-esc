@@ -93,7 +93,7 @@ public:
 	float bias_alpha_ = 0.00035f;
 	float i_alpha_ = 0.25f;
 	float rotor_alpha_ = 1.0f;
-	float speed_alpha_ = 1.0f;
+	float speed_alpha_ = 0.3f;
 	float ridot_alpha_ = 0.1f;
 	float iabs_alpha_ = 0.001f;
 	osThreadId control_thread_id_ = 0;
