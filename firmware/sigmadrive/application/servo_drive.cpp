@@ -5,10 +5,12 @@
  *      Author: mstoilov
  */
 
+#include "main.h"
 #include "servo_drive.h"
 #include "quadrature_encoder.h"
 #include "adc.h"
 #include "drv8323.h"
+#include "ClString.h"
 
 extern TIM_HandleTypeDef htim1;
 extern Adc adc1;
@@ -250,7 +252,6 @@ void ServoDrive::UpdateHandlerNoFb()
 				argR += M_PI * 2.0f;
 			if (argI < 0.0f)
 				argI += M_PI * 2.0f;
-
 			fprintf(stderr, "Vbus: %4.2f, SP: %5.1f (%5.1f) Rad/s, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %6.1f\n",
 					lpf_vbus_.Output(), lpf_speed_.Output(), lpf_speed2_.Output(), argR / M_PI * 180.0f, argI / M_PI * 180.0f, lpf_i_abs.DoFilter(std::abs(I)), diff / M_PI * 180.0f);
 		}
@@ -357,6 +358,7 @@ void ServoDrive::RunControlLoop()
 
 static void RunControlLoopWrapper(const void* ctx)
 {
+	*_impure_ptr = *_impure_data_ptr;
 	reinterpret_cast<ServoDrive*>(const_cast<void*>(ctx))->RunControlLoop();
 	reinterpret_cast<ServoDrive*>(const_cast<void*>(ctx))->control_thread_id_ = 0;
 	osThreadExit();

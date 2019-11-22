@@ -45,6 +45,7 @@ extern SPI_HandleTypeDef hspi3;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim4;
+extern struct _reent* _impure_data_ptr;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

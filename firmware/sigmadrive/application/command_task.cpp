@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <string.h>
+#include "main.h"
 #include "unistd.h"
 #include "command_task.h"
 #include "ClEditLine.h"
@@ -13,6 +14,8 @@ char cl_heap[4096];
 extern "C"
 void StartCommandTask(void *argument)
 {
+	*_impure_ptr = *_impure_data_ptr;
+
 	cl_mem_init(cl_heap, sizeof(cl_heap), 100);
 	cl_history_init();
 	UartRpcServer rpc_server;

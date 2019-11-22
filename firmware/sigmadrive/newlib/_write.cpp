@@ -27,31 +27,20 @@ int _write(int fd,
 
 	// STDOUT and STDERR are routed to the trace device
 	if (fd == 1) {
-		static char last_char = 0;
+		int* last_char = &_impure_ptr->_unspecified_locale_info;
 		for (ret = 0; ret < nbyte; ret++) {
-			if (buf[ret] != '\n' || last_char == cr) {
+			if (buf[ret] != '\n' || *last_char == cr) {
 				uart1.Transmit(&buf[ret], 1);
 			} else {
 				uart1.Transmit(&cr, 1);
 				uart1.Transmit(&buf[ret], 1);
-				last_char = buf[ret];
+				*last_char = buf[ret];
 			}
 		}
 		return ret;
 	} else if (fd == 2) {
-		static char last_char = 0;
-		for (ret = 0; ret < nbyte; ret++) {
-			if (buf[ret] != '\n' || last_char == cr) {
-				usb_cdc.Transmit(&buf[ret], 1);
-			} else {
-				usb_cdc.Transmit(&cr, 1);
-				usb_cdc.Transmit(&buf[ret], 1);
-				last_char = buf[ret];
-			}
-		}
-		return ret;
+		return usb_cdc.Transmit(buf, nbyte);
 	}
-
 
 	errno = ENOSYS;
 	return -1;

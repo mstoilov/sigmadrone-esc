@@ -121,6 +121,8 @@ void AdcBiasSetup()
 extern "C"
 int application_main()
 {
+	*_impure_ptr = *_impure_data_ptr;
+
 	Exti exti_usr_button(USER_BTN_Pin, []()->void{HAL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);});
 
 	/*

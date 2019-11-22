@@ -59,6 +59,8 @@ DMA_HandleTypeDef hdma_usart1_tx;
 DMA_HandleTypeDef hdma_usart1_rx;
 
 osThreadId_t defaultTaskHandle;
+
+struct _reent* _impure_data_ptr = NULL;
 /* USER CODE BEGIN PV */
 /* USER CODE END PV */
 
@@ -148,6 +150,11 @@ int main(void)
    * Set the Encoder index IRQ
    */
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
+
+  /*
+   * Save the original newlib _reent context
+   */
+  _impure_data_ptr = _impure_ptr;
 
   /* USER CODE END 2 */
 
