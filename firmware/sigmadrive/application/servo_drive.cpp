@@ -17,22 +17,25 @@ extern Adc adc1;
 extern Adc adc2;
 extern Adc adc3;
 extern Drv8323 drv1;
+static std::complex<float> p1_ = std::polar<float>(1.0f, 0.0f);
+static std::complex<float> p2_ = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
+static std::complex<float> p3_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
 
 ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
-	: update_hz_(update_hz)
+	: Pa_(std::polar<float>(1.0f, 0.0f))
+	, Pb_(std::polar<float>(1.0f, M_PI * 2.0 / 3.0))
+	, Pc_(std::polar<float>(1.0f, M_PI * 4.0 / 3.0))
+	, update_hz_(update_hz)
 	, lpf_bias_a(bias_alpha_)
 	, lpf_bias_b(bias_alpha_)
 	, lpf_bias_c(bias_alpha_)
-	, lpf_i_a(i_alpha_)
-	, lpf_i_b(i_alpha_)
-	, lpf_i_c(i_alpha_)
-	, lpf_i_abs(0.01)
 	, lpf_e_rotor_(rotor_alpha_)
 	, lpf_Iab_(i_alpha_)
 	, lpf_Idq_(i_alpha_)
+	, lpf_Iabs_(iabs_alpha_)
+	, lpf_RIdot_(ridot_alpha_)
 	, lpf_vbus_(0.02f, 15.0f)
 	, lpf_speed_(speed_alpha_)
-	, lpf_speed2_(speed_alpha_)
 {
 	lpf_bias_a.Reset(1 << 11);
 	lpf_bias_b.Reset(1 << 11);
@@ -59,9 +62,15 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_i_a.SetAlpha(i_alpha_);
-					lpf_i_b.SetAlpha(i_alpha_);
-					lpf_i_c.SetAlpha(i_alpha_);
+					lpf_Iab_.SetAlpha(i_alpha_);
+					lpf_Idq_.SetAlpha(i_alpha_);
+				})},
+		{"iabs_alpha", rexjson::property(
+				&iabs_alpha_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+				[&](void*)->void {
+					lpf_Iabs_.SetAlpha(iabs_alpha_);
 				})},
 		{"rotor_alpha", rexjson::property(
 				&rotor_alpha_,
@@ -76,8 +85,14 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
 					lpf_speed_.SetAlpha(speed_alpha_);
-					lpf_speed2_.SetAlpha(speed_alpha_);
 				})},
+		{"ridot_alpha", rexjson::property(
+				&ridot_alpha_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+				[&](void*)->void {
+					lpf_RIdot_.SetAlpha(ridot_alpha_);
+		})},
 		{"csa_gain", rexjson::property(
 				&csa_gain_,
 				rexjson::property_access::readwrite,
@@ -177,8 +192,8 @@ void ServoDrive::UpdateRotor()
 {
 	std::complex<float> r_prev = lpf_e_rotor_.Output();
 	std::complex<float> r_cur = lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
-	float delta = Cross(r_prev, r_cur) < 0 ? -Acos(Dot(r_prev, r_cur)) : Acos(Dot(r_prev, r_cur));
-	lpf_speed_.DoFilter(delta * update_hz_);
+//	float delta = Cross(r_prev, r_cur) < 0 ? -Acos(Dot(r_prev, r_cur)) : Acos(Dot(r_prev, r_cur));
+	lpf_speed_.DoFilter(Cross(r_prev, r_cur));
 }
 
 void ServoDrive::UpdateVbus()
@@ -199,9 +214,7 @@ void ServoDrive::UpdateCurrent()
 	float Ia = PhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
 	float Ib = PhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
 	float Ic = -(Ia + Ib);
-	float Ialpha = 3.0f/2.0f * Ia;
-	float Ibeta = 0.866025404f * (Ib - Ic);
-	lpf_Iab_.DoFilter(std::complex<float>(Ialpha, Ibeta));
+	lpf_Iab_.DoFilter(Pa_ * Ia + Pb_ * Ib + Pc_ * Ic);
 }
 
 float ServoDrive::PhaseCurrent(float adc_val, float adc_bias)
@@ -242,26 +255,29 @@ void ServoDrive::UpdateHandlerNoFb()
 
 
 		std::complex<float> I = lpf_Iab_.Output();
-		float argI = std::arg(I);
-		std::complex<float> Inorm = std::polar<float>(1.0f, argI);
-		float argR = std::arg(rotor);
-		float diff = (Cross(rotor, Inorm) < 0) ? -Acos(Dot(rotor, Inorm)) : Acos(Dot(rotor, Inorm));
+		float Iarg = std::arg(I);
+		float Iabs = lpf_Iabs_.DoFilter(std::abs(I));
+		std::complex<float> Inorm = std::polar<float>(1.0f, Iarg);
+		float Rarg = std::arg(rotor);
+		lpf_RIdot_.DoFilter(Dot(rotor, Inorm));
+		float diff = (Cross(rotor, Inorm) < 0) ? -Acos(lpf_RIdot_.Output()) : Acos(lpf_RIdot_.Output());
 
 		if (!data_.counter_dir_ && (update_counter_ % 13) == 0) {
-			if (argR < 0.0f)
-				argR += M_PI * 2.0f;
-			if (argI < 0.0f)
-				argI += M_PI * 2.0f;
-			fprintf(stderr, "Vbus: %4.2f, SP: %5.1f (%5.1f) Rad/s, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %6.1f\n",
-					lpf_vbus_.Output(), lpf_speed_.Output(), lpf_speed2_.Output(), argR / M_PI * 180.0f, argI / M_PI * 180.0f, lpf_i_abs.DoFilter(std::abs(I)), diff / M_PI * 180.0f);
+			if (Rarg < 0.0f)
+				Rarg += M_PI * 2.0f;
+			if (Iarg < 0.0f)
+				Iarg += M_PI * 2.0f;
+			fprintf(stderr, "Vbus: %4.2f, SP: %6.5f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
+					lpf_vbus_.Output(), lpf_speed_.Output(), Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
+					diff / M_PI * 180.0f, lpf_RIdot_.Output());
 		}
 
 #if 0
 		if (!data_.counter_dir_ && (update_counter_ % 13) == 0) {
-			if (argR < 0.0f)
-				argR += M_PI * 2.0f;
-			if (argI < 0.0f)
-				argI += M_PI * 2.0f;
+			if (Rarg < 0.0f)
+				Rarg += M_PI * 2.0f;
+			if (Iarg < 0.0f)
+				Iarg += M_PI * 2.0f;
 
 			fprintf(stderr, "dir: %2lu,  VBUS: %5lu, INJDATA_: (%5lu, %5lu, %5lu)"
 #if LOCAL_INJDATA
@@ -277,7 +293,7 @@ void ServoDrive::UpdateHandlerNoFb()
 #endif
 					lpf_bias_a.Output(), lpf_bias_b.Output(), lpf_bias_c.Output(),
 					lpf_i_a.Output(), lpf_i_b.Output(), lpf_i_c.Output(), lpf_i_a.Output() + lpf_i_b.Output() + lpf_i_c.Output(),
-					argR / M_PI * 180.0f, diff / M_PI * 180.0f
+					Rarg / M_PI * 180.0f, diff / M_PI * 180.0f
 			);
 
 
@@ -395,15 +411,11 @@ void ServoDrive::StartControlThread()
 
 void ServoDrive::GetTimings(const std::complex<float>& vec)
 {
-	static std::complex<float> p1_ = std::polar<float>(1.0f, 0.0f);
-	static std::complex<float> p2_ = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
-	static std::complex<float> p3_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
-
 	uint32_t half_pwm = period_ / 2;
 	uint32_t throttle_duty = half_pwm * throttle_;
 
-	timings_[0] = half_pwm + throttle_duty * ((vec.real()*p1_.real() + vec.imag()*p1_.imag()));
-	timings_[1] = half_pwm + throttle_duty * ((vec.real()*p2_.real() + vec.imag()*p2_.imag()));
-	timings_[2] = half_pwm + throttle_duty * ((vec.real()*p3_.real() + vec.imag()*p3_.imag()));
+	timings_[0] = half_pwm + throttle_duty * ((vec.real()*Pa_.real() + vec.imag()*Pa_.imag()));
+	timings_[1] = half_pwm + throttle_duty * ((vec.real()*Pb_.real() + vec.imag()*Pb_.imag()));
+	timings_[2] = half_pwm + throttle_duty * ((vec.real()*Pc_.real() + vec.imag()*Pc_.imag()));
 }
 
