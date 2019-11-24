@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <iterator>
 #include <assert.h>
-#include "cmsis_os2.h"
+#include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "task.h"
@@ -175,12 +175,23 @@ int application_main()
 #endif
 	HAL_Delay(50);
 
+
+#if (osCMSIS >= 0x20000U)
 	osThreadAttr_t commandTask_attributes;
 	memset(&commandTask_attributes, 0, sizeof(commandTask_attributes));
 	commandTask_attributes.name = "commandTask";
 	commandTask_attributes.priority = (osPriority_t) osPriorityNormal;
 	commandTask_attributes.stack_size = 16000;
 	commandTaskHandle = osThreadNew(StartCommandTask, NULL, &commandTask_attributes);
+
+//	osThreadDef(commandTask, osPriorityNormal, 0, 16000);
+//	commandTaskHandle = osThreadCreate(&os_thread_def_commandTask, this);
+#else
+	osThreadDef(commandTask, StartCommandTask, osPriorityNormal, NULL, 16000);
+	commandTaskHandle = osThreadCreate(osThread(commandTask), NULL);
+
+#endif
+
 
 	uint32_t old_counter = 0, new_counter = 0;
 

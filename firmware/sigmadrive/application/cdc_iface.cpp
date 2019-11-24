@@ -92,8 +92,14 @@ void CdcIface::SignalDataToTransmit()
 
 void CdcIface::StartTxThread()
 {
+#if (osCMSIS >= 0x20000U)
 	osThreadDef(RunTxLoopWrapper, osPriorityNormal, 0, 2048);
 	tx_thread_ = osThreadCreate(&os_thread_def_RunTxLoopWrapper, this);
+#else
+	osThreadDef(TxLoopTask, RunTxLoopWrapper, osPriorityNormal, 0, 2048);
+	tx_thread_ = osThreadCreate(osThread(TxLoopTask), this);
+
+#endif
 }
 
 size_t CdcIface::ReceiveOnce(char* buffer, size_t nsize)

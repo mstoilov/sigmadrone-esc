@@ -36,14 +36,12 @@ public:
 	bool WaitAbort(uint32_t timeout_msec);
 	bool WaitIdle(uint32_t timeout_msec);
 
-	enum Signals {
-		THREAD_SIGNAL_TASK = (1u << 0),
-		THREAD_SIGNAL_UPDATE = (1u << 1),
-		THREAD_SIGNAL_ABORT = (1u << 2),
-		THREAD_SIGNAL_IDLE = (1u << 3)
+	static const uint32_t THREAD_SIGNAL_TASK = (1u << 0);
+	static const uint32_t THREAD_SIGNAL_UPDATE = (1u << 1);
+	static const uint32_t THREAD_SIGNAL_ABORT = (1u << 2);
+	static const uint32_t THREAD_SIGNAL_IDLE = (1u << 3);
 
-    };
-	bool WaitForSignal(Signals s, uint32_t timeout_msec);
+	uint32_t WaitSignals(uint32_t s, uint32_t timeout_msec);
 
 	uint32_t wait_timeout_ = (uint32_t)-1;
 	osThreadId scheduler_thread_id_ = 0;

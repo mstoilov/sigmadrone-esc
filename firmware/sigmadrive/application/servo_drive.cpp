@@ -240,7 +240,7 @@ void ServoDrive::SignalThreadUpdate()
 	data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
 	data_.theta_ = encoder_->GetElectricPosition();
 	data_.counter_dir_ = LL_TIM_GetDirection(htim1.Instance);
-//	sched.SignalThreadUpdate();
+	sched.SignalThreadUpdate();
 }
 
 bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
@@ -389,30 +389,30 @@ void ServoDrive::RunRotateTasks()
 void ServoDrive::RunSimpleTasks()
 {
 	sched.AddTask([&](){
-		uint32_t t0 = osKernelGetTickCount();
-		if (sched.WaitAbort(2000)) {
-			fprintf(stderr, "Task1 Aborting...\n");
+		uint32_t t0 = osKernelSysTick();
+		if (sched.WaitSignals(Scheduler::THREAD_SIGNAL_ABORT | Scheduler::THREAD_SIGNAL_UPDATE, 2000) == Scheduler::THREAD_SIGNAL_ABORT) {
+			fprintf(stderr, "Task1 Aborting...\n\n\n");
 			return;
 		}
-		fprintf(stderr, "Task1 finished %lu\n", osKernelGetTickCount() - t0);
+		fprintf(stderr, "Task1 finished %lu\n", osKernelSysTick() - t0);
 	});
 	sched.AddTask([&](){
-		uint32_t t0 = osKernelGetTickCount();
+		uint32_t t0 = osKernelSysTick();
 		if (sched.WaitAbort(2000)) {
-			fprintf(stderr, "Task2 Aborting...\n");
+			fprintf(stderr, "Task2 Aborting...\n\n\n");
 			return;
 		}
-		fprintf(stderr, "Task2 finished %lu\n", osKernelGetTickCount() - t0);
+		fprintf(stderr, "Task2 finished %lu\n", osKernelSysTick() - t0);
 	});
 	sched.AddTask([&](){
-		uint32_t t0 = osKernelGetTickCount();
+		uint32_t t0 = osKernelSysTick();
 		if (sched.WaitAbort(2000)) {
-			fprintf(stderr, "Task1 Aborting...\n");
+			fprintf(stderr, "Task3 Aborting...\n\n\n");
 			return;
 		}
-		fprintf(stderr, "Task3 finished %lu\n\n\n", osKernelGetTickCount() - t0);
+		fprintf(stderr, "Task3 finished %lu\n\n\n", osKernelSysTick() - t0);
 		runtasks = 0;
 	});
-	sched.Run();
+	sched.RunWaitForCompletion();
 
 }

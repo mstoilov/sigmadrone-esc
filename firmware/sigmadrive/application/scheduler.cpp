@@ -8,6 +8,31 @@
 //#include "main.h"
 #include "scheduler.h"
 
+#if (osCMSIS < 0x20000U)
+extern "C"
+uint32_t osThreadFlagsClear(uint32_t flags)
+{
+	TaskHandle_t hTask;
+	uint32_t rflags, cflags;
+
+	hTask = xTaskGetCurrentTaskHandle();
+
+	if (xTaskNotifyAndQuery(hTask, 0, eNoAction, &cflags) == ((BaseType_t) 1)) {
+		rflags = cflags;
+		cflags &= ~flags;
+
+		if (xTaskNotify(hTask, cflags, eSetValueWithOverwrite) != ((BaseType_t) 1)) {
+			rflags = (uint32_t) -1;
+		}
+	} else {
+		rflags = (uint32_t) -1;
+	}
+
+	/* Return flags before clearing */
+	return (rflags);
+}
+#endif
+
 Scheduler::Scheduler()
 	: idle_task_([](){})
 {
@@ -56,7 +81,7 @@ void Scheduler::RunWaitForCompletion()
 		blocked_thread_id_ = osThreadGetId();
 
 		/*
-		 * Clear ABORT in case it was set
+		 * Clear IDLE in case it was set
 		 */
 		osThreadFlagsClear(THREAD_SIGNAL_IDLE);
 
@@ -84,9 +109,13 @@ void Scheduler::RunSchedulerLoop()
 			 */
 			osThreadFlagsClear(THREAD_SIGNAL_UPDATE);
 
+
 			while (!dispatch_queue_.empty()) {
 				std::function<void(void)> task = [](void){};
 
+				/*
+				 * Init the task
+				 */
 				taskENTER_CRITICAL();
 				if (!dispatch_queue_.empty())
 					task = dispatch_queue_.front();
@@ -96,16 +125,25 @@ void Scheduler::RunSchedulerLoop()
 				 * Clear ABORT in case it was set
 				 */
 				osThreadFlagsClear(THREAD_SIGNAL_ABORT);
+
+				/*
+				 * Run the task
+				 */
 				task();
 
+				/*
+				 * Remove the task from the queue
+				 */
 				taskENTER_CRITICAL();
 				if (!dispatch_queue_.empty())
 					dispatch_queue_.pop_front();
 				taskEXIT_CRITICAL();
 
 			}
-		} else {
+
 			SignalThreadIdle();
+
+		} else {
 			idle_task_();
 		}
 	}
@@ -119,68 +157,62 @@ static void RunSchedulerLoopWrapper(const void* ctx)
 
 	reinterpret_cast<Scheduler*>(const_cast<void*>(ctx))->RunSchedulerLoop();
 	reinterpret_cast<Scheduler*>(const_cast<void*>(ctx))->scheduler_thread_id_ = 0;
+#if (osCMSIS >= 0x20000U)
 	osThreadExit();
+#else
+	while(1){}
+#endif
 }
 
 void Scheduler::StartDispatcherThread()
 {
+#if (osCMSIS >= 0x20000U)
 	osThreadDef(RunSchedulerLoopWrapper, osPriorityHigh, 0, 4000);
 	scheduler_thread_id_ = osThreadCreate(&os_thread_def_RunSchedulerLoopWrapper, this);
+#else
+	osThreadDef(RunSchedulerLoopDef, RunSchedulerLoopWrapper, osPriorityHigh, 0, 4000);
+	scheduler_thread_id_ = osThreadCreate(osThread(RunSchedulerLoopDef), this);
+#endif
 }
 
-bool Scheduler::WaitForSignal(Signals s, uint32_t timeout_msec)
+uint32_t Scheduler::WaitSignals(uint32_t s, uint32_t timeout_msec)
 {
 	uint32_t t0, td, tout = timeout_msec;
-	t0 = osKernelGetTickCount();
-	bool ret = false;
+	t0 = osKernelSysTick();
+	uint32_t ret = 0;
 
 	do {
+		t0 = osKernelSysTick();
 		osEvent e = osSignalWait(s, timeout_msec);
-
-		ret = (e.status == osEventSignal && (e.value.signals & s)) ? true : false;
+		ret = (e.status == osEventSignal && (e.value.signals & s)) ? e.value.signals & s : 0;
 
 		/* Update timeout */
-		td = xTaskGetTickCount() - t0;
-
-		if (td > tout) {
-			tout = 0;
-		} else {
-			tout -= td;
-		}
+		td = osKernelSysTick() - t0;
+		tout = (td > tout) ? 0 : tout - td;
 	} while (!ret && tout);
 
 	return ret;
 }
 
+
 bool Scheduler::WaitUpdate(uint32_t timeout_msec)
 {
-//	return (osSignalWait(THREAD_SIGNAL_UPDATE, timeout_msec).status == osEventSignal) ? true : false;
-
-	return WaitForSignal(THREAD_SIGNAL_UPDATE, timeout_msec);
-
+	return WaitSignals(THREAD_SIGNAL_UPDATE, timeout_msec);
 }
 
 bool Scheduler::WaitTask(uint32_t timeout_msec)
 {
-//	return (osSignalWait(THREAD_SIGNAL_TASK, timeout).status == osEventSignal) ? true : false;
-
-	return WaitForSignal(THREAD_SIGNAL_TASK, timeout_msec);
+	return WaitSignals(THREAD_SIGNAL_TASK, timeout_msec);
 }
 
 bool Scheduler::WaitAbort(uint32_t timeout_msec)
 {
-//	return (osSignalWait(THREAD_SIGNAL_ABORT, timeout_msec).status == osEventSignal) ? true : false;
-
-	return WaitForSignal(THREAD_SIGNAL_ABORT, timeout_msec);
-
+	return WaitSignals(THREAD_SIGNAL_ABORT, timeout_msec);
 }
 
 bool Scheduler::WaitIdle(uint32_t timeout_msec)
 {
-//	return (osSignalWait(THREAD_SIGNAL_IDLE, timeout_msec).status == osEventSignal) ? true : false;
-
-	return WaitForSignal(THREAD_SIGNAL_IDLE, timeout_msec);
-
+	return WaitSignals(THREAD_SIGNAL_IDLE, timeout_msec);
 }
 
 void Scheduler::SignalThreadUpdate()
