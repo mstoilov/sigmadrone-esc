@@ -12,6 +12,7 @@
 #include "iservodrive.h"
 #include "lowpassfilter.h"
 #include "property.h"
+#include "scheduler.h"
 #include "torque_loop.h"
 #include "pidcontroller.h"
 
@@ -57,6 +58,8 @@ public:
 	void SignalThreadUpdate();
 	void StartControlThread();
 
+	void RunSimpleTasks();
+
 	enum Signals {
         THREAD_SIGNAL_UPDATE = 1u << 0
     };
@@ -66,7 +69,8 @@ protected:
 
 
 
-
+public:
+	Scheduler sched;
 
 
 public:
@@ -77,6 +81,7 @@ public:
 	std::complex<float> Pb_;
 	std::complex<float> Pc_;
 
+	uint32_t runtasks = 0;
 	uint32_t update_hz_;
 	uint32_t adc_full_scale = (1<<12);
 	float Vref_ = 2.9;

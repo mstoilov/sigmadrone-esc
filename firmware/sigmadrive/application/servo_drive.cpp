@@ -99,6 +99,12 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
 				[&](void*){drv1.SetCSAGainValue(csa_gain_);}
 		)},
+		{"runtasks", rexjson::property(
+				&runtasks,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){},
+				[&](void*){if (runtasks) RunSimpleTasks(); else sched.Abort();}
+		)},
 
 
 		{"ri_angle", &ri_angle_},
@@ -116,6 +122,8 @@ ServoDrive::~ServoDrive()
 void ServoDrive::Attach()
 {
 	csa_gain_ = drv1.GetCSAGainValue();
+
+	sched.StartDispatcherThread();
 }
 
 void ServoDrive::Start()
@@ -268,9 +276,9 @@ void ServoDrive::UpdateHandlerNoFb()
 			if (Iarg < 0.0f)
 				Iarg += M_PI * 2.0f;
 			float speed = asinf(lpf_speed_.Output()) * update_hz_;
-			fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
-					lpf_vbus_.Output(), speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
-					diff / M_PI * 180.0f, lpf_RIdot_.Output());
+//			fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
+//					lpf_vbus_.Output(), speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
+//					diff / M_PI * 180.0f, lpf_RIdot_.Output());
 		}
 
 #if 0
@@ -420,3 +428,30 @@ void ServoDrive::GetTimings(const std::complex<float>& vec)
 	timings_[2] = half_pwm + throttle_duty * ((vec.real()*Pc_.real() + vec.imag()*Pc_.imag()));
 }
 
+void ServoDrive::RunSimpleTasks()
+{
+	sched.AddTask([&](){
+		if (sched.WaitAbort(3000)) {
+			fprintf(stderr, "Task1 Aborting...\n");
+			return;
+		}
+		fprintf(stderr, "Task1 finished\n");
+	});
+	sched.AddTask([&](){
+		if (sched.WaitAbort(3000)) {
+			fprintf(stderr, "Task2 Aborting...\n");
+			return;
+		}
+		fprintf(stderr, "Task2 finished\n");
+	});
+	sched.AddTask([&](){
+		runtasks = 0;
+		if (sched.WaitAbort(3000)) {
+			fprintf(stderr, "Task3 Aborting...\n");
+			return;
+		}
+		fprintf(stderr, "Task3 finished\n");
+	});
+	sched.Run();
+
+}
