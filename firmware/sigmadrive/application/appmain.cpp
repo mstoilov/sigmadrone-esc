@@ -186,10 +186,6 @@ int application_main()
 
 
 	servo.Attach();
-	/*
-	 * Set the callback Hz
-	 */
-	servo.StartControlThread();
 
 	tim4.Start();
 

@@ -131,12 +131,14 @@ void ServoDrive::Start()
 	osDelay(20);
 	update_counter_ = 0;
 	period_ = GetPwmGenerator()->GetPeriod();
-	GetPwmGenerator()->Start();
+//	GetPwmGenerator()->Start();
+	RunRotateTasks();
 }
 
 void ServoDrive::Stop()
 {
 	GetPwmGenerator()->Stop();
+	sched.Abort();
 	osDelay(20);
 
 }
@@ -230,10 +232,44 @@ float ServoDrive::PhaseCurrent(float adc_val, float adc_bias)
 	return ((adc_bias - adc_val) * Vref_ / adc_full_scale) / Rsense_ / csa_gain_;
 }
 
-void ServoDrive::PeriodElapsedCallback()
+void ServoDrive::SignalThreadUpdate()
 {
-	SignalThreadUpdate();
+	data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
+	data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
+	data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
+	data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
+	data_.theta_ = encoder_->GetElectricPosition();
+	data_.counter_dir_ = LL_TIM_GetDirection(htim1.Instance);
+//	sched.SignalThreadUpdate();
 }
+
+bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
+{
+	if (sched.WaitAbort(0)) {
+		GetPwmGenerator()->Stop();
+		return false;
+	}
+
+	if (!sched.WaitUpdate(2)) {
+		/*
+		 * Updates are not coming! Abort...
+		 */
+		GetPwmGenerator()->Stop();
+		sched.Abort();
+		return false;
+	}
+
+	if (data_.counter_dir_)
+		UpdateCurrentBias();
+	else
+		UpdateCurrent();
+	UpdateRotor();
+	UpdateVbus();
+
+	return update_handler();
+
+}
+
 
 void ServoDrive::UpdateHandlerNoFb()
 {
@@ -276,9 +312,9 @@ void ServoDrive::UpdateHandlerNoFb()
 			if (Iarg < 0.0f)
 				Iarg += M_PI * 2.0f;
 			float speed = asinf(lpf_speed_.Output()) * update_hz_;
-//			fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
-//					lpf_vbus_.Output(), speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
-//					diff / M_PI * 180.0f, lpf_RIdot_.Output());
+			fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
+					lpf_vbus_.Output(), speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
+					diff / M_PI * 180.0f, lpf_RIdot_.Output());
 		}
 
 #if 0
@@ -312,111 +348,6 @@ void ServoDrive::UpdateHandlerNoFb()
 	}
 }
 
-void ServoDrive::UpdateHandler_wip()
-{
-#if 0
-	if (update_counter_ < update_hz_ / 4) {
-		/*
-		 * Reset the rotor for 1/4 Second
-		 */
-
-		tql_.GetTimings(throttle_, std::polar<float>(1.0, 0.0), period_, timings_, sizeof(timings_)/sizeof(timings_[0]));
-		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
-		encoder_->ResetCounter(0);
-		position_temp_ = theta_old_ = encoder_->GetElectricPosition();
-	} else {
-		std::complex<float> rotor = lpf_R.DoFilter(std::polar(1.0f, GetEncoder()->GetElectricPosition()));
-		theta_cur_ = std::arg(rotor);
-		if (theta_cur_ < 0)
-			theta_cur_ += 2.0 * M_PI;
-		tql_.GetTimings(throttle_, rotor * std::complex<float>(0.0f, 1.0f), period_, timings_, sizeof(timings_)/sizeof(timings_[0]));
-		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
-		UpdateSpeed();
-
-		float Ia = -(float)(((float)adc1.bias_[0] - (float)adc1.injdata_[0]) / 1000.0f / (csa_gain_ * Rsense_));
-		float Ib = -(float)(((float)adc1.bias_[2] - (float)adc1.injdata_[1]) / 1000.0f / (csa_gain_ * Rsense_));
-		float Ic = -(Ia + Ib);
-
-		float Ialpha = 3.0f/2.0f * Ia;
-		float Ibeta = 0.866025404f * (Ib - Ic);
-
-		float cos_theta = cos(theta_cur_);
-		float sin_theta = sin(theta_cur_);
-		float Id = Ialpha * cos_theta + Ibeta * sin_theta;
-		float Iq = -Ialpha * sin_theta + Ibeta * cos_theta;
-
-/*
-		Ia = -(timings_[0] - period_ * 0.5f);
-		Ib = -(timings_[1] - period_ * 0.5f);
-		Ic = -(timings_[2] - period_ * 0.5f);
-
-		Ialpha = 3.0f/2.0f * Ia;
-		Ibeta = 0.866025404f * (Ib - Ic);
-		std::complex<float> Ipwm = lpf_Ipwm.DoFilter(std::complex<float>(Ialpha, Ibeta));
-		Ipwm = Ipwm/std::abs(Ipwm);
-*/
-
-		std::complex<float> I = std::complex<float>(Ialpha, Ibeta);
-		I = I/std::abs(I);
-		float diff = acos((I.real() * rotor.real() + I.imag() * rotor.imag())/(std::abs(I) * std::abs(rotor)));
-		if ((update_counter_ % 37) == 0) {
-			fprintf(stderr, "%lu : R = %5.2f (%5.2f), speed: %5.2f\n", update_counter_, std::arg(rotor), diff, speed_);
-		}
-
-//		if ((update_counter_ % 37) == 0) {
-//			fprintf(stderr, "%lu : Id = %5.2f, Iq = %5.2f, speed: %5.2f\n", update_counter_, Id, Iq, speed_);
-//		}
-	}
-	update_counter_++;
-#endif
-}
-
-void ServoDrive::RunControlLoop()
-{
-	for (;;) {
-		if (WaitUpdate()) {
-			UpdateHandlerNoFb();
-			data_.processing_ = 0;
-		}
-	}
-}
-
-static void RunControlLoopWrapper(const void* ctx)
-{
-	*_impure_ptr = *_impure_data_ptr;
-	reinterpret_cast<ServoDrive*>(const_cast<void*>(ctx))->RunControlLoop();
-	reinterpret_cast<ServoDrive*>(const_cast<void*>(ctx))->control_thread_id_ = 0;
-	osThreadExit();
-}
-
-
-bool ServoDrive::WaitUpdate()
-{
-	return (osSignalWait(THREAD_SIGNAL_UPDATE, wait_timeout_).status == osEventSignal) ? true : false;
-}
-
-void ServoDrive::SignalThreadUpdate()
-{
-	update_counter_++;
-	if (!data_.processing_) {
-		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
-		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
-		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
-		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
-		data_.theta_ = encoder_->GetElectricPosition();
-		data_.counter_dir_ = LL_TIM_GetDirection(htim1.Instance);
-	}
-	data_.processing_++;
-	if (control_thread_id_)
-		osSignalSet(control_thread_id_, THREAD_SIGNAL_UPDATE);
-}
-
-void ServoDrive::StartControlThread()
-{
-	osThreadDef(RunControlLoopWrapper, osPriorityHigh, 0, 16000);
-	control_thread_id_ = osThreadCreate(&os_thread_def_RunControlLoopWrapper, this);
-}
-
 
 void ServoDrive::GetTimings(const std::complex<float>& vec)
 {
@@ -428,29 +359,59 @@ void ServoDrive::GetTimings(const std::complex<float>& vec)
 	timings_[2] = half_pwm + throttle_duty * ((vec.real()*Pc_.real() + vec.imag()*Pc_.imag()));
 }
 
+void ServoDrive::RunRotateTasks()
+{
+	sched.Abort();
+
+	sched.AddTask([&](){
+		uint32_t i = 0;
+		bool ret = false;
+		pwm_->Start();
+		do {
+			/*
+			 * Reset the rotor for 1 Second
+			 */
+
+			ret = RunUpdateHandler([&]()->bool {
+				GetTimings(std::polar<float>(1.0, 0.0));
+				pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
+				encoder_->ResetCounter(0);
+				return true;
+			});
+
+		} while (ret && i++ < update_hz_ );
+
+		pwm_->Stop();
+	});
+	sched.Run();
+}
+
 void ServoDrive::RunSimpleTasks()
 {
 	sched.AddTask([&](){
-		if (sched.WaitAbort(3000)) {
+		uint32_t t0 = osKernelGetTickCount();
+		if (sched.WaitAbort(2000)) {
 			fprintf(stderr, "Task1 Aborting...\n");
 			return;
 		}
-		fprintf(stderr, "Task1 finished\n");
+		fprintf(stderr, "Task1 finished %lu\n", osKernelGetTickCount() - t0);
 	});
 	sched.AddTask([&](){
-		if (sched.WaitAbort(3000)) {
+		uint32_t t0 = osKernelGetTickCount();
+		if (sched.WaitAbort(2000)) {
 			fprintf(stderr, "Task2 Aborting...\n");
 			return;
 		}
-		fprintf(stderr, "Task2 finished\n");
+		fprintf(stderr, "Task2 finished %lu\n", osKernelGetTickCount() - t0);
 	});
 	sched.AddTask([&](){
-		runtasks = 0;
-		if (sched.WaitAbort(3000)) {
-			fprintf(stderr, "Task3 Aborting...\n");
+		uint32_t t0 = osKernelGetTickCount();
+		if (sched.WaitAbort(2000)) {
+			fprintf(stderr, "Task1 Aborting...\n");
 			return;
 		}
-		fprintf(stderr, "Task3 finished\n");
+		fprintf(stderr, "Task3 finished %lu\n\n\n", osKernelGetTickCount() - t0);
+		runtasks = 0;
 	});
 	sched.Run();
 

@@ -37,7 +37,7 @@ public:
 	virtual bool IsStarted() override;
 
 	void Attach();
-	void PeriodElapsedCallback();
+	void SignalThreadUpdate();
 
 	float PhaseCurrent(float adc_val, float adc_bias);
 
@@ -47,18 +47,14 @@ public:
 	void UpdateCurrent();
 	void UpdateCurrentBias();
 
-	void UpdateHandler_wip();
 
 	void UpdateHandlerNoFb();
 
 	void GetTimings(const std::complex<float>& vec);
 
-//	friend void RunControlLoopWrapper(void const* ctx);
-	void RunControlLoop();
-	void SignalThreadUpdate();
-	void StartControlThread();
-
+	bool RunUpdateHandler(const std::function<bool(void)>& update_handler);
 	void RunSimpleTasks();
+	void RunRotateTasks();
 
 	enum Signals {
         THREAD_SIGNAL_UPDATE = 1u << 0
@@ -101,7 +97,6 @@ public:
 	float speed_alpha_ = 0.3f;
 	float ridot_alpha_ = 0.1f;
 	float iabs_alpha_ = 0.001f;
-	osThreadId control_thread_id_ = 0;
 
 	float throttle_ = 0.05;
 	float ri_angle_ = 1.77;
