@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-void RunCommandTask(const void *argument);
+void RunCommandTask(void *argument);
 
 #ifdef __cplusplus
 }

@@ -12,7 +12,7 @@
 char cl_heap[4096];
 
 extern "C"
-void RunCommandTask(const void *argument)
+void RunCommandTask(void *argument)
 {
 	*_impure_ptr = *_impure_data_ptr;
 

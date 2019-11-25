@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <iterator>
 #include <assert.h>
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "task.h"
@@ -34,7 +34,7 @@
 
 #define MOTOR_POLE_PAIRS 7
 
-osThreadId commandTaskHandle;
+osThreadId_t commandTaskHandle;
 Adc adc1;
 Adc adc2;
 Adc adc3;
@@ -176,22 +176,18 @@ int application_main()
 	HAL_Delay(50);
 
 
-#if (osCMSIS >= 0x20000U)
-	osThreadDef(RunCommandTask, osPriorityNormal, 0, 16000);
-	commandTaskHandle = osThreadCreate(&os_thread_def_RunCommandTask, NULL);
-#else
-	osThreadDef(commandTask, RunCommandTask, osPriorityNormal, NULL, 16000);
-	commandTaskHandle = osThreadCreate(osThread(commandTask), NULL);
-#endif
+	osThreadAttr_t task_attributes;
+	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+	task_attributes.name = "CommandTask";
+	task_attributes.priority = (osPriority_t) osPriorityNormal;
+	task_attributes.stack_size = 16000;
+	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
+
+	servo.Attach();
+	tim4.Start();
 
 
 	uint32_t old_counter = 0, new_counter = 0;
-
-
-	servo.Attach();
-
-	tim4.Start();
-
 	for (;;) {
 		HAL_Delay(50);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);

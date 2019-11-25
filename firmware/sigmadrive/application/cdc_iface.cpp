@@ -6,6 +6,7 @@
  */
 
 #include <assert.h>
+#include "string.h"
 #include "cdc_iface.h"
 
 CdcIface::handle_map_type CdcIface::handle_map_;
@@ -74,32 +75,34 @@ void CdcIface::RunTxLoop()
 	tx_thread_ = 0;
 }
 
-static void RunTxLoopWrapper(void const* ctx)
+static void RunTxLoopWrapper(void* ctx)
 {
 	reinterpret_cast<CdcIface*>(const_cast<void*>(ctx))->RunTxLoop();
 }
 
 bool CdcIface::WaitDataToTransmit()
 {
-	return (osSignalWait(SIGNAL_TX_DATA_READY, tx_timeout_).status == osEventSignal) ? true : false;
+	return (osThreadFlagsWait(SIGNAL_TX_DATA_READY, osFlagsWaitAll, tx_timeout_) == SIGNAL_TX_DATA_READY) ? true : false;
 }
 
 void CdcIface::SignalDataToTransmit()
 {
 	if (tx_thread_)
-		osSignalSet(tx_thread_, SIGNAL_TX_DATA_READY);
+		osThreadFlagsSet(tx_thread_, SIGNAL_TX_DATA_READY);
 }
 
 void CdcIface::StartTxThread()
 {
-#if (osCMSIS >= 0x20000U)
-	osThreadDef(RunTxLoopWrapper, osPriorityNormal, 0, 2048);
-	tx_thread_ = osThreadCreate(&os_thread_def_RunTxLoopWrapper, this);
-#else
-	osThreadDef(TxLoopTask, RunTxLoopWrapper, osPriorityNormal, 0, 2048);
-	tx_thread_ = osThreadCreate(osThread(TxLoopTask), this);
+	osThreadAttr_t task_attributes;
+	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+	task_attributes.name = "CdcTxLoop";
+	task_attributes.priority = (osPriority_t) osPriorityNormal;
+	task_attributes.stack_size = 2048;
+	tx_thread_ = osThreadNew(RunTxLoopWrapper, this, &task_attributes);
 
-#endif
+
+//	osThreadDef(RunTxLoopWrapper, osPriorityNormal, 0, 2048);
+//	tx_thread_ = osThreadCreate(&os_thread_def_RunTxLoopWrapper, this);
 }
 
 size_t CdcIface::ReceiveOnce(char* buffer, size_t nsize)

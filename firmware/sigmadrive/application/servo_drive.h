@@ -8,7 +8,6 @@
 #ifndef _SERVO_DRIVE_H_
 #define _SERVO_DRIVE_H_
 
-#include "cmsis_os.h"
 #include "iservodrive.h"
 #include "lowpassfilter.h"
 #include "property.h"

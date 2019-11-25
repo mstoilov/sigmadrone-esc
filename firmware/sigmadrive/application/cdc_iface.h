@@ -9,7 +9,7 @@
 #define _CDC_IFACE_H_
 
 #include <map>
-#include "cmsis_os.h"
+#include "cmsis_os2.h"
 #include "ring.h"
 #include "usbd_cdc_if.h"
 
@@ -43,7 +43,7 @@ private:
 	Ring<char, 4096> rx_ringbuf_;
 	Ring<char, 1024> tx_ringbuf_;
 	bool rx_initiated_;
-	osThreadId tx_thread_;
+	osThreadId_t tx_thread_;
 };
 
 #endif /* _CDC_IFACE_H_ */

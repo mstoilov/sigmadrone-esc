@@ -126,7 +126,7 @@ void PwmGenerator::Start()
 			LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N |
 			LL_TIM_CHANNEL_CH4);
 //	LL_TIM_EnableIT_UPDATE(htim_->Instance);
-	EnableOutputs(true);
+//	EnableOutputs(true);
 }
 
 void PwmGenerator::Stop()

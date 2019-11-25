@@ -413,6 +413,6 @@ void ServoDrive::RunSimpleTasks()
 		fprintf(stderr, "Task3 finished %lu\n\n\n", xTaskGetTickCount() - t0);
 		runtasks = 0;
 	});
-	sched.Run();
+	sched.RunWaitForCompletion();
 
 }
