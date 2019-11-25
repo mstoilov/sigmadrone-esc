@@ -245,6 +245,7 @@ void ServoDrive::SignalThreadUpdate()
 
 bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
 {
+#if 0
 	if (sched.WaitAbort(0)) {
 		GetPwmGenerator()->Stop();
 		return false;
@@ -268,6 +269,28 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 
 	return update_handler();
 
+#endif
+
+
+	uint32_t flags = sched.WaitSignals(Scheduler::THREAD_SIGNAL_ABORT | Scheduler::THREAD_SIGNAL_UPDATE, 3);
+	if (flags == Scheduler::THREAD_SIGNAL_UPDATE) {
+		if (data_.counter_dir_)
+			UpdateCurrentBias();
+		else
+			UpdateCurrent();
+		UpdateRotor();
+		UpdateVbus();
+
+		return update_handler();
+	}
+
+	/*
+	 * If We got here the ABORT signal was received
+	 * or the UPDATE didn't come
+	 */
+	GetPwmGenerator()->Stop();
+	sched.Abort();
+	return false;
 }
 
 
@@ -383,7 +406,7 @@ void ServoDrive::RunRotateTasks()
 
 		pwm_->Stop();
 	});
-	sched.Run();
+	sched.RunWaitForCompletion();
 }
 
 void ServoDrive::RunSimpleTasks()
@@ -413,6 +436,6 @@ void ServoDrive::RunSimpleTasks()
 		fprintf(stderr, "Task3 finished %lu\n\n\n", xTaskGetTickCount() - t0);
 		runtasks = 0;
 	});
-	sched.RunWaitForCompletion();
+	sched.Run();
 
 }

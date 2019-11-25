@@ -55,10 +55,6 @@ public:
 	void RunSimpleTasks();
 	void RunRotateTasks();
 
-	enum Signals {
-        THREAD_SIGNAL_UPDATE = 1u << 0
-    };
-
 protected:
 	bool WaitUpdate();
 

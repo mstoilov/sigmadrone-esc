@@ -79,7 +79,7 @@ void Scheduler::AddTask(const std::function<void(void)>& task)
 void Scheduler::RunSchedulerLoop()
 {
 	for (;;) {
-		if (WaitTask(50)) {
+		if (WaitTask(5000)) {
 			/*
 			 * Clear UPDATE signal
 			 */
@@ -154,14 +154,14 @@ uint32_t Scheduler::WaitSignals(uint32_t s, uint32_t timeout_msec)
 	do {
 		t0 = xTaskGetTickCount();
 		ret = osThreadFlagsWait(s, osFlagsWaitAny, tout);
-		if (ret == osFlagsErrorTimeout)
+		if (ret & osFlagsError)
 			ret = 0;
+		ret &= s;
 		/* Update timeout */
 		td = xTaskGetTickCount() - t0;
 		tout = (td > tout) ? 0 : tout - td;
 	} while (!ret && tout);
-
-	return ret;
+	return (ret & s);
 }
 
 bool Scheduler::WaitUpdate(uint32_t timeout_msec)
@@ -181,22 +181,6 @@ bool Scheduler::WaitAbort(uint32_t timeout_msec)
 
 bool Scheduler::WaitIdle(uint32_t timeout_msec)
 {
-	uint32_t s = THREAD_SIGNAL_IDLE;
-	uint32_t t0, td, tout = timeout_msec;
-	uint32_t ret = 0;
-
-	do {
-		t0 = xTaskGetTickCount();
-		ret = osThreadFlagsWait(s, osFlagsWaitAny, tout);
-		if (ret == osFlagsErrorTimeout)
-			ret = 0;
-		/* Update timeout */
-		td = xTaskGetTickCount() - t0;
-		tout = (td > tout) ? 0 : tout - td;
-	} while (!ret && tout);
-
-	return (ret == THREAD_SIGNAL_IDLE) ? true : false;
-
 	return (WaitSignals(THREAD_SIGNAL_IDLE, timeout_msec) == THREAD_SIGNAL_IDLE) ? true : false;
 }
 
