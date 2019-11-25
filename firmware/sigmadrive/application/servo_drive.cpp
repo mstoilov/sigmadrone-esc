@@ -384,8 +384,6 @@ void ServoDrive::GetTimings(const std::complex<float>& vec)
 
 void ServoDrive::RunRotateTasks()
 {
-	sched.Abort();
-
 	sched.AddTask([&](){
 		uint32_t i = 0;
 		bool ret = false;

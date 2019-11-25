@@ -24,6 +24,7 @@ public:
 	void Abort();
 	void Run();
 	void RunWaitForCompletion();
+	bool IsDispatching();
 	void SetIdleTask(const std::function<void(void)>& task);
 	void AddTask(const std::function<void(void)>& task);
 	void RunSchedulerLoop();
@@ -49,6 +50,7 @@ public:
 	osThreadId_t blocked_thread_id_ = 0;
 
 protected:
+	bool dispatching_ = false;
 	std::function<void(void)> idle_task_;
 	std::deque<std::function<void(void)>> dispatch_queue_;
 };

@@ -31,28 +31,19 @@ void Scheduler::Abort()
 	taskENTER_CRITICAL();
 	dispatch_queue_.clear();
 	taskEXIT_CRITICAL();
-
 	SignalThreadAbort();
-
 }
 
 void Scheduler::Run()
 {
-	/*
-	 * TBD: Check the dispatcher is not
-	 * already running.
-	 */
 	if (!dispatch_queue_.empty()) {
+		dispatching_ = true;
 		SignalThreadTask();
 	}
 }
 
 void Scheduler::RunWaitForCompletion()
 {
-	/*
-	 * TBD: Check the dispatcher is not
-	 * already running.
-	 */
 	if (!dispatch_queue_.empty()) {
 		blocked_thread_id_ = osThreadGetId();
 
@@ -60,20 +51,26 @@ void Scheduler::RunWaitForCompletion()
 		 * Clear IDLE in case it was set
 		 */
 		osThreadFlagsClear(THREAD_SIGNAL_IDLE);
-
+		dispatching_ = true;
 		SignalThreadTask();
-
 		while (!WaitIdle(osWaitForever))
 			;
+		blocked_thread_id_ = 0;
 	}
+}
+
+bool Scheduler::IsDispatching()
+{
+	return dispatching_;
 }
 
 void Scheduler::AddTask(const std::function<void(void)>& task)
 {
+	if (dispatching_)
+		throw std::runtime_error("New tasks can't be added while the scheduler is dispatching tasks.");
 	taskENTER_CRITICAL();
 	dispatch_queue_.push_back(task);
 	taskEXIT_CRITICAL();
-
 }
 
 void Scheduler::RunSchedulerLoop()
@@ -84,7 +81,6 @@ void Scheduler::RunSchedulerLoop()
 			 * Clear UPDATE signal
 			 */
 			osThreadFlagsClear(THREAD_SIGNAL_UPDATE);
-
 
 			while (!dispatch_queue_.empty()) {
 				std::function<void(void)> task = [](void){};
@@ -114,23 +110,19 @@ void Scheduler::RunSchedulerLoop()
 				if (!dispatch_queue_.empty())
 					dispatch_queue_.pop_front();
 				taskEXIT_CRITICAL();
-
 			}
-
+			dispatching_ = false;
 			SignalThreadIdle();
-
 		} else {
 			idle_task_();
 		}
 	}
-
 }
 
 static void RunSchedulerLoopWrapper(void* ctx)
 {
 	extern struct _reent *_impure_data_ptr;
 	*_impure_ptr = *_impure_data_ptr;
-
 	reinterpret_cast<Scheduler*>(const_cast<void*>(ctx))->RunSchedulerLoop();
 	reinterpret_cast<Scheduler*>(const_cast<void*>(ctx))->scheduler_thread_id_ = 0;
 	osThreadExit();
