@@ -389,30 +389,30 @@ void ServoDrive::RunRotateTasks()
 void ServoDrive::RunSimpleTasks()
 {
 	sched.AddTask([&](){
-		uint32_t t0 = osKernelSysTick();
+		uint32_t t0 = xTaskGetTickCount();
 		if (sched.WaitSignals(Scheduler::THREAD_SIGNAL_ABORT | Scheduler::THREAD_SIGNAL_UPDATE, 2000) == Scheduler::THREAD_SIGNAL_ABORT) {
 			fprintf(stderr, "Task1 Aborting...\n\n\n");
 			return;
 		}
-		fprintf(stderr, "Task1 finished %lu\n", osKernelSysTick() - t0);
+		fprintf(stderr, "Task1 finished %lu\n", xTaskGetTickCount() - t0);
 	});
 	sched.AddTask([&](){
-		uint32_t t0 = osKernelSysTick();
+		uint32_t t0 = xTaskGetTickCount();
 		if (sched.WaitAbort(2000)) {
 			fprintf(stderr, "Task2 Aborting...\n\n\n");
 			return;
 		}
-		fprintf(stderr, "Task2 finished %lu\n", osKernelSysTick() - t0);
+		fprintf(stderr, "Task2 finished %lu\n", xTaskGetTickCount() - t0);
 	});
 	sched.AddTask([&](){
-		uint32_t t0 = osKernelSysTick();
+		uint32_t t0 = xTaskGetTickCount();
 		if (sched.WaitAbort(2000)) {
 			fprintf(stderr, "Task3 Aborting...\n\n\n");
 			return;
 		}
-		fprintf(stderr, "Task3 finished %lu\n\n\n", osKernelSysTick() - t0);
+		fprintf(stderr, "Task3 finished %lu\n\n\n", xTaskGetTickCount() - t0);
 		runtasks = 0;
 	});
-	sched.RunWaitForCompletion();
+	sched.Run();
 
 }

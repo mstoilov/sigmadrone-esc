@@ -42,6 +42,7 @@ public:
 	static const uint32_t THREAD_SIGNAL_IDLE = (1u << 3);
 
 	uint32_t WaitSignals(uint32_t s, uint32_t timeout_msec);
+	uint32_t WaitSignalsPriv(uint32_t s, uint32_t timeout_msec);
 
 	uint32_t wait_timeout_ = (uint32_t)-1;
 	osThreadId scheduler_thread_id_ = 0;

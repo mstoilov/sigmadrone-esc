@@ -175,44 +175,47 @@ void Scheduler::StartDispatcherThread()
 #endif
 }
 
-uint32_t Scheduler::WaitSignals(uint32_t s, uint32_t timeout_msec)
+uint32_t Scheduler::WaitSignalsPriv(uint32_t s, uint32_t timeout_msec)
 {
 	uint32_t t0, td, tout = timeout_msec;
-	t0 = osKernelSysTick();
 	uint32_t ret = 0;
 
 	do {
-		t0 = osKernelSysTick();
-		osEvent e = osSignalWait(s, timeout_msec);
+		t0 = xTaskGetTickCount();
+		osEvent e = osSignalWait(0, tout);
 		ret = (e.status == osEventSignal && (e.value.signals & s)) ? e.value.signals & s : 0;
 
 		/* Update timeout */
-		td = osKernelSysTick() - t0;
+		td = xTaskGetTickCount() - t0;
 		tout = (td > tout) ? 0 : tout - td;
 	} while (!ret && tout);
 
 	return ret;
 }
 
+uint32_t Scheduler::WaitSignals(uint32_t s, uint32_t timeout_msec)
+{
+	return WaitSignalsPriv(s, timeout_msec);
+}
 
 bool Scheduler::WaitUpdate(uint32_t timeout_msec)
 {
-	return WaitSignals(THREAD_SIGNAL_UPDATE, timeout_msec);
+	return WaitSignalsPriv(THREAD_SIGNAL_UPDATE, timeout_msec);
 }
 
 bool Scheduler::WaitTask(uint32_t timeout_msec)
 {
-	return WaitSignals(THREAD_SIGNAL_TASK, timeout_msec);
+	return WaitSignalsPriv(THREAD_SIGNAL_TASK, timeout_msec);
 }
 
 bool Scheduler::WaitAbort(uint32_t timeout_msec)
 {
-	return WaitSignals(THREAD_SIGNAL_ABORT, timeout_msec);
+	return WaitSignalsPriv(THREAD_SIGNAL_ABORT, timeout_msec);
 }
 
 bool Scheduler::WaitIdle(uint32_t timeout_msec)
 {
-	return WaitSignals(THREAD_SIGNAL_IDLE, timeout_msec);
+	return WaitSignalsPriv(THREAD_SIGNAL_IDLE, timeout_msec);
 }
 
 void Scheduler::SignalThreadUpdate()

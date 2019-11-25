@@ -177,19 +177,11 @@ int application_main()
 
 
 #if (osCMSIS >= 0x20000U)
-	osThreadAttr_t commandTask_attributes;
-	memset(&commandTask_attributes, 0, sizeof(commandTask_attributes));
-	commandTask_attributes.name = "commandTask";
-	commandTask_attributes.priority = (osPriority_t) osPriorityNormal;
-	commandTask_attributes.stack_size = 16000;
-	commandTaskHandle = osThreadNew(StartCommandTask, NULL, &commandTask_attributes);
-
-//	osThreadDef(commandTask, osPriorityNormal, 0, 16000);
-//	commandTaskHandle = osThreadCreate(&os_thread_def_commandTask, this);
+	osThreadDef(RunCommandTask, osPriorityNormal, 0, 16000);
+	commandTaskHandle = osThreadCreate(&os_thread_def_RunCommandTask, NULL);
 #else
-	osThreadDef(commandTask, StartCommandTask, osPriorityNormal, NULL, 16000);
+	osThreadDef(commandTask, RunCommandTask, osPriorityNormal, NULL, 16000);
 	commandTaskHandle = osThreadCreate(osThread(commandTask), NULL);
-
 #endif
 
 
