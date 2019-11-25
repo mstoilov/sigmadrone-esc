@@ -246,7 +246,7 @@ void ServoDrive::SignalThreadUpdate()
 bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
 {
 #if 0
-	if (sched.WaitAbort(0)) {
+	if (sched.WaitSignalAbort(0)) {
 		GetPwmGenerator()->Stop();
 		return false;
 	}
@@ -272,8 +272,8 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 #endif
 
 
-	uint32_t flags = sched.WaitSignals(Scheduler::THREAD_SIGNAL_ABORT | Scheduler::THREAD_SIGNAL_UPDATE, 3);
-	if (flags == Scheduler::THREAD_SIGNAL_UPDATE) {
+	uint32_t flags = sched.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 3);
+	if (flags == Scheduler::THREAD_FLAG_UPDATE) {
 		if (data_.counter_dir_)
 			UpdateCurrentBias();
 		else
@@ -411,7 +411,7 @@ void ServoDrive::RunSimpleTasks()
 {
 	sched.AddTask([&](){
 		uint32_t t0 = xTaskGetTickCount();
-		if (sched.WaitSignals(Scheduler::THREAD_SIGNAL_ABORT | Scheduler::THREAD_SIGNAL_UPDATE, 2000) == Scheduler::THREAD_SIGNAL_ABORT) {
+		if (sched.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 2000) == Scheduler::THREAD_FLAG_ABORT) {
 			fprintf(stderr, "Task1 Aborting...\n\n\n");
 			return;
 		}
@@ -419,7 +419,7 @@ void ServoDrive::RunSimpleTasks()
 	});
 	sched.AddTask([&](){
 		uint32_t t0 = xTaskGetTickCount();
-		if (sched.WaitAbort(2000)) {
+		if (sched.WaitSignalAbort(2000)) {
 			fprintf(stderr, "Task2 Aborting...\n\n\n");
 			return;
 		}
@@ -427,7 +427,7 @@ void ServoDrive::RunSimpleTasks()
 	});
 	sched.AddTask([&](){
 		uint32_t t0 = xTaskGetTickCount();
-		if (sched.WaitAbort(2000)) {
+		if (sched.WaitSignalAbort(2000)) {
 			fprintf(stderr, "Task3 Aborting...\n\n\n");
 			return;
 		}

@@ -31,28 +31,31 @@ public:
 	void SignalThreadUpdate();
 	void SignalThreadTask();
 	void SignalThreadAbort();
-	void SignalThreadIdle();
+	void EventThreadIdle();
 
-	bool WaitUpdate(uint32_t timeout_msec);
-	bool WaitTask(uint32_t timeout_msec);
-	bool WaitAbort(uint32_t timeout_msec);
-	bool WaitIdle(uint32_t timeout_msec);
+	bool WaitSignalUpdate(uint32_t timeout_msec);
+	bool WaitSignalTask(uint32_t timeout_msec);
+	bool WaitSignalAbort(uint32_t timeout_msec);
+	bool WaitEventIdle(uint32_t timeout_msec);
 
-	static const uint32_t THREAD_SIGNAL_TASK = (1u << 0);
-	static const uint32_t THREAD_SIGNAL_UPDATE = (1u << 1);
-	static const uint32_t THREAD_SIGNAL_ABORT = (1u << 2);
-	static const uint32_t THREAD_SIGNAL_IDLE = (1u << 3);
+	static const uint32_t THREAD_FLAG_TASK = (1u << 0);
+	static const uint32_t THREAD_FLAG_UPDATE = (1u << 1);
+	static const uint32_t THREAD_FLAG_ABORT = (1u << 2);
+	static const uint32_t EVENT_FLAG_IDLE = (1u << 3);
 
 	uint32_t WaitSignals(uint32_t s, uint32_t timeout_msec);
+	uint32_t WaitEvents(osEventFlagsId_t event, uint32_t s, uint32_t timeout_msec);
 
 	uint32_t wait_timeout_ = (uint32_t)-1;
 	osThreadId_t scheduler_thread_id_ = 0;
-	osThreadId_t blocked_thread_id_ = 0;
 
 protected:
+	uint32_t run_idle_ms_ = 20;
 	bool dispatching_ = false;
 	std::function<void(void)> idle_task_;
+	osEventFlagsId_t event_dispatcher_idle_;
 	std::deque<std::function<void(void)>> dispatch_queue_;
+
 };
 
 #endif /* _SCHEDULER_H_ */

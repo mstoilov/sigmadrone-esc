@@ -11,6 +11,8 @@
 
 Scheduler::Scheduler()
 	: idle_task_([](){})
+	, event_dispatcher_idle_(osEventFlagsNew(NULL))
+
 {
 	// TODO Auto-generated constructor stub
 
@@ -45,17 +47,15 @@ void Scheduler::Run()
 void Scheduler::RunWaitForCompletion()
 {
 	if (!dispatch_queue_.empty()) {
-		blocked_thread_id_ = osThreadGetId();
 
 		/*
 		 * Clear IDLE in case it was set
 		 */
-		osThreadFlagsClear(THREAD_SIGNAL_IDLE);
+		osEventFlagsClear(event_dispatcher_idle_, EVENT_FLAG_IDLE);
 		dispatching_ = true;
 		SignalThreadTask();
-		while (!WaitIdle(osWaitForever))
+		while (!WaitEventIdle(osWaitForever))
 			;
-		blocked_thread_id_ = 0;
 	}
 }
 
@@ -76,11 +76,16 @@ void Scheduler::AddTask(const std::function<void(void)>& task)
 void Scheduler::RunSchedulerLoop()
 {
 	for (;;) {
-		if (WaitTask(5000)) {
+		if (WaitSignalTask(run_idle_ms_)) {
+			/*
+			 * Clear IDLE in case it was set
+			 */
+			osEventFlagsClear(event_dispatcher_idle_, EVENT_FLAG_IDLE);
+
 			/*
 			 * Clear UPDATE signal
 			 */
-			osThreadFlagsClear(THREAD_SIGNAL_UPDATE);
+			osThreadFlagsClear(THREAD_FLAG_UPDATE);
 
 			while (!dispatch_queue_.empty()) {
 				std::function<void(void)> task = [](void){};
@@ -96,7 +101,7 @@ void Scheduler::RunSchedulerLoop()
 				/*
 				 * Clear ABORT in case it was set
 				 */
-				osThreadFlagsClear(THREAD_SIGNAL_ABORT);
+				osThreadFlagsClear(THREAD_FLAG_ABORT);
 
 				/*
 				 * Run the task
@@ -112,8 +117,8 @@ void Scheduler::RunSchedulerLoop()
 				taskEXIT_CRITICAL();
 			}
 			dispatching_ = false;
-			SignalThreadIdle();
 		} else {
+			EventThreadIdle();
 			idle_task_();
 		}
 	}
@@ -156,47 +161,65 @@ uint32_t Scheduler::WaitSignals(uint32_t s, uint32_t timeout_msec)
 	return (ret & s);
 }
 
-bool Scheduler::WaitUpdate(uint32_t timeout_msec)
+uint32_t Scheduler::WaitEvents(osEventFlagsId_t event, uint32_t s, uint32_t timeout_msec)
 {
-	return (WaitSignals(THREAD_SIGNAL_UPDATE, timeout_msec) == THREAD_SIGNAL_UPDATE) ? true : false;
+	uint32_t t0, td, tout = timeout_msec;
+	uint32_t ret = 0;
+
+	do {
+		t0 = xTaskGetTickCount();
+		ret = osEventFlagsWait(event, s, osFlagsWaitAny, tout);
+		if (ret & osFlagsError)
+			ret = 0;
+		ret &= s;
+		/* Update timeout */
+		td = xTaskGetTickCount() - t0;
+		tout = (td > tout) ? 0 : tout - td;
+	} while (!ret && tout);
+	return (ret & s);
 }
 
-bool Scheduler::WaitTask(uint32_t timeout_msec)
+
+bool Scheduler::WaitSignalUpdate(uint32_t timeout_msec)
 {
-	return (WaitSignals(THREAD_SIGNAL_TASK, timeout_msec) == THREAD_SIGNAL_TASK) ? true : false;
+	return (WaitSignals(THREAD_FLAG_UPDATE, timeout_msec) == THREAD_FLAG_UPDATE) ? true : false;
 }
 
-bool Scheduler::WaitAbort(uint32_t timeout_msec)
+bool Scheduler::WaitSignalTask(uint32_t timeout_msec)
 {
-	return (WaitSignals(THREAD_SIGNAL_ABORT, timeout_msec) == THREAD_SIGNAL_ABORT) ? true : false;
+	return (WaitSignals(THREAD_FLAG_TASK, timeout_msec) == THREAD_FLAG_TASK) ? true : false;
 }
 
-bool Scheduler::WaitIdle(uint32_t timeout_msec)
+bool Scheduler::WaitSignalAbort(uint32_t timeout_msec)
 {
-	return (WaitSignals(THREAD_SIGNAL_IDLE, timeout_msec) == THREAD_SIGNAL_IDLE) ? true : false;
+	return (WaitSignals(THREAD_FLAG_ABORT, timeout_msec) == THREAD_FLAG_ABORT) ? true : false;
+}
+
+bool Scheduler::WaitEventIdle(uint32_t timeout_msec)
+{
+	return (WaitEvents(event_dispatcher_idle_, EVENT_FLAG_IDLE, timeout_msec) == EVENT_FLAG_IDLE) ? true : false;
 }
 
 void Scheduler::SignalThreadUpdate()
 {
 	if (scheduler_thread_id_ && !dispatch_queue_.empty())
-		osThreadFlagsSet(scheduler_thread_id_, THREAD_SIGNAL_UPDATE);
+		osThreadFlagsSet(scheduler_thread_id_, THREAD_FLAG_UPDATE);
 }
 
 void Scheduler::SignalThreadTask()
 {
 	if (scheduler_thread_id_)
-		osThreadFlagsSet(scheduler_thread_id_, THREAD_SIGNAL_TASK);
+		osThreadFlagsSet(scheduler_thread_id_, THREAD_FLAG_TASK);
 }
 
 void Scheduler::SignalThreadAbort()
 {
 	if (scheduler_thread_id_)
-		osThreadFlagsSet(scheduler_thread_id_, THREAD_SIGNAL_ABORT);
+		osThreadFlagsSet(scheduler_thread_id_, THREAD_FLAG_ABORT);
 }
 
-void Scheduler::SignalThreadIdle()
+void Scheduler::EventThreadIdle()
 {
-	if (blocked_thread_id_)
-		osThreadFlagsSet(blocked_thread_id_, THREAD_SIGNAL_IDLE);
+	osEventFlagsSet(event_dispatcher_idle_, EVENT_FLAG_IDLE);
 }
 
