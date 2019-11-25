@@ -401,10 +401,46 @@ void ServoDrive::RunRotateTasks()
 			});
 
 		} while (ret && i++ < update_hz_ );
-
-		pwm_->Stop();
 	});
-	sched.RunWaitForCompletion();
+
+
+	sched.AddTask([&](){
+		bool ret = false;
+		uint32_t display_counter = 0;
+		do {
+			ret = RunUpdateHandler([&]()->bool {
+				std::complex<float> rotor = lpf_e_rotor_.Output();
+				theta_cur_ = std::arg(rotor);
+				if (theta_cur_ < 0)
+					theta_cur_ += 2.0 * M_PI;
+				GetTimings(rotor * std::polar<float>(1.0f, ri_angle_));
+				pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
+
+
+				std::complex<float> I = lpf_Iab_.Output();
+				float Iarg = std::arg(I);
+				float Iabs = lpf_Iabs_.DoFilter(std::abs(I));
+				std::complex<float> Inorm = std::polar<float>(1.0f, Iarg);
+				float Rarg = std::arg(rotor);
+				lpf_RIdot_.DoFilter(Dot(rotor, Inorm));
+				float diff = (Cross(rotor, Inorm) < 0) ? -Acos(lpf_RIdot_.Output()) : Acos(lpf_RIdot_.Output());
+
+				if (!data_.counter_dir_ && (display_counter++ % 13) == 0) {
+					if (Rarg < 0.0f)
+						Rarg += M_PI * 2.0f;
+					if (Iarg < 0.0f)
+						Iarg += M_PI * 2.0f;
+					float speed = asinf(lpf_speed_.Output()) * update_hz_;
+					fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
+							lpf_vbus_.Output(), speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
+							diff / M_PI * 180.0f, lpf_RIdot_.Output());
+				}
+				return true;
+			});
+		} while (ret);
+	});
+
+	sched.Run();
 }
 
 void ServoDrive::RunSimpleTasks()
