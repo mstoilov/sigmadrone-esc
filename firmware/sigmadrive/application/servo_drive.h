@@ -24,6 +24,7 @@ public:
 		uint32_t counter_dir_ = 0;
 		float theta_ = 0.0f;
 		uint32_t processing_ = 0;
+		uint32_t update_counter_ = 0;
 	};
 
 
@@ -94,8 +95,7 @@ public:
 	float iabs_alpha_ = 0.001f;
 
 	float throttle_ = 0.05;
-	float ri_angle_ = 1.77;
-	uint32_t update_counter_ = 0;
+	float ri_angle_ = 1.805;
 	uint32_t period_ = 0;
 	TorqueLoop tql_;
 	uint32_t timings_[3];

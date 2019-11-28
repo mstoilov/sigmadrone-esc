@@ -129,7 +129,6 @@ void ServoDrive::Attach()
 void ServoDrive::Start()
 {
 	osDelay(20);
-	update_counter_ = 0;
 	period_ = GetPwmGenerator()->GetPeriod();
 //	GetPwmGenerator()->Start();
 	RunRotateTasks();
@@ -240,6 +239,7 @@ void ServoDrive::SignalThreadUpdate()
 	data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
 	data_.theta_ = encoder_->GetElectricPosition();
 	data_.counter_dir_ = LL_TIM_GetDirection(htim1.Instance);
+	data_.update_counter_++;
 	sched.SignalThreadUpdate();
 }
 
@@ -304,7 +304,7 @@ void ServoDrive::UpdateHandlerNoFb()
 	UpdateVbus();
 //	UpdateSpeed();
 
-	if (update_counter_ < update_hz_ ) {
+	if (data_.update_counter_ < update_hz_ ) {
 		/*
 		 * Reset the rotor for 1/4 Second
 		 */
@@ -329,7 +329,7 @@ void ServoDrive::UpdateHandlerNoFb()
 		lpf_RIdot_.DoFilter(Dot(rotor, Inorm));
 		float diff = (Cross(rotor, Inorm) < 0) ? -Acos(lpf_RIdot_.Output()) : Acos(lpf_RIdot_.Output());
 
-		if (!data_.counter_dir_ && (update_counter_ % 13) == 0) {
+		if (!data_.counter_dir_ && (data_.update_counter_ % 13) == 0) {
 			if (Rarg < 0.0f)
 				Rarg += M_PI * 2.0f;
 			if (Iarg < 0.0f)
@@ -341,7 +341,7 @@ void ServoDrive::UpdateHandlerNoFb()
 		}
 
 #if 0
-		if (!data_.counter_dir_ && (update_counter_ % 13) == 0) {
+		if (!data_.counter_dir_ && (data_.update_counter_ % 13) == 0) {
 			if (Rarg < 0.0f)
 				Rarg += M_PI * 2.0f;
 			if (Iarg < 0.0f)
@@ -407,6 +407,7 @@ void ServoDrive::RunRotateTasks()
 	sched.AddTask([&](){
 		bool ret = false;
 		uint32_t display_counter = 0;
+		data_.update_counter_ = 0;
 		do {
 			ret = RunUpdateHandler([&]()->bool {
 				std::complex<float> rotor = lpf_e_rotor_.Output();
@@ -431,9 +432,9 @@ void ServoDrive::RunRotateTasks()
 					if (Iarg < 0.0f)
 						Iarg += M_PI * 2.0f;
 					float speed = asinf(lpf_speed_.Output()) * update_hz_;
-					fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
+					fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f), upd: %8lu, dis: %8lu\n",
 							lpf_vbus_.Output(), speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
-							diff / M_PI * 180.0f, lpf_RIdot_.Output());
+							diff / M_PI * 180.0f, lpf_RIdot_.Output(), data_.update_counter_, display_counter);
 				}
 				return true;
 			});

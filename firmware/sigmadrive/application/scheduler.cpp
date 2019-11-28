@@ -149,13 +149,13 @@ uint32_t Scheduler::WaitSignals(uint32_t s, uint32_t timeout_msec)
 	uint32_t ret = 0;
 
 	do {
-		t0 = xTaskGetTickCount();
+		t0 = osKernelGetTickCount();
 		ret = osThreadFlagsWait(s, osFlagsWaitAny, tout);
 		if (ret & osFlagsError)
 			ret = 0;
 		ret &= s;
 		/* Update timeout */
-		td = xTaskGetTickCount() - t0;
+		td = osKernelGetTickCount() - t0;
 		tout = (td > tout) ? 0 : tout - td;
 	} while (!ret && tout);
 	return (ret & s);
@@ -167,13 +167,13 @@ uint32_t Scheduler::WaitEvents(osEventFlagsId_t event, uint32_t s, uint32_t time
 	uint32_t ret = 0;
 
 	do {
-		t0 = xTaskGetTickCount();
+		t0 = osKernelGetTickCount();
 		ret = osEventFlagsWait(event, s, osFlagsWaitAny, tout);
 		if (ret & osFlagsError)
 			ret = 0;
 		ret &= s;
 		/* Update timeout */
-		td = xTaskGetTickCount() - t0;
+		td = osKernelGetTickCount() - t0;
 		tout = (td > tout) ? 0 : tout - td;
 	} while (!ret && tout);
 	return (ret & s);
