@@ -11,7 +11,9 @@
 #include "adc.h"
 #include "drv8323.h"
 #include "ClString.h"
+#include "uartrpcserver.h"
 
+extern UartRpcServer rpc_server;
 extern TIM_HandleTypeDef htim1;
 extern Adc adc1;
 extern Adc adc2;
@@ -112,6 +114,8 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 		{"encoder", encoder->GetProperties()},
 	});
 
+	rpc_server.add("servo[0].start", rexjson::make_rpc_wrapper(this, &ServoDrive::Start, "void ServoDrive::Start()"));
+	rpc_server.add("servo[0].stop", rexjson::make_rpc_wrapper(this, &ServoDrive::Stop, "void ServoDrive::Stop()"));
 }
 
 ServoDrive::~ServoDrive()

@@ -19,7 +19,7 @@
 #include "appmain.h"
 #include "command_task.h"
 
-
+#include "uartrpcserver.h"
 #include "adc.h"
 #include "uart.h"
 #include "spimaster.h"
@@ -34,6 +34,7 @@
 
 #define MOTOR_POLE_PAIRS 7
 
+UartRpcServer rpc_server;
 osThreadId_t commandTaskHandle;
 Adc adc1;
 Adc adc2;

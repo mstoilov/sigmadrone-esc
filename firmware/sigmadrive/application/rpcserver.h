@@ -32,6 +32,8 @@
 #define ARRAYSIZE(x) (sizeof(x)/sizeof(x[0]))
 #endif
 
+namespace rexjson {
+
 enum rpc_error_code
 {
     // Standard JSON-RPC 2.0 errors
@@ -45,6 +47,29 @@ enum rpc_error_code
     RPC_MISC_ERROR                  = -1,  // std::exception thrown in command handling
 };
 
+/*
+ * The rpc types correspond directly to the json value types like obj_type, array_type ...
+ * but they have values 2 pow n, so we can store them in unsigned int like (rpc_str_type|rpc_null_type)
+ * Then we use a vector of these bit masks to specify the parameter types we expect for
+ * the rpc calls.
+ *
+ * get_rpc_type will convert rexjson::value_type to one of the rpc types.
+ *
+ * create_json_spec will convert the rpc_type bit mask to an integer or array of integers
+ * correspoinding to rexjson value_type(s)
+ *
+ * rpc_types will convert json spec to a std::vector of rpc_type_ bitmasks.
+ *
+ */
+static const unsigned int rpc_null_type = 1;
+static const unsigned int rpc_obj_type = 2;
+static const unsigned int rpc_array_type = 4;
+static const unsigned int rpc_str_type = 8;
+static const unsigned int rpc_bool_type = 16;
+static const unsigned int rpc_int_type = 32;
+static const unsigned int rpc_real_type = 64;
+
+
 enum rpc_exec_mode {
 	execute = 0, 	// normal execution
 	spec,			// produce machine readable parameter specification
@@ -52,6 +77,13 @@ enum rpc_exec_mode {
 	help, 			// produce a help message
 };
 
+template <typename T> inline void set_rpc_type(T, unsigned int* rpc_type) { *rpc_type = rpc_null_type; }
+template <> inline void set_rpc_type<bool>(bool, unsigned int* rpc_type) { *rpc_type = rpc_bool_type; }
+template <> inline void set_rpc_type<int>(int, unsigned int* rpc_type) { *rpc_type = rpc_int_type; }
+template <> inline void set_rpc_type<char>(char, unsigned int* rpc_type) { *rpc_type = rpc_int_type; }
+template <> inline void set_rpc_type<std::string>(std::string, unsigned int* rpc_type) { *rpc_type = rpc_str_type; }
+template <> inline void set_rpc_type<float>(float, unsigned int* rpc_type) { *rpc_type = rpc_real_type; }
+template <> inline void set_rpc_type<double>(double, unsigned int* rpc_type) { *rpc_type = rpc_real_type; }
 
 template<typename Ret, class ...Args>
 struct rpc_wrapperbase
@@ -60,11 +92,25 @@ struct rpc_wrapperbase
 		: f_(f)
 		, help_msg_(help_msg)
 	{
-		/*
-		 * TBD: Initialize the proper rpc_types expected
-		 */
-		for (size_t i = 0; i < rpc_types_count_; i++)
-			rpc_types_[i] = 1;
+		std::tuple<Args...> params;
+		extract_tuple(params, std::index_sequence_for<Args...>());
+	}
+
+	template<std::size_t... is>
+	void extract_tuple(const std::tuple<Args...>& tuple, std::index_sequence<is...>)
+	{
+		build_rpc_types(0, std::get<is>(tuple)...);
+	}
+
+	void build_rpc_types(size_t idx)
+	{
+	}
+
+	template<typename T, typename... AArgs>
+	void build_rpc_types(size_t idx, T arg, AArgs... args)
+	{
+		set_rpc_type(arg, &rpc_types_[idx]);
+		build_rpc_types(idx + 1, args...);
 	}
 
 	rexjson::value call(const rexjson::array& params, rpc_exec_mode mode)
@@ -156,27 +202,6 @@ template<typename T = rpc_server_dummy>
 class rpc_server
 {
 public:
-	/*
-	 * The rpc types correspond directly to the json value types like obj_type, array_type ...
-	 * but they have values 2 pow n, so we can store them in unsigned int like (rpc_str_type|rpc_null_type)
-	 * Then we use a vector of these bit masks to specify the parameter types we expect for
-	 * the rpc calls.
-	 *
-	 * get_rpc_type will convert rexjson::value_type to one of the rpc types.
-	 *
-	 * create_json_spec will convert the rpc_type bit mask to an integer or array of integers
-	 * correspoinding to rexjson value_type(s)
-	 *
-	 * rpc_types will convert json spec to a std::vector of rpc_type_ bitmasks.
-	 *
-	 */
-	static const unsigned int rpc_null_type = 1;
-	static const unsigned int rpc_obj_type = 2;
-	static const unsigned int rpc_array_type = 4;
-	static const unsigned int rpc_str_type = 8;
-	static const unsigned int rpc_bool_type = 16;
-	static const unsigned int rpc_int_type = 32;
-	static const unsigned int rpc_real_type = 64;
 
 	using rpc_method_type = std::function<rexjson::value(rexjson::array& params, rpc_exec_mode mode)>;
 	typedef std::map<std::string, rpc_method_type> method_map_type;
@@ -340,9 +365,9 @@ public:
 	static rexjson::value noexec(rexjson::array& params, rpc_exec_mode mode, unsigned int *types, size_t ntypes, const std::string& help_msg)
 	{
 		if (mode == spec)
-			return create_json_spec(types, ARRAYSIZE(types));
+			return create_json_spec(types, ntypes);
 		if (mode == helpspec)
-			return create_json_helpspec(types, ARRAYSIZE(types));
+			return create_json_helpspec(types, ntypes);
 		return help_msg;
 	}
 
@@ -496,5 +521,8 @@ protected:
 protected:
 	method_map_type map_;
 };
+
+} /* namespace rexjson */
+
 
 #endif /* _RPCSERVER_H_ */

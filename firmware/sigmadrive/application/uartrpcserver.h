@@ -25,24 +25,24 @@
 #include "uart.h"
 #include "rpcserver.h"
 
-class UartRpcServer : public rpc_server<UartRpcServer>
+class UartRpcServer : public rexjson::rpc_server<UartRpcServer>
 {
 public:
 	UartRpcServer();
 	virtual ~UartRpcServer();
 
 protected:
-	rexjson::value rpc_pwm_timings(rexjson::array& params, rpc_exec_mode mode = execute);
-	rexjson::value rpc_pwm_start(rexjson::array& params, rpc_exec_mode mode = execute);
-	rexjson::value rpc_pwm_stop(rexjson::array& params, rpc_exec_mode mode = execute);
-	rexjson::value rpc_adc_injswstart(rexjson::array& params, rpc_exec_mode mode = execute);
-	rexjson::value rpc_adc_injhistory(rexjson::array& params, rpc_exec_mode mode = execute);
-	rexjson::value rpc_adc_injdata(rexjson::array& params, rpc_exec_mode mode = execute);
-	rexjson::value rpc_adc_injcurrent(rexjson::array& params, rpc_exec_mode mode = execute);
-	rexjson::value rpc_adc_injbias(rexjson::array& params, rpc_exec_mode mode = execute);
-	rexjson::value rpc_drv_calibration(rexjson::array& params, rpc_exec_mode mode = execute);
-	rexjson::value rpc_drv_csagain(rexjson::array& params, rpc_exec_mode mode = execute);
-	rexjson::value rpc_getset_property(rexjson::array& params, rpc_exec_mode mode = execute);
+	rexjson::value rpc_pwm_timings(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_pwm_start(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_pwm_stop(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_adc_injswstart(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_adc_injhistory(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_adc_injdata(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_adc_injcurrent(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_adc_injbias(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_drv_calibration(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_drv_csagain(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_getset_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
 
 protected:
 	float kp_ = 0.0;

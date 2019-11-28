@@ -36,7 +36,7 @@ extern Drv8323 drv1;
 extern TorqueLoop tql;
 
 UartRpcServer::UartRpcServer()
-	: rpc_server<UartRpcServer>()
+	: rexjson::rpc_server<UartRpcServer>()
 {
 	add("pwm_timings", &UartRpcServer::rpc_pwm_timings);
 	add("pwm_start", &UartRpcServer::rpc_pwm_start);
@@ -57,9 +57,9 @@ UartRpcServer::~UartRpcServer()
 }
 
 
-rexjson::value UartRpcServer::rpc_pwm_timings(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_pwm_timings(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static unsigned int types[] = {rpc_int_type, rpc_array_type|rpc_null_type};
+	static unsigned int types[] = {rexjson::rpc_int_type, rexjson::rpc_array_type|rexjson::rpc_null_type};
 	static const char *help_msg = R"desc(
 pwm_timings
 Get/Set OC Values.
@@ -69,7 +69,7 @@ Arguments:
 2. values		(array) OC values for the different channels. 
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
@@ -91,9 +91,9 @@ Arguments:
 	return ret;
 }
 
-rexjson::value UartRpcServer::rpc_pwm_start(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_pwm_start(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static unsigned int types[] = {rpc_int_type};
+	static unsigned int types[] = {rexjson::rpc_int_type};
 	static const char *help_msg = R"desc(
 pwm_start
 Start the PWM Generation.
@@ -102,7 +102,7 @@ Arguments:
 1. motor		(int) Motor index, starting from 0
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
@@ -114,9 +114,9 @@ Arguments:
 	return g_motors[motor]->IsStarted();
 }
 
-rexjson::value UartRpcServer::rpc_pwm_stop(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_pwm_stop(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static unsigned int types[] = {rpc_int_type};
+	static unsigned int types[] = {rexjson::rpc_int_type};
 	static const char *help_msg = R"desc(
 pwm_stop
 Stop the PWM Generation.
@@ -125,7 +125,7 @@ Arguments:
 1. motor		(int) Motor index, starting from 0
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
@@ -138,9 +138,9 @@ Arguments:
 
 }
 
-rexjson::value UartRpcServer::rpc_adc_injswstart(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_adc_injswstart(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static unsigned int types[] = {rpc_null_type};
+	static unsigned int types[] = {rexjson::rpc_null_type};
 	static const char *help_msg = R"desc(
 adc_injswstart
 Start ADC injected conversion.
@@ -148,7 +148,7 @@ Start ADC injected conversion.
 Arguments:
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
@@ -157,9 +157,9 @@ Arguments:
 	return true;
 }
 
-rexjson::value UartRpcServer::rpc_adc_injhistory(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_adc_injhistory(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static unsigned int types[] = {rpc_int_type};
+	static unsigned int types[] = {rexjson::rpc_int_type};
 	static const char *help_msg = R"desc(
 adc_injhistory
 Get injected data for the specified channel
@@ -168,7 +168,7 @@ Arguments:
 1. channel		(int) ADC injected data channel.
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
@@ -184,9 +184,9 @@ Arguments:
 	return ret;
 }
 
-rexjson::value UartRpcServer::rpc_adc_injbias(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_adc_injbias(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static unsigned int types[] = {rpc_null_type};
+	static unsigned int types[] = {rexjson::rpc_null_type};
 	static const char *help_msg = R"desc(
 adc_bias
 Get bias.
@@ -195,7 +195,7 @@ Arguments:
 	none
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
@@ -206,9 +206,9 @@ Arguments:
 	return ret;
 }
 
-rexjson::value UartRpcServer::rpc_adc_injdata(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_adc_injdata(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static unsigned int types[] = {rpc_null_type};
+	static unsigned int types[] = {rexjson::rpc_null_type};
 	static const char *help_msg = R"desc(
 adc_injdata
 Get injected data.
@@ -217,7 +217,7 @@ Arguments:
 	none
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
@@ -228,9 +228,9 @@ Arguments:
 	return ret;
 }
 
-rexjson::value UartRpcServer::rpc_adc_injcurrent(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_adc_injcurrent(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static unsigned int types[] = {rpc_null_type};
+	static unsigned int types[] = {rexjson::rpc_null_type};
 	static const char *help_msg = R"desc(
 adc_injcurrent
 Get injected current.
@@ -239,7 +239,7 @@ Arguments:
 	none
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
@@ -258,9 +258,9 @@ Arguments:
 	return ret;
 }
 
-rexjson::value UartRpcServer::rpc_drv_calibration(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_drv_calibration(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static unsigned int types[] = {rpc_bool_type};
+	static unsigned int types[] = {rexjson::rpc_bool_type};
 	static const char *help_msg = R"desc(
 drv_calibration
 Driver calibration enable/disable.
@@ -269,7 +269,7 @@ Arguments:
 1. enable		(bool) true/false
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
@@ -278,9 +278,9 @@ Arguments:
 	return params[0].get_bool();
 }
 
-rexjson::value UartRpcServer::rpc_drv_csagain(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_drv_csagain(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static unsigned int types[] = {rpc_int_type|rpc_null_type};
+	static unsigned int types[] = {rexjson::rpc_int_type|rexjson::rpc_null_type};
 	static const char *help_msg = R"desc(
 drv_csagain
 Get/Set Driver CSA gain.
@@ -289,7 +289,7 @@ Arguments:
 1. gain		(int)  0, 1, 2, 3, 4  (x5VV, x10VV, x20VV, x40VV)
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
@@ -299,17 +299,17 @@ Arguments:
 	return (int) drv1.GetCSAGain();
 }
 
-rexjson::value UartRpcServer::rpc_getset_property(rexjson::array& params, rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_getset_property(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
 	static std::string prefix = "props";
 	std::ostringstream oss;
-	static unsigned int types[] = {rpc_str_type, rpc_str_type|rpc_int_type|rpc_real_type|rpc_bool_type|rpc_null_type};
+	static unsigned int types[] = {rexjson::rpc_str_type, rexjson::rpc_str_type|rexjson::rpc_int_type|rexjson::rpc_real_type|rexjson::rpc_bool_type|rexjson::rpc_null_type};
 	static const char *help_msg = R"desc(
 Get/Set property.
 
 )desc";
 
-	if (mode != execute) {
+	if (mode != rexjson::execute) {
 		g_properties->enumerate_children(prefix, [&](const std::string& path, rexjson::property& prop)->void
 				{
 					oss << path << " : " << prop.get_prop().to_string() << std::endl;
