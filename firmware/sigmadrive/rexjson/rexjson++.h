@@ -105,13 +105,13 @@ public:
 	static std::string get_typename(unsigned int type);
 
 	template<typename T>
-	void get(T& ret)
+	void get(T& ret) const
 	{
 		ret = get_int();
 	}
 
 	template<typename T>
-	T get_value()
+	T get_value() const
 	{
 		T ret;
 		get<T>(ret);
@@ -182,31 +182,31 @@ protected:
 
 
 template<>
-inline void value::get<int64_t>(int64_t& ret)
+inline void value::get<int64_t>(int64_t& ret) const
 {
 	ret = get_int64();
 }
 
 template<>
-inline void value::get<bool>(bool& ret)
+inline void value::get<bool>(bool& ret) const
 {
 	ret = get_bool();
 }
 
 template<>
-inline void value::get<double>(double& ret)
+inline void value::get<double>(double& ret) const
 {
 	ret = get_real();
 }
 
 template<>
-inline void value::get<float>(float& ret)
+inline void value::get<float>(float& ret) const
 {
 	ret = get_real();
 }
 
 template<>
-inline void value::get<std::string>(std::string& ret)
+inline void value::get<std::string>(std::string& ret) const
 {
 	ret = get_str();
 }

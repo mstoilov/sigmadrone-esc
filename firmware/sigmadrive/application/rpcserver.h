@@ -77,46 +77,30 @@ enum rpc_exec_mode {
 	help, 			// produce a help message
 };
 
-template <typename T> inline void set_rpc_type(T, unsigned int* rpc_type) { *rpc_type = rpc_null_type; }
-template <> inline void set_rpc_type<bool>(bool, unsigned int* rpc_type) { *rpc_type = rpc_bool_type; }
-template <> inline void set_rpc_type<int>(int, unsigned int* rpc_type) { *rpc_type = rpc_int_type; }
-template <> inline void set_rpc_type<char>(char, unsigned int* rpc_type) { *rpc_type = rpc_int_type; }
-template <> inline void set_rpc_type<std::string>(std::string, unsigned int* rpc_type) { *rpc_type = rpc_str_type; }
-template <> inline void set_rpc_type<float>(float, unsigned int* rpc_type) { *rpc_type = rpc_real_type; }
-template <> inline void set_rpc_type<double>(double, unsigned int* rpc_type) { *rpc_type = rpc_real_type; }
+template <typename T> inline unsigned int get_rpc_type(T) { return rpc_null_type; }
+template <> inline unsigned int get_rpc_type<bool>(bool) { return rpc_bool_type; }
+template <> inline unsigned int get_rpc_type<double>(double) { return rpc_real_type; }
+template <> inline unsigned int get_rpc_type<float>(float) { return rpc_real_type; }
+template <> inline unsigned int get_rpc_type<int>(int) { return rpc_int_type; }
+template <> inline unsigned int get_rpc_type<char>(char) { return rpc_int_type; }
+template <> inline unsigned int get_rpc_type<std::string>(std::string) { return rpc_str_type; }
 
-template<typename Ret, class ...Args>
+
+template<typename Ret, typename ...Args>
 struct rpc_wrapperbase
 {
 	rpc_wrapperbase(const std::function<Ret(Args...)>& f, std::string help_msg)
 		: f_(f)
 		, help_msg_(help_msg)
 	{
-		std::tuple<Args...> params;
-		extract_tuple(params, std::index_sequence_for<Args...>());
-	}
-
-	template<std::size_t... is>
-	void extract_tuple(const std::tuple<Args...>& tuple, std::index_sequence<is...>)
-	{
-		build_rpc_types(0, std::get<is>(tuple)...);
-	}
-
-	void build_rpc_types(size_t idx)
-	{
-	}
-
-	template<typename T, typename... AArgs>
-	void build_rpc_types(size_t idx, T arg, AArgs... args)
-	{
-		set_rpc_type(arg, &rpc_types_[idx]);
-		build_rpc_types(idx + 1, args...);
+		json_types_ = make_types_array(std::tuple<Args...>(), std::index_sequence_for<Args...>());
 	}
 
 	rexjson::value call(const rexjson::array& params, rpc_exec_mode mode)
 	{
-		std::tuple<Args...> tuple = parse_params(params);
-		return call_with_tuple(tuple, std::index_sequence_for<Args...>());
+		auto is = std::index_sequence_for<Args...>();
+		std::tuple<Args...> tuple = params_to_tuple(params, is);
+		return call_with_tuple(tuple, is);
 	}
 
 	rexjson::value operator()(const rexjson::array& params, rpc_exec_mode mode)
@@ -125,20 +109,16 @@ struct rpc_wrapperbase
 	}
 
 protected:
-	template<typename T>
-	T read_param(size_t& idx, const rexjson::array& params)
+	template<typename ...AArgs, std::size_t...Ns>
+	std::array<unsigned int, sizeof...(Ns)> make_types_array(const std::tuple<Args...>& tuple, std::index_sequence<Ns...>)
 	{
-		rexjson::value v = params[--idx];
-		T tmp = v.get_value<T>();
-		return tmp;
+		return {{get_rpc_type(std::get<Ns>(tuple))...}};
 	}
 
-	std::tuple<Args...> parse_params(const rexjson::array& params)
+	template<std::size_t... is>
+	std::tuple<Args...> params_to_tuple(const rexjson::array& params, std::index_sequence<is...>)
 	{
-		std::size_t idx = std::index_sequence_for<Args...>().size();
-		std::size_t used = idx;
-		used++;
-		return std::make_tuple(read_param<Args>(idx, params)...);
+		return std::make_tuple(Args{params[is].get_value<Args>()}...);
 	}
 
 	template<std::size_t... is>
@@ -151,8 +131,7 @@ protected:
 
 public:
 	std::string help_msg_;
-	size_t rpc_types_count_ = sizeof ...(Args);
-	unsigned int rpc_types_[sizeof ...(Args)];
+	std::array<unsigned int, sizeof...(Args)> json_types_;
 };
 
 template<typename Ret, class ...Args>
@@ -170,8 +149,9 @@ struct rpc_wrapper<void, Args...> : public rpc_wrapperbase<void, Args...>
 
 	rexjson::value call(const rexjson::array& params, rpc_exec_mode mode)
 	{
-		std::tuple<Args...> tuple = base::parse_params(params);
-		base::call_with_tuple(tuple, std::index_sequence_for<Args...>());
+		auto is = std::index_sequence_for<Args...>();
+		std::tuple<Args...> tuple = base::params_to_tuple(params, is);
+		base::call_with_tuple(tuple, is);
 		return std::string();
 	}
 
@@ -408,7 +388,7 @@ public:
 		{
 			rpc_wrapper<Ret, Args...> w = wrap;
 			if (mode != execute)
-				return noexec(params, mode, w.rpc_types_, w.rpc_types_count_, w.help_msg_.c_str());
+				return noexec(params, mode, w.json_types_.data(), w.json_types_.size(), w.help_msg_.c_str());
 			return w.call(params, mode);
 		});
 	}
