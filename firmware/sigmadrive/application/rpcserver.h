@@ -25,6 +25,7 @@
 #include <map>
 #include <stdexcept>
 #include <iostream>
+#include <functional>
 #include "rexjson++.h"
 
 #ifndef ARRAYSIZE
@@ -43,6 +44,111 @@ enum rpc_error_code
     // General application defined errors
     RPC_MISC_ERROR                  = -1,  // std::exception thrown in command handling
 };
+
+enum rpc_exec_mode {
+	execute = 0, 	// normal execution
+	spec,			// produce machine readable parameter specification
+	helpspec, 		// produce a human readable parameter specification
+	help, 			// produce a help message
+};
+
+
+template<typename Ret, class ...Args>
+struct rpc_wrapperbase
+{
+	rpc_wrapperbase(const std::function<Ret(Args...)>& f, std::string help_msg)
+		: f_(f)
+		, help_msg_(help_msg)
+	{
+		/*
+		 * TBD: Initialize the proper rpc_types expected
+		 */
+		for (size_t i = 0; i < rpc_types_count_; i++)
+			rpc_types_[i] = 1;
+	}
+
+	rexjson::value call(const rexjson::array& params, rpc_exec_mode mode)
+	{
+		std::tuple<Args...> tuple = parse_params(params);
+		return call_with_tuple(tuple, std::index_sequence_for<Args...>());
+	}
+
+	rexjson::value operator()(const rexjson::array& params, rpc_exec_mode mode)
+	{
+		return call(params, mode);
+	}
+
+protected:
+	template<typename T>
+	T read_param(size_t& idx, const rexjson::array& params)
+	{
+		rexjson::value v = params[--idx];
+		T tmp = v.get_value<T>();
+		return tmp;
+	}
+
+	std::tuple<Args...> parse_params(const rexjson::array& params)
+	{
+		std::size_t idx = std::index_sequence_for<Args...>().size();
+		std::size_t used = idx;
+		used++;
+		return std::make_tuple(read_param<Args>(idx, params)...);
+	}
+
+	template<std::size_t... is>
+	Ret call_with_tuple(const std::tuple<Args...>& tuple, std::index_sequence<is...>)
+	{
+		return f_(std::get<is>(tuple)...);
+	}
+
+	std::function<Ret(Args...)> f_;
+
+public:
+	std::string help_msg_;
+	size_t rpc_types_count_ = sizeof ...(Args);
+	unsigned int rpc_types_[sizeof ...(Args)];
+};
+
+template<typename Ret, class ...Args>
+struct rpc_wrapper : public rpc_wrapperbase<Ret, Args...>
+{
+	using base = rpc_wrapperbase<Ret, Args...>;
+	using base::base;
+};
+
+template<class ...Args>
+struct rpc_wrapper<void, Args...> : public rpc_wrapperbase<void, Args...>
+{
+	using base = rpc_wrapperbase<void, Args...>;
+	using base::base;
+
+	rexjson::value call(const rexjson::array& params, rpc_exec_mode mode)
+	{
+		std::tuple<Args...> tuple = base::parse_params(params);
+		base::call_with_tuple(tuple, std::index_sequence_for<Args...>());
+		return std::string();
+	}
+
+	rexjson::value operator()(const rexjson::array& params, rpc_exec_mode mode)
+	{
+		return call(params, mode);
+	}
+
+};
+
+
+template<typename Ret, class ...Args>
+rpc_wrapper<Ret, Args...> make_rpc_wrapper(Ret (&f)(Args...), std::string help_msg = std::string())
+{
+	return rpc_wrapper<Ret, Args...>(f, help_msg);
+}
+
+template<typename Ret, typename C, typename ...Args>
+rpc_wrapper<Ret, Args...> make_rpc_wrapper(C* object, Ret (C::*f)(Args...), std::string help_msg = std::string())
+{
+	return rpc_wrapper<Ret, Args...>([=](Args... args)->Ret {return (object->*f)(args...);}, help_msg);
+}
+
 
 struct rpc_server_dummy { };
 
@@ -71,18 +177,13 @@ public:
 	static const unsigned int rpc_bool_type = 16;
 	static const unsigned int rpc_int_type = 32;
 	static const unsigned int rpc_real_type = 64;
-	enum rpc_exec_mode {
-		execute = 0, 	// normal execution
-		spec,			// produce machine readable parameter specification
-		helpspec, 		// produce a human readable parameter specification
-		help, 			// produce a help message
-	};
-	typedef rexjson::value (T::*rpc_method_type)(rexjson::array& params, rpc_exec_mode mode);
+
+	using rpc_method_type = std::function<rexjson::value(rexjson::array& params, rpc_exec_mode mode)>;
 	typedef std::map<std::string, rpc_method_type> method_map_type;
 
 	rpc_server()
 	{
-		add("help", &rpc_server::rpc_help);
+		add("help", this, &rpc_server::rpc_help);
 		add("spec", &rpc_server::rpc_spec);
 		add("helpspec", &rpc_server::rpc_helpspec);
 	}
@@ -255,13 +356,36 @@ public:
 		return error;
 	}
 
-	void add(const std::string& name, rpc_method_type method)
+	void add(const std::string& name, const rpc_method_type& method)
 	{
 		if (name.empty())
 			throw std::runtime_error("rpc_server::add, invalid name parameter");
 		if (!method)
 			throw std::runtime_error("rpc_server::add, invalid method parameter");
 		map_[name] = method;
+	}
+
+	template <typename Type>
+	void add(const std::string& name, Type* object, rexjson::value (Type::*func)(rexjson::array& params, rpc_exec_mode mode))
+	{
+		add(name, [=](rexjson::array& params, rpc_exec_mode mode)->rexjson::value{return (object->*func)(params, mode);});
+	}
+
+	void add(const std::string& name, rexjson::value (T::*func)(rexjson::array& params, rpc_exec_mode mode))
+	{
+		add(name, [=](rexjson::array& params, rpc_exec_mode mode)->rexjson::value{return (static_cast <T*>(this)->*func)(params, mode);});
+	}
+
+	template <typename Ret, typename ...Args>
+	void add(const std::string& name, const rpc_wrapper<Ret, Args...>& wrap)
+	{
+		add(name, [=](rexjson::array& params, rpc_exec_mode mode)->rexjson::value
+		{
+			rpc_wrapper<Ret, Args...> w = wrap;
+			if (mode != execute)
+				return noexec(params, mode, w.rpc_types_, w.rpc_types_count_, w.help_msg_.c_str());
+			return w.call(params, mode);
+		});
 	}
 
 	rexjson::value call_method_name(const rexjson::value& methodname, rexjson::array& params, rpc_exec_mode mode = execute)
@@ -271,7 +395,7 @@ public:
 		typename method_map_type::const_iterator method_entry = map_.find(methodname.get_str());
 		if (method_entry == map_.end())
 			throw create_rpc_error(RPC_METHOD_NOT_FOUND, "method not found");
-		return (static_cast<T*>(this)->*(method_entry->second))(params, mode);
+		return method_entry->second(params, mode);
 	}
 
 	rexjson::value call(const rexjson::value& val, rpc_exec_mode mode = execute)
