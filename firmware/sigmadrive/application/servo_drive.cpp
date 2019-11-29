@@ -116,6 +116,8 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 
 	rpc_server.add("servo[0].start", rexjson::make_rpc_wrapper(this, &ServoDrive::Start, "void ServoDrive::Start()"));
 	rpc_server.add("servo[0].stop", rexjson::make_rpc_wrapper(this, &ServoDrive::Stop, "void ServoDrive::Stop()"));
+	rpc_server.add("servo[0].measure_resistance", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement()"));
+
 }
 
 ServoDrive::~ServoDrive()
@@ -149,25 +151,6 @@ void ServoDrive::Stop()
 bool ServoDrive::IsStarted()
 {
 	return GetPwmGenerator()->IsStarted();
-}
-
-void ServoDrive::UpdateSpeed()
-{
-/*
-	const float inc = -0.005f;
-	position_temp_ += inc;
-	if (position_temp_ > M_PI * 2.0)
-		position_temp_ -= M_PI * 2.0;
-	if (position_temp_ < -M_PI * 2.0)
-		position_temp_ += M_PI * 2.0;
-*/
-	float position_delta = theta_cur_ - theta_old_;
-	if (position_delta < -M_PI_2)
-		position_delta += M_PI * 2.0;
-	else if (position_delta > M_PI_2)
-		position_delta -= M_PI * 2.0;
-	lpf_speed_.DoFilter(position_delta * update_hz_);
-	theta_old_ = theta_cur_;
 }
 
 template<typename T>
@@ -224,13 +207,14 @@ void ServoDrive::UpdateCurrentBias()
 
 void ServoDrive::UpdateCurrent()
 {
-	float Ia = PhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
-	float Ib = PhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
-	float Ic = -(Ia + Ib);
+	float Ia = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
+	float Ib = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
+	float Ic = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_b.Output());
+//	float Ic = -(Ia + Ib);
 	lpf_Iab_.DoFilter(Pa_ * Ia + Pb_ * Ib + Pc_ * Ic);
 }
 
-float ServoDrive::PhaseCurrent(float adc_val, float adc_bias)
+float ServoDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
 {
 	return ((adc_bias - adc_val) * Vref_ / adc_full_scale) / Rsense_ / csa_gain_;
 }
@@ -249,33 +233,6 @@ void ServoDrive::SignalThreadUpdate()
 
 bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
 {
-#if 0
-	if (sched.WaitSignalAbort(0)) {
-		GetPwmGenerator()->Stop();
-		return false;
-	}
-
-	if (!sched.WaitUpdate(2)) {
-		/*
-		 * Updates are not coming! Abort...
-		 */
-		GetPwmGenerator()->Stop();
-		sched.Abort();
-		return false;
-	}
-
-	if (data_.counter_dir_)
-		UpdateCurrentBias();
-	else
-		UpdateCurrent();
-	UpdateRotor();
-	UpdateVbus();
-
-	return update_handler();
-
-#endif
-
-
 	uint32_t flags = sched.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 3);
 	if (flags == Scheduler::THREAD_FLAG_UPDATE) {
 		if (data_.counter_dir_)
@@ -297,98 +254,30 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 	return false;
 }
 
-
-void ServoDrive::UpdateHandlerNoFb()
+float ServoDrive::VoltageToDuty(float v_bus, float v_abs)
 {
-	if (data_.counter_dir_)
-		UpdateCurrentBias();
-	else
-		UpdateCurrent();
-	UpdateRotor();
-	UpdateVbus();
-//	UpdateSpeed();
-
-	if (data_.update_counter_ < update_hz_ ) {
-		/*
-		 * Reset the rotor for 1/4 Second
-		 */
-
-		GetTimings(std::polar<float>(1.0, 0.0));
-		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
-		encoder_->ResetCounter(0);
-	} else {
-		std::complex<float> rotor = lpf_e_rotor_.Output();
-		theta_cur_ = std::arg(rotor);
-		if (theta_cur_ < 0)
-			theta_cur_ += 2.0 * M_PI;
-		GetTimings(rotor * std::polar<float>(1.0f, ri_angle_));
-		pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
-
-
-		std::complex<float> I = lpf_Iab_.Output();
-		float Iarg = std::arg(I);
-		float Iabs = lpf_Iabs_.DoFilter(std::abs(I));
-		std::complex<float> Inorm = std::polar<float>(1.0f, Iarg);
-		float Rarg = std::arg(rotor);
-		lpf_RIdot_.DoFilter(Dot(rotor, Inorm));
-		float diff = (Cross(rotor, Inorm) < 0) ? -Acos(lpf_RIdot_.Output()) : Acos(lpf_RIdot_.Output());
-
-		if (!data_.counter_dir_ && (data_.update_counter_ % 13) == 0) {
-			if (Rarg < 0.0f)
-				Rarg += M_PI * 2.0f;
-			if (Iarg < 0.0f)
-				Iarg += M_PI * 2.0f;
-			float speed = asinf(lpf_speed_.Output()) * update_hz_;
-			fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
-					lpf_vbus_.Output(), speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
-					diff / M_PI * 180.0f, lpf_RIdot_.Output());
-		}
-
-#if 0
-		if (!data_.counter_dir_ && (data_.update_counter_ % 13) == 0) {
-			if (Rarg < 0.0f)
-				Rarg += M_PI * 2.0f;
-			if (Iarg < 0.0f)
-				Iarg += M_PI * 2.0f;
-
-			fprintf(stderr, "dir: %2lu,  VBUS: %5lu, INJDATA_: (%5lu, %5lu, %5lu)"
-#if LOCAL_INJDATA
-					" INJDATA: (%5lu, %5lu, %5lu)"
-#endif
-					" BIAS: (%5.2f, %5.2f, %5.2f) I: %6.3f, %6.3f, %6.3f (%6.3f)"
-					" R: %5.2f, DIFF: %5.2f\n",
-					data_.counter_dir_, data_.vbus_,
-					(uint32_t) data_.injdata_[0], (uint32_t) data_.injdata_[1], (uint32_t) data_.injdata_[2],
-
-#if LOCAL_INJDATA
-					(uint32_t) injdata[0], (uint32_t) injdata[1], (uint32_t) injdata[2],
-#endif
-					lpf_bias_a.Output(), lpf_bias_b.Output(), lpf_bias_c.Output(),
-					lpf_i_a.Output(), lpf_i_b.Output(), lpf_i_c.Output(), lpf_i_a.Output() + lpf_i_b.Output() + lpf_i_c.Output(),
-					Rarg / M_PI * 180.0f, diff / M_PI * 180.0f
-			);
-
-
-		}
-#endif
-
-	}
+	float v_rms = v_bus * 0.7071f;
+	float duty = v_abs / v_rms;
+	float mod = std::min(duty, 0.2f);
+	return mod;
 }
 
-
-void ServoDrive::GetTimings(const std::complex<float>& vec)
+bool ServoDrive::GetTimings(const std::complex<float>& vec, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c)
 {
-	uint32_t half_pwm = period_ / 2;
-	uint32_t throttle_duty = half_pwm * throttle_;
+	uint32_t half_pwm = timing_period / 2;
 
-	timings_[0] = half_pwm + throttle_duty * ((vec.real()*Pa_.real() + vec.imag()*Pa_.imag()));
-	timings_[1] = half_pwm + throttle_duty * ((vec.real()*Pb_.real() + vec.imag()*Pb_.imag()));
-	timings_[2] = half_pwm + throttle_duty * ((vec.real()*Pc_.real() + vec.imag()*Pc_.imag()));
+	if (std::abs(vec) >= 1.0f)
+		return false;
+	timing_a = half_pwm + half_pwm * ((vec.real()*Pa_.real() + vec.imag()*Pa_.imag()));
+	timing_b = half_pwm + half_pwm * ((vec.real()*Pb_.real() + vec.imag()*Pb_.imag()));
+	timing_c = half_pwm + half_pwm * ((vec.real()*Pc_.real() + vec.imag()*Pc_.imag()));
+	return true;
 }
 
 void ServoDrive::RunRotateTasks()
 {
 	sched.AddTask([&](){
+		float reset_voltage = 0.46; // Volts
 		uint32_t i = 0;
 		bool ret = false;
 		pwm_->Start();
@@ -398,8 +287,9 @@ void ServoDrive::RunRotateTasks()
 			 */
 
 			ret = RunUpdateHandler([&]()->bool {
-				GetTimings(std::polar<float>(1.0, 0.0));
-				pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
+				uint32_t timings[3];
+				GetTimings(std::polar<float>(1.0f, 0.0f) * VoltageToDuty(lpf_vbus_.Output(),reset_voltage), period_, timings[0], timings[1], timings[2]);
+				pwm_->SetTimings(timings, sizeof(timings)/sizeof(timings[0]));
 				encoder_->ResetCounter(0);
 				return true;
 			});
@@ -407,8 +297,8 @@ void ServoDrive::RunRotateTasks()
 		} while (ret && i++ < update_hz_ );
 	});
 
-
 	sched.AddTask([&](){
+		float rot_voltage = 0.46; // Volts
 		bool ret = false;
 		uint32_t display_counter = 0;
 		data_.update_counter_ = 0;
@@ -418,8 +308,9 @@ void ServoDrive::RunRotateTasks()
 				theta_cur_ = std::arg(rotor);
 				if (theta_cur_ < 0)
 					theta_cur_ += 2.0 * M_PI;
-				GetTimings(rotor * std::polar<float>(1.0f, ri_angle_));
-				pwm_->SetTimings(timings_, sizeof(timings_)/sizeof(timings_[0]));
+				uint32_t timings[3];
+				GetTimings(rotor * std::polar<float>(1.0f, ri_angle_) * VoltageToDuty(lpf_vbus_.Output(), rot_voltage), period_, timings[0], timings[1], timings[2]);
+				pwm_->SetTimings(timings, sizeof(timings)/sizeof(timings[0]));
 
 
 				std::complex<float> I = lpf_Iab_.Output();
@@ -446,6 +337,38 @@ void ServoDrive::RunRotateTasks()
 	});
 
 	sched.Run();
+}
+
+float ServoDrive::RunResistanceMeasurement()
+{
+	LowPassFilter<std::complex<float>, float> lpf_Imes(0.01);
+	float rot_voltage = 0.46; // Volts
+	uint32_t test_period = 1; // Seconds
+
+	sched.AddTask([&](){
+		uint32_t i = 0;
+		bool ret = false;
+		period_ = GetPwmGenerator()->GetPeriod();
+		pwm_->Start();
+		do {
+			/*
+			 * Run for 1 Second
+			 */
+
+			ret = RunUpdateHandler([&]()->bool {
+				uint32_t timings[3];
+				GetTimings(std::polar<float>(1.0f, 0.0f) * VoltageToDuty(lpf_vbus_.Output(),rot_voltage), period_, timings[0], timings[1], timings[2]);
+				pwm_->SetTimings(timings, sizeof(timings)/sizeof(timings[0]));
+				lpf_Imes.DoFilter(lpf_Iab_.Output());
+				return true;
+			});
+
+		} while (ret && i++ < update_hz_ * test_period);
+		pwm_->Stop();
+	});
+
+	sched.RunWaitForCompletion();
+	return std::abs(lpf_Imes.Output());
 }
 
 void ServoDrive::RunSimpleTasks()

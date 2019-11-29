@@ -39,22 +39,20 @@ public:
 	void Attach();
 	void SignalThreadUpdate();
 
-	float PhaseCurrent(float adc_val, float adc_bias);
+	float CalculatePhaseCurrent(float adc_val, float adc_bias);
+	float VoltageToDuty(float v_bus, float v_abs);
 
 	void UpdateRotor();
-	void UpdateSpeed();
 	void UpdateVbus();
 	void UpdateCurrent();
 	void UpdateCurrentBias();
 
-
-	void UpdateHandlerNoFb();
-
-	void GetTimings(const std::complex<float>& vec);
+	bool GetTimings(const std::complex<float>& angle, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c);
 
 	bool RunUpdateHandler(const std::function<bool(void)>& update_handler);
 	void RunSimpleTasks();
 	void RunRotateTasks();
+	float RunResistanceMeasurement();
 
 protected:
 	bool WaitUpdate();
@@ -98,7 +96,6 @@ public:
 	float ri_angle_ = 1.805;
 	uint32_t period_ = 0;
 	TorqueLoop tql_;
-	uint32_t timings_[3];
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
 	SampledData data_;
