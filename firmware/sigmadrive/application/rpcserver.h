@@ -109,10 +109,10 @@ struct rpc_wrapperbase
 	}
 
 protected:
-	template<typename ...AArgs, std::size_t...Ns>
-	std::array<unsigned int, sizeof...(Ns)> make_types_array(const std::tuple<Args...>& tuple, std::index_sequence<Ns...>)
+	template<std::size_t... is>
+	std::array<unsigned int, sizeof...(is)> make_types_array(const std::tuple<Args...>& tuple, std::index_sequence<is...>)
 	{
-		return {{get_rpc_type(std::get<Ns>(tuple))...}};
+		return {{get_rpc_type(std::get<is>(tuple))...}};
 	}
 
 	template<std::size_t... is>
