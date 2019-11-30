@@ -77,7 +77,7 @@ enum rpc_exec_mode {
 	help, 			// produce a help message
 };
 
-template <typename T> inline unsigned int get_rpc_type(T) { return rpc_null_type; }
+template <typename T> inline unsigned int get_rpc_type(T) { return rpc_int_type; }
 template <> inline unsigned int get_rpc_type<bool>(bool) { return rpc_bool_type; }
 template <> inline unsigned int get_rpc_type<double>(double) { return rpc_real_type; }
 template <> inline unsigned int get_rpc_type<float>(float) { return rpc_real_type; }
