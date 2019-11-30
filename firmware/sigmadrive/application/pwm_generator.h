@@ -10,8 +10,6 @@
 
 #define USE_HAL_TIM_REGISTER_CALLBACKS 1
 
-#include <map>
-#include <functional>
 #include "stm32f745xx.h"
 #include "stm32f7xx.h"
 #include "stm32f7xx_hal_tim.h"
@@ -20,8 +18,6 @@
 
 class PwmGenerator : public IPwmGenerator {
 public:
-	using handle_map_type = std::map<TIM_HandleTypeDef*, PwmGenerator*>;
-
 	PwmGenerator();
 	~PwmGenerator();
 	void Attach(TIM_HandleTypeDef* htim);
@@ -41,7 +37,6 @@ public:
 	virtual uint32_t GetTiming(uint32_t channel) override;
 	virtual void SetTiming(uint32_t channel, uint32_t value) override;
 
-	static handle_map_type handle_map_;
 
 protected:
 	TIM_HandleTypeDef* htim_;
