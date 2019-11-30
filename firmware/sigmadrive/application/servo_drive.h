@@ -8,11 +8,11 @@
 #ifndef _SERVO_DRIVE_H_
 #define _SERVO_DRIVE_H_
 
+#include <complex>
 #include "iservodrive.h"
 #include "lowpassfilter.h"
 #include "property.h"
 #include "scheduler.h"
-#include "torque_loop.h"
 #include "pidcontroller.h"
 
 
@@ -71,7 +71,6 @@ public:
 	std::complex<float> Pb_;
 	std::complex<float> Pc_;
 
-	uint32_t runtasks = 0;
 	uint32_t update_hz_;
 	uint32_t adc_full_scale = (1<<12);
 	float Vref_ = 2.9;
@@ -90,11 +89,7 @@ public:
 	float speed_alpha_ = 0.3f;
 	float ridot_alpha_ = 0.1f;
 	float iabs_alpha_ = 0.001f;
-
-	float throttle_ = 0.05;
 	float ri_angle_ = 1.805;
-	uint32_t period_ = 0;
-	TorqueLoop tql_;
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
 	SampledData data_;

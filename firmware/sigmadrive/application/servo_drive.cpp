@@ -46,10 +46,6 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	pwm_ = pwm;
 	props_= rexjson::property_map({
 		{"speed", rexjson::property(&lpf_speed_.out_, rexjson::property_access::readonly)},
-		{"throttle", rexjson::property(
-				&throttle_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 0.25) throw std::range_error("Invalid value");}) },
 		{"bias_alpha", rexjson::property(
 				&bias_alpha_,
 				rexjson::property_access::readwrite,
@@ -101,16 +97,7 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
 				[&](void*){drv1.SetCSAGainValue(csa_gain_);}
 		)},
-		{"runtasks", rexjson::property(
-				&runtasks,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*){if (runtasks) RunSimpleTasks(); else sched.Abort();}
-		)},
-
-
 		{"ri_angle", &ri_angle_},
-		{"torque_loop", tql_.props_},
 		{"encoder", encoder->GetProperties()},
 	});
 
@@ -135,8 +122,6 @@ void ServoDrive::Attach()
 void ServoDrive::Start()
 {
 	osDelay(20);
-	period_ = GetPwmGenerator()->GetPeriod();
-//	GetPwmGenerator()->Start();
 	RunRotateTasks();
 }
 
@@ -226,7 +211,7 @@ void ServoDrive::SignalThreadUpdate()
 	data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
 	data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
 	data_.theta_ = encoder_->GetElectricPosition();
-	data_.counter_dir_ = LL_TIM_GetDirection(htim1.Instance);
+	data_.counter_dir_ = pwm_->GetCounterDirection();
 	data_.update_counter_++;
 	sched.SignalThreadUpdate();
 }
@@ -352,7 +337,6 @@ float ServoDrive::RunResistanceMeasurement()
 	sched.AddTask([&](){
 		uint32_t i = 0;
 		bool ret = false;
-		period_ = GetPwmGenerator()->GetPeriod();
 		pwm_->Start();
 		do {
 			/*
@@ -398,7 +382,6 @@ void ServoDrive::RunSimpleTasks()
 			return;
 		}
 		fprintf(stderr, "Task3 finished %lu\n\n\n", xTaskGetTickCount() - t0);
-		runtasks = 0;
 	});
 	sched.Run();
 

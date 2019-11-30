@@ -33,6 +33,7 @@ public:
 
 	virtual void Start() override;
 	virtual void Stop() override;
+	virtual uint32_t GetCounterDirection() override;
 	virtual bool IsStarted() override;
 	virtual uint32_t GetPeriod() override;
 	virtual void SetPeriod(uint32_t period) override;

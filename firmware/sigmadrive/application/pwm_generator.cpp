@@ -142,6 +142,11 @@ void PwmGenerator::Stop()
 	LL_TIM_GenerateEvent_UPDATE(htim_->Instance);
 }
 
+uint32_t PwmGenerator::GetCounterDirection()
+{
+	return LL_TIM_GetDirection(htim_->Instance);
+}
+
 bool PwmGenerator::IsStarted()
 {
 	return LL_TIM_IsEnabledCounter(htim_->Instance) ? true : false;
