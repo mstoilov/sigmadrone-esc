@@ -109,6 +109,12 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
 				[&](void*){drv1.SetCSAGainValue(csa_gain_);}
 		)},
+		{"run_simple_tasks", rexjson::property(
+				&run_simple_tasks_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){},
+				[&](void*){ if (run_simple_tasks_) RunSimpleTasks(); else sched_.Abort(); }
+		)},
 		{"ri_angle", &ri_angle_},
 		{"encoder", encoder->GetProperties()},
 	});
@@ -118,6 +124,12 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	rpc_server.add("servo[0].measure_resistance", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
 	rpc_server.add("servo[0].measure_resistance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurementOD, "float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);"));
 
+	sched_.SetAbortTask([&]()->void {
+		pwm_->Stop();
+	});
+
+	sched_.SetIdleTask([&]()->void {
+	});
 }
 
 ServoDrive::~ServoDrive()
@@ -129,7 +141,7 @@ void ServoDrive::Attach()
 {
 	csa_gain_ = drv1.GetCSAGainValue();
 
-	sched.StartDispatcherThread();
+	sched_.StartDispatcherThread();
 }
 
 void ServoDrive::Start()
@@ -141,7 +153,7 @@ void ServoDrive::Start()
 void ServoDrive::Stop()
 {
 	GetPwmGenerator()->Stop();
-	sched.Abort();
+	sched_.Abort();
 	osDelay(20);
 
 }
@@ -228,12 +240,12 @@ void ServoDrive::SignalThreadUpdate()
 	data_.theta_ = encoder_->GetElectricPosition();
 	data_.counter_dir_ = pwm_->GetCounterDirection();
 	data_.update_counter_++;
-	sched.SignalThreadUpdate();
+	sched_.SignalThreadUpdate();
 }
 
 bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
 {
-	uint32_t flags = sched.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 3);
+	uint32_t flags = sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 3);
 	if (flags == Scheduler::THREAD_FLAG_UPDATE) {
 		if (data_.counter_dir_)
 			UpdateCurrentBias();
@@ -250,7 +262,7 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 	 * or the UPDATE didn't come
 	 */
 	GetPwmGenerator()->Stop();
-	sched.Abort();
+	sched_.Abort();
 	return false;
 }
 
@@ -302,7 +314,7 @@ bool ServoDrive::ApplyPhaseDuty(float duty_a, float duty_b, float duty_c)
 
 void ServoDrive::RunRotateTasks()
 {
-	sched.AddTask([&](){
+	sched_.AddTask([&](){
 		float reset_voltage = 0.46; // Volts
 		uint32_t i = 0;
 		bool ret = false;
@@ -321,7 +333,7 @@ void ServoDrive::RunRotateTasks()
 		} while (ret && i++ < update_hz_ );
 	});
 
-	sched.AddTask([&](){
+	sched_.AddTask([&](){
 		float rot_voltage = 0.4; // Volts
 		bool ret = false;
 		uint32_t display_counter = 0;
@@ -353,14 +365,14 @@ void ServoDrive::RunRotateTasks()
 		} while (ret);
 	});
 
-	sched.Run();
+	sched_.Run();
 }
 
 float ServoDrive::RunResistanceMeasurement(float seconds, float test_voltage, float max_current)
 {
 	LowPassFilter<std::complex<float>, float> lpf_Imes(0.01);
 
-	sched.AddTask([&](){
+	sched_.AddTask([&](){
 		uint32_t i = 0;
 		uint32_t display_counter = 0;
 		uint32_t test_cycles = update_hz_ * seconds;
@@ -386,7 +398,7 @@ float ServoDrive::RunResistanceMeasurement(float seconds, float test_voltage, fl
 		pwm_->Stop();
 	});
 
-	sched.RunWaitForCompletion();
+	sched_.RunWaitForCompletion();
 	return 2.0f / 3.0f * test_voltage / lpf_a.Output();
 }
 
@@ -397,7 +409,7 @@ float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, 
     static const float kI = 10.0f;                                 // [(V/s)/A]
     float test_voltage = 0.0f;
 
-	sched.AddTask([&](){
+	sched_.AddTask([&](){
 		uint32_t i = 0;
 		uint32_t display_counter = 0;
 		uint32_t test_cycles = update_hz_ * seconds;
@@ -431,7 +443,7 @@ float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, 
 		pwm_->Stop();
 	});
 
-	sched.RunWaitForCompletion();
+	sched_.RunWaitForCompletion();
 	float R = test_voltage / test_current;
 	return R;
 }
@@ -439,30 +451,30 @@ float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, 
 
 void ServoDrive::RunSimpleTasks()
 {
-	sched.AddTask([&](){
+	sched_.AddTask([&](){
 		uint32_t t0 = xTaskGetTickCount();
-		if (sched.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 2000) == Scheduler::THREAD_FLAG_ABORT) {
+		if (sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 2000) == Scheduler::THREAD_FLAG_ABORT) {
 			fprintf(stderr, "Task1 Aborting...\n\n\n");
 			return;
 		}
 		fprintf(stderr, "Task1 finished %lu\n", xTaskGetTickCount() - t0);
 	});
-	sched.AddTask([&](){
+	sched_.AddTask([&](){
 		uint32_t t0 = xTaskGetTickCount();
-		if (sched.WaitSignalAbort(2000)) {
+		if (sched_.WaitSignalAbort(2000)) {
 			fprintf(stderr, "Task2 Aborting...\n\n\n");
 			return;
 		}
 		fprintf(stderr, "Task2 finished %lu\n", xTaskGetTickCount() - t0);
 	});
-	sched.AddTask([&](){
+	sched_.AddTask([&](){
 		uint32_t t0 = xTaskGetTickCount();
-		if (sched.WaitSignalAbort(2000)) {
+		if (sched_.WaitSignalAbort(2000)) {
 			fprintf(stderr, "Task3 Aborting...\n\n\n");
 			return;
 		}
 		fprintf(stderr, "Task3 finished %lu\n\n\n", xTaskGetTickCount() - t0);
 	});
-	sched.Run();
+	sched_.Run();
 
 }

@@ -26,6 +26,7 @@ public:
 	void RunWaitForCompletion();
 	bool IsDispatching();
 	void SetIdleTask(const std::function<void(void)>& task);
+	void SetAbortTask(const std::function<void(void)>& task);
 	void AddTask(const std::function<void(void)>& task);
 	void RunSchedulerLoop();
 	void SignalThreadUpdate();
@@ -53,6 +54,7 @@ protected:
 	uint32_t run_idle_ms_ = 20;
 	bool dispatching_ = false;
 	std::function<void(void)> idle_task_;
+	std::function<void(void)> abort_task_;
 	osEventFlagsId_t event_dispatcher_idle_;
 	std::deque<std::function<void(void)>> dispatch_queue_;
 

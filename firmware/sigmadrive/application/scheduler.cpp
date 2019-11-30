@@ -11,6 +11,7 @@
 
 Scheduler::Scheduler()
 	: idle_task_([](){})
+	, abort_task_([](){})
 	, event_dispatcher_idle_(osEventFlagsNew(NULL))
 
 {
@@ -28,12 +29,19 @@ void Scheduler::SetIdleTask(const std::function<void(void)>& task)
 	idle_task_ = task;
 }
 
+void Scheduler::SetAbortTask(const std::function<void(void)>& task)
+{
+	abort_task_ = task;
+}
+
+
 void Scheduler::Abort()
 {
 	taskENTER_CRITICAL();
 	dispatch_queue_.clear();
 	taskEXIT_CRITICAL();
 	SignalThreadAbort();
+	abort_task_();
 }
 
 void Scheduler::Run()

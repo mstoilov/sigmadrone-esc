@@ -62,7 +62,7 @@ protected:
 
 
 public:
-	Scheduler sched;
+	Scheduler sched_;
 
 
 public:
@@ -75,6 +75,7 @@ public:
 
 	uint32_t update_hz_;
 	uint32_t adc_full_scale = (1<<12);
+	bool run_simple_tasks_ = false;
 	float Vref_ = 2.9;
 	float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
 	float csa_gain_ = 10.0f;
