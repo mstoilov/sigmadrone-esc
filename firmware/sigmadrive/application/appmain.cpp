@@ -165,7 +165,7 @@ int application_main()
 	drv1.SetOCPDeglitch(Drv8323::OCP_DEG_4us);
 	drv1.SetVDSLevel(Drv8323::VDS_LVL_060V);
 	drv1.EnableVREFDiv();
-	drv1.SetCSAGain(Drv8323::CSA_GAIN_40VV);
+	drv1.SetCSAGain(Drv8323::CSA_GAIN_10VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
 	fprintf(stdout, "\n\nmain_task 1\n");
