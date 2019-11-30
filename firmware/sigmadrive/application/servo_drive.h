@@ -40,19 +40,20 @@ public:
 	void SignalThreadUpdate();
 
 	float CalculatePhaseCurrent(float adc_val, float adc_bias);
-	float VoltageToDuty(float v_bus, float v_abs);
+	float VoltageToDuty(float voltage, float v_bus);
 
 	void UpdateRotor();
 	void UpdateVbus();
 	void UpdateCurrent();
 	void UpdateCurrentBias();
 
-	bool GetDutyTimings(float duty, const std::complex<float>& angle, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c);
-	bool ApplyPhaseVoltage(float vbus, float v_abs, const std::complex<float>& v_theta);
+	bool GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c);
+	bool ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus);
+	bool ApplyPhaseDuty(float duty_a, float duty_b, float duty_c);
 	bool RunUpdateHandler(const std::function<bool(void)>& update_handler);
 	void RunSimpleTasks();
 	void RunRotateTasks();
-	float RunResistanceMeasurement();
+	float RunResistanceMeasurement(float seconds, float test_voltage);
 
 protected:
 	bool WaitUpdate();
@@ -84,6 +85,7 @@ public:
 	float resistance_ = 0.0f;
 	float inductance_ = 0.0f;
 	float bias_alpha_ = 0.00035f;
+	float abc_alpha_ = 0.01f;
 	float i_alpha_ = 0.25f;
 	float rotor_alpha_ = 1.0f;
 	float speed_alpha_ = 0.3f;
@@ -100,6 +102,9 @@ public:
 	LowPassFilter<float, float> lpf_bias_a;
 	LowPassFilter<float, float> lpf_bias_b;
 	LowPassFilter<float, float> lpf_bias_c;
+	LowPassFilter<float, float> lpf_a;
+	LowPassFilter<float, float> lpf_b;
+	LowPassFilter<float, float> lpf_c;
 	LowPassFilter<std::complex<float>, float> lpf_e_rotor_;
 	LowPassFilter<std::complex<float>, float> lpf_Iab_;
 	LowPassFilter<std::complex<float>, float> lpf_Idq_;
