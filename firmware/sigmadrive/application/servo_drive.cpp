@@ -262,15 +262,28 @@ float ServoDrive::VoltageToDuty(float v_bus, float v_abs)
 	return mod;
 }
 
-bool ServoDrive::GetTimings(const std::complex<float>& vec, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c)
+bool ServoDrive::GetDutyTimings(float duty, const std::complex<float>& angle, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c)
 {
 	uint32_t half_pwm = timing_period / 2;
+	std::complex<float> vec = angle * duty;
 
-	if (std::abs(vec) >= 1.0f)
+	if (std::abs(vec) > 1.0f)
 		return false;
 	timing_a = half_pwm + half_pwm * ((vec.real()*Pa_.real() + vec.imag()*Pa_.imag()));
 	timing_b = half_pwm + half_pwm * ((vec.real()*Pb_.real() + vec.imag()*Pb_.imag()));
 	timing_c = half_pwm + half_pwm * ((vec.real()*Pc_.real() + vec.imag()*Pc_.imag()));
+	return true;
+}
+
+bool ServoDrive::ApplyPhaseVoltage(float vbus, float v_abs, const std::complex<float>& v_theta)
+{
+	uint32_t timing_period = pwm_->GetPeriod();
+	uint32_t t1, t2, t3;
+	if (!GetDutyTimings(VoltageToDuty(vbus, v_abs), v_theta, timing_period, t1, t2, t3))
+		return false;
+	pwm_->SetTiming(1, t1);
+	pwm_->SetTiming(2, t2);
+	pwm_->SetTiming(3, t3);
 	return true;
 }
 
@@ -287,9 +300,7 @@ void ServoDrive::RunRotateTasks()
 			 */
 
 			ret = RunUpdateHandler([&]()->bool {
-				uint32_t timings[3];
-				GetTimings(std::polar<float>(1.0f, 0.0f) * VoltageToDuty(lpf_vbus_.Output(),reset_voltage), period_, timings[0], timings[1], timings[2]);
-				pwm_->SetTimings(timings, sizeof(timings)/sizeof(timings[0]));
+				ApplyPhaseVoltage(lpf_vbus_.Output(),reset_voltage, std::polar<float>(1.0f, 0.0f));
 				encoder_->ResetCounter(0);
 				return true;
 			});
@@ -298,21 +309,14 @@ void ServoDrive::RunRotateTasks()
 	});
 
 	sched.AddTask([&](){
-		float rot_voltage = 0.46; // Volts
+		float rot_voltage = 0.4; // Volts
 		bool ret = false;
 		uint32_t display_counter = 0;
 		data_.update_counter_ = 0;
 		do {
 			ret = RunUpdateHandler([&]()->bool {
 				std::complex<float> rotor = lpf_e_rotor_.Output();
-				theta_cur_ = std::arg(rotor);
-				if (theta_cur_ < 0)
-					theta_cur_ += 2.0 * M_PI;
-				uint32_t timings[3];
-				GetTimings(rotor * std::polar<float>(1.0f, ri_angle_) * VoltageToDuty(lpf_vbus_.Output(), rot_voltage), period_, timings[0], timings[1], timings[2]);
-				pwm_->SetTimings(timings, sizeof(timings)/sizeof(timings[0]));
-
-
+				ApplyPhaseVoltage(lpf_vbus_.Output(), rot_voltage, rotor * std::polar<float>(1.0f, ri_angle_));
 				std::complex<float> I = lpf_Iab_.Output();
 				float Iarg = std::arg(I);
 				float Iabs = lpf_Iabs_.DoFilter(std::abs(I));
@@ -342,7 +346,7 @@ void ServoDrive::RunRotateTasks()
 float ServoDrive::RunResistanceMeasurement()
 {
 	LowPassFilter<std::complex<float>, float> lpf_Imes(0.01);
-	float rot_voltage = 0.46; // Volts
+	float reset_voltage = 0.46; // Volts
 	uint32_t test_period = 1; // Seconds
 
 	sched.AddTask([&](){
@@ -356,9 +360,7 @@ float ServoDrive::RunResistanceMeasurement()
 			 */
 
 			ret = RunUpdateHandler([&]()->bool {
-				uint32_t timings[3];
-				GetTimings(std::polar<float>(1.0f, 0.0f) * VoltageToDuty(lpf_vbus_.Output(),rot_voltage), period_, timings[0], timings[1], timings[2]);
-				pwm_->SetTimings(timings, sizeof(timings)/sizeof(timings[0]));
+				ApplyPhaseVoltage(lpf_vbus_.Output(),reset_voltage, std::polar<float>(1.0f, 0.0f));
 				lpf_Imes.DoFilter(lpf_Iab_.Output());
 				return true;
 			});

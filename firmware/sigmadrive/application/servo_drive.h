@@ -47,8 +47,8 @@ public:
 	void UpdateCurrent();
 	void UpdateCurrentBias();
 
-	bool GetTimings(const std::complex<float>& angle, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c);
-
+	bool GetDutyTimings(float duty, const std::complex<float>& angle, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c);
+	bool ApplyPhaseVoltage(float vbus, float v_abs, const std::complex<float>& v_theta);
 	bool RunUpdateHandler(const std::function<bool(void)>& update_handler);
 	void RunSimpleTasks();
 	void RunRotateTasks();
@@ -80,7 +80,6 @@ public:
 	float Rsense_ = 0.010f;
 	float position_temp_ = 0.0;
 	float theta_old_ = 0;
-	float theta_cur_ = 0;
 	uint32_t wait_timeout_ = (uint32_t)-1; // msec
 	int32_t pole_pairs = 7;
 	float resistance_ = 0.0f;
