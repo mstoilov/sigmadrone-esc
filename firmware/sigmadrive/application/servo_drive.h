@@ -53,7 +53,8 @@ public:
 	bool RunUpdateHandler(const std::function<bool(void)>& update_handler);
 	void RunSimpleTasks();
 	void RunRotateTasks();
-	float RunResistanceMeasurement(float seconds, float test_voltage);
+	float RunResistanceMeasurement(float seconds, float test_voltage, float max_current);
+	float RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);
 
 protected:
 	bool WaitUpdate();

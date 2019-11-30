@@ -14,39 +14,9 @@ extern QuadratureEncoder tim4;
 
 PwmGenerator::handle_map_type PwmGenerator::handle_map_;
 
-extern "C"
-void TimPeriodElapsedCallback(struct __TIM_HandleTypeDef *htim)
-{
-	PwmGenerator *tim = PwmGenerator::handle_map_[htim];
-	if (tim) {
-		tim->PeriodElapsedCallback();
-	}
-}
-
-void PwmGenerator::PeriodElapsedCallback()
-{
-
-#if 0
-	if (update_counter_ < (SystemCoreClock / TIM_PERIOD_CLOCKS) / 4) {
-		/*
-		 * Reset the rotor for 1/4 Second
-		 */
-		tql_->SetTimings(*this, std::polar<float>(1.0, 0.0));
-		tim4.ResetCounter(0);
-	} else {
-		float rot = tim4.GetElectricPosition();
-		std::complex<float> rotor = std::polar(1.0f, rot);
-		rotor = rotor * std::complex<float>(0.0f, 1.0f);
-		tql_->SetTimings(*this, rotor);
-	}
-	update_counter_++;
-#endif
-}
-
 PwmGenerator::PwmGenerator()
 	: htim_(nullptr)
 {
-
 }
 
 PwmGenerator::~PwmGenerator()

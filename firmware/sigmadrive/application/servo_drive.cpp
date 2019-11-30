@@ -116,6 +116,7 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	rpc_server.add("servo[0].start", rexjson::make_rpc_wrapper(this, &ServoDrive::Start, "void ServoDrive::Start()"));
 	rpc_server.add("servo[0].stop", rexjson::make_rpc_wrapper(this, &ServoDrive::Stop, "void ServoDrive::Stop()"));
 	rpc_server.add("servo[0].measure_resistance", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
+	rpc_server.add("servo[0].measure_resistance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurementOD, "float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);"));
 
 }
 
@@ -255,9 +256,9 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 
 float ServoDrive::VoltageToDuty(float voltage, float v_bus)
 {
-	float v_rms = v_bus * 0.7071f;
+	float v_rms = v_bus * (2.0f/3.0f);
 	float duty = voltage / v_rms;
-	float mod = std::min(duty, 0.2f);
+	float mod = std::min(duty, 0.4f);
 	return mod;
 }
 
@@ -355,7 +356,7 @@ void ServoDrive::RunRotateTasks()
 	sched.Run();
 }
 
-float ServoDrive::RunResistanceMeasurement(float seconds, float test_voltage)
+float ServoDrive::RunResistanceMeasurement(float seconds, float test_voltage, float max_current)
 {
 	LowPassFilter<std::complex<float>, float> lpf_Imes(0.01);
 
@@ -366,13 +367,12 @@ float ServoDrive::RunResistanceMeasurement(float seconds, float test_voltage)
 		bool ret = false;
 		pwm_->Start();
 		do {
-			/*
-			 * Run for 1 Second
-			 */
-
 			ret = RunUpdateHandler([&]()->bool {
 				ApplyPhaseDuty(VoltageToDuty(test_voltage, lpf_vbus_.Output()), 0.0f, 0.0f);
-				lpf_Imes.DoFilter(lpf_Iab_.Output());
+				if (lpf_a.Output() > max_current) {
+					Stop();
+					return false;
+				}
 
 				if (!data_.counter_dir_ && (display_counter++ % 13) == 0) {
 					fprintf(stderr, "Vbus: %4.2f, arg(I): %6.1f, abs(I): %6.3f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\n",
@@ -389,6 +389,53 @@ float ServoDrive::RunResistanceMeasurement(float seconds, float test_voltage)
 	sched.RunWaitForCompletion();
 	return 2.0f / 3.0f * test_voltage / lpf_a.Output();
 }
+
+
+float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage)
+{
+	LowPassFilter<std::complex<float>, float> lpf_Imes(0.01);
+    static const float kI = 10.0f;                                 // [(V/s)/A]
+    float test_voltage = 0.0f;
+
+	sched.AddTask([&](){
+		uint32_t i = 0;
+		uint32_t display_counter = 0;
+		uint32_t test_cycles = update_hz_ * seconds;
+		bool ret = false;
+		pwm_->Start();
+		do {
+			ret = RunUpdateHandler([&]()->bool {
+				float Ialpha = lpf_a.Output();
+				test_voltage += (kI / update_hz_) * (test_current - Ialpha);
+				if (test_voltage > max_voltage || test_voltage < -max_voltage) {
+					Stop();
+					fprintf(stderr, "(test_voltage > max_voltage || test_voltage < -max_voltage) failed! Vmax: %4.2f, Vtest: %4.2f\n", max_voltage, test_voltage);
+					return false;
+				}
+
+				if (!ApplyPhaseVoltage(test_voltage, std::complex<float>(1.0f, 0.0f), lpf_vbus_.Output())) {
+					Stop();
+					fprintf(stderr, "ApplyPhaseVoltage failed...\n");
+					return false;
+				}
+
+				if (!data_.counter_dir_ && (display_counter++ % 13) == 0) {
+					fprintf(stderr, "Vbus: %4.2f, Vt: %4.2f, arg(I): %6.1f, abs(I): %6.3f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\n",
+							lpf_vbus_.Output(), test_voltage, std::arg(lpf_Iab_.Output()) / M_PI * 180.0f, std::abs(lpf_Iab_.Output()),
+							lpf_a.Output(), lpf_b.Output(), lpf_c.Output(), lpf_a.Output() + lpf_b.Output() + lpf_c.Output());
+				}
+				return true;
+			});
+
+		} while (ret && i++ < test_cycles);
+		pwm_->Stop();
+	});
+
+	sched.RunWaitForCompletion();
+	float R = test_voltage / test_current;
+	return R;
+}
+
 
 void ServoDrive::RunSimpleTasks()
 {

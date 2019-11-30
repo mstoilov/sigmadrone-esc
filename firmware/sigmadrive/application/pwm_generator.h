@@ -29,7 +29,6 @@ public:
 	bool IsEnalbedOutputs()				{ return LL_TIM_IsEnabledAllOutputs(htim_->Instance) ? true : false; }
 	void EnableCounter(bool enable)		{ enable ? LL_TIM_EnableCounter(htim_->Instance) : LL_TIM_DisableCounter(htim_->Instance); }
 	void LoadSafeTimings();
-	void PeriodElapsedCallback();
 
 	virtual void Start() override;
 	virtual void Stop() override;
