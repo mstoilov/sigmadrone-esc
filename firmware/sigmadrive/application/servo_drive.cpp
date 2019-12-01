@@ -246,20 +246,21 @@ void ServoDrive::SignalThreadUpdate()
 bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
 {
 	uint32_t flags = sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 3);
-	if (flags == Scheduler::THREAD_FLAG_UPDATE) {
+	if (flags == Scheduler::THREAD_FLAG_ABORT) {
+		GetPwmGenerator()->Stop();
+		return false;
+	} else if (flags == Scheduler::THREAD_FLAG_UPDATE) {
 		if (data_.counter_dir_)
 			UpdateCurrentBias();
 		else
 			UpdateCurrent();
 		UpdateRotor();
 		UpdateVbus();
-
 		return update_handler();
 	}
 
 	/*
-	 * If We got here the ABORT signal was received
-	 * or the UPDATE didn't come
+	 * If We got here the UPDATE didn't come
 	 */
 	GetPwmGenerator()->Stop();
 	sched_.Abort();
