@@ -55,7 +55,7 @@ public:
 	void RunRotateTasks();
 	float RunResistanceMeasurement(float seconds, float test_voltage, float max_current);
 	float RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);
-
+	float RunInductanceMeasurementOD(float voltage_low, float voltage_high);
 protected:
 	bool WaitUpdate();
 
@@ -87,7 +87,7 @@ public:
 	float resistance_ = 0.0f;
 	float inductance_ = 0.0f;
 	float bias_alpha_ = 0.00035f;
-	float abc_alpha_ = 0.01f;
+	float abc_alpha_ = 0.25f;
 	float i_alpha_ = 0.25f;
 	float rotor_alpha_ = 1.0f;
 	float speed_alpha_ = 0.3f;
@@ -101,6 +101,9 @@ public:
 /*
  * Derived Data
  */
+	float Ia_;
+	float Ib_;
+	float Ic_;
 	LowPassFilter<float, float> lpf_bias_a;
 	LowPassFilter<float, float> lpf_bias_b;
 	LowPassFilter<float, float> lpf_bias_c;

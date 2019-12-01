@@ -123,6 +123,7 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	rpc_server.add("servo[0].stop", rexjson::make_rpc_wrapper(this, &ServoDrive::Stop, "void ServoDrive::Stop()"));
 	rpc_server.add("servo[0].measure_resistance", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
 	rpc_server.add("servo[0].measure_resistance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurementOD, "float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);"));
+	rpc_server.add("servo[0].measure_inductance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunInductanceMeasurementOD, "float ServoDrive::RunInductanceMeasurementOD(float voltage_low, float voltage_high);"));
 
 	sched_.SetAbortTask([&]()->void {
 		pwm_->Stop();
@@ -217,13 +218,13 @@ void ServoDrive::UpdateCurrentBias()
 
 void ServoDrive::UpdateCurrent()
 {
-	float Ia = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
-	float Ib = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
-	float Ic = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_b.Output());
-	lpf_a.DoFilter(Ia);
-	lpf_b.DoFilter(Ib);
-	lpf_c.DoFilter(Ic);
-	lpf_Iab_.DoFilter(Pa_ * Ia + Pb_ * Ib + Pc_ * (-Ia -Ib));
+	Ia_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
+	Ib_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
+	Ic_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_b.Output());
+	lpf_a.DoFilter(Ia_);
+	lpf_b.DoFilter(Ib_);
+	lpf_c.DoFilter(Ic_);
+	lpf_Iab_.DoFilter(Pa_ * Ia_ + Pb_ * Ib_ + Pc_ * (-Ia_ -Ib_));
 }
 
 float ServoDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
@@ -449,6 +450,47 @@ float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, 
 	return R;
 }
 
+
+float ServoDrive::RunInductanceMeasurementOD(float voltage_low, float voltage_high)
+{
+	float L = 0.0f;
+
+	sched_.AddTask([&]() {
+		float test_voltages[2] = {voltage_low, voltage_high};
+		float Ialphas[2] = {0.0f};
+		static const int num_cycles = 5000;
+		bool ret = false;
+		size_t t = 0;
+
+		pwm_->Start();
+		do {
+			ret = RunUpdateHandler([&]()->bool {
+				int i = t & 1;
+				Ialphas[i] += Ia_;
+
+				// Test voltage along phase A
+				if (!ApplyPhaseVoltage(test_voltages[i], std::complex<float>(1.0f, 0.0f), lpf_vbus_.Output())) {
+					Stop();
+					fprintf(stderr, "ApplyPhaseVoltage failed...\n");
+					return false;
+				}
+				if (!data_.counter_dir_ && (t % 13) == 0) {
+					fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\n",
+							lpf_vbus_.Output(), Ia_);
+				}
+
+
+				return true;
+			});
+		} while (ret && ++t < (num_cycles * 2));
+		pwm_->Stop();
+		float v_L = 0.5f * (voltage_high - voltage_low);
+		float dI_by_dt = (Ialphas[1] - Ialphas[0]) * ((float)num_cycles / update_hz_);
+		L = v_L / dI_by_dt;
+	});
+	sched_.RunWaitForCompletion();
+	return L;
+}
 
 void ServoDrive::RunSimpleTasks()
 {
