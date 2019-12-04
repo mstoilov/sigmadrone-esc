@@ -62,6 +62,7 @@ public:
 	/*
 	 * Scheduler Tasks
 	 */
+	void AddTaskArmMotor();
 	void AddTaskResetRotor();
 	void AddTaskDetectEncoderDir();
 
@@ -101,7 +102,7 @@ public:
 	float speed_alpha_ = 0.3f;
 	float ridot_alpha_ = 0.1f;
 	float iabs_alpha_ = 0.001f;
-	float ri_angle_ = 1.805;
+	float ri_angle_ = 1.65;
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
 	SampledData data_;

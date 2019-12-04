@@ -193,7 +193,7 @@ int application_main()
 		HAL_Delay(50);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
 
-		new_counter = tim4.GetCounter();
+		new_counter = tim4.GetPosition();
 		if (new_counter != old_counter) {
 //			fprintf(stderr, "Counter: %lu\n", new_counter);
 			old_counter = new_counter;

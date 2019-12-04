@@ -284,28 +284,27 @@ float ServoDrive::VoltageToDuty(float voltage, float v_bus)
 
 bool ServoDrive::GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c)
 {
-	uint32_t half_pwm = timing_period / 2;
-	timing_a = half_pwm + half_pwm * duty_a;
-	timing_b = half_pwm + half_pwm * duty_b;
-	timing_c = half_pwm + half_pwm * duty_c;
+	timing_a = (uint32_t)(duty_a * (float)timing_period);
+	timing_b = (uint32_t)(duty_b * (float)timing_period);
+	timing_c = (uint32_t)(duty_c * (float)timing_period);
 	return true;
 }
 
 void ServoDrive::SineSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c)
 {
 	std::complex<float> theta = v_theta * std::complex<float>(0, 1);
-	duty_a = duty * (theta / Pa_).imag();
-	duty_b = duty * (theta / Pb_).imag();
-	duty_c = duty * (theta / Pc_).imag();
+	duty_a = 0.5 + 0.5 * duty * (theta / Pa_).imag();
+	duty_b = 0.5 + 0.5 * duty * (theta / Pb_).imag();
+	duty_c = 0.5 + 0.5 * duty * (theta / Pc_).imag();
 }
 
 void ServoDrive::SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c)
 {
 	std::complex<float> theta = v_theta * std::complex<float>(0, 1);
 	std::complex<float> theta3 = theta * theta * theta * 0.3333f;
-	duty_a = duty * (theta / Pa_ + theta3).imag();
-	duty_b = duty * (theta / Pb_ + theta3).imag();
-	duty_c = duty * (theta / Pc_ + theta3).imag();
+	duty_a = 0.5 + 0.5 * duty * (theta / Pa_ + theta3).imag();
+	duty_b = 0.5 + 0.5 * duty * (theta / Pb_ + theta3).imag();
+	duty_c = 0.5 + 0.5 * duty * (theta / Pc_ + theta3).imag();
 }
 
 bool ServoDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus)
@@ -317,9 +316,9 @@ bool ServoDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_the
 
 #if 0
 	std::complex<float> vec = v_theta * duty;
-	duty_a = ((vec.real() * Pa_.real() + vec.imag() * Pa_.imag()));
-	duty_b = ((vec.real() * Pb_.real() + vec.imag() * Pb_.imag()));
-	duty_c = ((vec.real() * Pc_.real() + vec.imag() * Pc_.imag()));
+	duty_a = 0.5 + 0.5 * ((vec.real() * Pa_.real() + vec.imag() * Pa_.imag()));
+	duty_b = 0.5 + 0.5 * ((vec.real() * Pb_.real() + vec.imag() * Pb_.imag()));
+	duty_c = 0.5 + 0.5 * ((vec.real() * Pc_.real() + vec.imag() * Pc_.imag()));
 #else
 
 	if (svm_saddle_) {
@@ -349,13 +348,20 @@ bool ServoDrive::ApplyPhaseDuty(float duty_a, float duty_b, float duty_c)
 	return true;
 }
 
+void ServoDrive::AddTaskArmMotor()
+{
+	sched_.AddTask([&](){
+		ApplyPhaseVoltage(0, std::polar<float>(1.0f, 0.0f), lpf_vbus_.Output());
+		pwm_->Start();
+	});
+}
+
 void ServoDrive::AddTaskResetRotor()
 {
 	sched_.AddTask([&](){
 		float reset_voltage = 0.46; // Volts
 		uint32_t i = 0;
 		bool ret = false;
-		pwm_->Start();
 		do {
 			/*
 			 * Reset the rotor for 1 Second
@@ -363,7 +369,7 @@ void ServoDrive::AddTaskResetRotor()
 
 			ret = RunUpdateHandler([&]()->bool {
 				ApplyPhaseVoltage(reset_voltage, std::polar<float>(1.0f, 0.0f), lpf_vbus_.Output());
-				encoder_->ResetCounter(0);
+				encoder_->ResetPosition(0);
 				return true;
 			});
 
@@ -405,6 +411,7 @@ void ServoDrive::AddTaskDetectEncoderDir()
 
 void ServoDrive::RunRotateTasks()
 {
+	AddTaskArmMotor();
 	AddTaskResetRotor();
 	if (encoder_dir_ == 0)
 		AddTaskDetectEncoderDir();
@@ -434,9 +441,9 @@ void ServoDrive::RunRotateTasks()
 					if (Iarg < 0.0f)
 						Iarg += M_PI * 2.0f;
 					float speed = asinf(lpf_speed_.Output()) * update_hz_;
-					fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f)\n",
+					fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f), EncIn: %6ld\n",
 							lpf_vbus_.Output(), speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
-							diff / M_PI * 180.0f, lpf_RIdot_.Output());
+							diff / M_PI * 180.0f, lpf_RIdot_.Output(), encoder_->GetIndexPosition());
 				}
 				return true;
 			});
