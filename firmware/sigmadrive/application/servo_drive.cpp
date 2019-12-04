@@ -25,8 +25,8 @@ static std::complex<float> p3_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
 
 ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
 	: Pa_(std::polar<float>(1.0f, 0.0f))
-	, Pb_(std::polar<float>(1.0f, M_PI * 2.0 / 3.0))
-	, Pc_(std::polar<float>(1.0f, M_PI * 4.0 / 3.0))
+	, Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
+	, Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
 	, update_hz_(update_hz)
 	, lpf_bias_a(bias_alpha_)
 	, lpf_bias_b(bias_alpha_)
@@ -39,7 +39,7 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	, lpf_Idq_(i_alpha_)
 	, lpf_Iabs_(iabs_alpha_)
 	, lpf_RIdot_(ridot_alpha_)
-	, lpf_vbus_(0.02f, 15.0f)
+	, lpf_vbus_(0.5f, 12.0f)
 	, lpf_speed_(speed_alpha_)
 {
 	lpf_bias_a.Reset(1 << 11);
@@ -116,6 +116,8 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[&](void*){ if (run_simple_tasks_) RunSimpleTasks(); else sched_.Abort(); }
 		)},
 		{"ri_angle", &ri_angle_},
+		{"encoder_dir", &encoder_dir_},
+		{"svm_saddle", &svm_saddle_},
 		{"encoder", encoder->GetProperties()},
 	});
 
@@ -123,7 +125,7 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	rpc_server.add("servo[0].stop", rexjson::make_rpc_wrapper(this, &ServoDrive::Stop, "void ServoDrive::Stop()"));
 	rpc_server.add("servo[0].measure_resistance", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
 	rpc_server.add("servo[0].measure_resistance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurementOD, "float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);"));
-	rpc_server.add("servo[0].measure_inductance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunInductanceMeasurementOD, "float ServoDrive::RunInductanceMeasurementOD(float voltage_low, float voltage_high);"));
+	rpc_server.add("servo[0].measure_inductance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunInductanceMeasurementOD, "float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high);"));
 
 	sched_.SetAbortTask([&]()->void {
 		pwm_->Stop();
@@ -234,12 +236,16 @@ float ServoDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
 
 void ServoDrive::SignalThreadUpdate()
 {
+	data_.counter_dir_ = pwm_->GetCounterDirection();
 	data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
 	data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
 	data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
+	if (data_.counter_dir_) {
+		UpdateCurrentBias();
+		return;
+	}
 	data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
-	data_.theta_ = encoder_->GetElectricPosition();
-	data_.counter_dir_ = pwm_->GetCounterDirection();
+	data_.theta_ = encoder_dir_ * encoder_->GetElectricPosition();
 	data_.update_counter_++;
 	sched_.SignalThreadUpdate();
 }
@@ -270,7 +276,7 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 
 float ServoDrive::VoltageToDuty(float voltage, float v_bus)
 {
-	float v_rms = v_bus * (2.0f/3.0f);
+	float v_rms = v_bus * 0.7071f; //(2.0f/3.0f);
 	float duty = voltage / v_rms;
 	float mod = std::min(duty, 0.4f);
 	return mod;
@@ -285,15 +291,44 @@ bool ServoDrive::GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32
 	return true;
 }
 
+void ServoDrive::SineSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c)
+{
+	std::complex<float> theta = v_theta * std::complex<float>(0, 1);
+	duty_a = duty * (theta / Pa_).imag();
+	duty_b = duty * (theta / Pb_).imag();
+	duty_c = duty * (theta / Pc_).imag();
+}
+
+void ServoDrive::SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c)
+{
+	std::complex<float> theta = v_theta * std::complex<float>(0, 1);
+	std::complex<float> theta3 = theta * theta * theta * 0.3333f;
+	duty_a = duty * (theta / Pa_ + theta3).imag();
+	duty_b = duty * (theta / Pb_ + theta3).imag();
+	duty_c = duty * (theta / Pc_ + theta3).imag();
+}
+
 bool ServoDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus)
 {
 	uint32_t timing_period = pwm_->GetPeriod();
 	uint32_t t1, t2, t3;
 	float duty = VoltageToDuty(v_abs, vbus);
+	float duty_a = 0, duty_b = 0, duty_c = 0;
+
+#if 0
 	std::complex<float> vec = v_theta * duty;
-	float duty_a = ((vec.real() * Pa_.real() + vec.imag() * Pa_.imag()));
-	float duty_b = ((vec.real() * Pb_.real() + vec.imag() * Pb_.imag()));
-	float duty_c = ((vec.real() * Pc_.real() + vec.imag() * Pc_.imag()));
+	duty_a = ((vec.real() * Pa_.real() + vec.imag() * Pa_.imag()));
+	duty_b = ((vec.real() * Pb_.real() + vec.imag() * Pb_.imag()));
+	duty_c = ((vec.real() * Pc_.real() + vec.imag() * Pc_.imag()));
+#else
+
+	if (svm_saddle_) {
+		SaddleSVM(duty, v_theta, duty_a, duty_b, duty_c);
+	} else {
+		SineSVM(duty, v_theta, duty_a, duty_b, duty_c);
+	}
+
+#endif
 	if (!GetDutyTimings(duty_a, duty_b, duty_c, timing_period, t1, t2, t3))
 		return false;
 	pwm_->SetTiming(1, t1);
@@ -314,7 +349,7 @@ bool ServoDrive::ApplyPhaseDuty(float duty_a, float duty_b, float duty_c)
 	return true;
 }
 
-void ServoDrive::RunRotateTasks()
+void ServoDrive::AddTaskResetRotor()
 {
 	sched_.AddTask([&](){
 		float reset_voltage = 0.46; // Volts
@@ -335,6 +370,44 @@ void ServoDrive::RunRotateTasks()
 		} while (ret && i++ < update_hz_ );
 	});
 
+}
+
+void ServoDrive::AddTaskDetectEncoderDir()
+{
+	sched_.AddTask([&](){
+		float reset_voltage = 0.46; // Volts
+		uint32_t i = 0;
+		bool ret = false;
+		pwm_->Start();
+		uint32_t task_cycles = update_hz_ * 1; // 1 second
+		std::complex<float> step = std::polar<float>(1.0f, M_PI_2 * pole_pairs / task_cycles);
+		std::complex<float> position = std::polar<float>(1.0f, 0.0f);
+		float enc2 = 0;
+		do {
+			/*
+			 * Reset the rotor for 1 Second
+			 */
+
+			ret = RunUpdateHandler([&]()->bool {
+				ApplyPhaseVoltage(reset_voltage, position, lpf_vbus_.Output());
+				position *= step;
+				return true;
+			});
+
+			enc2 = encoder_->GetMechanicalPosition();
+			if (i % 37 == 0)
+				fprintf(stderr, "enc2 = %5.2f\n", enc2);
+		} while (ret && i++ < task_cycles);
+		encoder_dir_ = (enc2 > M_PI) ? -1 : 1;
+	});
+
+}
+
+void ServoDrive::RunRotateTasks()
+{
+	AddTaskResetRotor();
+	if (encoder_dir_ == 0)
+		AddTaskDetectEncoderDir();
 	sched_.AddTask([&](){
 		float rot_voltage = 0.4; // Volts
 		bool ret = false;
@@ -343,7 +416,10 @@ void ServoDrive::RunRotateTasks()
 		do {
 			ret = RunUpdateHandler([&]()->bool {
 				std::complex<float> rotor = lpf_e_rotor_.Output();
-				ApplyPhaseVoltage(rot_voltage, rotor * std::polar<float>(1.0f, ri_angle_), lpf_vbus_.Output());
+				std::complex<float> ri_vec = std::polar<float>(1.0f, ri_angle_);
+				if (encoder_dir_ == -1)
+					ri_vec = std::conj(ri_vec);
+				ApplyPhaseVoltage(rot_voltage, rotor * ri_vec, lpf_vbus_.Output());
 				std::complex<float> I = lpf_Iab_.Output();
 				float Iarg = std::arg(I);
 				float Iabs = lpf_Iabs_.DoFilter(std::abs(I));
@@ -451,14 +527,13 @@ float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, 
 }
 
 
-float ServoDrive::RunInductanceMeasurementOD(float voltage_low, float voltage_high)
+float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high)
 {
 	float L = 0.0f;
 
 	sched_.AddTask([&]() {
 		float test_voltages[2] = {voltage_low, voltage_high};
 		float Ialphas[2] = {0.0f};
-		static const int num_cycles = 5000;
 		bool ret = false;
 		size_t t = 0;
 
@@ -485,7 +560,8 @@ float ServoDrive::RunInductanceMeasurementOD(float voltage_low, float voltage_hi
 		} while (ret && ++t < (num_cycles * 2));
 		pwm_->Stop();
 		float v_L = 0.5f * (voltage_high - voltage_low);
-		float dI_by_dt = (Ialphas[1] - Ialphas[0]) * ((float)num_cycles / update_hz_);
+		float current_meas_period = 1.0f / update_hz_;
+		float dI_by_dt = (Ialphas[0] - Ialphas[1]) / (current_meas_period * (float)num_cycles);
 		L = v_L / dI_by_dt;
 	});
 	sched_.RunWaitForCompletion();

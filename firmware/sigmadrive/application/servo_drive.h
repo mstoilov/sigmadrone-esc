@@ -47,6 +47,8 @@ public:
 	void UpdateCurrent();
 	void UpdateCurrentBias();
 
+	void SineSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
+	void SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
 	bool GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c);
 	bool ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus);
 	bool ApplyPhaseDuty(float duty_a, float duty_b, float duty_c);
@@ -55,9 +57,13 @@ public:
 	void RunRotateTasks();
 	float RunResistanceMeasurement(float seconds, float test_voltage, float max_current);
 	float RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);
-	float RunInductanceMeasurementOD(float voltage_low, float voltage_high);
-protected:
-	bool WaitUpdate();
+	float RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high);
+
+	/*
+	 * Scheduler Tasks
+	 */
+	void AddTaskResetRotor();
+	void AddTaskDetectEncoderDir();
 
 
 
@@ -83,6 +89,8 @@ public:
 	float position_temp_ = 0.0;
 	float theta_old_ = 0;
 	uint32_t wait_timeout_ = (uint32_t)-1; // msec
+	bool svm_saddle_ = false;
+	int32_t encoder_dir_ = 0;					// (1) - encoder increasing or (-1) encoder decreasing
 	int32_t pole_pairs = 7;
 	float resistance_ = 0.0f;
 	float inductance_ = 0.0f;
