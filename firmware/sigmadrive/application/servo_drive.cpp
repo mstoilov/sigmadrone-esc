@@ -118,6 +118,8 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 		{"ri_angle", &ri_angle_},
 		{"encoder_dir", &encoder_dir_},
 		{"svm_saddle", &svm_saddle_},
+		{"reset_voltage", &reset_voltage_},
+		{"reset_hz_devider", &reset_hz_devider_},
 		{"encoder", encoder->GetProperties()},
 	});
 
@@ -358,6 +360,35 @@ void ServoDrive::AddTaskArmMotor()
 
 void ServoDrive::AddTaskResetRotor()
 {
+
+	sched_.AddTask([&](){
+		bool ret = true;
+		uint32_t set_to_angle_cycles = update_hz_ / reset_hz_devider_;
+		for (float angle = M_PI_4; angle > 0.1; angle /= 2) {
+			for (size_t i = 0; (i < set_to_angle_cycles) && ret; i++) {
+				ret = RunUpdateHandler([&]()->bool {
+					ApplyPhaseVoltage(reset_voltage_, std::polar<float>(1.0f, angle), lpf_vbus_.Output());
+					return true;
+				});
+			};
+			for (size_t i = 0; (i < set_to_angle_cycles) && ret; i++) {
+				ret = RunUpdateHandler([&]()->bool {
+					ApplyPhaseVoltage(reset_voltage_, std::polar<float>(1.0f, -angle), lpf_vbus_.Output());
+					return true;
+				});
+			};
+		}
+		for (size_t i = 0; (i < update_hz_/2) && ret; i++) {
+			ret = RunUpdateHandler([&]()->bool {
+				ApplyPhaseVoltage(reset_voltage_ * 1.5, std::polar<float>(1.0f, 0), lpf_vbus_.Output());
+				encoder_->ResetPosition(0);
+				return true;
+			});
+		};
+	});
+
+
+#if 0
 	sched_.AddTask([&](){
 		float reset_voltage = 0.46; // Volts
 		uint32_t i = 0;
@@ -375,7 +406,7 @@ void ServoDrive::AddTaskResetRotor()
 
 		} while (ret && i++ < update_hz_ );
 	});
-
+#endif
 }
 
 void ServoDrive::AddTaskDetectEncoderDir()
@@ -424,8 +455,8 @@ void ServoDrive::RunRotateTasks()
 			ret = RunUpdateHandler([&]()->bool {
 				std::complex<float> rotor = lpf_e_rotor_.Output();
 				std::complex<float> ri_vec = std::polar<float>(1.0f, ri_angle_);
-				if (encoder_dir_ == -1)
-					ri_vec = std::conj(ri_vec);
+//				if (encoder_dir_ == -1)
+//					ri_vec = std::conj(ri_vec);
 				ApplyPhaseVoltage(rot_voltage, rotor * ri_vec, lpf_vbus_.Output());
 				std::complex<float> I = lpf_Iab_.Output();
 				float Iarg = std::arg(I);
@@ -441,7 +472,7 @@ void ServoDrive::RunRotateTasks()
 					if (Iarg < 0.0f)
 						Iarg += M_PI * 2.0f;
 					float speed = asinf(lpf_speed_.Output()) * update_hz_;
-					fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %5.1f (%+4.2f), EncIn: %6ld\n",
+					fprintf(stderr, "Vbus: %4.2f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), EncIn: %6ld\n",
 							lpf_vbus_.Output(), speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, Iabs,
 							diff / M_PI * 180.0f, lpf_RIdot_.Output(), encoder_->GetIndexPosition());
 				}
