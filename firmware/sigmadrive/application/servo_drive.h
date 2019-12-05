@@ -54,20 +54,29 @@ public:
 	bool ApplyPhaseDuty(float duty_a, float duty_b, float duty_c);
 	bool RunUpdateHandler(const std::function<bool(void)>& update_handler);
 	void RunSimpleTasks();
-	void RunRotateTasks();
+	void RunSpinTasks();
 	float RunResistanceMeasurement(float seconds, float test_voltage, float max_current);
 	float RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);
 	float RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high);
 
 	/*
+	 * UpdateHandlers
+	 */
+	bool RunUpdateHandlerRotateMotor(float angle, float speed, float voltage, bool dir);
+
+
+	/*
 	 * Scheduler Tasks
 	 */
+	void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir);
 	void AddTaskArmMotor();
-	void AddTaskResetRotor();
+	void AddTaskDisarmMotor();
+	void AddTaskResetRotor(float reset_voltage, uint32_t reset_hz, bool reset_encoder = true);
 	void AddTaskDetectEncoderDir();
-	void AddTaskIndexSearch(float voltage, float speed);
+	void RunTaskAphaPoleSearch();
 
-
+	void SchedulerRun();
+	void SchedulerAbort();
 
 public:
 	Scheduler sched_;
@@ -86,8 +95,8 @@ public:
 	bool run_simple_tasks_ = false;
 	float Vref_ = 2.9;
 	float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
-	uint32_t reset_hz_devider_ = 25;
-	float reset_voltage_ = 0.4f;
+	uint32_t reset_hz_ = 35;
+	float reset_voltage_ = 0.25f;
 	float csa_gain_ = 10.0f;
 	float Rsense_ = 0.010f;
 	float position_temp_ = 0.0;
@@ -95,7 +104,7 @@ public:
 	uint32_t wait_timeout_ = (uint32_t)-1;	// Forever
 	bool svm_saddle_ = false;
 	int32_t encoder_dir_ = 0;				// (1) - encoder increasing or (-1) encoder decreasing
-	int32_t pole_pairs = 7;
+	uint32_t pole_pairs = 7;
 	float resistance_ = 0.0f;
 	float inductance_ = 0.0f;
 	float bias_alpha_ = 0.00035f;
@@ -105,7 +114,7 @@ public:
 	float speed_alpha_ = 0.3f;
 	float ridot_alpha_ = 0.0002f;
 	float iabs_alpha_ = 0.0002f;
-	float ri_angle_ = 1.65;
+	float ri_angle_ = 1.54;
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
 	SampledData data_;

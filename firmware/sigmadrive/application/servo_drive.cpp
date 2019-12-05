@@ -119,7 +119,7 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 		{"encoder_dir", &encoder_dir_},
 		{"svm_saddle", &svm_saddle_},
 		{"reset_voltage", &reset_voltage_},
-		{"reset_hz_devider", &reset_hz_devider_},
+		{"reset_hz", &reset_hz_},
 		{"encoder", encoder->GetProperties()},
 	});
 
@@ -128,6 +128,14 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	rpc_server.add("servo[0].measure_resistance", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
 	rpc_server.add("servo[0].measure_resistance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurementOD, "float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);"));
 	rpc_server.add("servo[0].measure_inductance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunInductanceMeasurementOD, "float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high);"));
+
+	rpc_server.add("servo[0].scheduler_run", rexjson::make_rpc_wrapper(this, &ServoDrive::SchedulerRun, "void SchedulerRun()"));
+	rpc_server.add("servo[0].scheduler_abort", rexjson::make_rpc_wrapper(this, &ServoDrive::SchedulerAbort, "void SchedulerAbort()"));
+	rpc_server.add("servo[0].add_task_arm_motor", rexjson::make_rpc_wrapper(this, &ServoDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
+	rpc_server.add("servo[0].add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &ServoDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
+	rpc_server.add("servo[0].add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &ServoDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
+	rpc_server.add("servo[0].add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &ServoDrive::AddTaskResetRotor, "void AddTaskResetRotor(float reset_voltage, uint32_t reset_hz)"));
+	rpc_server.add("servo[0].alpha_pole_search", rexjson::make_rpc_wrapper(this, &ServoDrive::RunTaskAphaPoleSearch, "void RunTaskAphaPoleSearch()"));
 
 	sched_.SetAbortTask([&]()->void {
 		pwm_->Stop();
@@ -152,7 +160,7 @@ void ServoDrive::Attach()
 void ServoDrive::Start()
 {
 	osDelay(20);
-	RunRotateTasks();
+	RunSpinTasks();
 }
 
 void ServoDrive::Stop()
@@ -358,105 +366,87 @@ void ServoDrive::AddTaskArmMotor()
 	});
 }
 
-void ServoDrive::AddTaskResetRotor()
+void ServoDrive::AddTaskDisarmMotor()
 {
 	sched_.AddTask([&](){
+		ApplyPhaseVoltage(0, std::polar<float>(0.0f, 0.0f), lpf_vbus_.Output());
+		pwm_->Stop();
+	});
+}
+
+bool ServoDrive::RunUpdateHandlerRotateMotor(float angle, float speed, float voltage, bool dir)
+{
+	float el_speed = speed * pole_pairs;
+	float total_rotation = angle * pole_pairs;
+	float total_time = total_rotation / el_speed;
+	uint32_t total_cycles = update_hz_ * total_time;
+	std::complex<float> step = std::polar<float>(1.0, total_rotation/total_cycles);
+	std::complex<float> rotation = std::polar<float>(1.0, 0);
+	bool ret = true;
+
+	if (!dir)
+		step = std::conj(step);
+	for (size_t i = 0; ret && i < total_cycles; i++) {
+		ret = RunUpdateHandler([&]()->bool {
+			ApplyPhaseVoltage(voltage, rotation, lpf_vbus_.Output());
+			rotation *= step;
+			return true;
+		});
+	}
+	return ret;
+}
+
+
+void ServoDrive::AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)
+{
+	sched_.AddTask(std::bind([&](float angle, float speed, float voltage, bool dir){
+		RunUpdateHandlerRotateMotor(angle, speed, voltage, dir);
+	}, angle, speed, voltage, dir));
+}
+
+
+void ServoDrive::AddTaskResetRotor(float reset_voltage, uint32_t reset_hz, bool reset_encoder)
+{
+	sched_.AddTask(std::bind([&](float reset_voltage, uint32_t reset_hz, bool reset_encoder){
 		bool ret = true;
-		uint32_t set_to_angle_cycles = update_hz_ / reset_hz_devider_;
-		for (float angle = M_PI_4; angle > 0.1; angle /= 2) {
-			for (size_t i = 0; (i < set_to_angle_cycles) && ret; i++) {
+		uint32_t set_angle_cycles = update_hz_ / reset_hz;
+		for (float angle = M_PI_4; angle > 0.1; angle = angle * 3 / 4) {
+			for (size_t i = 0; (i < set_angle_cycles) && ret; i++) {
 				ret = RunUpdateHandler([&]()->bool {
-					ApplyPhaseVoltage(reset_voltage_, std::polar<float>(1.0f, angle), lpf_vbus_.Output());
+					ApplyPhaseVoltage(reset_voltage, std::polar<float>(1.0f, angle), lpf_vbus_.Output());
 					return true;
 				});
 			};
-			for (size_t i = 0; (i < set_to_angle_cycles) && ret; i++) {
+			for (size_t i = 0; (i < set_angle_cycles) && ret; i++) {
 				ret = RunUpdateHandler([&]()->bool {
-					ApplyPhaseVoltage(reset_voltage_, std::polar<float>(1.0f, -angle), lpf_vbus_.Output());
+					ApplyPhaseVoltage(reset_voltage, std::polar<float>(1.0f, -angle), lpf_vbus_.Output());
 					return true;
 				});
 			};
 		}
 		for (size_t i = 0; (i < update_hz_) && ret; i++) {
 			ret = RunUpdateHandler([&]()->bool {
-				ApplyPhaseVoltage(reset_voltage_ * 1.5, std::polar<float>(1.0f, 0), lpf_vbus_.Output());
-				encoder_->ResetPosition(0);
+				ApplyPhaseVoltage(reset_voltage * 1.5, std::polar<float>(1.0f, 0), lpf_vbus_.Output());
+				if (reset_encoder)
+					encoder_->ResetPosition(0);
 				return true;
 			});
 		};
-	});
+	}, reset_voltage, reset_hz, reset_encoder));
 }
-
-void ServoDrive::AddTaskIndexSearch(float voltage, float speed)
-{
-	sched_.AddTask(std::bind([&](float v, float s){
-		float speed = s;
-		float rot_voltage = v;
-		float el_speed = speed * pole_pairs;
-		float total_rotation = M_PI * 2 *pole_pairs;
-		float total_time = total_rotation / el_speed;
-		uint32_t total_cycles = update_hz_ * total_time;
-		std::complex<float> step = std::polar<float>(1.0, total_rotation/total_cycles);
-		std::complex<float> angle = std::polar<float>(1.0, 0);
-
-		for (size_t i = 0; i < total_cycles; i++) {
-			RunUpdateHandler([&]()->bool {
-				ApplyPhaseVoltage(rot_voltage, angle, lpf_vbus_.Output());
-				angle *= step;
-				if (i % 37 == 0)
-					fprintf(stderr, "Angle: %5.2f, Enc Index = %ld\n", std::arg(angle), encoder_->GetIndexPosition());
-				return true;
-			});
-		}
-		for (size_t i = 0; i < total_cycles; i++) {
-			RunUpdateHandler([&]()->bool {
-				ApplyPhaseVoltage(rot_voltage, angle, lpf_vbus_.Output());
-				angle /= step;
-				if (i % 37 == 0)
-					fprintf(stderr, "Angle: %5.2f, Enc Index = %ld\n", std::arg(angle), encoder_->GetIndexPosition());
-				return true;
-			});
-		}
-	}, voltage, speed));
-}
-
 
 void ServoDrive::AddTaskDetectEncoderDir()
 {
 	sched_.AddTask([&](){
-		float reset_voltage = 0.46; // Volts
-		uint32_t i = 0;
-		bool ret = false;
-		pwm_->Start();
-		uint32_t task_cycles = update_hz_ * 1; // 1 second
-		std::complex<float> step = std::polar<float>(1.0f, M_PI_2 * pole_pairs / task_cycles);
-		std::complex<float> position = std::polar<float>(1.0f, 0.0f);
-		float enc2 = 0;
-		do {
-			/*
-			 * Reset the rotor for 1 Second
-			 */
-
-			ret = RunUpdateHandler([&]()->bool {
-				ApplyPhaseVoltage(reset_voltage, position, lpf_vbus_.Output());
-				position *= step;
-				return true;
-			});
-
-			enc2 = encoder_->GetMechanicalPosition();
-			if (i % 37 == 0)
-				fprintf(stderr, "enc2 = %5.2f\n", enc2);
-		} while (ret && i++ < task_cycles);
-		encoder_dir_ = (enc2 > M_PI) ? -1 : 1;
+		if (RunUpdateHandlerRotateMotor(M_PI_2, M_PI, reset_voltage_, true))
+			encoder_dir_ = (encoder_->GetMechanicalPosition() > M_PI) ? -1 : 1;
 	});
-
 }
 
-void ServoDrive::RunRotateTasks()
+void ServoDrive::RunSpinTasks()
 {
 	AddTaskArmMotor();
-	AddTaskResetRotor();
-	AddTaskIndexSearch(0.45, M_PI/2);
+	AddTaskResetRotor(reset_voltage_, reset_hz_);
 	if (encoder_dir_ == 0)
 		AddTaskDetectEncoderDir();
 	sched_.AddTask([&](){
@@ -468,8 +458,6 @@ void ServoDrive::RunRotateTasks()
 			ret = RunUpdateHandler([&]()->bool {
 				std::complex<float> rotor = lpf_e_rotor_.Output();
 				std::complex<float> ri_vec = std::polar<float>(1.0f, ri_angle_);
-//				if (encoder_dir_ == -1)
-//					ri_vec = std::conj(ri_vec);
 				ApplyPhaseVoltage(rot_voltage, rotor * ri_vec, lpf_vbus_.Output());
 				std::complex<float> I = lpf_Iab_.Output();
 				float Iarg = std::arg(I);
@@ -494,6 +482,26 @@ void ServoDrive::RunRotateTasks()
 		} while (ret);
 	});
 
+	sched_.Run();
+}
+
+void ServoDrive::RunTaskAphaPoleSearch()
+{
+	AddTaskArmMotor();
+	if (encoder_dir_ == 0) {
+		AddTaskResetRotor(reset_voltage_, reset_hz_);
+		AddTaskDetectEncoderDir();
+	}
+	AddTaskResetRotor(reset_voltage_, reset_hz_);
+	for (size_t i = 0; i < pole_pairs; i++) {
+		AddTaskRotateMotor((M_PI * 2)/pole_pairs, M_PI, 0.45, true);
+		AddTaskResetRotor(reset_voltage_, reset_hz_, false);
+		sched_.AddTask([&](void){
+			fprintf(stderr, "Enc: %7lu\n", encoder_->GetPosition());
+			encoder_->ResetPosition(0);
+		});
+	}
+	AddTaskDisarmMotor();
 	sched_.Run();
 }
 
@@ -586,7 +594,7 @@ float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, 
 		float test_voltages[2] = {voltage_low, voltage_high};
 		float Ialphas[2] = {0.0f};
 		bool ret = false;
-		size_t t = 0;
+		int t = 0;
 
 		pwm_->Start();
 		do {
@@ -648,3 +656,14 @@ void ServoDrive::RunSimpleTasks()
 	sched_.Run();
 
 }
+
+void ServoDrive::SchedulerRun()
+{
+	sched_.Run();
+}
+
+void ServoDrive::SchedulerAbort()
+{
+	sched_.Abort();
+}
+
