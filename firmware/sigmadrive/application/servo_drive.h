@@ -65,6 +65,7 @@ public:
 	void AddTaskArmMotor();
 	void AddTaskResetRotor();
 	void AddTaskDetectEncoderDir();
+	void AddTaskIndexSearch(float voltage, float speed);
 
 
 

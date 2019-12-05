@@ -360,7 +360,6 @@ void ServoDrive::AddTaskArmMotor()
 
 void ServoDrive::AddTaskResetRotor()
 {
-
 	sched_.AddTask([&](){
 		bool ret = true;
 		uint32_t set_to_angle_cycles = update_hz_ / reset_hz_devider_;
@@ -378,7 +377,7 @@ void ServoDrive::AddTaskResetRotor()
 				});
 			};
 		}
-		for (size_t i = 0; (i < update_hz_/2) && ret; i++) {
+		for (size_t i = 0; (i < update_hz_) && ret; i++) {
 			ret = RunUpdateHandler([&]()->bool {
 				ApplyPhaseVoltage(reset_voltage_ * 1.5, std::polar<float>(1.0f, 0), lpf_vbus_.Output());
 				encoder_->ResetPosition(0);
@@ -386,28 +385,41 @@ void ServoDrive::AddTaskResetRotor()
 			});
 		};
 	});
+}
 
+void ServoDrive::AddTaskIndexSearch(float voltage, float speed)
+{
+	sched_.AddTask(std::bind([&](float v, float s){
+		float speed = s;
+		float rot_voltage = v;
+		float el_speed = speed * pole_pairs;
+		float total_rotation = M_PI * 2 *pole_pairs;
+		float total_time = total_rotation / el_speed;
+		uint32_t total_cycles = update_hz_ * total_time;
+		std::complex<float> step = std::polar<float>(1.0, total_rotation/total_cycles);
+		std::complex<float> angle = std::polar<float>(1.0, 0);
 
-#if 0
-	sched_.AddTask([&](){
-		float reset_voltage = 0.46; // Volts
-		uint32_t i = 0;
-		bool ret = false;
-		do {
-			/*
-			 * Reset the rotor for 1 Second
-			 */
-
-			ret = RunUpdateHandler([&]()->bool {
-				ApplyPhaseVoltage(reset_voltage, std::polar<float>(1.0f, 0.0f), lpf_vbus_.Output());
-				encoder_->ResetPosition(0);
+		for (size_t i = 0; i < total_cycles; i++) {
+			RunUpdateHandler([&]()->bool {
+				ApplyPhaseVoltage(rot_voltage, angle, lpf_vbus_.Output());
+				angle *= step;
+				if (i % 37 == 0)
+					fprintf(stderr, "Angle: %5.2f, Enc Index = %ld\n", std::arg(angle), encoder_->GetIndexPosition());
 				return true;
 			});
-
-		} while (ret && i++ < update_hz_ );
-	});
-#endif
+		}
+		for (size_t i = 0; i < total_cycles; i++) {
+			RunUpdateHandler([&]()->bool {
+				ApplyPhaseVoltage(rot_voltage, angle, lpf_vbus_.Output());
+				angle /= step;
+				if (i % 37 == 0)
+					fprintf(stderr, "Angle: %5.2f, Enc Index = %ld\n", std::arg(angle), encoder_->GetIndexPosition());
+				return true;
+			});
+		}
+	}, voltage, speed));
 }
+
 
 void ServoDrive::AddTaskDetectEncoderDir()
 {
@@ -444,6 +456,7 @@ void ServoDrive::RunRotateTasks()
 {
 	AddTaskArmMotor();
 	AddTaskResetRotor();
+	AddTaskIndexSearch(0.45, M_PI/2);
 	if (encoder_dir_ == 0)
 		AddTaskDetectEncoderDir();
 	sched_.AddTask([&](){

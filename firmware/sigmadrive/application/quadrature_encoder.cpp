@@ -109,6 +109,8 @@ void QuadratureEncoder::SetIndexOffset(int32_t cpr)
 
 int32_t QuadratureEncoder::GetIndexPosition()
 {
+	if (index_offset_ < 0)
+		return -1;
 	return CprToPosition(index_offset_);
 }
 
