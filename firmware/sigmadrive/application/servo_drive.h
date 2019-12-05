@@ -27,6 +27,28 @@ public:
 		uint32_t update_counter_ = 0;
 	};
 
+	struct Config {
+		int32_t encoder_dir_ = 0;				// (1) - encoder increasing or (-1) encoder decreasing
+		uint32_t reset_hz_ = 35;
+		uint32_t pole_pairs = 7;
+		uint32_t adc_full_scale = (1<<12);
+		bool svm_saddle_ = false;
+		float Vref_ = 2.9;
+		float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
+		float reset_voltage_ = 0.25f;
+		float csa_gain_ = 10.0f;
+		float Rsense_ = 0.010f;
+		float resistance_ = 0.0f;
+		float inductance_ = 0.0f;
+		float bias_alpha_ = 0.00035f;
+		float abc_alpha_ = 0.25f;
+		float i_alpha_ = 0.25f;
+		float rotor_alpha_ = 1.0f;
+		float speed_alpha_ = 0.3f;
+		float ridot_alpha_ = 0.0002f;
+		float iabs_alpha_ = 0.0002f;
+		float ri_angle_ = 1.54;
+	};
 
 	ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz);
 	virtual ~ServoDrive();
@@ -91,33 +113,12 @@ public:
 	std::complex<float> Pc_;
 
 	uint32_t update_hz_;
-	uint32_t adc_full_scale = (1<<12);
-	bool run_simple_tasks_ = false;
-	float Vref_ = 2.9;
-	float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
-	uint32_t reset_hz_ = 35;
-	float reset_voltage_ = 0.25f;
-	float csa_gain_ = 10.0f;
-	float Rsense_ = 0.010f;
-	float position_temp_ = 0.0;
-	float theta_old_ = 0;
 	uint32_t wait_timeout_ = (uint32_t)-1;	// Forever
-	bool svm_saddle_ = false;
-	int32_t encoder_dir_ = 0;				// (1) - encoder increasing or (-1) encoder decreasing
-	uint32_t pole_pairs = 7;
-	float resistance_ = 0.0f;
-	float inductance_ = 0.0f;
-	float bias_alpha_ = 0.00035f;
-	float abc_alpha_ = 0.25f;
-	float i_alpha_ = 0.25f;
-	float rotor_alpha_ = 1.0f;
-	float speed_alpha_ = 0.3f;
-	float ridot_alpha_ = 0.0002f;
-	float iabs_alpha_ = 0.0002f;
-	float ri_angle_ = 1.54;
+	bool run_simple_tasks_ = false;
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
 	SampledData data_;
+	Config config_;
 
 /*
  * Derived Data

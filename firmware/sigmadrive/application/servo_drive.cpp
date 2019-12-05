@@ -28,19 +28,19 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	, Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
 	, Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
 	, update_hz_(update_hz)
-	, lpf_bias_a(bias_alpha_)
-	, lpf_bias_b(bias_alpha_)
-	, lpf_bias_c(bias_alpha_)
-	, lpf_a(abc_alpha_)
-	, lpf_b(abc_alpha_)
-	, lpf_c(abc_alpha_)
-	, lpf_e_rotor_(rotor_alpha_)
-	, lpf_Iab_(i_alpha_)
-	, lpf_Idq_(i_alpha_)
-	, lpf_Iabs_(iabs_alpha_)
-	, lpf_RIdot_(ridot_alpha_)
+	, lpf_bias_a(config_.bias_alpha_)
+	, lpf_bias_b(config_.bias_alpha_)
+	, lpf_bias_c(config_.bias_alpha_)
+	, lpf_a(config_.abc_alpha_)
+	, lpf_b(config_.abc_alpha_)
+	, lpf_c(config_.abc_alpha_)
+	, lpf_e_rotor_(config_.rotor_alpha_)
+	, lpf_Iab_(config_.i_alpha_)
+	, lpf_Idq_(config_.i_alpha_)
+	, lpf_Iabs_(config_.iabs_alpha_)
+	, lpf_RIdot_(config_.ridot_alpha_)
 	, lpf_vbus_(0.5f, 12.0f)
-	, lpf_speed_(speed_alpha_)
+	, lpf_speed_(config_.speed_alpha_)
 {
 	lpf_bias_a.Reset(1 << 11);
 	lpf_bias_b.Reset(1 << 11);
@@ -50,64 +50,64 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	props_= rexjson::property_map({
 		{"speed", rexjson::property(&lpf_speed_.out_, rexjson::property_access::readonly)},
 		{"bias_alpha", rexjson::property(
-				&bias_alpha_,
+				&config_.bias_alpha_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_bias_a.SetAlpha(bias_alpha_);
-					lpf_bias_b.SetAlpha(bias_alpha_);
-					lpf_bias_c.SetAlpha(bias_alpha_);
+					lpf_bias_a.SetAlpha(config_.bias_alpha_);
+					lpf_bias_b.SetAlpha(config_.bias_alpha_);
+					lpf_bias_c.SetAlpha(config_.bias_alpha_);
 				})},
 		{"abc_alpha", rexjson::property(
-				&abc_alpha_,
+				&config_.abc_alpha_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_a.SetAlpha(abc_alpha_);
-					lpf_b.SetAlpha(abc_alpha_);
-					lpf_c.SetAlpha(abc_alpha_);
+					lpf_a.SetAlpha(config_.abc_alpha_);
+					lpf_b.SetAlpha(config_.abc_alpha_);
+					lpf_c.SetAlpha(config_.abc_alpha_);
 				})},
 		{"i_alpha", rexjson::property(
-				&i_alpha_,
+				&config_.i_alpha_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_Iab_.SetAlpha(i_alpha_);
-					lpf_Idq_.SetAlpha(i_alpha_);
+					lpf_Iab_.SetAlpha(config_.i_alpha_);
+					lpf_Idq_.SetAlpha(config_.i_alpha_);
 				})},
 		{"iabs_alpha", rexjson::property(
-				&iabs_alpha_,
+				&config_.iabs_alpha_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_Iabs_.SetAlpha(iabs_alpha_);
+					lpf_Iabs_.SetAlpha(config_.iabs_alpha_);
 				})},
 		{"rotor_alpha", rexjson::property(
-				&rotor_alpha_,
+				&config_.rotor_alpha_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_e_rotor_.SetAlpha(rotor_alpha_);
+					lpf_e_rotor_.SetAlpha(config_.rotor_alpha_);
 				})},
 		{"speed_alpha", rexjson::property(
-				&speed_alpha_,
+				&config_.speed_alpha_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_speed_.SetAlpha(speed_alpha_);
+					lpf_speed_.SetAlpha(config_.speed_alpha_);
 				})},
 		{"ridot_alpha", rexjson::property(
-				&ridot_alpha_,
+				&config_.ridot_alpha_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_RIdot_.SetAlpha(ridot_alpha_);
+					lpf_RIdot_.SetAlpha(config_.ridot_alpha_);
 		})},
 		{"csa_gain", rexjson::property(
-				&csa_gain_,
+				&config_.csa_gain_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
-				[&](void*){drv1.SetCSAGainValue(csa_gain_);}
+				[&](void*){drv1.SetCSAGainValue(config_.csa_gain_);}
 		)},
 		{"run_simple_tasks", rexjson::property(
 				&run_simple_tasks_,
@@ -115,11 +115,11 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[](const rexjson::value& v){},
 				[&](void*){ if (run_simple_tasks_) RunSimpleTasks(); else sched_.Abort(); }
 		)},
-		{"ri_angle", &ri_angle_},
-		{"encoder_dir", &encoder_dir_},
-		{"svm_saddle", &svm_saddle_},
-		{"reset_voltage", &reset_voltage_},
-		{"reset_hz", &reset_hz_},
+		{"ri_angle", &config_.ri_angle_},
+		{"encoder_dir", &config_.encoder_dir_},
+		{"svm_saddle", &config_.svm_saddle_},
+		{"reset_voltage", &config_.reset_voltage_},
+		{"reset_hz", &config_.reset_hz_},
 		{"encoder", encoder->GetProperties()},
 	});
 
@@ -152,8 +152,7 @@ ServoDrive::~ServoDrive()
 
 void ServoDrive::Attach()
 {
-	csa_gain_ = drv1.GetCSAGainValue();
-
+	drv1.SetCSAGainValue(config_.csa_gain_);
 	sched_.StartDispatcherThread();
 }
 
@@ -217,7 +216,7 @@ void ServoDrive::UpdateRotor()
 
 void ServoDrive::UpdateVbus()
 {
-	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * Vbus_resistor_ratio_);
+	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
 }
 
 void ServoDrive::UpdateCurrentBias()
@@ -241,7 +240,7 @@ void ServoDrive::UpdateCurrent()
 
 float ServoDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
 {
-	return ((adc_bias - adc_val) * Vref_ / adc_full_scale) / Rsense_ / csa_gain_;
+	return ((adc_bias - adc_val) * config_.Vref_ / config_.adc_full_scale) / config_.Rsense_ / config_.csa_gain_;
 }
 
 void ServoDrive::SignalThreadUpdate()
@@ -255,7 +254,7 @@ void ServoDrive::SignalThreadUpdate()
 		return;
 	}
 	data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
-	data_.theta_ = encoder_dir_ * encoder_->GetElectricPosition();
+	data_.theta_ = config_.encoder_dir_ * encoder_->GetElectricPosition();
 	data_.update_counter_++;
 	sched_.SignalThreadUpdate();
 }
@@ -331,7 +330,7 @@ bool ServoDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_the
 	duty_c = 0.5 + 0.5 * ((vec.real() * Pc_.real() + vec.imag() * Pc_.imag()));
 #else
 
-	if (svm_saddle_) {
+	if (config_.svm_saddle_) {
 		SaddleSVM(duty, v_theta, duty_a, duty_b, duty_c);
 	} else {
 		SineSVM(duty, v_theta, duty_a, duty_b, duty_c);
@@ -376,8 +375,8 @@ void ServoDrive::AddTaskDisarmMotor()
 
 bool ServoDrive::RunUpdateHandlerRotateMotor(float angle, float speed, float voltage, bool dir)
 {
-	float el_speed = speed * pole_pairs;
-	float total_rotation = angle * pole_pairs;
+	float el_speed = speed * config_.pole_pairs;
+	float total_rotation = angle * config_.pole_pairs;
 	float total_time = total_rotation / el_speed;
 	uint32_t total_cycles = update_hz_ * total_time;
 	std::complex<float> step = std::polar<float>(1.0, total_rotation/total_cycles);
@@ -438,16 +437,16 @@ void ServoDrive::AddTaskResetRotor(float reset_voltage, uint32_t reset_hz, bool 
 void ServoDrive::AddTaskDetectEncoderDir()
 {
 	sched_.AddTask([&](){
-		if (RunUpdateHandlerRotateMotor(M_PI_2, M_PI, reset_voltage_, true))
-			encoder_dir_ = (encoder_->GetMechanicalPosition() > M_PI) ? -1 : 1;
+		if (RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, true))
+			config_.encoder_dir_ = (encoder_->GetMechanicalPosition() > M_PI) ? -1 : 1;
 	});
 }
 
 void ServoDrive::RunSpinTasks()
 {
 	AddTaskArmMotor();
-	AddTaskResetRotor(reset_voltage_, reset_hz_);
-	if (encoder_dir_ == 0)
+	AddTaskResetRotor(config_.reset_voltage_, config_.reset_hz_);
+	if (config_.encoder_dir_ == 0)
 		AddTaskDetectEncoderDir();
 	sched_.AddTask([&](){
 		float rot_voltage = 0.4; // Volts
@@ -457,7 +456,7 @@ void ServoDrive::RunSpinTasks()
 		do {
 			ret = RunUpdateHandler([&]()->bool {
 				std::complex<float> rotor = lpf_e_rotor_.Output();
-				std::complex<float> ri_vec = std::polar<float>(1.0f, ri_angle_);
+				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_);
 				ApplyPhaseVoltage(rot_voltage, rotor * ri_vec, lpf_vbus_.Output());
 				std::complex<float> I = lpf_Iab_.Output();
 				float Iarg = std::arg(I);
@@ -488,14 +487,14 @@ void ServoDrive::RunSpinTasks()
 void ServoDrive::RunTaskAphaPoleSearch()
 {
 	AddTaskArmMotor();
-	if (encoder_dir_ == 0) {
-		AddTaskResetRotor(reset_voltage_, reset_hz_);
+	if (config_.encoder_dir_ == 0) {
+		AddTaskResetRotor(config_.reset_voltage_, config_.reset_hz_);
 		AddTaskDetectEncoderDir();
 	}
-	AddTaskResetRotor(reset_voltage_, reset_hz_);
-	for (size_t i = 0; i < pole_pairs; i++) {
-		AddTaskRotateMotor((M_PI * 2)/pole_pairs, M_PI, 0.45, true);
-		AddTaskResetRotor(reset_voltage_, reset_hz_, false);
+	AddTaskResetRotor(config_.reset_voltage_, config_.reset_hz_);
+	for (size_t i = 0; i < config_.pole_pairs; i++) {
+		AddTaskRotateMotor((M_PI * 2)/config_.pole_pairs, M_PI, 0.45, true);
+		AddTaskResetRotor(config_.reset_voltage_, config_.reset_hz_, false);
 		sched_.AddTask([&](void){
 			fprintf(stderr, "Enc: %7lu\n", encoder_->GetPosition());
 			encoder_->ResetPosition(0);
