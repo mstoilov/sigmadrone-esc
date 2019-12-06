@@ -16,6 +16,11 @@ public:
 	, ki_(ki)
 	, kd_(kd)
 	, leak_(leak)
+	, output_i_max_(0)
+	, last_input_(0)
+	, output_p_(0)
+	, output_i_(0)
+	, output_d_(0)
 	{
 
 	}
@@ -31,29 +36,51 @@ public:
 
 		output_i_ *= (1.0f - leak_);
 		output_i_ += input * dt * ki_;
-		if (output_i_ > output_i_max_)
+		if (output_i_max_ && output_i_ > output_i_max_)
 			output_i_ = output_i_max_;
-
+		if (output_i_max_ && output_i_ < -output_i_max_)
+			output_i_ = -output_i_max_;
 		output_d_ = (input - last_input_) * kd_ / dt;
 		last_input_ = input;
 
 		return Output();
 	}
 
-	T Output()
+	T Output() const
 	{
 		return output_p_ + output_i_ + output_d_;
 	}
+
+	void SetMaxIntegralOutput(const T& output_max)
+	{
+		output_i_max_ = output_max;
+	}
+
+	T GetMaxIntegralOutput() const
+	{
+		return output_i_max_;
+	}
+
+	void SetLeakRate(float leak)
+	{
+		leak_ = leak;
+	}
+
+	float GetLeakRate() const
+	{
+		return leak_;
+	}
+
 
 public:
 	float kp_;
 	float ki_;
 	float kd_;
 	float leak_;
+	T output_i_max_;
 	T last_input_;
 	T output_p_;
 	T output_i_;
-	T output_i_max_;
 	T output_d_;
 };
 

@@ -36,18 +36,24 @@ public:
 		float Vref_ = 2.9;
 		float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
 		float reset_voltage_ = 0.25f;
+		float spin_voltage_ = 0.4f;
 		float csa_gain_ = 10.0f;
 		float Rsense_ = 0.010f;
-		float resistance_ = 0.0f;
-		float inductance_ = 0.0f;
+		float resistance_ = 0.05f;
+		float inductance_ = 5.56e-05f;
 		float bias_alpha_ = 0.00035f;
 		float abc_alpha_ = 0.25f;
 		float i_alpha_ = 0.25f;
 		float rotor_alpha_ = 1.0f;
 		float speed_alpha_ = 0.3f;
-		float ridot_alpha_ = 0.0002f;
-		float iabs_alpha_ = 0.0002f;
+		float ridot_alpha_ = 0.15f;
+		float ridot_disp_alpha_ = 0.01f;
+		float iabs_alpha_ = 0.001f;
 		float ri_angle_ = 1.54;
+//		float current_arg_kp_ = 0.055;		// 1000 * inductance
+//		float current_arg_ki_ = 50;			// kp*R/L
+//		float current_arg_kp_ = 0.0f;		// 1000 * inductance
+//		float current_arg_ki_ = 0.0f;		// kp*R/L
 	};
 
 	ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz);
@@ -137,8 +143,10 @@ public:
 	LowPassFilter<std::complex<float>, float> lpf_Idq_;
 	LowPassFilter<float, float> lpf_Iabs_;
 	LowPassFilter<float, float> lpf_RIdot_;
+	LowPassFilter<float, float> lpf_RIdot_disp_;
 	LowPassFilter<float, float> lpf_vbus_;
 	LowPassFilter<float, float> lpf_speed_;
+	PidController<float> pid_current_arg_;
 
 
 };

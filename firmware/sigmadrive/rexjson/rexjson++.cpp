@@ -185,6 +185,12 @@ value::value(int v)
 	store_.v_int_ = v;
 }
 
+value::value(long unsigned int v)
+{
+	value_type_ = int_type;
+	store_.v_int_ = v;
+}
+
 value::value(int64_t v)
 {
 	value_type_ = int_type;

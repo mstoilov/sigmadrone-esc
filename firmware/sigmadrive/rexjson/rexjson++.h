@@ -59,6 +59,7 @@ public:
 	value(const std::string& v);
 	value(bool v);
 	value(int v);
+	value(long unsigned int v);
 	value(int64_t v);
 	value(double v);
 	value(const object& v);
