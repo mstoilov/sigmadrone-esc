@@ -343,7 +343,7 @@ bool ServoDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_the
 	float duty = VoltageToDuty(v_abs, vbus);
 	float duty_a = 0, duty_b = 0, duty_c = 0;
 
-#if 1
+#if 0
 	std::complex<float> vec = v_theta * duty;
 	duty_a = 0.5 + 0.5 * ((vec.real() * Pa_.real() + vec.imag() * Pa_.imag()));
 	duty_b = 0.5 + 0.5 * ((vec.real() * Pb_.real() + vec.imag() * Pb_.imag()));
@@ -486,8 +486,8 @@ void ServoDrive::RunSpinTasks()
 				pid_current_arg_.Input(lpf_RIdot_.Output(), 1.0f/update_hz_);
 
 
-				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_);
-//				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_ + pid_current_arg_.Output());
+//				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_);
+				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_ + pid_current_arg_.Output());
 				ApplyPhaseVoltage(config_.spin_voltage_, rotor * ri_vec, lpf_vbus_.Output());
 				float diff = Acos(lpf_RIdot_disp_.Output());
 
@@ -496,9 +496,9 @@ void ServoDrive::RunSpinTasks()
 						Rarg += M_PI * 2.0f;
 					if (Iarg < 0.0f)
 						Iarg += M_PI * 2.0f;
-					float speed = asinf(lpf_speed_.Output()) * update_hz_;
-					fprintf(stderr, "Vbus: %4.2f, Ia: %+5.3f, Ib: %+5.3f, Ic: %+5.3f, SP: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
-							lpf_vbus_.Output(), lpf_a.Output(), lpf_b.Output(), lpf_c.Output(),
+					float speed = (asinf(lpf_speed_.Output()) * update_hz_)/(M_PI*2.0 * config_.pole_pairs);
+					fprintf(stderr, "Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
+							lpf_vbus_.Output(),
 							speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, lpf_Iabs_.DoFilter(Iabs),
 							diff / M_PI * 180.0f, lpf_RIdot_disp_.Output(), pid_current_arg_.Output(), pid_current_arg_.Output() / M_PI * 180.0f);
 				}
