@@ -21,9 +21,7 @@ public:
 	struct SampledData {
 		int32_t injdata_[3];
 		int32_t vbus_ = 0;
-		uint32_t counter_dir_ = 0;
 		float theta_ = 0.0f;
-		uint32_t processing_ = 0;
 		uint32_t update_counter_ = 0;
 	};
 

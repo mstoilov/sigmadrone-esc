@@ -7,14 +7,12 @@
 
 #include "main.h"
 #include "servo_drive.h"
-#include "quadrature_encoder.h"
+#include "iencoder.h"
 #include "adc.h"
 #include "drv8323.h"
-#include "ClString.h"
 #include "uartrpcserver.h"
 
 extern UartRpcServer rpc_server;
-extern TIM_HandleTypeDef htim1;
 extern Adc adc1;
 extern Adc adc2;
 extern Adc adc3;
@@ -264,11 +262,10 @@ float ServoDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
 
 void ServoDrive::SignalThreadUpdate()
 {
-	data_.counter_dir_ = pwm_->GetCounterDirection();
 	data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
 	data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
 	data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
-	if (data_.counter_dir_) {
+	if (pwm_->GetCounterDirection()) {
 		UpdateCurrentBias();
 		return;
 	}
@@ -285,10 +282,7 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 		GetPwmGenerator()->Stop();
 		return false;
 	} else if (flags == Scheduler::THREAD_FLAG_UPDATE) {
-		if (data_.counter_dir_)
-			UpdateCurrentBias();
-		else
-			UpdateCurrent();
+		UpdateCurrent();
 		UpdateRotor();
 		UpdateVbus();
 		return update_handler();
@@ -491,7 +485,7 @@ void ServoDrive::RunSpinTasks()
 				ApplyPhaseVoltage(config_.spin_voltage_, rotor * ri_vec, lpf_vbus_.Output());
 				float diff = Acos(lpf_RIdot_disp_.Output());
 
-				if (!data_.counter_dir_ && (display_counter++ % 13) == 0) {
+				if ((display_counter++ % 13) == 0) {
 					if (Rarg < 0.0f)
 						Rarg += M_PI * 2.0f;
 					if (Iarg < 0.0f)
@@ -551,7 +545,7 @@ float ServoDrive::RunResistanceMeasurement(float seconds, float test_voltage, fl
 					return false;
 				}
 
-				if (!data_.counter_dir_ && (display_counter++ % 13) == 0) {
+				if ((display_counter++ % 13) == 0) {
 					fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\n",
 							lpf_vbus_.Output(), lpf_a.Output(), lpf_b.Output(), lpf_c.Output(), lpf_a.Output() + lpf_b.Output() + lpf_c.Output());
 				}
@@ -598,7 +592,7 @@ float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, 
 					return false;
 				}
 
-				if (!data_.counter_dir_ && (display_counter++ % 13) == 0) {
+				if ((display_counter++ % 13) == 0) {
 					fprintf(stderr, "Vbus: %4.2f, Vt: %4.2f, arg(I): %6.1f, abs(I): %6.3f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\n",
 							lpf_vbus_.Output(), test_voltage, std::arg(lpf_Iab_.Output()) / M_PI * 180.0f, std::abs(lpf_Iab_.Output()),
 							lpf_a.Output(), lpf_b.Output(), lpf_c.Output(), lpf_a.Output() + lpf_b.Output() + lpf_c.Output());
@@ -639,7 +633,7 @@ float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, 
 					fprintf(stderr, "ApplyPhaseVoltage failed...\n");
 					return false;
 				}
-				if (!data_.counter_dir_ && (t % 13) == 0) {
+				if ((t % 13) == 0) {
 					fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\n",
 							lpf_vbus_.Output(), Ia_);
 				}
