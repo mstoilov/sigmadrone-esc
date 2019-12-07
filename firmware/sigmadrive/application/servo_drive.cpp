@@ -288,7 +288,7 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 	}
 
 	/*
-	 * If We got here the UPDATE didn't come
+	 * If we got here the UPDATE didn't come
 	 */
 	GetPwmGenerator()->Stop();
 	sched_.Abort();
@@ -297,11 +297,9 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 
 float ServoDrive::VoltageToDuty(float voltage, float v_bus)
 {
-	float v_rms = v_bus * 0.7071f; //(2.0f/3.0f);
+	float v_rms = v_bus * 0.7071f;
 	float duty = voltage / v_rms;
 	return duty;
-	float mod = std::min(duty, 0.4f);
-	return mod;
 }
 
 bool ServoDrive::GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c)
@@ -407,7 +405,6 @@ bool ServoDrive::RunUpdateHandlerRotateMotor(float angle, float speed, float vol
 	}
 	return ret;
 }
-
 
 void ServoDrive::AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)
 {

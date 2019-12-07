@@ -32,9 +32,6 @@ public:
 	virtual ~UartRpcServer();
 
 protected:
-	rexjson::value rpc_pwm_timings(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
-	rexjson::value rpc_pwm_start(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
-	rexjson::value rpc_pwm_stop(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
 	rexjson::value rpc_adc_injswstart(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
 	rexjson::value rpc_drv_calibration(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
 	rexjson::value rpc_drv_csagain(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);

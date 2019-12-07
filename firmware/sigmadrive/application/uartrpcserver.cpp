@@ -38,9 +38,6 @@ extern TorqueLoop tql;
 UartRpcServer::UartRpcServer()
 	: rexjson::rpc_server<UartRpcServer>()
 {
-	add("pwm_timings", &UartRpcServer::rpc_pwm_timings);
-	add("pwm_start", &UartRpcServer::rpc_pwm_start);
-	add("pwm_stop", &UartRpcServer::rpc_pwm_stop);
 	add("adc_injswstart", &UartRpcServer::rpc_adc_injswstart);
 	add("drv_calibration", &UartRpcServer::rpc_drv_calibration);
 	add("drv_csagain", &UartRpcServer::rpc_drv_csagain);
@@ -49,87 +46,6 @@ UartRpcServer::UartRpcServer()
 
 UartRpcServer::~UartRpcServer()
 {
-
-}
-
-rexjson::value UartRpcServer::rpc_pwm_timings(rexjson::array& params, rexjson::rpc_exec_mode mode)
-{
-	static unsigned int types[] = {rexjson::rpc_int_type, rexjson::rpc_array_type|rexjson::rpc_null_type};
-	static const char *help_msg = R"desc(
-pwm_timings
-Get/Set OC Values.
-
-Arguments:
-1. motor		(int) Motor index, starting from 0
-2. values		(array) OC values for the different channels. 
-)desc";
-
-	if (mode != rexjson::execute) {
-		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-	}
-	verify_parameters(params, types, ARRAYSIZE(types));
-
-	uint32_t motor = params[0].get_int();
-	if (motor >= g_motors.size())
-		throw std::range_error("Invalid motor index");
-	if (params[1].type() == rexjson::array_type) {
-		for (uint32_t i = 0; i < params[1].get_array().size(); i++)
-			g_motors[motor]->GetPwmGenerator()->SetTiming(i + 1, params[1].get_array()[i].get_int());
-	}
-
-	rexjson::array ret;
-	ret.push_back((int)g_motors[motor]->GetPwmGenerator()->GetTiming(1));
-	ret.push_back((int)g_motors[motor]->GetPwmGenerator()->GetTiming(2));
-	ret.push_back((int)g_motors[motor]->GetPwmGenerator()->GetTiming(3));
-	ret.push_back((int)g_motors[motor]->GetPwmGenerator()->GetTiming(4));
-
-	return ret;
-}
-
-rexjson::value UartRpcServer::rpc_pwm_start(rexjson::array& params, rexjson::rpc_exec_mode mode)
-{
-	static unsigned int types[] = {rexjson::rpc_int_type};
-	static const char *help_msg = R"desc(
-pwm_start
-Start the PWM Generation.
-
-Arguments:
-1. motor		(int) Motor index, starting from 0
-)desc";
-
-	if (mode != rexjson::execute) {
-		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-	}
-	verify_parameters(params, types, ARRAYSIZE(types));
-
-	uint32_t motor = params[0].get_int();
-	if (motor >= g_motors.size())
-		throw std::range_error("Invalid motor index");
-	g_motors[motor]->Start();
-	return g_motors[motor]->IsStarted();
-}
-
-rexjson::value UartRpcServer::rpc_pwm_stop(rexjson::array& params, rexjson::rpc_exec_mode mode)
-{
-	static unsigned int types[] = {rexjson::rpc_int_type};
-	static const char *help_msg = R"desc(
-pwm_stop
-Stop the PWM Generation.
-
-Arguments:
-1. motor		(int) Motor index, starting from 0
-)desc";
-
-	if (mode != rexjson::execute) {
-		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-	}
-	verify_parameters(params, types, ARRAYSIZE(types));
-
-	uint32_t motor = params[0].get_int();
-	if (motor >= g_motors.size())
-		throw std::range_error("Invalid motor index");
-	g_motors[motor]->Stop();
-	return g_motors[motor]->IsStarted();
 
 }
 
