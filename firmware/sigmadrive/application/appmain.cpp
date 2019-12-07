@@ -81,9 +81,7 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 	if (LL_ADC_IsActiveFlag_JEOS(ADCx) && LL_ADC_IsEnabledIT_JEOS(ADCx)) {
 		LL_ADC_ClearFlag_JEOS(ADCx);
 		if (hadc == &hadc1) {
-			adc1.InjectedConvCpltCallback();
-//			fprintf(stderr, "SD_ADC_IRQHandler:\n");
-			servo.SignalThreadUpdate();
+			servo.IrqUpdateCallback();
 		}
 	}
 	if (LL_ADC_IsActiveFlag_EOCS(ADCx) && LL_ADC_IsEnabledIT_EOCS(ADCx)) {
@@ -96,27 +94,6 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 		LL_ADC_ClearFlag_AWD1(ADCx);
 	}
 
-}
-
-
-void AdcBiasSetup()
-{
-	drv1.EnableCalibration();
-	for (size_t i = 0; i < Adc::ADC_HISTORY_SIZE; i++) {
-		vTaskDelay(10 / portTICK_RATE_MS);
-		adc1.InjectedSwTrig();
-	}
-	drv1.DisableCalibration();
-
-	memset(adc1.bias_, 0, sizeof(adc1.bias_));
-	for (size_t i = 0; i < Adc::ADC_HISTORY_SIZE; i++) {
-		adc1.bias_[0] += adc1.injhistory_[i][0];
-		adc1.bias_[1] += adc1.injhistory_[i][1];
-		adc1.bias_[2] += adc1.injhistory_[i][2];
-	}
-	adc1.bias_[0] = adc1.bias_[0]/Adc::ADC_HISTORY_SIZE;
-	adc1.bias_[1] = adc1.bias_[1]/Adc::ADC_HISTORY_SIZE;
-	adc1.bias_[2] = adc1.bias_[2]/Adc::ADC_HISTORY_SIZE;
 }
 
 extern "C"

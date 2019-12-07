@@ -222,12 +222,37 @@ float Asin(float x)
 	return asin(x);
 }
 
+void ServoDrive::IrqUpdateCallback()
+{
+	data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
+	data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
+	data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
+	if (pwm_->GetCounterDirection()) {
+		/*
+		 * Sample ADC bias
+		 */
+		lpf_bias_a.DoFilter(data_.injdata_[0]);
+		lpf_bias_b.DoFilter(data_.injdata_[1]);
+		lpf_bias_c.DoFilter(data_.injdata_[2]);
+	} else {
+		/*
+		 * Sample ADC phase current
+		 */
+		data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
+		data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_a.Output());
+		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_a.Output());
+
+		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
+		data_.theta_ = config_.encoder_dir_ * encoder_->GetElectricPosition();
+		data_.update_counter_++;
+		sched_.SignalThreadUpdate();
+	}
+}
 
 void ServoDrive::UpdateRotor()
 {
 	std::complex<float> r_prev = lpf_e_rotor_.Output();
 	std::complex<float> r_cur = lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
-//	float delta = Cross(r_prev, r_cur) < 0 ? -Acos(Dot(r_prev, r_cur)) : Acos(Dot(r_prev, r_cur));
 	lpf_speed_.DoFilter(Cross(r_prev, r_cur));
 }
 
@@ -236,43 +261,17 @@ void ServoDrive::UpdateVbus()
 	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
 }
 
-void ServoDrive::UpdateCurrentBias()
-{
-	lpf_bias_a.DoFilter(data_.injdata_[0]);
-	lpf_bias_b.DoFilter(data_.injdata_[1]);
-	lpf_bias_c.DoFilter(data_.injdata_[2]);
-}
-
-
 void ServoDrive::UpdateCurrent()
 {
-	Ia_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
-	Ib_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
-	Ic_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_b.Output());
-	lpf_a.DoFilter(Ia_);
-	lpf_b.DoFilter(Ib_);
-	lpf_c.DoFilter(Ic_);
-	lpf_Iab_.DoFilter(Pa_ * Ia_ + Pb_ * Ib_ + Pc_ * (-Ia_ -Ib_));
+	lpf_a.DoFilter(data_.phase_current_a_);
+	lpf_b.DoFilter(data_.phase_current_b_);
+	lpf_c.DoFilter(data_.phase_current_c_);
+	lpf_Iab_.DoFilter(Pa_ * data_.phase_current_a_ + Pb_ * data_.phase_current_b_ + Pc_ * (-data_.phase_current_a_ -data_.phase_current_b_));
 }
 
 float ServoDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
 {
 	return ((adc_bias - adc_val) * config_.Vref_ / config_.adc_full_scale) / config_.Rsense_ / config_.csa_gain_;
-}
-
-void ServoDrive::SignalThreadUpdate()
-{
-	data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
-	data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
-	data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
-	if (pwm_->GetCounterDirection()) {
-		UpdateCurrentBias();
-		return;
-	}
-	data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
-	data_.theta_ = config_.encoder_dir_ * encoder_->GetElectricPosition();
-	data_.update_counter_++;
-	sched_.SignalThreadUpdate();
 }
 
 bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
@@ -625,7 +624,7 @@ float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, 
 		do {
 			ret = RunUpdateHandler([&]()->bool {
 				int i = t & 1;
-				Ialphas[i] += Ia_;
+				Ialphas[i] += data_.phase_current_a_;
 
 				// Test voltage along phase A
 				if (!ApplyPhaseVoltage(test_voltages[i], std::complex<float>(1.0f, 0.0f), lpf_vbus_.Output())) {
@@ -635,7 +634,7 @@ float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, 
 				}
 				if ((t % 13) == 0) {
 					fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\n",
-							lpf_vbus_.Output(), Ia_);
+							lpf_vbus_.Output(), data_.phase_current_a_);
 				}
 
 

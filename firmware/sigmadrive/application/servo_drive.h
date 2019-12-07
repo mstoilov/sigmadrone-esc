@@ -20,6 +20,9 @@ class ServoDrive : public IServoDrive {
 public:
 	struct SampledData {
 		int32_t injdata_[3];
+		float phase_current_a_;
+		float phase_current_b_;
+		float phase_current_c_;
 		int32_t vbus_ = 0;
 		float theta_ = 0.0f;
 		uint32_t update_counter_ = 0;
@@ -63,7 +66,7 @@ public:
 	virtual bool IsStarted() override;
 
 	void Attach();
-	void SignalThreadUpdate();
+	void IrqUpdateCallback();
 
 	float CalculatePhaseCurrent(float adc_val, float adc_bias);
 	float VoltageToDuty(float voltage, float v_bus);
@@ -71,7 +74,6 @@ public:
 	void UpdateRotor();
 	void UpdateVbus();
 	void UpdateCurrent();
-	void UpdateCurrentBias();
 
 	void SineSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
 	void SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
@@ -127,9 +129,6 @@ public:
 /*
  * Derived Data
  */
-	float Ia_;
-	float Ib_;
-	float Ic_;
 	LowPassFilter<float, float> lpf_bias_a;
 	LowPassFilter<float, float> lpf_bias_b;
 	LowPassFilter<float, float> lpf_bias_c;

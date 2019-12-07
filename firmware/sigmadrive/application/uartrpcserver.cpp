@@ -42,10 +42,6 @@ UartRpcServer::UartRpcServer()
 	add("pwm_start", &UartRpcServer::rpc_pwm_start);
 	add("pwm_stop", &UartRpcServer::rpc_pwm_stop);
 	add("adc_injswstart", &UartRpcServer::rpc_adc_injswstart);
-	add("adc_injhistory", &UartRpcServer::rpc_adc_injhistory);
-	add("adc_injbias", &UartRpcServer::rpc_adc_injbias);
-	add("adc_injdata", &UartRpcServer::rpc_adc_injdata);
-	add("adc_injcurrent", &UartRpcServer::rpc_adc_injcurrent);
 	add("drv_calibration", &UartRpcServer::rpc_drv_calibration);
 	add("drv_csagain", &UartRpcServer::rpc_drv_csagain);
 	add("getset_property", &UartRpcServer::rpc_getset_property);
@@ -55,7 +51,6 @@ UartRpcServer::~UartRpcServer()
 {
 
 }
-
 
 rexjson::value UartRpcServer::rpc_pwm_timings(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
@@ -155,107 +150,6 @@ Arguments:
 
 	adc1.InjectedSwTrig();
 	return true;
-}
-
-rexjson::value UartRpcServer::rpc_adc_injhistory(rexjson::array& params, rexjson::rpc_exec_mode mode)
-{
-	static unsigned int types[] = {rexjson::rpc_int_type};
-	static const char *help_msg = R"desc(
-adc_injhistory
-Get injected data for the specified channel
-
-Arguments:
-1. channel		(int) ADC injected data channel.
-)desc";
-
-	if (mode != rexjson::execute) {
-		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-	}
-	verify_parameters(params, types, ARRAYSIZE(types));
-
-	uint32_t channel = params[0].get_int();
-	if (channel >= 3)
-		throw std::range_error("Invalid channel");
-
-	rexjson::array ret;
-	for (size_t i = 0; i < Adc::ADC_HISTORY_SIZE; i++)
-		ret.push_back((int)adc1.injhistory_[i][channel]);
-
-	return ret;
-}
-
-rexjson::value UartRpcServer::rpc_adc_injbias(rexjson::array& params, rexjson::rpc_exec_mode mode)
-{
-	static unsigned int types[] = {rexjson::rpc_null_type};
-	static const char *help_msg = R"desc(
-adc_bias
-Get bias.
-
-Arguments:
-	none
-)desc";
-
-	if (mode != rexjson::execute) {
-		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-	}
-	verify_parameters(params, types, ARRAYSIZE(types));
-
-	rexjson::array ret;
-	for (size_t i = 0; i < sizeof(adc1.bias_)/sizeof(adc1.bias_[0]); i++)
-		ret.push_back((int)adc1.bias_[i]);
-	return ret;
-}
-
-rexjson::value UartRpcServer::rpc_adc_injdata(rexjson::array& params, rexjson::rpc_exec_mode mode)
-{
-	static unsigned int types[] = {rexjson::rpc_null_type};
-	static const char *help_msg = R"desc(
-adc_injdata
-Get injected data.
-
-Arguments:
-	none
-)desc";
-
-	if (mode != rexjson::execute) {
-		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-	}
-	verify_parameters(params, types, ARRAYSIZE(types));
-
-	rexjson::array ret;
-	for (size_t i = 0; i < sizeof(adc1.injdata_)/sizeof(adc1.injdata_[0]); i++)
-		ret.push_back((int)adc1.injdata_[i]);
-	return ret;
-}
-
-rexjson::value UartRpcServer::rpc_adc_injcurrent(rexjson::array& params, rexjson::rpc_exec_mode mode)
-{
-	static unsigned int types[] = {rexjson::rpc_null_type};
-	static const char *help_msg = R"desc(
-adc_injcurrent
-Get injected current.
-
-Arguments:
-	none
-)desc";
-
-	if (mode != rexjson::execute) {
-		return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-	}
-	verify_parameters(params, types, ARRAYSIZE(types));
-
-	float csa_gain = drv1.GetCSAGainValue();
-	float Rsense = 0.010f;
-	float totalCurrent = 0.0f;
-
-	rexjson::array ret;
-	for (size_t i = 0; i < sizeof(adc1.injdata_)/sizeof(adc1.injdata_[0]); i++) {
-		float current = (float)(((float)adc1.bias_[i] - (float)adc1.injdata_[i]) / 1000.0f / (csa_gain * Rsense));
-		totalCurrent += current;
-		ret.push_back(current);
-	}
-	ret.push_back(totalCurrent);
-	return ret;
 }
 
 rexjson::value UartRpcServer::rpc_drv_calibration(rexjson::array& params, rexjson::rpc_exec_mode mode)
