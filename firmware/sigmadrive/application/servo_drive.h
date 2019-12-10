@@ -51,10 +51,6 @@ public:
 		float ridot_disp_alpha_ = 0.01f;
 		float iabs_alpha_ = 0.001f;
 		float ri_angle_ = 1.54;
-//		float current_arg_kp_ = 0.055;		// 1000 * inductance
-//		float current_arg_ki_ = 50;			// kp*R/L
-//		float current_arg_kp_ = 0.0f;		// 1000 * inductance
-//		float current_arg_ki_ = 0.0f;		// kp*R/L
 	};
 
 	ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz);
