@@ -5,12 +5,11 @@
  *      Author: mstoilov
  */
 
-#include "motor_drive.h"
-
 #include "main.h"
 #include "iencoder.h"
 #include "adc.h"
 #include "drv8323.h"
+#include "motordrive.h"
 #include "uartrpcserver.h"
 
 extern UartRpcServer rpc_server;

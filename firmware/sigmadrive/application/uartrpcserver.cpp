@@ -25,8 +25,8 @@
 #include "torque_loop.h"
 #include "adc.h"
 #include "drv8323.h"
-#include "motor_drive.h"
-#include "motor_drive.h"
+#include "motordrive.h"
+#include "motordrive.h"
 #include "property.h"
 
 extern rexjson::property *g_properties;

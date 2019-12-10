@@ -29,7 +29,7 @@
 #include "quadrature_encoder.h"
 #include "ring.h"
 #include "cdc_iface.h"
-#include "motor_drive.h"
+#include "motordrive.h"
 #include "property.h"
 
 #define MOTOR_POLE_PAIRS 7
