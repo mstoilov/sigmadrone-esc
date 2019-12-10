@@ -27,9 +27,9 @@
 #include "exti.h"
 #include "pwm_generator.h"
 #include "quadrature_encoder.h"
-#include "servo_drive.h"
 #include "ring.h"
 #include "cdc_iface.h"
+#include "motor_drive.h"
 #include "property.h"
 
 #define MOTOR_POLE_PAIRS 7
@@ -47,8 +47,8 @@ QuadratureEncoder tim4(0x2000, MOTOR_POLE_PAIRS);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
-ServoDrive servo(&tim4, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
-std::vector<ServoDrive*> g_motors{&servo};
+MotorDrive servo(&tim4, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+std::vector<MotorDrive*> g_motors{&servo};
 
 rexjson::property props =
 		rexjson::property_map {

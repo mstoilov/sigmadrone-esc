@@ -5,8 +5,8 @@
  *      Author: mstoilov
  */
 
-#ifndef _SERVO_DRIVE_H_
-#define _SERVO_DRIVE_H_
+#ifndef _MOTOR_DRIVE_H_
+#define _MOTOR_DRIVE_H_
 
 #include <complex>
 #include "iencoder.h"
@@ -17,7 +17,7 @@
 #include "pidcontroller.h"
 
 
-class ServoDrive {
+class MotorDrive {
 public:
 	struct SampledData {
 		int32_t injdata_[3];
@@ -58,8 +58,8 @@ public:
 	void Stop();
 	bool IsStarted();
 
-	ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz);
-	virtual ~ServoDrive();
+	MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz);
+	virtual ~MotorDrive();
 
 	void Attach();
 	void IrqUpdateCallback();
@@ -144,4 +144,4 @@ public:
 
 };
 
-#endif /* _SERVO_DRIVE_H_ */
+#endif /* _MOTOR_DRIVE_H_ */

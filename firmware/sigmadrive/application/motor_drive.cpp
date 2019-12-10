@@ -5,8 +5,9 @@
  *      Author: mstoilov
  */
 
+#include "motor_drive.h"
+
 #include "main.h"
-#include "servo_drive.h"
 #include "iencoder.h"
 #include "adc.h"
 #include "drv8323.h"
@@ -21,7 +22,7 @@ static std::complex<float> p1_ = std::polar<float>(1.0f, 0.0f);
 static std::complex<float> p2_ = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
 static std::complex<float> p3_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
 
-ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
+MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
 	: Pa_(std::polar<float>(1.0f, 0.0f))
 	, Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
 	, Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
@@ -135,19 +136,19 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 		{"encoder", encoder->GetProperties()},
 	});
 
-	rpc_server.add("servo[0].start", rexjson::make_rpc_wrapper(this, &ServoDrive::Start, "void ServoDrive::Start()"));
-	rpc_server.add("servo[0].stop", rexjson::make_rpc_wrapper(this, &ServoDrive::Stop, "void ServoDrive::Stop()"));
-	rpc_server.add("servo[0].measure_resistance", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage, float max_current)"));
-	rpc_server.add("servo[0].measure_resistance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunResistanceMeasurementOD, "float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);"));
-	rpc_server.add("servo[0].measure_inductance_od", rexjson::make_rpc_wrapper(this, &ServoDrive::RunInductanceMeasurementOD, "float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high);"));
+	rpc_server.add("servo[0].start", rexjson::make_rpc_wrapper(this, &MotorDrive::Start, "void ServoDrive::Start()"));
+	rpc_server.add("servo[0].stop", rexjson::make_rpc_wrapper(this, &MotorDrive::Stop, "void ServoDrive::Stop()"));
+	rpc_server.add("servo[0].measure_resistance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage, float max_current)"));
+	rpc_server.add("servo[0].measure_resistance_od", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurementOD, "float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);"));
+	rpc_server.add("servo[0].measure_inductance_od", rexjson::make_rpc_wrapper(this, &MotorDrive::RunInductanceMeasurementOD, "float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high);"));
 
-	rpc_server.add("servo[0].scheduler_run", rexjson::make_rpc_wrapper(this, &ServoDrive::SchedulerRun, "void SchedulerRun()"));
-	rpc_server.add("servo[0].scheduler_abort", rexjson::make_rpc_wrapper(this, &ServoDrive::SchedulerAbort, "void SchedulerAbort()"));
-	rpc_server.add("servo[0].add_task_arm_motor", rexjson::make_rpc_wrapper(this, &ServoDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
-	rpc_server.add("servo[0].add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &ServoDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
-	rpc_server.add("servo[0].add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &ServoDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
-	rpc_server.add("servo[0].add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &ServoDrive::AddTaskResetRotor, "void AddTaskResetRotor(float reset_voltage, uint32_t reset_hz)"));
-	rpc_server.add("servo[0].alpha_pole_search", rexjson::make_rpc_wrapper(this, &ServoDrive::RunTaskAphaPoleSearch, "void RunTaskAphaPoleSearch()"));
+	rpc_server.add("servo[0].scheduler_run", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerRun, "void SchedulerRun()"));
+	rpc_server.add("servo[0].scheduler_abort", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerAbort, "void SchedulerAbort()"));
+	rpc_server.add("servo[0].add_task_arm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
+	rpc_server.add("servo[0].add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
+	rpc_server.add("servo[0].add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
+	rpc_server.add("servo[0].add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotor, "void AddTaskResetRotor(float reset_voltage, uint32_t reset_hz)"));
+	rpc_server.add("servo[0].alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAphaPoleSearch, "void RunTaskAphaPoleSearch()"));
 	rpc_server.add("servo[0].drv_get_fault1", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
 	rpc_server.add("servo[0].drv_get_fault2", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
 	rpc_server.add("servo[0].drv_clear_fault", rexjson::make_rpc_wrapper(&drv1, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
@@ -162,24 +163,24 @@ ServoDrive::ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	pid_current_arg_.SetMaxIntegralOutput(M_PI);
 }
 
-ServoDrive::~ServoDrive()
+MotorDrive::~MotorDrive()
 {
 	// TODO Auto-generated destructor stub
 }
 
-void ServoDrive::Attach()
+void MotorDrive::Attach()
 {
 	drv1.SetCSAGainValue(config_.csa_gain_);
 	sched_.StartDispatcherThread();
 }
 
-void ServoDrive::Start()
+void MotorDrive::Start()
 {
 	osDelay(20);
 	RunSpinTasks();
 }
 
-void ServoDrive::Stop()
+void MotorDrive::Stop()
 {
 	pwm_->Stop();
 	sched_.Abort();
@@ -187,7 +188,7 @@ void ServoDrive::Stop()
 
 }
 
-bool ServoDrive::IsStarted()
+bool MotorDrive::IsStarted()
 {
 	return pwm_->IsStarted();
 }
@@ -222,7 +223,7 @@ float Asin(float x)
 	return asin(x);
 }
 
-void ServoDrive::IrqUpdateCallback()
+void MotorDrive::IrqUpdateCallback()
 {
 	data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
 	data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
@@ -249,19 +250,19 @@ void ServoDrive::IrqUpdateCallback()
 	}
 }
 
-void ServoDrive::UpdateRotor()
+void MotorDrive::UpdateRotor()
 {
 	std::complex<float> r_prev = lpf_e_rotor_.Output();
 	std::complex<float> r_cur = lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
 	lpf_speed_.DoFilter(Cross(r_prev, r_cur));
 }
 
-void ServoDrive::UpdateVbus()
+void MotorDrive::UpdateVbus()
 {
 	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
 }
 
-void ServoDrive::UpdateCurrent()
+void MotorDrive::UpdateCurrent()
 {
 	lpf_a.DoFilter(data_.phase_current_a_);
 	lpf_b.DoFilter(data_.phase_current_b_);
@@ -269,12 +270,12 @@ void ServoDrive::UpdateCurrent()
 	lpf_Iab_.DoFilter(Pa_ * data_.phase_current_a_ + Pb_ * data_.phase_current_b_ + Pc_ * (-data_.phase_current_a_ -data_.phase_current_b_));
 }
 
-float ServoDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
+float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
 {
 	return ((adc_bias - adc_val) * config_.Vref_ / config_.adc_full_scale) / config_.Rsense_ / config_.csa_gain_;
 }
 
-bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
+bool MotorDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
 {
 	uint32_t flags = sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 3);
 	if (flags == Scheduler::THREAD_FLAG_ABORT) {
@@ -295,14 +296,14 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 	return false;
 }
 
-float ServoDrive::VoltageToDuty(float voltage, float v_bus)
+float MotorDrive::VoltageToDuty(float voltage, float v_bus)
 {
 	float v_rms = v_bus * 0.7071f;
 	float duty = voltage / v_rms;
 	return duty;
 }
 
-bool ServoDrive::GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c)
+bool MotorDrive::GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c)
 {
 	timing_a = (uint32_t)(duty_a * (float)timing_period);
 	timing_b = (uint32_t)(duty_b * (float)timing_period);
@@ -310,7 +311,7 @@ bool ServoDrive::GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32
 	return true;
 }
 
-void ServoDrive::SineSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c)
+void MotorDrive::SineSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c)
 {
 	std::complex<float> theta = v_theta * std::complex<float>(0, 1);
 	duty_a = 0.5 + 0.5 * duty * (theta / Pa_).imag();
@@ -318,7 +319,7 @@ void ServoDrive::SineSVM(float duty, const std::complex<float>& v_theta, float& 
 	duty_c = 0.5 + 0.5 * duty * (theta / Pc_).imag();
 }
 
-void ServoDrive::SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c)
+void MotorDrive::SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c)
 {
 	std::complex<float> theta = v_theta * std::complex<float>(0, 1);
 	std::complex<float> theta3 = theta * theta * theta * 0.3333f;
@@ -327,7 +328,7 @@ void ServoDrive::SaddleSVM(float duty, const std::complex<float>& v_theta, float
 	duty_c = 0.5 + 0.5 * duty * (theta / Pc_ + theta3).imag();
 }
 
-bool ServoDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus)
+bool MotorDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus)
 {
 	uint32_t timing_period = pwm_->GetPeriod();
 	uint32_t t1, t2, t3;
@@ -356,7 +357,7 @@ bool ServoDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_the
 	return true;
 }
 
-bool ServoDrive::ApplyPhaseDuty(float duty_a, float duty_b, float duty_c)
+bool MotorDrive::ApplyPhaseDuty(float duty_a, float duty_b, float duty_c)
 {
 	uint32_t timing_period = pwm_->GetPeriod();
 	uint32_t t1, t2, t3;
@@ -368,7 +369,7 @@ bool ServoDrive::ApplyPhaseDuty(float duty_a, float duty_b, float duty_c)
 	return true;
 }
 
-void ServoDrive::AddTaskArmMotor()
+void MotorDrive::AddTaskArmMotor()
 {
 	sched_.AddTask([&](){
 		ApplyPhaseVoltage(0, std::polar<float>(1.0f, 0.0f), lpf_vbus_.Output());
@@ -376,7 +377,7 @@ void ServoDrive::AddTaskArmMotor()
 	});
 }
 
-void ServoDrive::AddTaskDisarmMotor()
+void MotorDrive::AddTaskDisarmMotor()
 {
 	sched_.AddTask([&](){
 		ApplyPhaseVoltage(0, std::polar<float>(0.0f, 0.0f), lpf_vbus_.Output());
@@ -384,7 +385,7 @@ void ServoDrive::AddTaskDisarmMotor()
 	});
 }
 
-bool ServoDrive::RunUpdateHandlerRotateMotor(float angle, float speed, float voltage, bool dir)
+bool MotorDrive::RunUpdateHandlerRotateMotor(float angle, float speed, float voltage, bool dir)
 {
 	float el_speed = speed * config_.pole_pairs;
 	float total_rotation = angle * config_.pole_pairs;
@@ -406,7 +407,7 @@ bool ServoDrive::RunUpdateHandlerRotateMotor(float angle, float speed, float vol
 	return ret;
 }
 
-void ServoDrive::AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)
+void MotorDrive::AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)
 {
 	sched_.AddTask(std::bind([&](float angle, float speed, float voltage, bool dir){
 		RunUpdateHandlerRotateMotor(angle, speed, voltage, dir);
@@ -414,7 +415,7 @@ void ServoDrive::AddTaskRotateMotor(float angle, float speed, float voltage, boo
 }
 
 
-void ServoDrive::AddTaskResetRotor(float reset_voltage, uint32_t reset_hz, bool reset_encoder)
+void MotorDrive::AddTaskResetRotor(float reset_voltage, uint32_t reset_hz, bool reset_encoder)
 {
 	sched_.AddTask(std::bind([&](float reset_voltage, uint32_t reset_hz, bool reset_encoder){
 		bool ret = true;
@@ -444,7 +445,7 @@ void ServoDrive::AddTaskResetRotor(float reset_voltage, uint32_t reset_hz, bool 
 	}, reset_voltage, reset_hz, reset_encoder));
 }
 
-void ServoDrive::AddTaskDetectEncoderDir()
+void MotorDrive::AddTaskDetectEncoderDir()
 {
 	sched_.AddTask([&](){
 		if (RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, true))
@@ -452,7 +453,7 @@ void ServoDrive::AddTaskDetectEncoderDir()
 	});
 }
 
-void ServoDrive::RunSpinTasks()
+void MotorDrive::RunSpinTasks()
 {
 	AddTaskArmMotor();
 	AddTaskResetRotor(config_.reset_voltage_, config_.reset_hz_);
@@ -500,7 +501,7 @@ void ServoDrive::RunSpinTasks()
 	sched_.Run();
 }
 
-void ServoDrive::RunTaskAphaPoleSearch()
+void MotorDrive::RunTaskAphaPoleSearch()
 {
 	AddTaskArmMotor();
 	if (config_.encoder_dir_ == 0) {
@@ -520,7 +521,7 @@ void ServoDrive::RunTaskAphaPoleSearch()
 	sched_.Run();
 }
 
-float ServoDrive::RunResistanceMeasurement(float seconds, float test_voltage, float max_current)
+float MotorDrive::RunResistanceMeasurement(float seconds, float test_voltage, float max_current)
 {
 	LowPassFilter<std::complex<float>, float> lpf_Imes(0.01);
 
@@ -559,7 +560,7 @@ float ServoDrive::RunResistanceMeasurement(float seconds, float test_voltage, fl
 }
 
 
-float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage)
+float MotorDrive::RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage)
 {
 	LowPassFilter<std::complex<float>, float> lpf_Imes(0.01);
     static const float kI = 10.0f;                                 // [(V/s)/A]
@@ -607,7 +608,7 @@ float ServoDrive::RunResistanceMeasurementOD(float seconds, float test_current, 
 }
 
 
-float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high)
+float MotorDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high)
 {
 	float L = 0.0f;
 
@@ -648,7 +649,7 @@ float ServoDrive::RunInductanceMeasurementOD(int num_cycles, float voltage_low, 
 	return L;
 }
 
-void ServoDrive::RunSimpleTasks()
+void MotorDrive::RunSimpleTasks()
 {
 	sched_.AddTask([&](){
 		uint32_t t0 = xTaskGetTickCount();
@@ -678,12 +679,12 @@ void ServoDrive::RunSimpleTasks()
 
 }
 
-void ServoDrive::SchedulerRun()
+void MotorDrive::SchedulerRun()
 {
 	sched_.Run();
 }
 
-void ServoDrive::SchedulerAbort()
+void MotorDrive::SchedulerAbort()
 {
 	sched_.Abort();
 }

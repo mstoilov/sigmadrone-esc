@@ -19,19 +19,19 @@
  *
  */
 #include <memory>
-#include "servo_drive.h"
 #include "uartrpcserver.h"
 #include "cdc_iface.h"
 #include "pwm_generator.h"
 #include "torque_loop.h"
 #include "adc.h"
 #include "drv8323.h"
-#include "servo_drive.h"
+#include "motor_drive.h"
+#include "motor_drive.h"
 #include "property.h"
 
 extern rexjson::property *g_properties;
 extern CdcIface usb_cdc;
-extern std::vector<ServoDrive*> g_motors;
+extern std::vector<MotorDrive*> g_motors;
 extern Adc adc1;
 extern Drv8323 drv1;
 extern TorqueLoop tql;
