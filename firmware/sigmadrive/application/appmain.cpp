@@ -48,7 +48,7 @@ Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 ServoDrive servo(&tim4, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
-std::vector<IServoDrive*> g_motors{&servo};
+std::vector<ServoDrive*> g_motors{&servo};
 
 rexjson::property props =
 		rexjson::property_map {

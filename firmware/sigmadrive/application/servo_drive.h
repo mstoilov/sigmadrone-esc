@@ -9,14 +9,15 @@
 #define _SERVO_DRIVE_H_
 
 #include <complex>
-#include "iservodrive.h"
+#include "iencoder.h"
+#include "ipwmgenerator.h"
 #include "lowpassfilter.h"
 #include "property.h"
 #include "scheduler.h"
 #include "pidcontroller.h"
 
 
-class ServoDrive : public IServoDrive {
+class ServoDrive {
 public:
 	struct SampledData {
 		int32_t injdata_[3];
@@ -53,13 +54,12 @@ public:
 		float ri_angle_ = 1.54;
 	};
 
+	void Start();
+	void Stop();
+	bool IsStarted();
+
 	ServoDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz);
 	virtual ~ServoDrive();
-	virtual IEncoder* GetEncoder() const override { return encoder_; }
-	virtual IPwmGenerator* GetPwmGenerator() const override { return pwm_; }
-	virtual void Start() override;
-	virtual void Stop() override;
-	virtual bool IsStarted() override;
 
 	void Attach();
 	void IrqUpdateCallback();

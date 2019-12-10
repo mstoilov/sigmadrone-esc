@@ -19,6 +19,7 @@
  *
  */
 #include <memory>
+#include "servo_drive.h"
 #include "uartrpcserver.h"
 #include "cdc_iface.h"
 #include "pwm_generator.h"
@@ -30,7 +31,7 @@
 
 extern rexjson::property *g_properties;
 extern CdcIface usb_cdc;
-extern std::vector<IServoDrive*> g_motors;
+extern std::vector<ServoDrive*> g_motors;
 extern Adc adc1;
 extern Drv8323 drv1;
 extern TorqueLoop tql;

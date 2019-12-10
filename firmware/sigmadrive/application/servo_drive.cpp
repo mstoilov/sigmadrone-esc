@@ -181,7 +181,7 @@ void ServoDrive::Start()
 
 void ServoDrive::Stop()
 {
-	GetPwmGenerator()->Stop();
+	pwm_->Stop();
 	sched_.Abort();
 	osDelay(20);
 
@@ -189,7 +189,7 @@ void ServoDrive::Stop()
 
 bool ServoDrive::IsStarted()
 {
-	return GetPwmGenerator()->IsStarted();
+	return pwm_->IsStarted();
 }
 
 template<typename T>
@@ -278,7 +278,7 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 {
 	uint32_t flags = sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 3);
 	if (flags == Scheduler::THREAD_FLAG_ABORT) {
-		GetPwmGenerator()->Stop();
+		pwm_->Stop();
 		return false;
 	} else if (flags == Scheduler::THREAD_FLAG_UPDATE) {
 		UpdateCurrent();
@@ -290,7 +290,7 @@ bool ServoDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 	/*
 	 * If we got here the UPDATE didn't come
 	 */
-	GetPwmGenerator()->Stop();
+	pwm_->Stop();
 	sched_.Abort();
 	return false;
 }
