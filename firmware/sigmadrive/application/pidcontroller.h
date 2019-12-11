@@ -71,6 +71,20 @@ public:
 		return leak_;
 	}
 
+	void SetGainP(float kp)
+	{
+		kp_ = kp;
+	}
+
+	void SetGainI(float ki)
+	{
+		ki_ = ki;
+	}
+
+	void SetGainD(float kd)
+	{
+		kd_ = kd;
+	}
 
 public:
 	float kp_;

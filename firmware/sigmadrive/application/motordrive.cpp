@@ -11,6 +11,7 @@
 #include "drv8323.h"
 #include "motordrive.h"
 #include "uartrpcserver.h"
+#include "sdmath.h"
 
 extern UartRpcServer rpc_server;
 extern Adc adc1;
@@ -146,7 +147,7 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	rpc_server.add("servo[0].add_task_arm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
 	rpc_server.add("servo[0].add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
 	rpc_server.add("servo[0].add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
-	rpc_server.add("servo[0].add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotor, "void AddTaskResetRotor(float reset_voltage, uint32_t reset_hz)"));
+	rpc_server.add("servo[0].add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz)"));
 	rpc_server.add("servo[0].alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAphaPoleSearch, "void RunTaskAphaPoleSearch()"));
 	rpc_server.add("servo[0].drv_get_fault1", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
 	rpc_server.add("servo[0].drv_get_fault2", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
@@ -187,39 +188,41 @@ void MotorDrive::Stop()
 
 }
 
+int32_t MotorDrive::GetEncoderDir() const
+{
+	return config_.encoder_dir_;
+}
+
+uint32_t MotorDrive::GetUpdateFrequency() const
+{
+	return update_hz_;
+}
+
+uint32_t MotorDrive::GetPolePairs() const
+{
+	return config_.pole_pairs;
+}
+
+
+float MotorDrive::GetBusVoltage() const
+{
+	return lpf_vbus_.Output();
+}
+
+std::complex<float> MotorDrive::GetPhaseCurrent() const
+{
+	return lpf_Iab_.Output();
+}
+
+std::complex<float> MotorDrive::GetElecRotation() const
+{
+	return lpf_e_rotor_.Output();
+}
+
+
 bool MotorDrive::IsStarted()
 {
 	return pwm_->IsStarted();
-}
-
-template<typename T>
-T Cross(const std::complex<T>& a, const std::complex<T>& b)
-{
-	return a.real() * b.imag() - a.imag() * b.real();
-}
-
-template<typename T>
-T Dot(const std::complex<T>& a, const std::complex<T>& b)
-{
-	return a.real() * b.real() + a.imag() * b.imag();
-}
-
-float Acos(float x)
-{
-	if (x > 1.0f)
-		return 0;
-	if (x < -1.0f)
-		return M_PI;
-	return acos(x);
-}
-
-float Asin(float x)
-{
-	if (x > 1.0f)
-		return M_PI_2;
-	if (x < -1.0f)
-		return -M_PI_2;
-	return asin(x);
 }
 
 void MotorDrive::IrqUpdateCallback()
@@ -253,7 +256,7 @@ void MotorDrive::UpdateRotor()
 {
 	std::complex<float> r_prev = lpf_e_rotor_.Output();
 	std::complex<float> r_cur = lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
-	lpf_speed_.DoFilter(Cross(r_prev, r_cur));
+	lpf_speed_.DoFilter(sdmath::cross(r_prev, r_cur));
 }
 
 void MotorDrive::UpdateVbus()
@@ -413,8 +416,12 @@ void MotorDrive::AddTaskRotateMotor(float angle, float speed, float voltage, boo
 	}, angle, speed, voltage, dir));
 }
 
+void MotorDrive::AddTaskResetRotor()
+{
+	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, true);
+}
 
-void MotorDrive::AddTaskResetRotor(float reset_voltage, uint32_t reset_hz, bool reset_encoder)
+void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder)
 {
 	sched_.AddTask(std::bind([&](float reset_voltage, uint32_t reset_hz, bool reset_encoder){
 		bool ret = true;
@@ -455,7 +462,7 @@ void MotorDrive::AddTaskDetectEncoderDir()
 void MotorDrive::RunSpinTasks()
 {
 	AddTaskArmMotor();
-	AddTaskResetRotor(config_.reset_voltage_, config_.reset_hz_);
+	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_);
 	if (config_.encoder_dir_ == 0)
 		AddTaskDetectEncoderDir();
 	sched_.AddTask([&](){
@@ -470,7 +477,7 @@ void MotorDrive::RunSpinTasks()
 				std::complex<float> Inorm = std::polar<float>(1.0f, Iarg);
 				std::complex<float> rotor = lpf_e_rotor_.Output();
 				float Rarg = std::arg(rotor);
-				float ri_dot = Dot(rotor, Inorm);
+				float ri_dot = sdmath::dot(rotor, Inorm);
 				lpf_RIdot_.DoFilter(ri_dot);
 				lpf_RIdot_disp_.DoFilter(ri_dot);
 				pid_current_arg_.Input(lpf_RIdot_.Output(), 1.0f/update_hz_);
@@ -479,7 +486,7 @@ void MotorDrive::RunSpinTasks()
 //				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_);
 				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_ + pid_current_arg_.Output());
 				ApplyPhaseVoltage(config_.spin_voltage_, rotor * ri_vec, lpf_vbus_.Output());
-				float diff = Acos(lpf_RIdot_disp_.Output());
+				float diff = acosf(lpf_RIdot_disp_.Output());
 
 				if ((display_counter++ % 13) == 0) {
 					if (Rarg < 0.0f)
@@ -504,13 +511,13 @@ void MotorDrive::RunTaskAphaPoleSearch()
 {
 	AddTaskArmMotor();
 	if (config_.encoder_dir_ == 0) {
-		AddTaskResetRotor(config_.reset_voltage_, config_.reset_hz_);
+		AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_);
 		AddTaskDetectEncoderDir();
 	}
-	AddTaskResetRotor(config_.reset_voltage_, config_.reset_hz_);
+	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_);
 	for (size_t i = 0; i < config_.pole_pairs; i++) {
 		AddTaskRotateMotor((M_PI * 2)/config_.pole_pairs, M_PI, 0.45, true);
-		AddTaskResetRotor(config_.reset_voltage_, config_.reset_hz_, false);
+		AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
 		sched_.AddTask([&](void){
 			fprintf(stderr, "Enc: %7lu\n", encoder_->GetPosition());
 			encoder_->ResetPosition(0);

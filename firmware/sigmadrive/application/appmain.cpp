@@ -30,6 +30,7 @@
 #include "ring.h"
 #include "cdc_iface.h"
 #include "motordrive.h"
+#include "motorctrl_complexfoc.h"
 #include "property.h"
 
 #define MOTOR_POLE_PAIRS 7
@@ -48,12 +49,13 @@ Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 MotorDrive servo(&tim4, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+MotorCtrlComplexFOC cfoc(&servo);
 std::vector<MotorDrive*> g_motors{&servo};
 
 rexjson::property props =
 		rexjson::property_map {
 			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
-			{"servo", rexjson::property({servo.props_})},
+			{"cfoc", rexjson::property({cfoc.props_})},
 		};
 rexjson::property* g_properties = &props;
 

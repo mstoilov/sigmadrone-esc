@@ -82,6 +82,12 @@ public:
 	float RunResistanceMeasurement(float seconds, float test_voltage, float max_current);
 	float RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);
 	float RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high);
+	int32_t GetEncoderDir() const;
+	uint32_t GetUpdateFrequency() const;
+	uint32_t GetPolePairs() const;
+	float GetBusVoltage() const;
+	std::complex<float> GetPhaseCurrent() const;
+	std::complex<float> GetElecRotation() const;
 
 	/*
 	 * UpdateHandlers
@@ -95,7 +101,8 @@ public:
 	void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir);
 	void AddTaskArmMotor();
 	void AddTaskDisarmMotor();
-	void AddTaskResetRotor(float reset_voltage, uint32_t reset_hz, bool reset_encoder = true);
+	void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder = true);
+	void AddTaskResetRotor();
 	void AddTaskDetectEncoderDir();
 	void RunTaskAphaPoleSearch();
 
@@ -140,8 +147,6 @@ public:
 	LowPassFilter<float, float> lpf_vbus_;
 	LowPassFilter<float, float> lpf_speed_;
 	PidController<float> pid_current_arg_;
-
-
 };
 
 #endif /* _MOTOR_DRIVE_H_ */
