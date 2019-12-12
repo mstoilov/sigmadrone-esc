@@ -67,12 +67,7 @@ void SD_TIM1_IRQHandler(TIM_HandleTypeDef* htim)
 
 	if (LL_TIM_IsActiveFlag_UPDATE(TIMx)) {
 		LL_TIM_ClearFlag_UPDATE(TIMx);
-//		if (TIMx == TIM1) {
-//			fprintf(stderr, "TIM1_IRQHandler:\n");
-//			servo.SignalThreadUpdate();
-//		}
 	}
-//	servo.PeriodElapsedCallback();
 }
 
 extern "C"

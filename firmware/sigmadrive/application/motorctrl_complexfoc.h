@@ -30,6 +30,8 @@ public:
 	void Stop();
 	void RunSpinTasks();
 
+private:
+	void DumpDebugData(float Rarg, float Iarg, float Iabs);
 
 public:
 	rexjson::property props_;
