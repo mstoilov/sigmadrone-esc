@@ -42,7 +42,7 @@ UartRpcServer::UartRpcServer()
 	add("adc_injswstart", &UartRpcServer::rpc_adc_injswstart);
 	add("drv_calibration", &UartRpcServer::rpc_drv_calibration);
 	add("drv_csagain", &UartRpcServer::rpc_drv_csagain);
-	add("getset_property", &UartRpcServer::rpc_getset_property);
+	add("getset", &UartRpcServer::rpc_getset_property);
 }
 
 UartRpcServer::~UartRpcServer()
