@@ -1,5 +1,8 @@
 #include <assert.h>
 #include <string.h>
+#include <sstream>
+#include <iterator>
+#include <algorithm>
 #include "main.h"
 #include "unistd.h"
 #include "command_task.h"
@@ -12,6 +15,33 @@
 char cl_heap[4096];
 
 extern UartRpcServer rpc_server;
+
+std::string CommandToJson(std::string str)
+{
+	str.erase(str.begin(), std::find_if(str.begin(), str.end(),
+					std::not1(std::ptr_fun<int, int>(std::isspace))));
+	if (str.length() && str[0] == '{')
+		return str;
+	std::istringstream ss(str);
+	std::istream_iterator<std::string> it(ss), eos;
+	std::string json;
+	if (it == eos)
+		return json;
+	json = "{\"method\" : ";
+	json += "\"" + *it++ + "\"";
+	json += ", \"params\" : [";
+	for (size_t i = 0; it != eos; it++, i++) {
+		std::string token = *it; //tokens[i];
+		if (i != 0)
+			json += ", ";
+		if (std::isdigit(token[0]) || token[0] == '.' || token == "true" || token == "false")
+			json += token;
+		else
+			json += "\"" + token + "\"";
+	}
+	json += "]}";
+	return json;
+}
 
 extern "C"
 void RunCommandTask(void *argument)
@@ -32,7 +62,7 @@ void RunCommandTask(void *argument)
 			assert(elret == (int)strlen(szBuffer));
 			try {
 				std::string str(szBuffer, 0, elret);
-				rexjson::value ret = rpc_server.call(str);
+				rexjson::value ret = rpc_server.call(CommandToJson(str));
 				if (ret["error"].get_type() != rexjson::null_type) {
 					std::cout << "ERROR: " << ret["error"]["message"].to_string() << std::endl;
 				} else {
