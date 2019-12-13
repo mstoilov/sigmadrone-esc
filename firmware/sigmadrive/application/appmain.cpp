@@ -32,6 +32,7 @@
 #include "motordrive.h"
 #include "motorctrl_complexfoc.h"
 #include "property.h"
+#include "minas_a4_abs_encoder.h"
 
 #define MOTOR_POLE_PAIRS 7
 
@@ -41,6 +42,7 @@ Adc adc1;
 Adc adc2;
 Adc adc3;
 Uart uart1;
+Uart uart3;
 SPIMaster spi3;
 PwmGenerator tim1;
 CdcIface usb_cdc;
@@ -109,6 +111,7 @@ int application_main()
 	adc2.Attach(&hadc2);
 	adc3.Attach(&hadc3);
 	uart1.Attach(&huart1);
+	uart3.Attach(&huart3);
 	spi3.Attach(&hspi3);
 	tim4.Attach(&htim4);
 	tim1.Attach(&htim1);
@@ -155,7 +158,7 @@ int application_main()
 	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
 	task_attributes.name = "CommandTask";
 	task_attributes.priority = (osPriority_t) osPriorityNormal;
-	task_attributes.stack_size = 16000;
+	task_attributes.stack_size = 4000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 
 	servo.Attach();
@@ -163,8 +166,13 @@ int application_main()
 
 
 	uint32_t old_counter = 0, new_counter = 0;
+	float old_angle = 0, new_angle = 0;
+	MinasA4AbsEncoder ma4_abs_encoder(uart3);
+
+	ma4_abs_encoder.init();
+
 	for (;;) {
-		HAL_Delay(50);
+		vTaskDelay(50 / portTICK_RATE_MS);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
 
 		new_counter = tim4.GetPosition();
@@ -173,7 +181,16 @@ int application_main()
 			old_counter = new_counter;
 		}
 
-		HAL_Delay(50);
+		if (!ma4_abs_encoder.update()) {
+			ma4_abs_encoder.reset_all_errors();
+		}
+		new_angle = ma4_abs_encoder.get_absolute_angle_deg();
+		if (new_angle != old_angle) {
+			fprintf(stderr, "Minas Enc: %5.2f\n", new_angle);
+			old_angle = new_angle;
+		}
+
+		vTaskDelay(50 / portTICK_RATE_MS);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
 	}
 

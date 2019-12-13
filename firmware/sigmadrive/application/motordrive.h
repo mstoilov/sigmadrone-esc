@@ -105,6 +105,7 @@ public:
 	void AddTaskResetRotor();
 	void AddTaskDetectEncoderDir();
 	void RunTaskAphaPoleSearch();
+	void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir);
 
 	void SchedulerRun();
 	void SchedulerAbort();
