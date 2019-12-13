@@ -189,6 +189,18 @@ void MotorDrive::Stop()
 
 }
 
+IEncoder* MotorDrive::GetEncoder() const
+{
+	return encoder_;
+}
+
+void MotorDrive::SetEncoder(IEncoder* encoder)
+{
+	if (encoder)
+		encoder_ = encoder;
+}
+
+
 int32_t MotorDrive::GetEncoderDir() const
 {
 	return config_.encoder_dir_;

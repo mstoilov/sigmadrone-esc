@@ -7,6 +7,7 @@
 
 #include "minas_a4_abs_encoder.h"
 #include <cstring>
+#include <math.h>
 
 MinasA4AbsEncoder::MinasA4AbsEncoder(Uart& usart) :
 		usart_(usart),
@@ -14,7 +15,8 @@ MinasA4AbsEncoder::MinasA4AbsEncoder(Uart& usart) :
 		angle_deg_(0.0f),
 		counter_(0),
 		offset_(0),
-		error_count_(0)
+		error_count_(0),
+		update_thread_(0)
 {
 	almc_.as_byte_ = 0;
 }
@@ -23,13 +25,11 @@ MinasA4AbsEncoder::~MinasA4AbsEncoder()
 {
 }
 
-bool MinasA4AbsEncoder::init()
+bool MinasA4AbsEncoder::Attach()
 {
 	MA4EncoderReplyA replyA;
 
-//	usart_.EnableDEMode();
-//	usart_.Enable();
-
+	StartUpdateThread();
 	reset_all_errors();
 	if (!sendrecv_command(MA4_DATA_ID_A, &replyA, sizeof(replyA))) {
 		return false;
@@ -189,4 +189,60 @@ uint8_t MinasA4AbsEncoder::calc_crc_x8_1(uint8_t* data, uint8_t size)
     }
   }
   return (crc & 0x00FF);
+}
+
+void MinasA4AbsEncoder::RunUpdateLoop()
+{
+	for (;;) {
+		update();
+		osDelay(1);
+	}
+}
+
+static void RunUpdateLoopWrapper(void* ctx)
+{
+	reinterpret_cast<MinasA4AbsEncoder*>(const_cast<void*>(ctx))->RunUpdateLoop();
+}
+
+
+void MinasA4AbsEncoder::StartUpdateThread()
+{
+	osThreadAttr_t task_attributes;
+	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+	task_attributes.name = " MinasA4AbsEncoderLoop";
+	task_attributes.priority = (osPriority_t) osPriorityNormal;
+	task_attributes.stack_size = 2048;
+	update_thread_ = osThreadNew(RunUpdateLoopWrapper, this, &task_attributes);
+
+
+//	osThreadDef(RunTxLoopWrapper, osPriorityNormal, 0, 2048);
+//	tx_thread_ = osThreadCreate(&os_thread_def_RunTxLoopWrapper, this);
+}
+
+void MinasA4AbsEncoder::ResetPosition(uint32_t position)
+{
+	offset_ = get_counter() + position;
+}
+
+uint32_t MinasA4AbsEncoder::GetPosition()
+{
+	uint32_t max_position = GetMaxPosition();
+	return (get_counter() + max_position - offset_) % max_position;
+}
+
+int32_t MinasA4AbsEncoder::GetIndexPosition()
+{
+	return 0;
+}
+
+float MinasA4AbsEncoder::GetElectricPosition(uint32_t motor_pole_pairs)
+{
+	uint32_t max_position = GetMaxPosition();
+	return 2.0f * M_PI * (GetPosition() % (max_position / motor_pole_pairs)) / (max_position / motor_pole_pairs);
+}
+
+float MinasA4AbsEncoder::GetMechanicalPosition()
+{
+	uint32_t max_postion = GetMaxPosition();
+	return 2.0f * M_PI * (GetPosition() % (max_postion)) / (max_postion);
 }

@@ -82,6 +82,8 @@ public:
 	float RunResistanceMeasurement(float seconds, float test_voltage, float max_current);
 	float RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);
 	float RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high);
+	IEncoder* GetEncoder() const;
+	void SetEncoder(IEncoder* encoder);
 	int32_t GetEncoderDir() const;
 	uint32_t GetUpdateFrequency() const;
 	uint32_t GetPolePairs() const;

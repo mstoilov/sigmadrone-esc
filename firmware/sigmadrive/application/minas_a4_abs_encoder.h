@@ -12,6 +12,8 @@
 #include <vector>
 #include <string>
 #include "uart.h"
+#include "iencoder.h"
+#include "cmsis_os2.h"
 
 //
 // Definitions for Panasonic Minas A4 17 bit absolute encoder
@@ -151,11 +153,11 @@ static_assert(sizeof(MA4EncoderReplyA) == 9, "MA4EncoderReplyA must be 9 bytes l
 static const uint32_t MA4_ABS_ENCODER_RESOLUTION_BITS = 17;
 static const uint32_t MA4_ABS_ENCODER_RESOLUTION = 1 << MA4_ABS_ENCODER_RESOLUTION_BITS;
 
-class MinasA4AbsEncoder {
+class MinasA4AbsEncoder : public IEncoder {
 public:
 	MinasA4AbsEncoder(Uart& usart);
 	~MinasA4AbsEncoder();
-	bool init();
+	bool Attach();
 	uint16_t get_revolutions() const;
 	float get_absolute_angle_deg() const;
 	MA4Almc get_last_error() const;
@@ -167,6 +169,22 @@ public:
 	uint32_t get_initial_counter_offset() const { return offset_; }
 	uint32_t get_error_count() const { return error_count_; }
 	uint32_t get_counter() const { return (counter_ + MA4_ABS_ENCODER_RESOLUTION - offset_) % MA4_ABS_ENCODER_RESOLUTION; }
+
+public:
+	virtual void Start() override {}
+	virtual void Stop() override {}
+	virtual uint32_t GetMaxPosition() override { return MA4_ABS_ENCODER_RESOLUTION; }
+	virtual void ResetPosition(uint32_t position) override;
+	virtual uint32_t GetPosition() override;
+	virtual int32_t GetIndexPosition() override;
+	virtual float GetElectricPosition(uint32_t motor_pole_pairs) override;
+	virtual float GetMechanicalPosition() override;
+
+private:
+	void StartUpdateThread();
+
+public:
+	void RunUpdateLoop();
 
 private:
 	bool send_command(uint8_t command);
@@ -184,6 +202,7 @@ private:
 	uint32_t offset_;
 	MA4Almc almc_;
 	uint32_t error_count_;
+	osThreadId_t update_thread_;
 };
 
 #endif /* MINAS_A4_ABS_ENCODER_H_ */

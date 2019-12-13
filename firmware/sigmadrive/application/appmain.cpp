@@ -47,6 +47,7 @@ SPIMaster spi3;
 PwmGenerator tim1;
 CdcIface usb_cdc;
 QuadratureEncoder tim4(0x2000);
+MinasA4AbsEncoder ma4_abs_encoder(uart3);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
@@ -117,6 +118,7 @@ int application_main()
 	tim1.Attach(&htim1);
 //	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
 	usb_cdc.Attach(&hUsbDeviceFS);
+	ma4_abs_encoder.Attach();
 
 	drv1.WriteReg(2, 0x0);
 	drv1.WriteReg(3, 0x0);
@@ -161,15 +163,13 @@ int application_main()
 	task_attributes.stack_size = 4000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 
+	servo.SetEncoder(&ma4_abs_encoder);
 	servo.Attach();
 	tim4.Start();
 
 
 	uint32_t old_counter = 0, new_counter = 0;
 	float old_angle = 0, new_angle = 0;
-	MinasA4AbsEncoder ma4_abs_encoder(uart3);
-
-	ma4_abs_encoder.init();
 
 	for (;;) {
 		vTaskDelay(50 / portTICK_RATE_MS);
@@ -181,10 +181,8 @@ int application_main()
 			old_counter = new_counter;
 		}
 
-		if (!ma4_abs_encoder.update()) {
-			ma4_abs_encoder.reset_all_errors();
-		}
-		new_angle = ma4_abs_encoder.get_absolute_angle_deg();
+//		ma4_abs_encoder.update();
+		new_angle = ma4_abs_encoder.GetElectricPosition(4);
 		if (new_angle != old_angle) {
 			fprintf(stderr, "Minas Enc: %5.2f\n", new_angle);
 			old_angle = new_angle;
