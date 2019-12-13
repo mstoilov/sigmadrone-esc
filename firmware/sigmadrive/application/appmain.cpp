@@ -46,7 +46,7 @@ Uart uart3;
 SPIMaster spi3;
 PwmGenerator tim1;
 CdcIface usb_cdc;
-QuadratureEncoder tim4(0x2000, MOTOR_POLE_PAIRS);
+QuadratureEncoder tim4(0x2000);
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});

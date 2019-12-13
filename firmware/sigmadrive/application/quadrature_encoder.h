@@ -19,7 +19,7 @@
 
 class QuadratureEncoder : public IEncoder {
 public:
-	QuadratureEncoder(uint32_t cpr_max, uint32_t motor_pole_pairs);
+	QuadratureEncoder(uint32_t cpr_max);
 	virtual ~QuadratureEncoder();
 	void Attach(TIM_HandleTypeDef* htim);
 	uint32_t GetMaxCounter();
@@ -35,18 +35,14 @@ public:
 	virtual void ResetPosition(uint32_t position) override;
 	virtual uint32_t GetPosition() override;
 	virtual int32_t GetIndexPosition() override;
-	virtual float GetElectricPosition() override;
+	virtual float GetElectricPosition(uint32_t motor_pole_pairs) override;
 	virtual float GetMechanicalPosition() override;
-	virtual uint32_t GetMotorPolePairs() override;
-	virtual void SetMotorPolePairs(uint32_t motor_pole_pairs) override;
-	virtual rexjson::property GetProperties() override;
 
 private:
 	void SetCounter(uint32_t cpr);
 
 protected:
 	uint32_t cpr_max_;
-	uint32_t motor_pole_pairs_;
 	volatile int32_t index_offset_;
 	TIM_HandleTypeDef* htim_;
 };

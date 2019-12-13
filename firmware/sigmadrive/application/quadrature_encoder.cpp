@@ -20,9 +20,8 @@ inline uint32_t PositionToCpr(uint32_t position)
 }
 
 
-QuadratureEncoder::QuadratureEncoder(uint32_t cpr_max, uint32_t motor_pole_pairs)
+QuadratureEncoder::QuadratureEncoder(uint32_t cpr_max)
 	: cpr_max_(cpr_max)
-	, motor_pole_pairs_(motor_pole_pairs)
 	, index_offset_(-1)
 	, htim_(NULL)
 {
@@ -78,7 +77,6 @@ void QuadratureEncoder::ResetPosition(uint32_t position)
 	InvalidateIndexOffset();
 }
 
-
 uint32_t QuadratureEncoder::GetPosition()
 {
 	return CprToPosition(GetCounter());
@@ -114,21 +112,12 @@ int32_t QuadratureEncoder::GetIndexPosition()
 	return CprToPosition(index_offset_);
 }
 
-uint32_t QuadratureEncoder::GetMotorPolePairs()
-{
-	return motor_pole_pairs_;
-}
-
-void QuadratureEncoder::SetMotorPolePairs(uint32_t motor_pole_pairs)
-{
-	motor_pole_pairs_ = motor_pole_pairs;
-}
-
-float QuadratureEncoder::GetElectricPosition()
+float QuadratureEncoder::GetElectricPosition(uint32_t motor_pole_pairs)
 {
 	uint32_t max_position = GetMaxPosition();
-	return 2.0f * M_PI * (GetPosition() % (max_position / motor_pole_pairs_)) / (max_position / motor_pole_pairs_);
+	return 2.0f * M_PI * (GetPosition() % (max_position / motor_pole_pairs)) / (max_position / motor_pole_pairs);
 }
+
 
 float QuadratureEncoder::GetMechanicalPosition()
 {
@@ -136,12 +125,3 @@ float QuadratureEncoder::GetMechanicalPosition()
 	return 2.0f * M_PI * (GetPosition() % (max_postion)) / (max_postion);
 }
 
-rexjson::property QuadratureEncoder::GetProperties()
-{
-	rexjson::property props = rexjson::property_map {
-		{"motor_pole_pairs", rexjson::property(&motor_pole_pairs_)},
-		{"cpr_max", rexjson::property(&cpr_max_)},
-	};
-
-	return props;
-}

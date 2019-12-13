@@ -134,7 +134,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 		{"pid_current_arg_ki", &pid_current_arg_.ki_},
 		{"pid_current_arg_leak", &pid_current_arg_.leak_},
 		{"pid_current_arg_output_i_max", &pid_current_arg_.output_i_max_},
-		{"encoder", encoder->GetProperties()},
 	});
 
 	rpc_server.add("drive.start", rexjson::make_rpc_wrapper(this, &MotorDrive::Start, "void ServoDrive::Start()"));
@@ -248,7 +247,7 @@ void MotorDrive::IrqUpdateCallback()
 		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_a.Output());
 
 		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
-		data_.theta_ = config_.encoder_dir_ * encoder_->GetElectricPosition();
+		data_.theta_ = config_.encoder_dir_ * (encoder_->GetElectricPosition(config_.pole_pairs));
 		data_.update_counter_++;
 		sched_.SignalThreadUpdate();
 	}
