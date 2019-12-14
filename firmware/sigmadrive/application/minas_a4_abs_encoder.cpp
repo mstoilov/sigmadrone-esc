@@ -221,13 +221,14 @@ void MinasA4AbsEncoder::StartUpdateThread()
 
 void MinasA4AbsEncoder::ResetPosition(uint32_t position)
 {
-	offset_ = get_counter() + position;
+	reset_initial_counter_offset();
+	offset_ += position;
 }
 
 uint32_t MinasA4AbsEncoder::GetPosition()
 {
 	uint32_t max_position = GetMaxPosition();
-	return (get_counter() + max_position - offset_) % max_position;
+	return (get_counter() + max_position) % max_position;
 }
 
 int32_t MinasA4AbsEncoder::GetIndexPosition()

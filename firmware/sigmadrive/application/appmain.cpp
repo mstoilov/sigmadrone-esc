@@ -160,10 +160,10 @@ int application_main()
 	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
 	task_attributes.name = "CommandTask";
 	task_attributes.priority = (osPriority_t) osPriorityNormal;
-	task_attributes.stack_size = 4000;
+	task_attributes.stack_size = 12000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 
-	servo.SetEncoder(&ma4_abs_encoder);
+//	servo.SetEncoder(&ma4_abs_encoder);
 	servo.Attach();
 	tim4.Start();
 
@@ -181,10 +181,9 @@ int application_main()
 			old_counter = new_counter;
 		}
 
-//		ma4_abs_encoder.update();
 		new_angle = ma4_abs_encoder.GetElectricPosition(4);
 		if (new_angle != old_angle) {
-			fprintf(stderr, "Minas Enc: %5.2f\n", new_angle);
+//			fprintf(stderr, "Minas Enc: %5.2f\n", new_angle / M_PI * 180.0f);
 			old_angle = new_angle;
 		}
 
