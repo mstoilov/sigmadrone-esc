@@ -3,6 +3,7 @@
 #include <string.h>
 #include "uart.h"
 #include "cdc_iface.h"
+#include "cmsis_os2.h"
 
 /*
  * Set up the remote terminal like this:
@@ -58,7 +59,7 @@ int _read(int fd __attribute__((unused)), char* buf __attribute__((unused)),
 	// STDIN are routed to the trace device
 	if (fd == 0) {
 		while ((ret = uart1.Receive(buf, nbyte)) <= 0)
-			;
+			osDelay(50);
 		return ret;
 	}
 

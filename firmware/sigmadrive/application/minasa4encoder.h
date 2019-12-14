@@ -1,19 +1,29 @@
 /*
- * MinasA4AbsEncoder.h
+ * MinasA4Encoder.h
  *
  *  Created on: Mar 9, 2019
  *      Author: svetlio
+ *
  */
 
-#ifndef MINAS_A4_ABS_ENCODER_H_
-#define MINAS_A4_ABS_ENCODER_H_
+#ifndef MINAS_A4_ENCODER_H_
+#define MINAS_A4_ENCODER_H_
+
+#include "stm32f745xx.h"
+#include "stm32f7xx.h"
+#include "stm32f7xx_hal_uart.h"
 
 #include <stdint.h>
 #include <vector>
 #include <string>
-#include "uart.h"
+#include <map>
 #include "iencoder.h"
 #include "cmsis_os2.h"
+
+#include "FreeRTOS.h"
+#include "event_groups.h"
+#include "task.h"
+#include "queue.h"
 
 //
 // Definitions for Panasonic Minas A4 17 bit absolute encoder
@@ -153,22 +163,27 @@ static_assert(sizeof(MA4EncoderReplyA) == 9, "MA4EncoderReplyA must be 9 bytes l
 static const uint32_t MA4_ABS_ENCODER_RESOLUTION_BITS = 17;
 static const uint32_t MA4_ABS_ENCODER_RESOLUTION = 1 << MA4_ABS_ENCODER_RESOLUTION_BITS;
 
-class MinasA4AbsEncoder : public IEncoder {
+class MinasA4Encoder : public IEncoder {
 public:
-	MinasA4AbsEncoder(Uart& usart);
-	~MinasA4AbsEncoder();
-	bool Attach();
+	using handle_map_type = std::map<UART_HandleTypeDef*, MinasA4Encoder*>;
+	static handle_map_type handle_map_;
+
+	MinasA4Encoder();
+	~MinasA4Encoder();
+	bool Attach(UART_HandleTypeDef* usart);
+	void TransmitCompleteCallback();
+	void ReceiveCompleteCallback();
 	uint16_t get_revolutions() const;
 	float get_absolute_angle_deg() const;
 	MA4Almc get_last_error() const;
 	bool update();
 	bool reset_all_errors();
-	bool reset_single_revolution_data() { return reset_error_code(MA4_DATA_ID_F); }
-	bool reset_multiple_revolution_data() { return reset_error_code(MA4_DATA_ID_B); }
-	void reset_initial_counter_offset() { offset_ = counter_; }
+	bool reset_single_revolution_data()			{ return reset_error_code(MA4_DATA_ID_F); }
+	bool reset_multiple_revolution_data()		{ return reset_error_code(MA4_DATA_ID_B); }
+	void reset_initial_counter_offset()			{ offset_ = counter_; }
 	uint32_t get_initial_counter_offset() const { return offset_; }
-	uint32_t get_error_count() const { return error_count_; }
-	uint32_t get_counter() const { return (counter_ + MA4_ABS_ENCODER_RESOLUTION - offset_) % MA4_ABS_ENCODER_RESOLUTION; }
+	uint32_t get_error_count() const 			{ return error_count_; }
+	uint32_t get_counter() const 				{ return (counter_ + MA4_ABS_ENCODER_RESOLUTION - offset_) % MA4_ABS_ENCODER_RESOLUTION; }
 
 public:
 	virtual void Start() override {}
@@ -180,22 +195,23 @@ public:
 	virtual float GetElectricPosition(uint32_t motor_pole_pairs) override;
 	virtual float GetMechanicalPosition() override;
 
+	static const uint32_t EVENT_FLAG_RX_COMPLETE = (1u << 0);
+
 private:
 	void StartUpdateThread();
+	bool WaitEventRxComplete(uint32_t timeout);
+	void EventThreadRxComplete() 				{ osEventFlagsSet(event_dma_, EVENT_FLAG_RX_COMPLETE); }
 
 public:
 	void RunUpdateLoop();
 
 private:
-	bool send_command(uint8_t command);
-	bool recv_response(void* reply, size_t reply_size);
 	bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
 	bool reset_error_code(uint8_t command);
-	size_t read_usart_data(void* buf, size_t size);
 	static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
 
 private:
-	Uart& usart_;
+	UART_HandleTypeDef* huart_;
 	uint16_t revolutions_;
 	float angle_deg_;
 	uint32_t counter_;
@@ -203,6 +219,8 @@ private:
 	MA4Almc almc_;
 	uint32_t error_count_;
 	osThreadId_t update_thread_;
+	osEventFlagsId_t event_dma_;
+	volatile bool rx_completed_ = false;
 };
 
 #endif /* MINAS_A4_ABS_ENCODER_H_ */

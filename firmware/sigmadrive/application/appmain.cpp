@@ -32,7 +32,7 @@
 #include "motordrive.h"
 #include "motorctrl_complexfoc.h"
 #include "property.h"
-#include "minas_a4_abs_encoder.h"
+#include "minasa4encoder.h"
 
 #define MOTOR_POLE_PAIRS 7
 
@@ -42,12 +42,11 @@ Adc adc1;
 Adc adc2;
 Adc adc3;
 Uart uart1;
-Uart uart3;
 SPIMaster spi3;
 PwmGenerator tim1;
 CdcIface usb_cdc;
 QuadratureEncoder tim4(0x2000);
-MinasA4AbsEncoder ma4_abs_encoder(uart3);
+MinasA4Encoder ma4_abs_encoder;
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
@@ -112,13 +111,12 @@ int application_main()
 	adc2.Attach(&hadc2);
 	adc3.Attach(&hadc3);
 	uart1.Attach(&huart1);
-	uart3.Attach(&huart3);
 	spi3.Attach(&hspi3);
 	tim4.Attach(&htim4);
 	tim1.Attach(&htim1);
 //	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
 	usb_cdc.Attach(&hUsbDeviceFS);
-	ma4_abs_encoder.Attach();
+	ma4_abs_encoder.Attach(&huart3);
 
 	drv1.WriteReg(2, 0x0);
 	drv1.WriteReg(3, 0x0);
@@ -160,10 +158,10 @@ int application_main()
 	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
 	task_attributes.name = "CommandTask";
 	task_attributes.priority = (osPriority_t) osPriorityNormal;
-	task_attributes.stack_size = 12000;
+	task_attributes.stack_size = 16000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 
-//	servo.SetEncoder(&ma4_abs_encoder);
+	servo.SetEncoder(&ma4_abs_encoder);
 	servo.Attach();
 	tim4.Start();
 
@@ -181,9 +179,10 @@ int application_main()
 			old_counter = new_counter;
 		}
 
+		ma4_abs_encoder.update();
 		new_angle = ma4_abs_encoder.GetElectricPosition(4);
 		if (new_angle != old_angle) {
-//			fprintf(stderr, "Minas Enc: %5.2f\n", new_angle / M_PI * 180.0f);
+			fprintf(stderr, "Minas Enc: %5.2f\n", new_angle / M_PI * 180.0f);
 			old_angle = new_angle;
 		}
 

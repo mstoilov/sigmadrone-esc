@@ -37,10 +37,10 @@ Uart::~Uart()
 
 void Uart::Attach(UART_HandleTypeDef* huart)
 {
-	assert(huart);
+	huart_ = huart;
+	assert(huart_);
 	assert(huart_->hdmatx);
 
-	huart_ = huart;
 	assert(handle_map_.find(huart_) == handle_map_.end());
 	handle_map_[huart_] = this;
 	huart_->TxCpltCallback = ::tx_complete;

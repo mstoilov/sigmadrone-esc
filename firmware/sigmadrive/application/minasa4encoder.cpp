@@ -5,57 +5,106 @@
  *      Author: svetlio
  */
 
-#include "minas_a4_abs_encoder.h"
+#include "minasa4encoder.h"
 #include <cstring>
+#include <assert.h>
 #include <math.h>
 
-MinasA4AbsEncoder::MinasA4AbsEncoder(Uart& usart) :
-		usart_(usart),
+MinasA4Encoder::handle_map_type MinasA4Encoder::handle_map_;
+
+extern "C" void minasa4_tx_complete(UART_HandleTypeDef* huart)
+{
+	MinasA4Encoder* ptr = MinasA4Encoder::handle_map_[huart];
+	if (ptr) {
+		ptr->TransmitCompleteCallback();
+	}
+}
+
+extern "C" void minasa4_rx_complete(UART_HandleTypeDef* huart)
+{
+	MinasA4Encoder* ptr = MinasA4Encoder::handle_map_[huart];
+	if (ptr) {
+		ptr->ReceiveCompleteCallback();
+	}
+}
+
+
+MinasA4Encoder::MinasA4Encoder() :
+		huart_(nullptr),
 		revolutions_(0),
 		angle_deg_(0.0f),
 		counter_(0),
 		offset_(0),
 		error_count_(0),
-		update_thread_(0)
+		update_thread_(0),
+		event_dma_(osEventFlagsNew(NULL))
 {
 	almc_.as_byte_ = 0;
 }
 
-MinasA4AbsEncoder::~MinasA4AbsEncoder()
+MinasA4Encoder::~MinasA4Encoder()
 {
 }
 
-bool MinasA4AbsEncoder::Attach()
+bool MinasA4Encoder::Attach(UART_HandleTypeDef* huart)
 {
 	MA4EncoderReplyA replyA;
 
-	StartUpdateThread();
+	assert(huart);
+	assert(huart_->hdmatx);
+	assert(huart_->hdmarx);
+
+	huart_ = huart;
+	assert(handle_map_.find(huart_) == handle_map_.end());
+	handle_map_[huart_] = this;
+	huart_->TxCpltCallback = ::minasa4_tx_complete;
+	huart_->RxCpltCallback = ::minasa4_rx_complete;
+
+
 	reset_all_errors();
+	update();
 	if (!sendrecv_command(MA4_DATA_ID_A, &replyA, sizeof(replyA))) {
 		return false;
 	}
-	if (replyA.almc_.as_byte_ != 0) {
-		return reset_all_errors();
-	}
+//	if (replyA.almc_.as_byte_ != 0) {
+//		return reset_all_errors();
+//	}
 	return true;
 }
 
-uint16_t MinasA4AbsEncoder::get_revolutions() const
+void MinasA4Encoder::TransmitCompleteCallback()
+{
+
+}
+
+void MinasA4Encoder::ReceiveCompleteCallback()
+{
+	rx_completed_ = true;
+	EventThreadRxComplete();
+}
+
+bool MinasA4Encoder::WaitEventRxComplete(uint32_t timeout)
+{
+	uint32_t status = osEventFlagsWait(event_dma_, EVENT_FLAG_RX_COMPLETE, osFlagsWaitAny, timeout);
+	return ((status & EVENT_FLAG_RX_COMPLETE) == EVENT_FLAG_RX_COMPLETE) ? true : false;
+}
+
+uint16_t MinasA4Encoder::get_revolutions() const
 {
 	return revolutions_;
 }
 
-float MinasA4AbsEncoder::get_absolute_angle_deg() const
+float MinasA4Encoder::get_absolute_angle_deg() const
 {
 	return angle_deg_;
 }
 
-MA4Almc MinasA4AbsEncoder::get_last_error() const
+MA4Almc MinasA4Encoder::get_last_error() const
 {
 	return almc_;
 }
 
-bool MinasA4AbsEncoder::reset_all_errors()
+bool MinasA4Encoder::reset_all_errors()
 {
 	bool retval = reset_error_code(MA4_DATA_ID_B);
 	if (!retval) {
@@ -64,7 +113,7 @@ bool MinasA4AbsEncoder::reset_all_errors()
 	return retval;
 }
 
-bool MinasA4AbsEncoder::reset_error_code(uint8_t data_id)
+bool MinasA4Encoder::reset_error_code(uint8_t data_id)
 {
 #if 1
 	MA4EncoderReplyB reply;
@@ -83,7 +132,7 @@ bool MinasA4AbsEncoder::reset_error_code(uint8_t data_id)
 	return 0 == almc_.as_byte_;
 }
 
-bool MinasA4AbsEncoder::update()
+bool MinasA4Encoder::update()
 {
 
 	// first obtain angle with revolutions
@@ -127,47 +176,23 @@ bool MinasA4AbsEncoder::update()
 	return true;
 }
 
-bool MinasA4AbsEncoder::send_command(uint8_t command)
+bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply_size)
 {
-	size_t bytes_written = usart_.Transmit((char*)&command, sizeof(command));
-	if (bytes_written != sizeof(command)) {
+	memset(reply, 0, reply_size);
+	rx_completed_ = false;
+	osEventFlagsClear(event_dma_, EVENT_FLAG_RX_COMPLETE);
+	if (HAL_UART_Receive_DMA(huart_, (uint8_t*)reply, reply_size) != HAL_OK) {
+		fprintf(stderr, "PanasonicMA4Encoder failed to receive reply for command 0x%x\n", command);
+		return false;
+	}
+	if (HAL_UART_Transmit_DMA(huart_, (uint8_t*)&command, sizeof(command)) != HAL_OK) {
 		fprintf(stderr, "PanasonicMA4Encoder failed to send command 0x%x\n", command);
 		return false;
 	}
-	return true;
+	return WaitEventRxComplete(1);
 }
 
-bool MinasA4AbsEncoder::recv_response(void* reply, size_t reply_size)
-{
-	memset(reply, 0, reply_size);
-	size_t bytes_read = read_usart_data(reply, reply_size);
-	if (bytes_read != reply_size) {
-		fprintf(stderr, "PanasonicMA4Encoder read only %u bytes out of %u\n", bytes_read, reply_size);
-		return false;
-	}
-	return true;
-}
-
-bool MinasA4AbsEncoder::sendrecv_command(uint8_t command, void* reply, size_t reply_size)
-{
-	if (!send_command(command))
-		return false;
-	return recv_response(reply, reply_size);
-}
-
-size_t MinasA4AbsEncoder::read_usart_data(void* buf, size_t size)
-{
-	uint8_t *bufptr = (uint8_t*)buf;
-	int32_t cnt = 100000;
-	while (size && --cnt >= 0) { // todo: use timeout
-		size_t ret = usart_.Receive((char*)bufptr, size);
-		size -= ret;
-		bufptr += ret;
-	}
-	return bufptr - (uint8_t*)buf;
-}
-
-uint8_t MinasA4AbsEncoder::calc_crc_x8_1(uint8_t* data, uint8_t size)
+uint8_t MinasA4Encoder::calc_crc_x8_1(uint8_t* data, uint8_t size)
 {
   uint8_t j;
   uint8_t carry;
@@ -191,7 +216,7 @@ uint8_t MinasA4AbsEncoder::calc_crc_x8_1(uint8_t* data, uint8_t size)
   return (crc & 0x00FF);
 }
 
-void MinasA4AbsEncoder::RunUpdateLoop()
+void MinasA4Encoder::RunUpdateLoop()
 {
 	for (;;) {
 		update();
@@ -201,48 +226,44 @@ void MinasA4AbsEncoder::RunUpdateLoop()
 
 static void RunUpdateLoopWrapper(void* ctx)
 {
-	reinterpret_cast<MinasA4AbsEncoder*>(const_cast<void*>(ctx))->RunUpdateLoop();
+	reinterpret_cast<MinasA4Encoder*>(const_cast<void*>(ctx))->RunUpdateLoop();
 }
 
 
-void MinasA4AbsEncoder::StartUpdateThread()
+void MinasA4Encoder::StartUpdateThread()
 {
 	osThreadAttr_t task_attributes;
 	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
-	task_attributes.name = " MinasA4AbsEncoderLoop";
+	task_attributes.name = " MinasA4EncoderThread";
 	task_attributes.priority = (osPriority_t) osPriorityNormal;
 	task_attributes.stack_size = 2048;
 	update_thread_ = osThreadNew(RunUpdateLoopWrapper, this, &task_attributes);
-
-
-//	osThreadDef(RunTxLoopWrapper, osPriorityNormal, 0, 2048);
-//	tx_thread_ = osThreadCreate(&os_thread_def_RunTxLoopWrapper, this);
 }
 
-void MinasA4AbsEncoder::ResetPosition(uint32_t position)
+void MinasA4Encoder::ResetPosition(uint32_t position)
 {
 	reset_initial_counter_offset();
 	offset_ += position;
 }
 
-uint32_t MinasA4AbsEncoder::GetPosition()
+uint32_t MinasA4Encoder::GetPosition()
 {
 	uint32_t max_position = GetMaxPosition();
 	return (get_counter() + max_position) % max_position;
 }
 
-int32_t MinasA4AbsEncoder::GetIndexPosition()
+int32_t MinasA4Encoder::GetIndexPosition()
 {
 	return 0;
 }
 
-float MinasA4AbsEncoder::GetElectricPosition(uint32_t motor_pole_pairs)
+float MinasA4Encoder::GetElectricPosition(uint32_t motor_pole_pairs)
 {
 	uint32_t max_position = GetMaxPosition();
 	return 2.0f * M_PI * (GetPosition() % (max_position / motor_pole_pairs)) / (max_position / motor_pole_pairs);
 }
 
-float MinasA4AbsEncoder::GetMechanicalPosition()
+float MinasA4Encoder::GetMechanicalPosition()
 {
 	uint32_t max_postion = GetMaxPosition();
 	return 2.0f * M_PI * (GetPosition() % (max_postion)) / (max_postion);

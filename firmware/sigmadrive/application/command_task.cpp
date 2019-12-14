@@ -11,6 +11,7 @@
 #include "ClPort.h"
 #include "rexjson++.h"
 #include "uartrpcserver.h"
+#include "cmsis_os2.h"
 
 char cl_heap[4096];
 

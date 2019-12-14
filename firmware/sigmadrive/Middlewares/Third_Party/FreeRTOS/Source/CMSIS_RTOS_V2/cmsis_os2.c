@@ -1082,7 +1082,7 @@ uint32_t osEventFlagsSet (osEventFlagsId_t ef_id, uint32_t flags) {
   else if (IS_IRQ()) {
     yield = pdFALSE;
 
-    if (xEventGroupSetBitsFromISR (hEventGroup, (EventBits_t)flags, &yield) != pdFAIL) {
+    if (xEventGroupSetBitsFromISR (hEventGroup, (EventBits_t)flags, &yield) == pdFAIL) {
       rflags = (uint32_t)osErrorResource;
     } else {
       rflags = flags;
