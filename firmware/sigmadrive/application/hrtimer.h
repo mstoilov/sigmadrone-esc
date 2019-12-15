@@ -15,13 +15,18 @@
 
 class HRTimer {
 public:
-	HRTimer();
+	HRTimer(uint32_t clock_hz);
 	virtual ~HRTimer();
 	void Attach(TIM_HandleTypeDef* htim);
 	uint32_t GetCounter();
+	uint32_t GetTimeElapsedMicroSec(uint32_t counter1, uint32_t counter2);
+	uint32_t GetTimeElapsedNanoSec(uint32_t counter1, uint32_t counter2);
+	uint32_t GetTimeElapsedClockTicks(uint32_t counter1, uint32_t counter2);
+
 
 public:
 	TIM_HandleTypeDef* htim_;
+	uint32_t clock_hz_;
 };
 
 #endif /* APPLICATION_HRTIMER_H_ */

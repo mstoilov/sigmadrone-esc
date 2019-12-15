@@ -18,12 +18,11 @@
 #include <string>
 #include <map>
 #include "iencoder.h"
+#include "hrtimer.h"
+
 #include "cmsis_os2.h"
 
-#include "FreeRTOS.h"
-#include "event_groups.h"
-#include "task.h"
-#include "queue.h"
+extern HRTimer hrtimer;
 
 //
 // Definitions for Panasonic Minas A4 17 bit absolute encoder
@@ -221,6 +220,11 @@ private:
 	osThreadId_t update_thread_;
 	osEventFlagsId_t event_dma_;
 	volatile bool rx_completed_ = false;
+
+public:
+	volatile uint32_t t1_ = 0;
+	volatile uint32_t t2_ = 0;
+
 };
 
 #endif /* MINAS_A4_ABS_ENCODER_H_ */

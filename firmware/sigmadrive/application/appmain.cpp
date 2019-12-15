@@ -53,7 +53,7 @@ Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 MotorDrive servo(&tim4, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlComplexFOC cfoc(&servo);
-HRTimer hrtimer;
+HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
 rexjson::property props =
 		rexjson::property_map {
@@ -115,6 +115,7 @@ int application_main()
 	spi3.Attach(&hspi3);
 	tim4.Attach(&htim4);
 	tim1.Attach(&htim1);
+	hrtimer.Attach(&htim5);
 //	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
 	usb_cdc.Attach(&hUsbDeviceFS);
 	ma4_abs_encoder.Attach(&huart3);
@@ -183,7 +184,8 @@ int application_main()
 		ma4_abs_encoder.update();
 		new_angle = ma4_abs_encoder.GetElectricPosition(4);
 		if (new_angle != old_angle) {
-			fprintf(stderr, "Minas Enc: %5.2f\n", new_angle / M_PI * 180.0f);
+			fprintf(stderr, "Minas Enc: %5.2f (Time: %8lu uSec)\n",
+					new_angle / M_PI * 180.0f, hrtimer.GetTimeElapsedMicroSec(ma4_abs_encoder.t1_, ma4_abs_encoder.t2_));
 			old_angle = new_angle;
 		}
 

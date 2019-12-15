@@ -81,11 +81,13 @@ void MinasA4Encoder::ReceiveCompleteCallback()
 {
 	rx_completed_ = true;
 	EventThreadRxComplete();
+	t1_ = hrtimer.GetCounter();
 }
 
 bool MinasA4Encoder::WaitEventRxComplete(uint32_t timeout)
 {
 	uint32_t status = osEventFlagsWait(event_dma_, EVENT_FLAG_RX_COMPLETE, osFlagsWaitAny, timeout);
+	t2_ = hrtimer.GetCounter();
 	return ((status & EVENT_FLAG_RX_COMPLETE) == EVENT_FLAG_RX_COMPLETE) ? true : false;
 }
 

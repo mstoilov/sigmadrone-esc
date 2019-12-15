@@ -50,6 +50,7 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	pwm_ = pwm;
 	props_= rexjson::property_map({
 		{"speed", rexjson::property(&lpf_speed_.out_, rexjson::property_access::readonly)},
+		{"update_hz", rexjson::property(&update_hz, rexjson::property_access::readonly)},
 		{"bias_alpha", rexjson::property(
 				&config_.bias_alpha_,
 				rexjson::property_access::readwrite,
