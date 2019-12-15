@@ -33,6 +33,7 @@
 #include "motorctrl_complexfoc.h"
 #include "property.h"
 #include "minasa4encoder.h"
+#include "hrtimer.h"
 
 #define MOTOR_POLE_PAIRS 7
 
@@ -52,7 +53,7 @@ Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 MotorDrive servo(&tim4, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlComplexFOC cfoc(&servo);
-std::vector<MotorDrive*> g_motors{&servo};
+HRTimer hrtimer;
 
 rexjson::property props =
 		rexjson::property_map {
@@ -158,7 +159,7 @@ int application_main()
 	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
 	task_attributes.name = "CommandTask";
 	task_attributes.priority = (osPriority_t) osPriorityNormal;
-	task_attributes.stack_size = 16000;
+	task_attributes.stack_size = 12000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 
 	servo.SetEncoder(&ma4_abs_encoder);

@@ -189,7 +189,7 @@ bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply
 		fprintf(stderr, "PanasonicMA4Encoder failed to send command 0x%x\n", command);
 		return false;
 	}
-	return WaitEventRxComplete(1);
+	return WaitEventRxComplete(2);
 }
 
 uint8_t MinasA4Encoder::calc_crc_x8_1(uint8_t* data, uint8_t size)
