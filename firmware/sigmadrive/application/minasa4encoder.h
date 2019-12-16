@@ -152,7 +152,7 @@ struct MA4EncoderReplyA {
 	MA4StatusField status_field_;
 	uint8_t absolute_data_[3];
 	uint8_t encoder_id_; // fixed to 0x11
-	uint8_t manufacturer_reserved;
+	uint8_t maker_id_;
 	MA4Almc almc_;
 	uint8_t crc_;
 };
@@ -172,6 +172,14 @@ public:
 	bool Attach(UART_HandleTypeDef* usart);
 	void TransmitCompleteCallback();
 	void ReceiveCompleteCallback();
+	bool UpdateId4();
+	bool UpdateId5();
+	bool UpdateIdA();
+	uint32_t ResetErrorCode(uint8_t data_id);
+	uint32_t ResetErrorCodeF();
+	uint32_t ResetErrorCodeB();
+	uint32_t ResetErrorCodeE();
+	uint32_t ResetErrorCode9();
 	uint16_t get_revolutions() const;
 	float get_absolute_angle_deg() const;
 	MA4Almc get_last_error() const;
@@ -209,12 +217,17 @@ private:
 	bool reset_error_code(uint8_t command);
 	static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
 
-private:
+public:
 	UART_HandleTypeDef* huart_;
-	uint16_t revolutions_;
-	float angle_deg_;
-	uint32_t counter_;
-	uint32_t offset_;
+	uint16_t revolutions_ = 0;
+	uint8_t revolution0_ = 0;
+	uint8_t revolution1_ = 0;
+	uint8_t revolution2_ = 0;
+	uint32_t counter_ = 0;
+	uint32_t offset_ = 0;
+	uint8_t status_ = 0;
+	uint8_t encoder_id_ = 0;
+	uint8_t maker_id_ = 0;
 	MA4Almc almc_;
 	uint32_t error_count_;
 	osThreadId_t update_thread_;

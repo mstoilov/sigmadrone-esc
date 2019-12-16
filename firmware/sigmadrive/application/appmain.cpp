@@ -118,7 +118,6 @@ int application_main()
 	hrtimer.Attach(&htim5);
 //	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
 	usb_cdc.Attach(&hUsbDeviceFS);
-	ma4_abs_encoder.Attach(&huart3);
 
 	drv1.WriteReg(2, 0x0);
 	drv1.WriteReg(3, 0x0);
@@ -167,26 +166,51 @@ int application_main()
 	servo.Attach();
 	tim4.Start();
 
+	rpc_server.add("minas.resetF", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeF, "uint32_t MinasA4Encoder::ResetErrorCodeF()"));
+	rpc_server.add("minas.resetB", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeB, "uint32_t MinasA4Encoder::ResetErrorCodeB()"));
+	rpc_server.add("minas.resetE", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeE, "uint32_t MinasA4Encoder::ResetErrorCodeE()"));
+	rpc_server.add("minas.reset9", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCode9, "uint32_t MinasA4Encoder::ResetErrorCode9()"));
+	rpc_server.add("minas.Update4", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::UpdateId4, "bool MinasA4Encoder::UpdateId4()"));
+	rpc_server.add("minas.Update5", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::UpdateId5, "bool MinasA4Encoder::UpdateId5()"));
 
+	ma4_abs_encoder.Attach(&huart3);
 	uint32_t old_counter = 0, new_counter = 0;
-	float old_angle = 0, new_angle = 0;
 
-	for (;;) {
+	for (size_t i = 0; ; i++) {
 		vTaskDelay(50 / portTICK_RATE_MS);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
 
-		new_counter = tim4.GetPosition();
-		if (new_counter != old_counter) {
+//		new_counter = tim4.GetPosition();
+//		if (new_counter != old_counter) {
 //			fprintf(stderr, "Counter: %lu\n", new_counter);
+//			old_counter = new_counter;
+//		}
+
+		ma4_abs_encoder.UpdateId5();
+		new_counter = ma4_abs_encoder.GetPosition();
+		if (new_counter != old_counter || ma4_abs_encoder.status_) {
+			if (ma4_abs_encoder.status_)
+				ma4_abs_encoder.UpdateId4();
+			fprintf(stderr, "Minas Enc: %7.2f, Cnt: %8lu, Rev: %4u Maker ID: 0x%x Status: %2u (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (Time: %8lu uSec)\n",
+					ma4_abs_encoder.GetElectricPosition(4) / M_PI * 180.0f,
+					new_counter,
+					ma4_abs_encoder.revolutions_,
+					ma4_abs_encoder.encoder_id_,
+					ma4_abs_encoder.status_,
+					ma4_abs_encoder.almc_.overspeed_,
+					ma4_abs_encoder.almc_.full_abs_status_,
+					ma4_abs_encoder.almc_.count_error_,
+					ma4_abs_encoder.almc_.counter_overflow_,
+					ma4_abs_encoder.almc_.multiple_revolution_error_,
+					ma4_abs_encoder.almc_.system_down_,
+					ma4_abs_encoder.almc_.battery_alarm_,
+					hrtimer.GetTimeElapsedMicroSec(ma4_abs_encoder.t1_, ma4_abs_encoder.t2_));
 			old_counter = new_counter;
 		}
 
-		ma4_abs_encoder.update();
-		new_angle = ma4_abs_encoder.GetElectricPosition(4);
-		if (new_angle != old_angle) {
-			fprintf(stderr, "Minas Enc: %5.2f (Time: %8lu uSec)\n",
-					new_angle / M_PI * 180.0f, hrtimer.GetTimeElapsedMicroSec(ma4_abs_encoder.t1_, ma4_abs_encoder.t2_));
-			old_angle = new_angle;
+		if (ma4_abs_encoder.status_) {
+			ma4_abs_encoder.ResetErrorCodeB();
+			ma4_abs_encoder.UpdateId4();
 		}
 
 		vTaskDelay(50 / portTICK_RATE_MS);

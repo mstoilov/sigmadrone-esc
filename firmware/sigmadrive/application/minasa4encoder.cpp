@@ -32,7 +32,6 @@ extern "C" void minasa4_rx_complete(UART_HandleTypeDef* huart)
 MinasA4Encoder::MinasA4Encoder() :
 		huart_(nullptr),
 		revolutions_(0),
-		angle_deg_(0.0f),
 		counter_(0),
 		offset_(0),
 		error_count_(0),
@@ -60,15 +59,16 @@ bool MinasA4Encoder::Attach(UART_HandleTypeDef* huart)
 	huart_->TxCpltCallback = ::minasa4_tx_complete;
 	huart_->RxCpltCallback = ::minasa4_rx_complete;
 
+	osDelay(2000);
 
-	reset_all_errors();
-	update();
+//	reset_all_errors();
 	if (!sendrecv_command(MA4_DATA_ID_A, &replyA, sizeof(replyA))) {
 		return false;
 	}
 //	if (replyA.almc_.as_byte_ != 0) {
 //		return reset_all_errors();
 //	}
+
 	return true;
 }
 
@@ -88,17 +88,15 @@ bool MinasA4Encoder::WaitEventRxComplete(uint32_t timeout)
 {
 	uint32_t status = osEventFlagsWait(event_dma_, EVENT_FLAG_RX_COMPLETE, osFlagsWaitAny, timeout);
 	t2_ = hrtimer.GetCounter();
-	return ((status & EVENT_FLAG_RX_COMPLETE) == EVENT_FLAG_RX_COMPLETE) ? true : false;
+	bool ret = ((status & EVENT_FLAG_RX_COMPLETE) == EVENT_FLAG_RX_COMPLETE) ? true : false;
+	if (!ret)
+		fprintf(stderr, "WaitEventRxComplete timeout\n");
+	return ret;
 }
 
 uint16_t MinasA4Encoder::get_revolutions() const
 {
 	return revolutions_;
-}
-
-float MinasA4Encoder::get_absolute_angle_deg() const
-{
-	return angle_deg_;
 }
 
 MA4Almc MinasA4Encoder::get_last_error() const
@@ -125,13 +123,155 @@ bool MinasA4Encoder::reset_error_code(uint8_t data_id)
 	}
 	// Send the data_id 10 times, separated by at least 40 usecs
 	for (uint32_t i = 0; i < 9; ++i) {
-		HAL_Delay(1UL);
+		osDelay(50);
 		if (sendrecv_command(data_id, &reply, sizeof(reply))) {
 			almc_ = reply.almc_;
 		}
 	}
 #endif
 	return 0 == almc_.as_byte_;
+}
+
+uint32_t MinasA4Encoder::ResetErrorCode(uint8_t data_id)
+{
+	MA4EncoderReplyB reply;
+
+	for (uint32_t i = 0; i < 20; ++i) {
+		osDelay(2);
+		if (!sendrecv_command(data_id, &reply, sizeof(reply))) {
+			return -1;
+		}
+	}
+	return reply.almc_.as_byte_;
+}
+
+uint32_t MinasA4Encoder::ResetErrorCode9()
+{
+	return ResetErrorCode(MA4_DATA_ID_9);
+}
+
+uint32_t MinasA4Encoder::ResetErrorCodeF()
+{
+	return ResetErrorCode(MA4_DATA_ID_F);
+}
+
+uint32_t MinasA4Encoder::ResetErrorCodeB()
+{
+	return ResetErrorCode(MA4_DATA_ID_B);
+}
+
+uint32_t MinasA4Encoder::ResetErrorCodeE()
+{
+	return ResetErrorCode(MA4_DATA_ID_E);
+}
+
+
+bool MinasA4Encoder::UpdateId4()
+{
+	// first obtain angle with revolutions
+	MA4EncoderReply4 reply4;
+	if (!sendrecv_command(MA4_DATA_ID_4, &reply4, sizeof(reply4))) {
+		fprintf(stderr, "PanasonicMA4Encoder sendrecv_failed for command: 0x%x\n", MA4_DATA_ID_4);
+		++error_count_;
+		return false;
+	}
+
+	if (reply4.ctrl_field_.as_byte != MA4_DATA_ID_4) {
+		fprintf(stderr, "PanasonicMA4Encoder received incorrect control field 0x%x, expected value was 0x%x\n",
+				reply4.ctrl_field_.as_byte, MA4_DATA_ID_4);
+		++error_count_;
+		return false;
+	}
+
+	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply4, sizeof(reply4)-1);
+	if (crc != reply4.crc_) {
+		fprintf(stderr, "WARNING: mismatched crc!\n");
+		++error_count_;
+		return false;
+	}
+	uint32_t abs_data =
+			((uint32_t)reply4.absolute_data_[2] << 16) +
+			((uint32_t)reply4.absolute_data_[1] << 8) +
+			reply4.absolute_data_[0];
+	counter_ = abs_data & 0x1ffff;
+	status_ = (reply4.status_field_.ea1 << 1) | (reply4.status_field_.ea0);
+	almc_.as_byte_ = reply4.almc_.as_byte_;
+	return true;
+}
+
+
+bool MinasA4Encoder::UpdateId5()
+{
+	// first obtain angle with revolutions
+	MA4EncoderReply5 reply5;
+	if (!sendrecv_command(MA4_DATA_ID_5, &reply5, sizeof(reply5))) {
+		fprintf(stderr, "PanasonicMA4Encoder sendrecv_failed for command: 0x%x\n", MA4_DATA_ID_5);
+		++error_count_;
+		return false;
+	}
+
+	if (reply5.ctrl_field_.as_byte != MA4_DATA_ID_5) {
+		fprintf(stderr, "PanasonicMA4Encoder received incorrect control field 0x%x, expected value was 0x%x\n",
+				reply5.ctrl_field_.as_byte, MA4_DATA_ID_5);
+		++error_count_;
+		return false;
+	}
+
+	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply5, sizeof(reply5)-1);
+	if (crc != reply5.crc_) {
+		fprintf(stderr, "WARNING: mismatched crc!\n");
+		++error_count_;
+		return false;
+	}
+
+	revolutions_ = *reinterpret_cast<uint16_t*>(reply5.revolution_data_);
+	revolution0_ = reply5.revolution_data_[0];
+	revolution1_ = reply5.revolution_data_[1];
+	revolution2_ = reply5.revolution_data_[2];
+	uint32_t abs_data =
+			((uint32_t)reply5.absolute_data_[2] << 16) +
+			((uint32_t)reply5.absolute_data_[1] << 8) +
+			reply5.absolute_data_[0];
+	counter_ = abs_data & 0x1ffff;
+	status_ = (reply5.status_field_.ea1 << 1) | (reply5.status_field_.ea0);
+
+	return true;
+}
+
+bool MinasA4Encoder::UpdateIdA()
+{
+	// first obtain angle with revolutions
+	MA4EncoderReplyA replyA;
+	if (!sendrecv_command(MA4_DATA_ID_A, &replyA, sizeof(replyA))) {
+		fprintf(stderr, "PanasonicMA4Encoder sendrecv_failed for command: 0x%x\n", MA4_DATA_ID_A);
+		++error_count_;
+		return false;
+	}
+
+	if (replyA.ctrl_field_.as_byte != MA4_DATA_ID_A) {
+		fprintf(stderr, "PanasonicMA4Encoder received incorrect control field 0x%x, expected value was 0x%x\n",
+				replyA.ctrl_field_.as_byte, MA4_DATA_ID_A);
+		++error_count_;
+		return false;
+	}
+
+	uint8_t crc = calc_crc_x8_1((uint8_t*)&replyA, sizeof(replyA)-1);
+	if (crc != replyA.crc_) {
+		fprintf(stderr, "WARNING: mismatched crc!\n");
+		++error_count_;
+		return false;
+	}
+
+	uint32_t abs_data =
+			((uint32_t)replyA.absolute_data_[2] << 16) +
+			((uint32_t)replyA.absolute_data_[1] << 8) +
+			replyA.absolute_data_[0];
+	counter_ = abs_data & 0x1ffff;
+	encoder_id_ = replyA.encoder_id_;
+	maker_id_ = replyA.maker_id_;
+	almc_.as_byte_ = replyA.almc_.as_byte_;
+	status_ = (replyA.status_field_.ea1 << 1) | (replyA.status_field_.ea0);
+	return true;
 }
 
 bool MinasA4Encoder::update()
@@ -164,8 +304,6 @@ bool MinasA4Encoder::update()
 			((uint32_t)reply5.absolute_data_[1] << 8) +
 			reply5.absolute_data_[0];
 	counter_ = abs_data & 0x1ffff;
-	angle_deg_ = (float)(counter_) * 360.0f / (float)MA4_ABS_ENCODER_RESOLUTION;
-
 	if (reply5.status_field_.ea0 || reply5.status_field_.ea1) {
 		MA4EncoderReplyA replyA;
 		if (sendrecv_command(MA4_DATA_ID_A, &replyA, sizeof(replyA))) {
@@ -185,6 +323,7 @@ bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply
 	osEventFlagsClear(event_dma_, EVENT_FLAG_RX_COMPLETE);
 	if (HAL_UART_Receive_DMA(huart_, (uint8_t*)reply, reply_size) != HAL_OK) {
 		fprintf(stderr, "PanasonicMA4Encoder failed to receive reply for command 0x%x\n", command);
+		HAL_UART_Abort(huart_);
 		return false;
 	}
 	if (HAL_UART_Transmit_DMA(huart_, (uint8_t*)&command, sizeof(command)) != HAL_OK) {
