@@ -159,8 +159,8 @@ struct MA4EncoderReplyA {
 
 static_assert(sizeof(MA4EncoderReplyA) == 9, "MA4EncoderReplyA must be 9 bytes long");
 
-static const uint32_t MA4_ABS_ENCODER_RESOLUTION_BITS = 17;
-static const uint32_t MA4_ABS_ENCODER_RESOLUTION = 1 << MA4_ABS_ENCODER_RESOLUTION_BITS;
+//static const uint32_t MA4_ABS_ENCODER_RESOLUTION_BITS = 20;
+//static const uint32_t MA4_ABS_ENCODER_RESOLUTION = 1 << MA4_ABS_ENCODER_RESOLUTION_BITS;
 
 class MinasA4Encoder : public IEncoder {
 public:
@@ -178,6 +178,7 @@ public:
 	uint8_t ResetErrorCodeE();
 	uint8_t ResetErrorCode9();
 	uint8_t ResetAllErrors();
+	uint32_t GetDeviceID();
 	bool reset_single_revolution_data()			{ return ResetErrorCode(MA4_DATA_ID_F); }
 	bool reset_multiple_revolution_data()		{ return ResetErrorCode(MA4_DATA_ID_B); }
 	uint32_t get_error_count() const 			{ return error_count_; }
@@ -186,7 +187,7 @@ public:
 	virtual void Start() override {}
 	virtual void Stop() override {}
 	virtual uint32_t GetCounter() override;
-	virtual uint32_t GetMaxPosition() override { return MA4_ABS_ENCODER_RESOLUTION; }
+	virtual uint32_t GetMaxPosition() override { return resolution_; }
 	virtual void ResetPosition() override;
 	virtual uint32_t GetPosition() override;
 	virtual uint32_t GetRevolutions() override;
@@ -211,6 +212,7 @@ private:
 
 public:
 	UART_HandleTypeDef* huart_;
+	uint32_t resolution_ = (1 << 17);
 	uint32_t offset_;
 	uint8_t status_ = 0;
 	MA4Almc almc_;

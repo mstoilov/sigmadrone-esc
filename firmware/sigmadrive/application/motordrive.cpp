@@ -267,10 +267,13 @@ void MotorDrive::IrqUpdateCallback()
 
 void MotorDrive::UpdateRotor()
 {
-	data_.theta_ = config_.encoder_dir_ * (encoder_->GetElectricPosition(encoder_->GetPosition(), config_.pole_pairs));
-	std::complex<float> r_prev = lpf_e_rotor_.Output();
-	std::complex<float> r_cur = lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
-	lpf_speed_.DoFilter(sdmath::cross(r_prev, r_cur));
+	uint32_t rotor_position = encoder_->GetPosition();
+	if (rotor_position != (uint32_t)-1) {
+		data_.theta_ = config_.encoder_dir_ * (encoder_->GetElectricPosition(rotor_position, config_.pole_pairs));
+		std::complex<float> r_prev = lpf_e_rotor_.Output();
+		std::complex<float> r_cur = lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
+		lpf_speed_.DoFilter(sdmath::cross(r_prev, r_cur));
+	}
 }
 
 void MotorDrive::UpdateVbus()

@@ -48,9 +48,6 @@ size_t CdcIface::Transmit(const char* buffer, size_t nsize)
 		return nsize;
 	}
 
-
-	while (!tx_ringbuf_.write_size())
-		;
 	nsize = std::min(tx_ringbuf_.write_size(), nsize);
 	std::copy(buffer, buffer + nsize, tx_ringbuf_.get_write_ptr());
 	tx_ringbuf_.write_update(nsize);
@@ -66,7 +63,7 @@ void CdcIface::RunTxLoop()
 			while ((nsize = tx_ringbuf_.read_size()) != 0) {
 				char* buffer = tx_ringbuf_.get_read_ptr();
 				while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
-					;
+					osDelay(50);
 				tx_ringbuf_.read_update(nsize);
 			}
 		}

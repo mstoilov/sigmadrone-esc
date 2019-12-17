@@ -51,14 +51,28 @@ MinasA4Encoder ma4_abs_encoder;
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
-MotorDrive servo(&tim4, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+MotorDrive servo(&ma4_abs_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlComplexFOC cfoc(&servo);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
+
+bool debug_encoder = false;
+std::string encoder = "minas";
 
 rexjson::property props =
 		rexjson::property_map {
 			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
 			{"cfoc", rexjson::property({cfoc.props_})},
+			{"encoder", rexjson::property(
+					&encoder,
+					rexjson::property_access::readwrite,
+					[](const rexjson::value& v){if (v.get_str() != "minas" && v.get_str() != "quadrature") throw std::range_error("Invalid value");},
+					[&](void*)->void {
+						if (encoder == "minas")
+							servo.SetEncoder(&ma4_abs_encoder);
+						else if (encoder == "quadrature")
+							servo.SetEncoder(&tim4);
+					})},
+			{"debug_encoder", &debug_encoder},
 		};
 rexjson::property* g_properties = &props;
 
@@ -172,7 +186,6 @@ int application_main()
 	rpc_server.add("minas.reset9", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCode9, "uint32_t MinasA4Encoder::ResetErrorCode9()"));
 	rpc_server.add("minas.reset_position", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetPosition, "void MinasA4Encoder::ResetPosition()"));
 
-
 	ma4_abs_encoder.Attach(&huart3);
 	uint32_t old_counter = 0, new_counter = 0;
 
@@ -180,36 +193,35 @@ int application_main()
 		vTaskDelay(50 / portTICK_RATE_MS);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
 
-//		new_counter = tim4.GetPosition();
-//		if (new_counter != old_counter) {
-//			fprintf(stderr, "Counter: %lu\n", new_counter);
-//			old_counter = new_counter;
-//		}
-
-		new_counter = ma4_abs_encoder.GetCounter();
-		if (new_counter != old_counter || ma4_abs_encoder.status_) {
-			fprintf(stderr, "Minas Enc: %7.2f, Cnt: %7lu, Pos: %7lu, Rev: %7lu, Status: %2u (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (Time: %8lu uSec)\n",
-					ma4_abs_encoder.GetElectricPosition(new_counter, 4) / M_PI * 180.0f,
-					new_counter,
-					ma4_abs_encoder.GetPosition(),
-					ma4_abs_encoder.GetRevolutions(),
-					ma4_abs_encoder.status_,
-					ma4_abs_encoder.almc_.overspeed_,
-					ma4_abs_encoder.almc_.full_abs_status_,
-					ma4_abs_encoder.almc_.count_error_,
-					ma4_abs_encoder.almc_.counter_overflow_,
-					ma4_abs_encoder.almc_.multiple_revolution_error_,
-					ma4_abs_encoder.almc_.system_down_,
-					ma4_abs_encoder.almc_.battery_alarm_,
-					hrtimer.GetTimeElapsedMicroSec(ma4_abs_encoder.t1_, ma4_abs_encoder.t2_));
-			old_counter = new_counter;
+		if (debug_encoder) {
+			if (encoder == "quadrature") {
+				new_counter = tim4.GetPosition();
+				if (new_counter != old_counter) {
+					fprintf(stderr, "Counter: %lu\n", new_counter);
+					old_counter = new_counter;
+				}
+			} else {
+				new_counter = ma4_abs_encoder.GetCounter();
+				if (new_counter != old_counter || ma4_abs_encoder.status_) {
+					fprintf(stderr, "Minas Enc(0x%x): %7.2f, Cnt: %7lu, Pos: %7lu, Rev: %7lu, Status: %2u (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (Time: %8lu uSec)\n",
+							(int)ma4_abs_encoder.GetDeviceID(),
+							ma4_abs_encoder.GetMechanicalPosition(new_counter) / M_PI * 180.0f,
+							new_counter,
+							ma4_abs_encoder.GetPosition(),
+							ma4_abs_encoder.GetRevolutions(),
+							ma4_abs_encoder.status_,
+							ma4_abs_encoder.almc_.overspeed_,
+							ma4_abs_encoder.almc_.full_abs_status_,
+							ma4_abs_encoder.almc_.count_error_,
+							ma4_abs_encoder.almc_.counter_overflow_,
+							ma4_abs_encoder.almc_.multiple_revolution_error_,
+							ma4_abs_encoder.almc_.system_down_,
+							ma4_abs_encoder.almc_.battery_alarm_,
+							hrtimer.GetTimeElapsedMicroSec(ma4_abs_encoder.t1_, ma4_abs_encoder.t2_));
+					old_counter = new_counter;
+				}
+			}
 		}
-
-//		if (ma4_abs_encoder.status_) {
-//			ma4_abs_encoder.ResetErrorCodeB();
-//			ma4_abs_encoder.GetPosition();
-//		}
-
 		vTaskDelay(50 / portTICK_RATE_MS);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
 	}

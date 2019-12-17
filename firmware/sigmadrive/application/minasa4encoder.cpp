@@ -28,7 +28,6 @@ extern "C" void minasa4_rx_complete(UART_HandleTypeDef* huart)
 	}
 }
 
-
 MinasA4Encoder::MinasA4Encoder() :
 		huart_(nullptr),
 		offset_(0),
@@ -55,6 +54,8 @@ bool MinasA4Encoder::Attach(UART_HandleTypeDef* huart)
 	handle_map_[huart_] = this;
 	huart_->TxCpltCallback = ::minasa4_tx_complete;
 	huart_->RxCpltCallback = ::minasa4_rx_complete;
+	if (ResetAllErrors() == 0 && GetDeviceID() == 0xa7)
+		resolution_ = (1 << 23);
 	return true;
 }
 
@@ -86,7 +87,13 @@ uint32_t MinasA4Encoder::GetLastError()
 
 uint8_t MinasA4Encoder::ResetAllErrors()
 {
-	return ResetErrorCode(MA4_DATA_ID_E);
+	uint8_t ret = 0;
+	for (size_t i = 0; i < 10; i++) {
+		if ((ret = ResetErrorCode(MA4_DATA_ID_E)) == 0)
+			break;
+		osDelay(500);
+	}
+	return ret;
 }
 
 uint8_t MinasA4Encoder::ResetErrorCode(uint8_t data_id)
@@ -200,6 +207,35 @@ void MinasA4Encoder::ResetPosition()
 	offset_ = counter;
 }
 
+uint32_t MinasA4Encoder::GetDeviceID()
+{
+	// first obtain angle with revolutions
+	MA4EncoderReplyA replyA;
+	osMutexAcquire(mutex_sendrecv_, -1);
+	if (!sendrecv_command(MA4_DATA_ID_A, &replyA, sizeof(replyA))) {
+		osMutexRelease(mutex_sendrecv_);
+		fprintf(stderr, "PanasonicMA4Encoder sendrecv_failed for command: 0x%x\n", MA4_DATA_ID_A);
+		++error_count_;
+		return -1;
+	}
+	osMutexRelease(mutex_sendrecv_);
+	if (replyA.ctrl_field_.as_byte != MA4_DATA_ID_A) {
+		fprintf(stderr, "PanasonicMA4Encoder received incorrect control field 0x%x, expected value was 0x%x\n",
+				replyA.ctrl_field_.as_byte, MA4_DATA_ID_A);
+		++error_count_;
+		return -1;
+	}
+	uint8_t crc = calc_crc_x8_1((uint8_t*)&replyA, sizeof(replyA)-1);
+	if (crc != replyA.crc_) {
+		fprintf(stderr, "WARNING: mismatched crc!\n");
+		++error_count_;
+		return -1;
+	}
+	uint32_t id = replyA.encoder_id_;
+	return id;
+}
+
+
 uint32_t MinasA4Encoder::GetCounter()
 {
 	MA4EncoderReply4 reply4;
@@ -230,7 +266,7 @@ uint32_t MinasA4Encoder::GetCounter()
 			reply4.absolute_data_[0];
 	status_ = (reply4.status_field_.ea1 << 1) | (reply4.status_field_.ea0);
 	almc_ = reply4.almc_;
-	counter = abs_data & 0x1ffff;
+	counter = abs_data;
 	return counter;
 }
 
@@ -240,7 +276,7 @@ uint32_t MinasA4Encoder::GetPosition()
 	uint32_t counter = GetCounter();
 	if (counter == (uint32_t)-1)
 		return -1;
-	return (counter + MA4_ABS_ENCODER_RESOLUTION - offset_) % MA4_ABS_ENCODER_RESOLUTION;
+	return (counter + resolution_ - offset_) % resolution_;
 }
 
 uint32_t MinasA4Encoder::GetRevolutions()
@@ -279,12 +315,10 @@ uint32_t MinasA4Encoder::GetIndexPosition()
 
 float MinasA4Encoder::GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs)
 {
-	uint32_t max_position = GetMaxPosition();
-	return 2.0f * M_PI * (position % (max_position / motor_pole_pairs)) / (max_position / motor_pole_pairs);
+	return 2.0f * M_PI * (position % (resolution_ / motor_pole_pairs)) / (resolution_ / motor_pole_pairs);
 }
 
 float MinasA4Encoder::GetMechanicalPosition(uint32_t position)
 {
-	uint32_t max_postion = GetMaxPosition();
-	return 2.0f * M_PI * (position % (max_postion)) / (max_postion);
+	return 2.0f * M_PI * (position % (resolution_)) / (resolution_);
 }
