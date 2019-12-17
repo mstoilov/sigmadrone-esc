@@ -119,7 +119,7 @@ struct MA4Almc {
 	};
 };
 
-static_assert(sizeof(MA4Almc) == 1, "ALMC must be 1 byte long");
+static_assert(sizeof(uint8_t) == 1, "ALMC must be 1 byte long");
 
 struct MA4EncoderReply4 {
 	MA4ControlField ctrl_field_;
@@ -175,18 +175,18 @@ public:
 	bool UpdateId4();
 	bool UpdateId5();
 	bool UpdateIdA();
-	uint32_t ResetErrorCode(uint8_t data_id);
-	uint32_t ResetErrorCodeF();
-	uint32_t ResetErrorCodeB();
-	uint32_t ResetErrorCodeE();
-	uint32_t ResetErrorCode9();
+	uint8_t ResetErrorCode(uint8_t data_id);
+	uint8_t ResetErrorCodeF();
+	uint8_t ResetErrorCodeB();
+	uint8_t ResetErrorCodeE();
+	uint8_t ResetErrorCode9();
 	uint16_t get_revolutions() const;
 	float get_absolute_angle_deg() const;
-	MA4Almc get_last_error() const;
+	uint8_t GetLastError() const;
 	bool update();
-	bool reset_all_errors();
-	bool reset_single_revolution_data()			{ return reset_error_code(MA4_DATA_ID_F); }
-	bool reset_multiple_revolution_data()		{ return reset_error_code(MA4_DATA_ID_B); }
+	uint8_t ResetAllErrors();
+	bool reset_single_revolution_data()			{ return ResetErrorCode(MA4_DATA_ID_F); }
+	bool reset_multiple_revolution_data()		{ return ResetErrorCode(MA4_DATA_ID_B); }
 	void reset_initial_counter_offset()			{ offset_ = counter_; }
 	uint32_t get_initial_counter_offset() const { return offset_; }
 	uint32_t get_error_count() const 			{ return error_count_; }
@@ -214,15 +214,11 @@ public:
 
 private:
 	bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
-	bool reset_error_code(uint8_t command);
 	static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
 
 public:
 	UART_HandleTypeDef* huart_;
 	uint16_t revolutions_ = 0;
-	uint8_t revolution0_ = 0;
-	uint8_t revolution1_ = 0;
-	uint8_t revolution2_ = 0;
 	uint32_t counter_ = 0;
 	uint32_t offset_ = 0;
 	uint8_t status_ = 0;

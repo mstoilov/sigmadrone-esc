@@ -99,68 +99,50 @@ uint16_t MinasA4Encoder::get_revolutions() const
 	return revolutions_;
 }
 
-MA4Almc MinasA4Encoder::get_last_error() const
+uint8_t MinasA4Encoder::GetLastError() const
 {
-	return almc_;
+	return almc_.as_byte_;
 }
 
-bool MinasA4Encoder::reset_all_errors()
+uint8_t MinasA4Encoder::ResetAllErrors()
 {
-	bool retval = reset_error_code(MA4_DATA_ID_B);
-	if (!retval) {
-		retval = reset_error_code(MA4_DATA_ID_E);
+	uint8_t retval = ResetErrorCode(MA4_DATA_ID_B);
+	if (retval) {
+		retval = ResetErrorCode(MA4_DATA_ID_E);
 	}
 	return retval;
 }
 
-bool MinasA4Encoder::reset_error_code(uint8_t data_id)
-{
-#if 1
-	MA4EncoderReplyB reply;
-	almc_.as_byte_ = 0xff;
-	if (sendrecv_command(data_id, &reply, sizeof(reply))) {
-		almc_ = reply.almc_;
-	}
-	// Send the data_id 10 times, separated by at least 40 usecs
-	for (uint32_t i = 0; i < 9; ++i) {
-		osDelay(50);
-		if (sendrecv_command(data_id, &reply, sizeof(reply))) {
-			almc_ = reply.almc_;
-		}
-	}
-#endif
-	return 0 == almc_.as_byte_;
-}
-
-uint32_t MinasA4Encoder::ResetErrorCode(uint8_t data_id)
+uint8_t MinasA4Encoder::ResetErrorCode(uint8_t data_id)
 {
 	MA4EncoderReplyB reply;
 
-	for (uint32_t i = 0; i < 20; ++i) {
+	for (size_t i = 0; i < 10; ++i) {
 		osDelay(2);
 		if (!sendrecv_command(data_id, &reply, sizeof(reply))) {
 			return -1;
 		}
 	}
+	almc_ = reply.almc_;
 	return reply.almc_.as_byte_;
 }
 
-uint32_t MinasA4Encoder::ResetErrorCode9()
+uint8_t MinasA4Encoder::ResetErrorCode9()
 {
 	return ResetErrorCode(MA4_DATA_ID_9);
 }
 
-uint32_t MinasA4Encoder::ResetErrorCodeF()
+uint8_t MinasA4Encoder::ResetErrorCodeF()
 {
 	return ResetErrorCode(MA4_DATA_ID_F);
 }
 
-uint32_t MinasA4Encoder::ResetErrorCodeB()
+uint8_t MinasA4Encoder::ResetErrorCodeB()
 {
 	return ResetErrorCode(MA4_DATA_ID_B);
 }
 
-uint32_t MinasA4Encoder::ResetErrorCodeE()
+uint8_t MinasA4Encoder::ResetErrorCodeE()
 {
 	return ResetErrorCode(MA4_DATA_ID_E);
 }
@@ -223,11 +205,7 @@ bool MinasA4Encoder::UpdateId5()
 		++error_count_;
 		return false;
 	}
-
 	revolutions_ = *reinterpret_cast<uint16_t*>(reply5.revolution_data_);
-	revolution0_ = reply5.revolution_data_[0];
-	revolution1_ = reply5.revolution_data_[1];
-	revolution2_ = reply5.revolution_data_[2];
 	uint32_t abs_data =
 			((uint32_t)reply5.absolute_data_[2] << 16) +
 			((uint32_t)reply5.absolute_data_[1] << 8) +
