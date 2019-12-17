@@ -170,8 +170,8 @@ int application_main()
 	rpc_server.add("minas.resetB", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeB, "uint32_t MinasA4Encoder::ResetErrorCodeB()"));
 	rpc_server.add("minas.resetE", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeE, "uint32_t MinasA4Encoder::ResetErrorCodeE()"));
 	rpc_server.add("minas.reset9", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCode9, "uint32_t MinasA4Encoder::ResetErrorCode9()"));
-	rpc_server.add("minas.Update4", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::UpdateId4, "bool MinasA4Encoder::UpdateId4()"));
-	rpc_server.add("minas.Update5", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::UpdateId5, "bool MinasA4Encoder::UpdateId5()"));
+	rpc_server.add("minas.reset_position", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetPosition, "void MinasA4Encoder::ResetPosition()"));
+
 
 	ma4_abs_encoder.Attach(&huart3);
 	uint32_t old_counter = 0, new_counter = 0;
@@ -186,16 +186,13 @@ int application_main()
 //			old_counter = new_counter;
 //		}
 
-		ma4_abs_encoder.UpdateId5();
-		new_counter = ma4_abs_encoder.GetPosition();
+		new_counter = ma4_abs_encoder.GetCounter();
 		if (new_counter != old_counter || ma4_abs_encoder.status_) {
-			if (ma4_abs_encoder.status_)
-				ma4_abs_encoder.UpdateId4();
-			fprintf(stderr, "Minas Enc: %7.2f, Cnt: %8lu, Rev: %4u Maker ID: 0x%x Status: %2u (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (Time: %8lu uSec)\n",
-					ma4_abs_encoder.GetElectricPosition(4) / M_PI * 180.0f,
+			fprintf(stderr, "Minas Enc: %7.2f, Cnt: %7lu, Pos: %7lu, Rev: %7lu, Status: %2u (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (Time: %8lu uSec)\n",
+					ma4_abs_encoder.GetElectricPosition(new_counter, 4) / M_PI * 180.0f,
 					new_counter,
-					ma4_abs_encoder.revolutions_,
-					ma4_abs_encoder.encoder_id_,
+					ma4_abs_encoder.GetPosition(),
+					ma4_abs_encoder.GetRevolutions(),
 					ma4_abs_encoder.status_,
 					ma4_abs_encoder.almc_.overspeed_,
 					ma4_abs_encoder.almc_.full_abs_status_,
@@ -208,10 +205,10 @@ int application_main()
 			old_counter = new_counter;
 		}
 
-		if (ma4_abs_encoder.status_) {
-			ma4_abs_encoder.ResetErrorCodeB();
-			ma4_abs_encoder.UpdateId4();
-		}
+//		if (ma4_abs_encoder.status_) {
+//			ma4_abs_encoder.ResetErrorCodeB();
+//			ma4_abs_encoder.GetPosition();
+//		}
 
 		vTaskDelay(50 / portTICK_RATE_MS);
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);

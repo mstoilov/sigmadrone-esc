@@ -260,7 +260,6 @@ void MotorDrive::IrqUpdateCallback()
 		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_a.Output());
 
 		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
-		data_.theta_ = config_.encoder_dir_ * (encoder_->GetElectricPosition(config_.pole_pairs));
 		data_.update_counter_++;
 		sched_.SignalThreadUpdate();
 	}
@@ -268,6 +267,7 @@ void MotorDrive::IrqUpdateCallback()
 
 void MotorDrive::UpdateRotor()
 {
+	data_.theta_ = config_.encoder_dir_ * (encoder_->GetElectricPosition(encoder_->GetPosition(), config_.pole_pairs));
 	std::complex<float> r_prev = lpf_e_rotor_.Output();
 	std::complex<float> r_cur = lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
 	lpf_speed_.DoFilter(sdmath::cross(r_prev, r_cur));
@@ -458,7 +458,7 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 			ret = RunUpdateHandler([&]()->bool {
 				ApplyPhaseVoltage(reset_voltage * 1.5, std::polar<float>(1.0f, 0), lpf_vbus_.Output());
 				if (reset_encoder)
-					encoder_->ResetPosition(0);
+					encoder_->ResetPosition();
 				return true;
 			});
 		};
@@ -469,7 +469,7 @@ void MotorDrive::AddTaskDetectEncoderDir()
 {
 	sched_.AddTask([&](){
 		if (RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, true))
-			config_.encoder_dir_ = (encoder_->GetMechanicalPosition() > M_PI) ? -1 : 1;
+			config_.encoder_dir_ = (encoder_->GetMechanicalPosition(encoder_->GetPosition()) > M_PI) ? -1 : 1;
 	});
 }
 
@@ -534,7 +534,7 @@ void MotorDrive::RunTaskAphaPoleSearch()
 		AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
 		sched_.AddTask([&](void){
 			fprintf(stderr, "Enc: %7lu\n", encoder_->GetPosition());
-			encoder_->ResetPosition(0);
+			encoder_->ResetPosition();
 		});
 	}
 	AddTaskDisarmMotor();

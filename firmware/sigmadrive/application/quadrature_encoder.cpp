@@ -71,15 +71,20 @@ uint32_t QuadratureEncoder::GetMaxCounter()
 }
 
 
-void QuadratureEncoder::ResetPosition(uint32_t position)
+void QuadratureEncoder::ResetPosition()
 {
-	SetCounter(PositionToCpr(position));
+	SetCounter(0);
 	InvalidateIndexOffset();
 }
 
 uint32_t QuadratureEncoder::GetPosition()
 {
 	return CprToPosition(GetCounter());
+}
+
+uint32_t QuadratureEncoder::GetRevolutions()
+{
+	return 0;
 }
 
 uint32_t QuadratureEncoder::GetMaxPosition()
@@ -105,23 +110,23 @@ void QuadratureEncoder::SetIndexOffset(int32_t cpr)
 	index_offset_ = cpr;
 }
 
-int32_t QuadratureEncoder::GetIndexPosition()
+uint32_t QuadratureEncoder::GetIndexPosition()
 {
 	if (index_offset_ < 0)
 		return -1;
 	return CprToPosition(index_offset_);
 }
 
-float QuadratureEncoder::GetElectricPosition(uint32_t motor_pole_pairs)
+float QuadratureEncoder::GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs)
 {
 	uint32_t max_position = GetMaxPosition();
-	return 2.0f * M_PI * (GetPosition() % (max_position / motor_pole_pairs)) / (max_position / motor_pole_pairs);
+	return 2.0f * M_PI * (position % (max_position / motor_pole_pairs)) / (max_position / motor_pole_pairs);
 }
 
 
-float QuadratureEncoder::GetMechanicalPosition()
+float QuadratureEncoder::GetMechanicalPosition(uint32_t position)
 {
 	uint32_t max_postion = GetMaxPosition();
-	return 2.0f * M_PI * (GetPosition() % (max_postion)) / (max_postion);
+	return 2.0f * M_PI * (position % (max_postion)) / (max_postion);
 }
 

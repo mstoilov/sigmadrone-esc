@@ -23,7 +23,6 @@ public:
 	virtual ~QuadratureEncoder();
 	void Attach(TIM_HandleTypeDef* htim);
 	uint32_t GetMaxCounter();
-	uint32_t GetCounter();
 	void InvalidateIndexOffset();
 	void SetIndexOffset(int32_t cpr);
 	void CallbackIndex();
@@ -31,12 +30,15 @@ public:
 public:
 	virtual void Start() override;
 	virtual void Stop() override;
+	virtual uint32_t GetCounter() override;
 	virtual uint32_t GetMaxPosition() override;
-	virtual void ResetPosition(uint32_t position) override;
+	virtual void ResetPosition() override;
 	virtual uint32_t GetPosition() override;
-	virtual int32_t GetIndexPosition() override;
-	virtual float GetElectricPosition(uint32_t motor_pole_pairs) override;
-	virtual float GetMechanicalPosition() override;
+	virtual uint32_t GetRevolutions() override;
+	virtual uint32_t GetIndexPosition() override;
+	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) override;
+	virtual float GetMechanicalPosition(uint32_t position) override;
+	virtual uint32_t GetLastError() override { return 0; }
 
 private:
 	void SetCounter(uint32_t cpr);

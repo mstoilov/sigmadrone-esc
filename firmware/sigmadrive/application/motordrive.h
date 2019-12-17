@@ -32,12 +32,12 @@ public:
 	struct Config {
 		int32_t encoder_dir_ = 0;				// (1) - encoder increasing or (-1) encoder decreasing
 		uint32_t reset_hz_ = 35;
-		uint32_t pole_pairs = 7;
+		uint32_t pole_pairs = 4;
 		uint32_t adc_full_scale = (1<<12);
 		bool svm_saddle_ = false;
 		float Vref_ = 2.9;
 		float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
-		float reset_voltage_ = 0.25f;
+		float reset_voltage_ = 3.25f;
 		float spin_voltage_ = 0.4f;
 		float csa_gain_ = 10.0f;
 		float Rsense_ = 0.010f;

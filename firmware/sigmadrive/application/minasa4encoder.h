@@ -172,35 +172,28 @@ public:
 	bool Attach(UART_HandleTypeDef* usart);
 	void TransmitCompleteCallback();
 	void ReceiveCompleteCallback();
-	bool UpdateId4();
-	bool UpdateId5();
-	bool UpdateIdA();
 	uint8_t ResetErrorCode(uint8_t data_id);
 	uint8_t ResetErrorCodeF();
 	uint8_t ResetErrorCodeB();
 	uint8_t ResetErrorCodeE();
 	uint8_t ResetErrorCode9();
-	uint16_t get_revolutions() const;
-	float get_absolute_angle_deg() const;
-	uint8_t GetLastError() const;
-	bool update();
 	uint8_t ResetAllErrors();
 	bool reset_single_revolution_data()			{ return ResetErrorCode(MA4_DATA_ID_F); }
 	bool reset_multiple_revolution_data()		{ return ResetErrorCode(MA4_DATA_ID_B); }
-	void reset_initial_counter_offset()			{ offset_ = counter_; }
-	uint32_t get_initial_counter_offset() const { return offset_; }
 	uint32_t get_error_count() const 			{ return error_count_; }
-	uint32_t get_counter() const 				{ return (counter_ + MA4_ABS_ENCODER_RESOLUTION - offset_) % MA4_ABS_ENCODER_RESOLUTION; }
 
 public:
 	virtual void Start() override {}
 	virtual void Stop() override {}
+	virtual uint32_t GetCounter() override;
 	virtual uint32_t GetMaxPosition() override { return MA4_ABS_ENCODER_RESOLUTION; }
-	virtual void ResetPosition(uint32_t position) override;
+	virtual void ResetPosition() override;
 	virtual uint32_t GetPosition() override;
-	virtual int32_t GetIndexPosition() override;
-	virtual float GetElectricPosition(uint32_t motor_pole_pairs) override;
-	virtual float GetMechanicalPosition() override;
+	virtual uint32_t GetRevolutions() override;
+	virtual uint32_t GetIndexPosition() override;
+	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) override;
+	virtual float GetMechanicalPosition(uint32_t position) override;
+	virtual uint32_t GetLastError() override;
 
 	static const uint32_t EVENT_FLAG_RX_COMPLETE = (1u << 0);
 
@@ -218,17 +211,13 @@ private:
 
 public:
 	UART_HandleTypeDef* huart_;
-	uint16_t revolutions_ = 0;
-	uint32_t counter_ = 0;
-	uint32_t offset_ = 0;
+	uint32_t offset_;
 	uint8_t status_ = 0;
-	uint8_t encoder_id_ = 0;
-	uint8_t maker_id_ = 0;
 	MA4Almc almc_;
 	uint32_t error_count_;
 	osThreadId_t update_thread_;
 	osEventFlagsId_t event_dma_;
-	volatile bool rx_completed_ = false;
+	osMutexId_t mutex_sendrecv_;
 
 public:
 	volatile uint32_t t1_ = 0;
