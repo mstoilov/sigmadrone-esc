@@ -252,12 +252,10 @@ void MotorDrive::IrqUpdateCallback()
 		lpf_bias_b.DoFilter(data_.injdata_[1]);
 		lpf_bias_c.DoFilter(data_.injdata_[2]);
 	} else {
-		t1_ = hrtimer.GetCounter();
-
-		/*
-		 * Initiate the update from the encoder
-		 */
-		encoder_->Update(sched_.GetThreadId());
+		if (update_handler_active_)
+			return;
+		if (!t1_)
+			t1_ = hrtimer.GetCounter();
 
 		/*
 		 * Sample ADC phase current
@@ -274,6 +272,7 @@ void MotorDrive::IrqUpdateCallback()
 
 void MotorDrive::UpdateRotor()
 {
+	encoder_->Update(osThreadGetId());
 	if (!encoder_->WaitForUpdate()) {
 		return;
 	}
@@ -311,11 +310,15 @@ bool MotorDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 		pwm_->Stop();
 		return false;
 	} else if (flags == Scheduler::THREAD_FLAG_UPDATE) {
+		update_handler_active_ = true;
 		UpdateCurrent();
 		UpdateRotor();
 		UpdateVbus();
 		signal_time_ms_ = hrtimer.GetTimeElapsedMicroSec(t1_, hrtimer.GetCounter());
-		return update_handler();
+		bool ret = update_handler();
+		t1_ = 0;
+		update_handler_active_ = false;
+		return ret;
 	}
 
 	/*

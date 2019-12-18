@@ -56,7 +56,7 @@ MotorCtrlComplexFOC cfoc(&servo);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
 bool debug_encoder = false;
-std::string use_encoder = "quadrature";
+std::string use_encoder = "minas";
 
 void SetEncoder()
 {
@@ -146,6 +146,7 @@ int application_main()
 	 * C++ wrapper objects. At this point the HAL handles
 	 * should be fully initialized.
 	 */
+	ma4_abs_encoder.Attach(&huart3);
 	adc1.Attach(&hadc1);
 	adc2.Attach(&hadc2);
 	adc3.Attach(&hadc3);
@@ -210,7 +211,6 @@ int application_main()
 	rpc_server.add("minas.reset9", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCode9, "uint32_t MinasA4Encoder::ResetErrorCode9()"));
 	rpc_server.add("minas.reset_position", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetPosition, "void MinasA4Encoder::ResetPosition()"));
 
-	ma4_abs_encoder.Attach(&huart3);
 	uint32_t old_counter = 0, new_counter = 0;
 
 	for (size_t i = 0; ; i++) {
