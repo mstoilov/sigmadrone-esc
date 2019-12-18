@@ -46,6 +46,7 @@ public:
 
 	uint32_t WaitSignals(uint32_t s, uint32_t timeout_msec);
 	uint32_t WaitEvents(osEventFlagsId_t event, uint32_t s, uint32_t timeout_msec);
+	osThreadId_t GetThreadId() const { return scheduler_thread_id_; }
 
 	uint32_t wait_timeout_ = (uint32_t)-1;
 	osThreadId_t scheduler_thread_id_ = 0;

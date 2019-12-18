@@ -252,6 +252,13 @@ void MotorDrive::IrqUpdateCallback()
 		lpf_bias_b.DoFilter(data_.injdata_[1]);
 		lpf_bias_c.DoFilter(data_.injdata_[2]);
 	} else {
+		t1_ = hrtimer.GetCounter();
+
+		/*
+		 * Initiate the update from the encoder
+		 */
+		encoder_->Update(sched_.GetThreadId());
+
 		/*
 		 * Sample ADC phase current
 		 */
@@ -261,13 +268,15 @@ void MotorDrive::IrqUpdateCallback()
 
 		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
 		data_.update_counter_++;
-		t1_ = hrtimer.GetCounter();
 		sched_.SignalThreadUpdate();
 	}
 }
 
 void MotorDrive::UpdateRotor()
 {
+	if (!encoder_->WaitForUpdate()) {
+		return;
+	}
 	uint32_t rotor_position = encoder_->GetPosition();
 	if (rotor_position != (uint32_t)-1) {
 		data_.theta_ = config_.encoder_dir_ * (encoder_->GetElectricPosition(rotor_position, config_.pole_pairs));

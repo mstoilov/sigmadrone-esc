@@ -159,8 +159,14 @@ struct MA4EncoderReplyA {
 
 static_assert(sizeof(MA4EncoderReplyA) == 9, "MA4EncoderReplyA must be 9 bytes long");
 
-//static const uint32_t MA4_ABS_ENCODER_RESOLUTION_BITS = 20;
-//static const uint32_t MA4_ABS_ENCODER_RESOLUTION = 1 << MA4_ABS_ENCODER_RESOLUTION_BITS;
+struct 	MA4EncoderReplyAll
+{
+	union {
+		MA4EncoderReply4 reply4_;
+		MA4EncoderReply5 reply5_;
+		MA4EncoderReplyA replyA_;
+	};
+};
 
 class MinasA4Encoder : public IEncoder {
 public:
@@ -195,34 +201,45 @@ public:
 	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) override;
 	virtual float GetMechanicalPosition(uint32_t position) override;
 	virtual uint32_t GetLastError() override;
+	virtual bool Update(void* wakeupThreadId) override;
+	virtual bool WaitForUpdate() override;
+
 
 	static const uint32_t EVENT_FLAG_RX_COMPLETE = (1u << 7);
 
 private:
 	bool WaitEventRxComplete(uint32_t timeout);
+	void ParseReply4();
+	void ParseReply5();
+	void ParseReplyA();
+	void ParseReply9BEF();
 	void EventThreadRxComplete();
+	bool UpdateWithCommand(osThreadId_t wakeupThreadId, uint8_t command, void* reply, size_t reply_size);
+	bool ResetWithCommand(uint8_t command, void* reply, size_t reply_size);
 
-public:
-	void RunUpdateLoop();
 
 private:
 	bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
-	bool sendrecv_command_ntimes(size_t ntimes, uint8_t command, void* reply, size_t reply_size);
 	static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
 
 public:
 	UART_HandleTypeDef* huart_;
 	uint32_t resolution_ = (1 << 17);
-	uint32_t offset_;
+	uint32_t offset_ = 0;
 	uint8_t status_ = 0;
+	uint32_t counter_ = 0;
+	uint32_t revolutions_ = 0;
+	uint32_t encoder_id_ = 0;
+	uint32_t error_count_ = 0;
+	volatile bool rx_complete_ = true;
+	bool reset_complete_ = true;
 	MA4Almc almc_;
-	uint32_t error_count_;
-	osMutexId_t mutex_sendrecv_;
 	osThreadId_t thread_sendrecv_;
+	MA4EncoderReplyAll reply_;
 
 public:
 	volatile uint32_t t1_ = 0;
-	volatile uint32_t t2_ = 0;
+	uint32_t signal_time_ms_ = 0;
 
 };
 
