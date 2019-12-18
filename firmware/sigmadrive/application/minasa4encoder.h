@@ -185,6 +185,7 @@ public:
 	uint8_t ResetErrorCode9();
 	uint8_t ResetAllErrors();
 	uint32_t GetDeviceID();
+	bool Detect();
 	bool reset_single_revolution_data()			{ return ResetErrorCode(MA4_DATA_ID_F); }
 	bool reset_multiple_revolution_data()		{ return ResetErrorCode(MA4_DATA_ID_B); }
 	uint32_t get_error_count() const 			{ return error_count_; }

@@ -14,7 +14,7 @@ class MotorCtrlComplexFOC
 {
 public:
 	struct Config {
-		float spin_voltage_ = 3.4f;
+		float spin_voltage_ = 0.4f;
 		float ridot_alpha_ = 0.15f;
 		float ridot_alpha_disp_ = 0.01f;
 		float iabs_alpha_disp_ = 0.001f;

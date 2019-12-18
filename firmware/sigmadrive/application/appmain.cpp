@@ -56,21 +56,44 @@ MotorCtrlComplexFOC cfoc(&servo);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
 bool debug_encoder = false;
-std::string encoder = "minas";
+std::string use_encoder = "quadrature";
+
+void SetEncoder()
+{
+	if (use_encoder == "minas") {
+		servo.SetEncoder(&ma4_abs_encoder);
+		ma4_abs_encoder.Detect();
+		servo.config_.reset_voltage_ = 3.4;
+		servo.config_.spin_voltage_ = 3.4;
+		servo.config_.pole_pairs = 4;
+		cfoc.config_.spin_voltage_ = 3.4;
+	} else if (use_encoder == "minas6") {
+		servo.SetEncoder(&ma4_abs_encoder);
+		ma4_abs_encoder.Detect();
+		servo.config_.reset_voltage_ = 3.4;
+		servo.config_.spin_voltage_ = 3.4;
+		servo.config_.pole_pairs = 5;
+		cfoc.config_.spin_voltage_ = 3.4;
+	} else if (use_encoder == "quadrature") {
+		servo.SetEncoder(&tim4);
+		servo.config_.reset_voltage_ = 0.4;
+		servo.config_.spin_voltage_ = 0.4;
+		servo.config_.pole_pairs = 7;
+		cfoc.config_.spin_voltage_ = 0.4;
+	}
+}
+
 
 rexjson::property props =
 		rexjson::property_map {
 			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
 			{"cfoc", rexjson::property({cfoc.props_})},
-			{"encoder", rexjson::property(
-					&encoder,
+			{"use_encoder", rexjson::property(
+					&use_encoder,
 					rexjson::property_access::readwrite,
-					[](const rexjson::value& v){if (v.get_str() != "minas" && v.get_str() != "quadrature") throw std::range_error("Invalid value");},
+					[](const rexjson::value& v){if (v.get_str() != "minas" && v.get_str() != "minas6" && v.get_str() != "quadrature") throw std::range_error("Invalid value");},
 					[&](void*)->void {
-						if (encoder == "minas")
-							servo.SetEncoder(&ma4_abs_encoder);
-						else if (encoder == "quadrature")
-							servo.SetEncoder(&tim4);
+						SetEncoder();
 					})},
 			{"debug_encoder", &debug_encoder},
 		};
@@ -109,6 +132,7 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 	}
 
 }
+
 
 extern "C"
 int application_main()
@@ -176,8 +200,9 @@ int application_main()
 	task_attributes.stack_size = 12000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 
-	servo.Attach();
 	tim4.Start();
+	SetEncoder();
+	servo.Attach();
 
 	rpc_server.add("minas.resetF", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeF, "uint32_t MinasA4Encoder::ResetErrorCodeF()"));
 	rpc_server.add("minas.resetB", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeB, "uint32_t MinasA4Encoder::ResetErrorCodeB()"));
@@ -193,7 +218,7 @@ int application_main()
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
 
 		if (debug_encoder) {
-			if (encoder == "quadrature") {
+			if (use_encoder == "quadrature") {
 				new_counter = tim4.GetPosition();
 				if (new_counter != old_counter) {
 					fprintf(stderr, "Counter: %lu\n", new_counter);

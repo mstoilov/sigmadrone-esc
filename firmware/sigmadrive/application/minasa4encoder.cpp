@@ -42,6 +42,17 @@ MinasA4Encoder::~MinasA4Encoder()
 {
 }
 
+bool MinasA4Encoder::Detect()
+{
+	if (ResetAllErrors() == 0 && GetDeviceID() == 0xa7)
+		resolution_ = (1 << 23);
+	else if (ResetAllErrors() == 0 && GetDeviceID() == 0x11)
+		resolution_ = (1 << 17);
+	else
+		return false;
+	return true;
+}
+
 bool MinasA4Encoder::Attach(UART_HandleTypeDef* huart)
 {
 	assert(huart);
@@ -52,8 +63,6 @@ bool MinasA4Encoder::Attach(UART_HandleTypeDef* huart)
 	assert(handle_map_.find(huart_) == handle_map_.end());
 	handle_map_[huart_] = this;
 	huart_->RxCpltCallback = ::minasa4_rx_complete;
-	if (ResetAllErrors() == 0 && GetDeviceID() == 0xa7)
-		resolution_ = (1 << 23);
 	return true;
 }
 
