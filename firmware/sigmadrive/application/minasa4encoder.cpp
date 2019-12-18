@@ -286,7 +286,8 @@ bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply
 		HAL_UART_Abort(huart_);
 		return false;
 	}
-#if USE_LL_USART
+#define USE_LL_USART
+#ifdef USE_LL_USART
 	if (!LL_USART_IsActiveFlag_TXE(huart_->Instance)) {
 		fprintf(stderr, "%s: PanasonicMA4Encoder failed to send command 0x%x\n", __FUNCTION__, command);
 		HAL_UART_Abort(huart_);
