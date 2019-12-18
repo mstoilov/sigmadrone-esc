@@ -32,9 +32,8 @@ MinasA4Encoder::MinasA4Encoder() :
 		huart_(nullptr),
 		offset_(0),
 		error_count_(0),
-		update_thread_(0),
-		event_dma_(osEventFlagsNew(NULL)),
-		mutex_sendrecv_(osMutexNew(NULL))
+		mutex_sendrecv_(osMutexNew(NULL)),
+		thread_sendrecv_(0)
 {
 	almc_.as_byte_ = 0;
 }
@@ -52,7 +51,6 @@ bool MinasA4Encoder::Attach(UART_HandleTypeDef* huart)
 	huart_ = huart;
 	assert(handle_map_.find(huart_) == handle_map_.end());
 	handle_map_[huart_] = this;
-	huart_->TxCpltCallback = ::minasa4_tx_complete;
 	huart_->RxCpltCallback = ::minasa4_rx_complete;
 	if (ResetAllErrors() == 0 && GetDeviceID() == 0xa7)
 		resolution_ = (1 << 23);
@@ -67,12 +65,17 @@ void MinasA4Encoder::TransmitCompleteCallback()
 void MinasA4Encoder::ReceiveCompleteCallback()
 {
 	EventThreadRxComplete();
+}
+
+void MinasA4Encoder::EventThreadRxComplete()
+{
 	t1_ = hrtimer.GetCounter();
+	osThreadFlagsSet(thread_sendrecv_, EVENT_FLAG_RX_COMPLETE);
 }
 
 bool MinasA4Encoder::WaitEventRxComplete(uint32_t timeout)
 {
-	uint32_t status = osEventFlagsWait(event_dma_, EVENT_FLAG_RX_COMPLETE, osFlagsWaitAny, timeout);
+	uint32_t status = osThreadFlagsWait(EVENT_FLAG_RX_COMPLETE, osFlagsWaitAll, timeout);
 	t2_ = hrtimer.GetCounter();
 	bool ret = ((status & EVENT_FLAG_RX_COMPLETE) == EVENT_FLAG_RX_COMPLETE) ? true : false;
 	if (!ret)
@@ -99,15 +102,9 @@ uint8_t MinasA4Encoder::ResetAllErrors()
 uint8_t MinasA4Encoder::ResetErrorCode(uint8_t data_id)
 {
 	MA4EncoderReplyB reply;
-	osMutexAcquire(mutex_sendrecv_, -1);
-	for (size_t i = 0; i < 10; ++i) {
-		if (!sendrecv_command(data_id, &reply, sizeof(reply))) {
-			osMutexRelease(mutex_sendrecv_);
-			return -1;
-		}
-		osDelay(1);
+	if (!sendrecv_command_ntimes(10, data_id, &reply, sizeof(reply))) {
+		return -1;
 	}
-	osMutexRelease(mutex_sendrecv_);
 	almc_ = reply.almc_;
 	return reply.almc_.as_byte_;
 }
@@ -136,21 +133,50 @@ bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply
 {
 	bool ret = false;
 	memset(reply, 0, reply_size);
-	osEventFlagsClear(event_dma_, EVENT_FLAG_RX_COMPLETE);
+	osMutexAcquire(mutex_sendrecv_, -1);
+	osThreadFlagsClear(EVENT_FLAG_RX_COMPLETE);
+	thread_sendrecv_ = osThreadGetId();
 	if (HAL_UART_Receive_DMA(huart_, (uint8_t*)reply, reply_size) != HAL_OK) {
-		fprintf(stderr, "PanasonicMA4Encoder failed to receive reply for command 0x%x\n", command);
+		fprintf(stderr, "%s: PanasonicMA4Encoder failed to receive reply for command 0x%x\n", __FUNCTION__, command);
 		HAL_UART_Abort(huart_);
 		goto error;
 	}
 	if (HAL_UART_Transmit_DMA(huart_, (uint8_t*)&command, sizeof(command)) != HAL_OK) {
-		fprintf(stderr, "PanasonicMA4Encoder failed to send command 0x%x\n", command);
+		fprintf(stderr, "%s: PanasonicMA4Encoder failed to send command 0x%x\n", __FUNCTION__, command);
 		goto error;
 	}
 	ret = WaitEventRxComplete(2);
 
 error:
+	osMutexRelease(mutex_sendrecv_);
 	return ret;
 }
+
+bool MinasA4Encoder::sendrecv_command_ntimes(size_t ntimes, uint8_t command, void* reply, size_t reply_size)
+{
+	bool ret = true;
+	memset(reply, 0, reply_size);
+	osMutexAcquire(mutex_sendrecv_, -1);
+	thread_sendrecv_ = osThreadGetId();
+	for (size_t i = 0; i < ntimes && ret; i++) {
+		osThreadFlagsClear(EVENT_FLAG_RX_COMPLETE);
+		if (HAL_UART_Receive_DMA(huart_, (uint8_t*)reply, reply_size) != HAL_OK) {
+			fprintf(stderr, "%s: PanasonicMA4Encoder failed to receive reply for command 0x%x\n", __FUNCTION__, command);
+			HAL_UART_Abort(huart_);
+			goto error;
+		}
+		if (HAL_UART_Transmit_DMA(huart_, (uint8_t*)&command, sizeof(command)) != HAL_OK) {
+			fprintf(stderr, "%s: PanasonicMA4Encoder failed to send command 0x%x\n", __FUNCTION__, command);
+			goto error;
+		}
+		ret = WaitEventRxComplete(2);
+		osDelay(1);
+	}
+error:
+	osMutexRelease(mutex_sendrecv_);
+	return ret;
+}
+
 
 uint8_t MinasA4Encoder::calc_crc_x8_1(uint8_t* data, uint8_t size)
 {
@@ -189,16 +215,6 @@ static void RunUpdateLoopWrapper(void* ctx)
 }
 
 
-void MinasA4Encoder::StartUpdateThread()
-{
-	osThreadAttr_t task_attributes;
-	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
-	task_attributes.name = " MinasA4EncoderThread";
-	task_attributes.priority = (osPriority_t) osPriorityNormal;
-	task_attributes.stack_size = 2048;
-	update_thread_ = osThreadNew(RunUpdateLoopWrapper, this, &task_attributes);
-}
-
 void MinasA4Encoder::ResetPosition()
 {
 	uint32_t counter = GetCounter();
@@ -211,14 +227,11 @@ uint32_t MinasA4Encoder::GetDeviceID()
 {
 	// first obtain angle with revolutions
 	MA4EncoderReplyA replyA;
-	osMutexAcquire(mutex_sendrecv_, -1);
 	if (!sendrecv_command(MA4_DATA_ID_A, &replyA, sizeof(replyA))) {
-		osMutexRelease(mutex_sendrecv_);
 		fprintf(stderr, "PanasonicMA4Encoder sendrecv_failed for command: 0x%x\n", MA4_DATA_ID_A);
 		++error_count_;
 		return -1;
 	}
-	osMutexRelease(mutex_sendrecv_);
 	if (replyA.ctrl_field_.as_byte != MA4_DATA_ID_A) {
 		fprintf(stderr, "PanasonicMA4Encoder received incorrect control field 0x%x, expected value was 0x%x\n",
 				replyA.ctrl_field_.as_byte, MA4_DATA_ID_A);
@@ -239,14 +252,11 @@ uint32_t MinasA4Encoder::GetDeviceID()
 uint32_t MinasA4Encoder::GetCounter()
 {
 	MA4EncoderReply4 reply4;
-	osMutexAcquire(mutex_sendrecv_, -1);
 	if (!sendrecv_command(MA4_DATA_ID_4, &reply4, sizeof(reply4))) {
-		osMutexRelease(mutex_sendrecv_);
 		fprintf(stderr, "PanasonicMA4Encoder sendrecv_failed for command: 0x%x\n", MA4_DATA_ID_4);
 		++error_count_;
 		return -1;
 	}
-	osMutexRelease(mutex_sendrecv_);
 	if (reply4.ctrl_field_.as_byte != MA4_DATA_ID_4) {
 		fprintf(stderr, "PanasonicMA4Encoder received incorrect control field 0x%x, expected value was 0x%x\n",
 				reply4.ctrl_field_.as_byte, MA4_DATA_ID_4);
@@ -283,14 +293,11 @@ uint32_t MinasA4Encoder::GetRevolutions()
 {
 	// first obtain angle with revolutions
 	MA4EncoderReply5 reply5;
-	osMutexAcquire(mutex_sendrecv_, -1);
 	if (!sendrecv_command(MA4_DATA_ID_5, &reply5, sizeof(reply5))) {
-		osMutexRelease(mutex_sendrecv_);
 		fprintf(stderr, "PanasonicMA4Encoder sendrecv_failed for command: 0x%x\n", MA4_DATA_ID_5);
 		++error_count_;
 		return -1;
 	}
-	osMutexRelease(mutex_sendrecv_);
 	if (reply5.ctrl_field_.as_byte != MA4_DATA_ID_5) {
 		fprintf(stderr, "PanasonicMA4Encoder received incorrect control field 0x%x, expected value was 0x%x\n",
 				reply5.ctrl_field_.as_byte, MA4_DATA_ID_5);

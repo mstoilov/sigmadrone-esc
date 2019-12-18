@@ -261,6 +261,7 @@ void MotorDrive::IrqUpdateCallback()
 
 		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
 		data_.update_counter_++;
+		t1_ = hrtimer.GetCounter();
 		sched_.SignalThreadUpdate();
 	}
 }
@@ -304,6 +305,7 @@ bool MotorDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 		UpdateCurrent();
 		UpdateRotor();
 		UpdateVbus();
+		signal_time_ms_ = hrtimer.GetTimeElapsedMicroSec(t1_, hrtimer.GetCounter());
 		return update_handler();
 	}
 
@@ -511,7 +513,8 @@ void MotorDrive::RunSpinTasks()
 					if (Iarg < 0.0f)
 						Iarg += M_PI * 2.0f;
 					float speed = (asinf(lpf_speed_.Output()) * update_hz_)/(M_PI*2.0 * config_.pole_pairs);
-					fprintf(stderr, "Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
+					fprintf(stderr, "SigTime: %5lu, Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
+							signal_time_ms_,
 							lpf_vbus_.Output(),
 							speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, lpf_Iabs_.DoFilter(Iabs),
 							diff / M_PI * 180.0f, lpf_RIdot_disp_.Output(), pid_current_arg_.Output(), pid_current_arg_.Output() / M_PI * 180.0f);

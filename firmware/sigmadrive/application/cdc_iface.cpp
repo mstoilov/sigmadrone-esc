@@ -63,7 +63,7 @@ void CdcIface::RunTxLoop()
 			while ((nsize = tx_ringbuf_.read_size()) != 0) {
 				char* buffer = tx_ringbuf_.get_read_ptr();
 				while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
-					osDelay(50);
+					osDelay(2);
 				tx_ringbuf_.read_update(nsize);
 			}
 		}

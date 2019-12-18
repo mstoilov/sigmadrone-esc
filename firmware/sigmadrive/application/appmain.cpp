@@ -176,7 +176,6 @@ int application_main()
 	task_attributes.stack_size = 12000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 
-	servo.SetEncoder(&ma4_abs_encoder);
 	servo.Attach();
 	tim4.Start();
 

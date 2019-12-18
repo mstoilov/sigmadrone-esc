@@ -210,8 +210,9 @@ bool Scheduler::WaitEventIdle(uint32_t timeout_msec)
 
 void Scheduler::SignalThreadUpdate()
 {
-	if (scheduler_thread_id_ && !dispatch_queue_.empty())
+	if (scheduler_thread_id_ && !dispatch_queue_.empty()) {
 		osThreadFlagsSet(scheduler_thread_id_, THREAD_FLAG_UPDATE);
+	}
 }
 
 void Scheduler::SignalThreadTask()

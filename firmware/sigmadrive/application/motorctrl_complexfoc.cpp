@@ -78,10 +78,11 @@ void MotorCtrlComplexFOC::DumpDebugData(float Rarg, float Iarg, float Iabs)
 	if (Iarg < 0.0f)
 		Iarg += M_PI * 2.0f;
 	float speed = (asinf(drive_->lpf_speed_.Output()) * drive_->GetUpdateFrequency())/(M_PI*2.0 * drive_->GetPolePairs());
-//	fprintf(stderr, "Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
-//			drive_->GetBusVoltage(),
-//			speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, lpf_Iabs_disp_.Output(),
-//			diff / M_PI * 180.0f, lpf_RIdot_disp_.Output(), pid_current_arg_.Output(), pid_current_arg_.Output() / M_PI * 180.0f);
+	fprintf(stderr, "SigTime: %5lu, Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
+			drive_->signal_time_ms_,
+			drive_->GetBusVoltage(),
+			speed, Rarg / M_PI * 180.0f, Iarg / M_PI * 180.0f, lpf_Iabs_disp_.Output(),
+			diff / M_PI * 180.0f, lpf_RIdot_disp_.Output(), pid_current_arg_.Output(), pid_current_arg_.Output() / M_PI * 180.0f);
 }
 
 void MotorCtrlComplexFOC::RunSpinTasks()
@@ -107,7 +108,7 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 				pid_current_arg_.Input(lpf_RIdot_.Output(), 1.0f / drive_->GetUpdateFrequency());
 				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_ + pid_current_arg_.Output());
 				drive_->ApplyPhaseVoltage(config_.spin_voltage_, rotor * ri_vec, drive_->GetBusVoltage());
-				if ((display_counter++ % 13) == 0) {
+				if ((display_counter++ % 143) == 0) {
 					DumpDebugData(std::arg(rotor), Iarg, Iabs);
 				}
 				return true;

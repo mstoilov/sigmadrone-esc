@@ -196,18 +196,18 @@ public:
 	virtual float GetMechanicalPosition(uint32_t position) override;
 	virtual uint32_t GetLastError() override;
 
-	static const uint32_t EVENT_FLAG_RX_COMPLETE = (1u << 0);
+	static const uint32_t EVENT_FLAG_RX_COMPLETE = (1u << 7);
 
 private:
-	void StartUpdateThread();
 	bool WaitEventRxComplete(uint32_t timeout);
-	void EventThreadRxComplete() 				{ osEventFlagsSet(event_dma_, EVENT_FLAG_RX_COMPLETE); }
+	void EventThreadRxComplete();
 
 public:
 	void RunUpdateLoop();
 
 private:
 	bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
+	bool sendrecv_command_ntimes(size_t ntimes, uint8_t command, void* reply, size_t reply_size);
 	static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
 
 public:
@@ -217,9 +217,8 @@ public:
 	uint8_t status_ = 0;
 	MA4Almc almc_;
 	uint32_t error_count_;
-	osThreadId_t update_thread_;
-	osEventFlagsId_t event_dma_;
 	osMutexId_t mutex_sendrecv_;
+	osThreadId_t thread_sendrecv_;
 
 public:
 	volatile uint32_t t1_ = 0;

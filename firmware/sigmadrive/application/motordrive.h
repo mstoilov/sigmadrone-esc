@@ -16,6 +16,8 @@
 #include "scheduler.h"
 #include "pidcontroller.h"
 
+#include "hrtimer.h"
+extern HRTimer hrtimer;
 
 class MotorDrive {
 public:
@@ -37,7 +39,7 @@ public:
 		bool svm_saddle_ = false;
 		float Vref_ = 2.9;
 		float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
-		float reset_voltage_ = 3.25f;
+		float reset_voltage_ = 3.4f;
 		float spin_voltage_ = 0.4f;
 		float csa_gain_ = 10.0f;
 		float Rsense_ = 0.010f;
@@ -126,6 +128,8 @@ public:
 
 	uint32_t update_hz_;
 	uint32_t wait_timeout_ = (uint32_t)-1;	// Forever
+	uint32_t t1_ = 0;
+	uint32_t signal_time_ms_ = 0;
 	bool run_simple_tasks_ = false;
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
