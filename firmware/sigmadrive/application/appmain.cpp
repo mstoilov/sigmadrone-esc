@@ -56,7 +56,7 @@ MotorCtrlComplexFOC cfoc(&servo);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
 bool debug_encoder = false;
-std::string use_encoder = "minas";
+std::string use_encoder = "quadrature";
 
 void SetEncoder()
 {
@@ -225,24 +225,26 @@ int application_main()
 					old_counter = new_counter;
 				}
 			} else {
-				ma4_abs_encoder.Update(osThreadGetId());
-				ma4_abs_encoder.WaitForUpdate();
+				if (ma4_abs_encoder.UpdateBegin())
+					ma4_abs_encoder.UpdateEnd();
 				new_counter = ma4_abs_encoder.GetCounter();
+				MA4Almc almc;
+				almc.as_byte_ = ma4_abs_encoder.GetLastError();
 				if (new_counter != old_counter || ma4_abs_encoder.status_) {
-					fprintf(stderr, "Minas Enc(0x%x): %7.2f, Cnt: %7lu, Pos: %7lu, Rev: %7lu, Status: %2u (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (Time: %8lu uSec)\n",
+					fprintf(stderr, "Minas Enc(0x%x): %7.2f, Cnt: %7lu, Pos: %7lu, Rev: %7lu, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (Time: %8lu uSec)\n",
 							(int)ma4_abs_encoder.GetDeviceID(),
 							ma4_abs_encoder.GetMechanicalPosition(new_counter) / M_PI * 180.0f,
 							new_counter,
 							ma4_abs_encoder.GetPosition(),
 							ma4_abs_encoder.GetRevolutions(),
 							ma4_abs_encoder.status_,
-							ma4_abs_encoder.almc_.overspeed_,
-							ma4_abs_encoder.almc_.full_abs_status_,
-							ma4_abs_encoder.almc_.count_error_,
-							ma4_abs_encoder.almc_.counter_overflow_,
-							ma4_abs_encoder.almc_.multiple_revolution_error_,
-							ma4_abs_encoder.almc_.system_down_,
-							ma4_abs_encoder.almc_.battery_alarm_,
+							almc.overspeed_,
+							almc.full_abs_status_,
+							almc.count_error_,
+							almc.counter_overflow_,
+							almc.multiple_revolution_error_,
+							almc.system_down_,
+							almc.battery_alarm_,
 							ma4_abs_encoder.signal_time_ms_);
 					old_counter = new_counter;
 				}

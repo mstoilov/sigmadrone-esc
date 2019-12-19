@@ -241,10 +241,12 @@ bool MotorDrive::IsStarted()
 
 void MotorDrive::IrqUpdateCallback()
 {
-	data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
-	data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
-	data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
 	if (pwm_->GetCounterDirection()) {
+		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
+		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
+		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
+		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
+
 		/*
 		 * Sample ADC bias
 		 */
@@ -257,14 +259,6 @@ void MotorDrive::IrqUpdateCallback()
 		if (!t1_)
 			t1_ = hrtimer.GetCounter();
 
-		/*
-		 * Sample ADC phase current
-		 */
-		data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
-		data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_a.Output());
-		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_a.Output());
-
-		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
 		data_.update_counter_++;
 		sched_.SignalThreadUpdate();
 	}
@@ -272,10 +266,6 @@ void MotorDrive::IrqUpdateCallback()
 
 void MotorDrive::UpdateRotor()
 {
-	encoder_->Update(osThreadGetId());
-	if (!encoder_->WaitForUpdate()) {
-		return;
-	}
 	uint32_t rotor_position = encoder_->GetPosition();
 	if (rotor_position != (uint32_t)-1) {
 		data_.theta_ = config_.encoder_dir_ * (encoder_->GetElectricPosition(rotor_position, config_.pole_pairs));
@@ -311,10 +301,26 @@ bool MotorDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 		return false;
 	} else if (flags == Scheduler::THREAD_FLAG_UPDATE) {
 		update_handler_active_ = true;
+		if (!encoder_->UpdateBegin())
+			return false;
+		/*
+		 * Sample ADC phase current
+		 */
+		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
+		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
+		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
+		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
+
+		data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
+		data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_a.Output());
+		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_a.Output());
+
 		UpdateCurrent();
-		UpdateRotor();
 		UpdateVbus();
 		signal_time_ms_ = hrtimer.GetTimeElapsedMicroSec(t1_, hrtimer.GetCounter());
+		if (!encoder_->UpdateEnd())
+			return false;
+		UpdateRotor();
 		bool ret = update_handler();
 		t1_ = 0;
 		update_handler_active_ = false;

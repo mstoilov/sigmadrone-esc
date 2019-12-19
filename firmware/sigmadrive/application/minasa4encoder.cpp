@@ -33,9 +33,9 @@ MinasA4Encoder::MinasA4Encoder() :
 		huart_(nullptr),
 		offset_(0),
 		error_count_(0),
-		thread_sendrecv_(0)
+		thread_sendrecv_(0),
+		mutex_sendrecv_(osMutexNew(NULL))
 {
-	almc_.as_byte_ = 0;
 }
 
 MinasA4Encoder::~MinasA4Encoder()
@@ -76,91 +76,67 @@ void MinasA4Encoder::ReceiveCompleteCallback()
 	EventThreadRxComplete();
 }
 
-void MinasA4Encoder::ParseReply4()
+bool MinasA4Encoder::ParseReply4(const MA4EncoderReply4& reply4, uint32_t& counter, MA4Almc& almc)
 {
-	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply_.reply4_, sizeof(reply_.reply4_) - 1);
-	if (crc != reply_.reply4_.crc_) {
+	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply4, sizeof(reply4) - 1);
+	if (crc != reply4.crc_) {
 		fprintf(stderr, "WARNING: mismatched crc!\n");
 		++error_count_;
-	}
-	almc_ = reply_.reply4_.almc_;
-	uint32_t abs_data =
-			((uint32_t)reply_.reply4_.absolute_data_[2] << 16) +
-			((uint32_t)reply_.reply4_.absolute_data_[1] << 8) +
-			reply_.reply4_.absolute_data_[0];
-	status_ = (reply_.reply4_.status_field_.ea1 << 1) | (reply_.reply4_.status_field_.ea0);
-	counter_ = abs_data;
-}
-
-void MinasA4Encoder::ParseReply9BEF()
-{
-	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply_.reply4_, sizeof(reply_.reply4_) - 1);
-	if (crc != reply_.reply4_.crc_) {
-		fprintf(stderr, "WARNING: mismatched crc!\n");
-		++error_count_;
-	}
-	almc_ = reply_.reply4_.almc_;
-}
-
-void MinasA4Encoder::ParseReply5()
-{
-	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply_.reply5_, sizeof(reply_.reply5_) - 1);
-	if (crc != reply_.reply5_.crc_) {
-		fprintf(stderr, "WARNING: mismatched crc!\n");
-		++error_count_;
+		return false;
 	}
 	uint32_t abs_data =
-			((uint32_t)reply_.reply5_.absolute_data_[2] << 16) +
-			((uint32_t)reply_.reply5_.absolute_data_[1] << 8) +
-			reply_.reply5_.absolute_data_[0];
-	status_ = (reply_.reply5_.status_field_.ea1 << 1) | (reply_.reply5_.status_field_.ea0);
-	counter_ = abs_data;
-	revolutions_ = *reinterpret_cast<uint16_t*>(reply_.reply5_.revolution_data_);
+			((uint32_t)reply4.absolute_data_[2] << 16) +
+			((uint32_t)reply4.absolute_data_[1] << 8) +
+			reply4.absolute_data_[0];
+	counter = abs_data;
+	almc = reply4.almc_;
+	return true;
 }
 
-void MinasA4Encoder::ParseReplyA()
+bool MinasA4Encoder::ParseReply9BEF(const MA4EncoderReply4& reply4, MA4Almc& almc)
 {
-	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply_.replyA_, sizeof(reply_.replyA_) - 1);
-	if (crc != reply_.replyA_.crc_) {
+	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply4, sizeof(reply4) - 1);
+	if (crc != reply4.crc_) {
 		fprintf(stderr, "WARNING: mismatched crc!\n");
 		++error_count_;
+		return false;
 	}
-	uint32_t abs_data =
-			((uint32_t)reply_.replyA_.absolute_data_[2] << 16) +
-			((uint32_t)reply_.replyA_.absolute_data_[1] << 8) +
-			reply_.replyA_.absolute_data_[0];
-	status_ = (reply_.replyA_.status_field_.ea1 << 1) | (reply_.replyA_.status_field_.ea0);
-	almc_ = reply_.replyA_.almc_;
-	counter_ = abs_data;
-	encoder_id_ = reply_.replyA_.encoder_id_;
+	almc = reply4.almc_;
+	return true;
 }
 
+bool MinasA4Encoder::ParseReply5(const MA4EncoderReply5& reply5, uint32_t& status, uint32_t& counter, uint32_t& revolutions)
+{
+	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply5, sizeof(reply5) - 1);
+	if (crc != reply5.crc_) {
+		fprintf(stderr, "WARNING: mismatched crc!\n");
+		++error_count_;
+		return false;
+	}
+	uint32_t abs_data =
+			((uint32_t)reply5.absolute_data_[2] << 16) +
+			((uint32_t)reply5.absolute_data_[1] << 8) +
+			reply5.absolute_data_[0];
+	status = (reply5.status_field_.ea1 << 1) | (reply5.status_field_.ea0);
+	counter = abs_data;
+	revolutions = *reinterpret_cast<const uint16_t*>(reply5.revolution_data_);
+	return true;
+}
+
+bool MinasA4Encoder::ParseReplyA(const MA4EncoderReplyA& replyA, uint32_t& encoder_id)
+{
+	uint8_t crc = calc_crc_x8_1((uint8_t*)&replyA, sizeof(replyA) - 1);
+	if (crc != replyA.crc_) {
+		fprintf(stderr, "WARNING: mismatched crc!\n");
+		++error_count_;
+		return false;
+	}
+	encoder_id = replyA.encoder_id_;
+	return true;
+}
 
 void MinasA4Encoder::EventThreadRxComplete()
 {
-	switch (reply_.reply4_.ctrl_field_.as_byte)
-	{
-	case MA4_DATA_ID_4:
-		ParseReply4();
-		break;
-	case MA4_DATA_ID_5:
-		ParseReply5();
-		break;
-	case MA4_DATA_ID_A:
-		ParseReplyA();
-		break;
-	case MA4_DATA_ID_9:
-	case MA4_DATA_ID_B:
-	case MA4_DATA_ID_E:
-	case MA4_DATA_ID_F:
-		ParseReply9BEF();
-		break;
-	default:
-
-		break;
-	}
-
-	rx_complete_ = true;
 	if (thread_sendrecv_)
 		osThreadFlagsSet(thread_sendrecv_, EVENT_FLAG_RX_COMPLETE);
 }
@@ -175,12 +151,7 @@ bool MinasA4Encoder::WaitEventRxComplete(uint32_t timeout)
 	return ret;
 }
 
-uint32_t MinasA4Encoder::GetLastError()
-{
-	return almc_.as_byte_;
-}
-
-uint8_t MinasA4Encoder::ResetAllErrors()
+uint32_t MinasA4Encoder::ResetAllErrors()
 {
 	uint8_t ret = 0;
 	for (size_t i = 0; i < 10; i++) {
@@ -191,98 +162,131 @@ uint8_t MinasA4Encoder::ResetAllErrors()
 	return ret;
 }
 
-uint8_t MinasA4Encoder::ResetErrorCode(uint8_t data_id)
+uint32_t MinasA4Encoder::ResetErrorCode(uint8_t data_id)
 {
-	if (!ResetWithCommand(data_id, &reply_.reply4_, sizeof(reply_.reply4_))) {
+	MA4Almc almc;
+	uint32_t counter;
+	MA4EncoderReply4 reply4;
+	if (!ResetWithCommand(data_id, &reply4, sizeof(reply4))) {
 		return -1;
 	}
-	return almc_.as_byte_;
+	if (!ParseReply4(reply4, counter, almc))
+		return -1;
+	return almc.as_byte_;
 }
 
-uint8_t MinasA4Encoder::ResetErrorCode9()
+uint32_t MinasA4Encoder::ResetErrorCode9()
 {
 	return ResetErrorCode(MA4_DATA_ID_9);
 }
 
-uint8_t MinasA4Encoder::ResetErrorCodeF()
+uint32_t MinasA4Encoder::ResetErrorCodeF()
 {
 	return ResetErrorCode(MA4_DATA_ID_F);
 }
 
-uint8_t MinasA4Encoder::ResetErrorCodeB()
+uint32_t MinasA4Encoder::ResetErrorCodeB()
 {
 	return ResetErrorCode(MA4_DATA_ID_B);
 }
 
-uint8_t MinasA4Encoder::ResetErrorCodeE()
+uint32_t MinasA4Encoder::ResetErrorCodeE()
 {
 	return ResetErrorCode(MA4_DATA_ID_E);
 }
 
-bool MinasA4Encoder::WaitForUpdate()
+bool MinasA4Encoder::UpdateWithCommand(uint8_t command, void* reply, size_t reply_size)
 {
-	return WaitEventRxComplete(2);
+	bool ret = false;
+	osMutexAcquire(mutex_sendrecv_, -1);
+	thread_sendrecv_ = osThreadGetId();
+	if (!sendrecv_command(command, reply, reply_size))
+		goto error;
+	if (!WaitEventRxComplete())
+		goto error;
+	ret = true;
+
+error:
+	osMutexRelease(mutex_sendrecv_);
+	return ret;
 }
 
-bool MinasA4Encoder::UpdateWithCommand(osThreadId_t wakeupThreadId, uint8_t command, void* reply, size_t reply_size)
-{
-	__disable_irq();
-	if (!rx_complete_ || !reset_complete_) {
-		__enable_irq();
-		return false;
-	}
-	rx_complete_ = false;
-	__enable_irq();
-	thread_sendrecv_ = wakeupThreadId;
-	if (!sendrecv_command(command, reply, reply_size)) {
-		rx_complete_ = true;
-		return false;
-	}
-	return true;
-}
-
-/*
- * All this reset_complete_ bull***t is required to make sure
- * no other update or reset will interfere while the current reset command
- * is being transmitted 10 times (as prescribed in the specification).
- */
 bool MinasA4Encoder::ResetWithCommand(uint8_t command, void* reply, size_t reply_size)
 {
-	__disable_irq();
-	if (!rx_complete_ || !reset_complete_) {
-		__enable_irq();
-		return false;
-	}
-	reset_complete_ = false;
-	__enable_irq();
+	bool ret = false;
+	osMutexAcquire(mutex_sendrecv_, -1);
 	thread_sendrecv_ = osThreadGetId();
 	for (size_t i = 0; i < 10; i++) {
 		if (!sendrecv_command(command, reply, reply_size))
 			goto error;
-		if (!WaitForUpdate())
+		if (!WaitEventRxComplete())
 			goto error;
 		osDelay(1);
 	}
-	reset_complete_ = true;
-	return true;
+	ret = true;
 
 error:
-	reset_complete_ = true;
-	return false;
+	osMutexRelease(mutex_sendrecv_);
+	return ret;
 }
 
 uint32_t MinasA4Encoder::GetDeviceID()
 {
-	if (!UpdateWithCommand(osThreadGetId(), MA4_DATA_ID_A, &reply_.replyA_, sizeof(reply_.replyA_)))
+	uint32_t encoder_id = -1;
+	MA4EncoderReplyA replyA;
+	if (!UpdateWithCommand(MA4_DATA_ID_A, &replyA, sizeof(replyA)))
 		return -1;
-	if (!WaitForUpdate())
+	if (!ParseReplyA(replyA, encoder_id))
 		return -1;
-	return encoder_id_;
+	return encoder_id;
 }
 
-bool MinasA4Encoder::Update(void* wakeupThreadId)
+uint32_t MinasA4Encoder::GetLastError()
 {
-	return UpdateWithCommand((osThreadId_t)wakeupThreadId, MA4_DATA_ID_5, &reply_.reply5_, sizeof(reply_.reply5_));
+	MA4Almc almc;
+	uint32_t counter;
+	MA4EncoderReply4 reply4;
+	if (!UpdateWithCommand(MA4_DATA_ID_4, &reply4, sizeof(reply4))) {
+		return -1;
+	}
+	if (!ParseReply4(reply4, counter, almc))
+		return -1;
+	return almc.as_byte_;
+}
+
+bool MinasA4Encoder::Update()
+{
+	MA4EncoderReply5 reply5;
+	if (!UpdateWithCommand(MA4_DATA_ID_5, &reply5, sizeof(reply5)))
+		return false;
+	if (!ParseReply5(reply5, status_, counter_, revolutions_))
+		return false;
+	return true;
+}
+
+bool MinasA4Encoder::UpdateBegin()
+{
+	osMutexAcquire(mutex_sendrecv_, -1);
+	thread_sendrecv_ = osThreadGetId();
+	if (!sendrecv_command(MA4_DATA_ID_5, &reply5_, sizeof(reply5_))) {
+		osMutexRelease(mutex_sendrecv_);
+		return false;
+	}
+	return true;
+}
+
+bool MinasA4Encoder::UpdateEnd()
+{
+	bool ret = false;
+	if (!WaitEventRxComplete())
+		goto error;
+	if (!ParseReply5(reply5_, status_, counter_, revolutions_))
+		goto error;
+	ret = true;
+
+error:
+	osMutexRelease(mutex_sendrecv_);
+	return ret;
 }
 
 bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply_size)

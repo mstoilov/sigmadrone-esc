@@ -159,14 +159,6 @@ struct MA4EncoderReplyA {
 
 static_assert(sizeof(MA4EncoderReplyA) == 9, "MA4EncoderReplyA must be 9 bytes long");
 
-struct 	MA4EncoderReplyAll
-{
-	union {
-		MA4EncoderReply4 reply4_;
-		MA4EncoderReply5 reply5_;
-		MA4EncoderReplyA replyA_;
-	};
-};
 
 class MinasA4Encoder : public IEncoder {
 public:
@@ -178,12 +170,12 @@ public:
 	bool Attach(UART_HandleTypeDef* usart);
 	void TransmitCompleteCallback();
 	void ReceiveCompleteCallback();
-	uint8_t ResetErrorCode(uint8_t data_id);
-	uint8_t ResetErrorCodeF();
-	uint8_t ResetErrorCodeB();
-	uint8_t ResetErrorCodeE();
-	uint8_t ResetErrorCode9();
-	uint8_t ResetAllErrors();
+	uint32_t ResetErrorCode(uint8_t data_id);
+	uint32_t ResetErrorCodeF();
+	uint32_t ResetErrorCodeB();
+	uint32_t ResetErrorCodeE();
+	uint32_t ResetErrorCode9();
+	uint32_t ResetAllErrors();
 	uint32_t GetDeviceID();
 	bool Detect();
 	bool reset_single_revolution_data()			{ return ResetErrorCode(MA4_DATA_ID_F); }
@@ -202,20 +194,20 @@ public:
 	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) override;
 	virtual float GetMechanicalPosition(uint32_t position) override;
 	virtual uint32_t GetLastError() override;
-	virtual bool Update(void* wakeupThreadId) override;
-	virtual bool WaitForUpdate() override;
-
+	virtual bool Update() override;
+	virtual bool UpdateBegin() override;
+	virtual bool UpdateEnd() override;
 
 	static const uint32_t EVENT_FLAG_RX_COMPLETE = (1u << 7);
 
 private:
-	bool WaitEventRxComplete(uint32_t timeout);
-	void ParseReply4();
-	void ParseReply5();
-	void ParseReplyA();
-	void ParseReply9BEF();
+	bool WaitEventRxComplete(uint32_t timeout = 2);
+	bool ParseReply4(const MA4EncoderReply4& reply4, uint32_t& counter, MA4Almc& almc);
+	bool ParseReply5(const MA4EncoderReply5& reply5, uint32_t& status, uint32_t& counter, uint32_t& revolutions);
+	bool ParseReplyA(const MA4EncoderReplyA& replyA, uint32_t& encoder_id);
+	bool ParseReply9BEF(const MA4EncoderReply4& reply4, MA4Almc& almc);
 	void EventThreadRxComplete();
-	bool UpdateWithCommand(osThreadId_t wakeupThreadId, uint8_t command, void* reply, size_t reply_size);
+	bool UpdateWithCommand(uint8_t command, void* reply, size_t reply_size);
 	bool ResetWithCommand(uint8_t command, void* reply, size_t reply_size);
 
 
@@ -227,16 +219,14 @@ public:
 	UART_HandleTypeDef* huart_;
 	uint32_t resolution_ = (1 << 17);
 	uint32_t offset_ = 0;
-	uint8_t status_ = 0;
+	uint32_t status_ = 0;
 	uint32_t counter_ = 0;
 	uint32_t revolutions_ = 0;
-	uint32_t encoder_id_ = 0;
 	uint32_t error_count_ = 0;
-	volatile bool rx_complete_ = true;
-	bool reset_complete_ = true;
-	MA4Almc almc_;
 	osThreadId_t thread_sendrecv_;
-	MA4EncoderReplyAll reply_;
+	osMutexId_t mutex_sendrecv_;
+	MA4EncoderReply5 reply5_;
+
 
 public:
 	volatile uint32_t t1_ = 0;

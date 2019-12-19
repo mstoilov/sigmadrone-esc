@@ -39,8 +39,9 @@ public:
 	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) override;
 	virtual float GetMechanicalPosition(uint32_t position) override;
 	virtual uint32_t GetLastError() override { return 0; }
-	virtual bool Update(void* wakeupThreadId) override { return true; }
-	virtual bool WaitForUpdate() override { return true; }
+	virtual bool Update() override { return true; }
+	virtual bool UpdateBegin() override { return true; }
+	virtual bool UpdateEnd() override { return true; }
 
 private:
 	void SetCounter(uint32_t cpr);

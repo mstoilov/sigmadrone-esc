@@ -18,12 +18,9 @@ public:
 	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) = 0;
 	virtual float GetMechanicalPosition(uint32_t position) = 0;
 	virtual uint32_t GetLastError() = 0;
-	virtual bool Update(void* wakeupThreadId) = 0;
-	virtual bool WaitForUpdate() = 0;
-
-public:
-
-
+	virtual bool Update() = 0;
+	virtual bool UpdateBegin() = 0;
+	virtual bool UpdateEnd() = 0;
 };
 
 #endif /* _IENCODER_H_ */
