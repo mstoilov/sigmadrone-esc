@@ -24,20 +24,27 @@ __STATIC_INLINE void EnableDCache()
 	SCB_EnableDCache();
 }
 
-__STATIC_INLINE void CleanInvalidateDCache_by_Addr(void *addr, int32_t dsize)
+__STATIC_INLINE void CleanInvalidateDCache_by_Addr(void *addr, uint32_t dsize)
 {
-	SCB_CleanInvalidateDCache_by_Addr((uint32_t*)RoundDown((int32_t)addr, 32), RoundUp(dsize, 32));
+	uint32_t address = RoundDown((uint32_t)addr, 32);
+	uint32_t size = RoundUp((uint32_t)addr + dsize, 32) - address;
+	SCB_CleanInvalidateDCache_by_Addr((uint32_t*)address, size);
 }
 
-__STATIC_INLINE void InvalidateDCache_by_Addr(void *addr, int32_t dsize)
+__STATIC_INLINE void InvalidateDCache_by_Addr(void *addr, uint32_t dsize)
 {
-	SCB_InvalidateDCache_by_Addr((uint32_t*)RoundDown((int32_t)addr, 32), RoundUp(dsize, 32));
+	uint32_t address = RoundDown((uint32_t)addr, 32);
+	uint32_t size = RoundUp((uint32_t)addr + dsize, 32) - address;
+	SCB_InvalidateDCache_by_Addr((uint32_t*)address, size);
 }
 
-__STATIC_INLINE void CleanDCache_by_Addr(void *addr, int32_t dsize)
+__STATIC_INLINE void CleanDCache_by_Addr(void *addr, uint32_t dsize)
 {
-	SCB_CleanDCache_by_Addr((uint32_t*)RoundDown((int32_t)addr, 32), RoundUp(dsize, 32));
+	uint32_t address = RoundDown((uint32_t)addr, 32);
+	uint32_t size = RoundUp((uint32_t)addr + dsize, 32) - address;
+	SCB_CleanDCache_by_Addr((uint32_t*)address, size);
 }
+
 
 #else
 

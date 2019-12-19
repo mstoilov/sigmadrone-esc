@@ -28,13 +28,11 @@ public:
 
 	void InjectedSwTrig();
 	void StartRegularConversions();
+	void SyncDataDMA();
 
 public:
 	ADC_HandleTypeDef* hadc_;
-	int32_t regdata_[16];
-	int32_t regvolt_[16];
-	uint32_t regdata_counter_ = 0;
-
+	__attribute__ ((aligned (32))) int32_t regdata_[16];
 };
 
 #endif /* APPLICATION_ADC_H_ */
