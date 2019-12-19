@@ -82,6 +82,7 @@ void MotorCtrlComplexFOC::DumpDebugData(float Rarg, float Iarg, float Iabs)
 	if (Iarg < 0.0f)
 		Iarg += M_PI * 2.0f;
 	float speed = (asinf(drive_->lpf_speed_.Output()) * drive_->GetUpdateFrequency())/(M_PI*2.0 * drive_->GetPolePairs());
+
 	fprintf(stderr, "ProcTime: %5lu EncTime: %5lu, EncErr: %8lu, Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
 			hrtimer.GetTimeElapsedMicroSec(drive_->t1_, hrtimer.GetCounter()),
 			ma4_abs_encoder.signal_time_ms_,
@@ -106,6 +107,7 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 	drive_->sched_.AddTask([&](){
 		bool ret = false;
 		uint32_t display_counter = 0;
+		drive_->data_.update_counter_ = 0;
 		do {
 			ret = drive_->RunUpdateHandler([&]()->bool {
 				std::complex<float> I = drive_->GetPhaseCurrent();
@@ -121,7 +123,42 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_ + pid_current_arg_.Output());
 				drive_->ApplyPhaseVoltage(config_.spin_voltage_, rotor * ri_vec, drive_->GetBusVoltage());
 				if ((display_counter++ % 143) == 0) {
+#if 1
+					float diff = acosf(lpf_RIdot_disp_.Output());
+					float Rarg = std::arg(rotor);
+					if (Rarg < 0.0f)
+						Rarg += M_PI * 2.0f;
+					if (Iarg < 0.0f)
+						Iarg += M_PI * 2.0f;
+					float speed = (asinf(drive_->lpf_speed_.Output()) * drive_->GetUpdateFrequency())/(M_PI*2.0 * drive_->GetPolePairs());
+
+					fprintf(stderr, "ProcTime: %5lu EncTime: %5lu, EncErr: %8lu, Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
+							hrtimer.GetTimeElapsedMicroSec(drive_->t1_, hrtimer.GetCounter()),
+							ma4_abs_encoder.signal_time_ms_,
+							ma4_abs_encoder.error_count_,
+							drive_->GetBusVoltage(),
+							speed,
+							Rarg / M_PI * 180.0f,
+							Iarg / M_PI * 180.0f,
+							lpf_Iabs_disp_.Output(),
+							diff / M_PI * 180.0f,
+							lpf_RIdot_disp_.Output(),
+							pid_current_arg_.Output(),
+							pid_current_arg_.Output() / M_PI * 180.0f);
+
+#elif 1
+					fprintf(stderr, "ProcTime: %5lu EncTime: %5lu, UpdC: %11lu DispC: %11lu\n",
+							hrtimer.GetTimeElapsedMicroSec(drive_->t1_, hrtimer.GetCounter()),
+							ma4_abs_encoder.signal_time_ms_,
+							drive_->data_.update_counter_,
+							display_counter);
+
+#else
+
 					DumpDebugData(std::arg(rotor), Iarg, Iabs);
+
+#endif
+
 				}
 				return true;
 			});

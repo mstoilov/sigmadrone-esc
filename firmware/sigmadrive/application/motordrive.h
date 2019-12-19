@@ -37,7 +37,7 @@ public:
 		uint32_t pole_pairs = 7;
 		uint32_t adc_full_scale = (1<<12);
 		bool svm_saddle_ = false;
-		float Vref_ = 2.9;
+		float Vref_ = 3.3;
 		float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
 		float reset_voltage_ = 0.4f;
 		float spin_voltage_ = 0.4f;
