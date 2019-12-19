@@ -26,6 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "appmain.h"
+#include "dcache.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -113,6 +114,7 @@ void OC4_PWM_Override(TIM_HandleTypeDef* htim) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+  EnableDCache();
 
   SCB_InvalidateICache();
   /* USER CODE END 1 */

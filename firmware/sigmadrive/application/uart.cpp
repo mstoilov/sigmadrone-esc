@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include "uart.h"
+#include "dcache.h"
 
 Uart::handle_map_type Uart::handle_map_;
 
@@ -91,6 +92,7 @@ ssize_t Uart::Transmit(const char* buffer, size_t nsize)
 	if (transmitting_)
 		return nsize;
 	transmitting_ = true;
+	CleanDCache_by_Addr((uint8_t*)tx_ringbuf_.get_read_ptr(), tx_ringbuf_.read_size());
 	if (HAL_UART_Transmit_DMA(huart_, (uint8_t*)tx_ringbuf_.get_read_ptr(), tx_ringbuf_.read_size()) != HAL_OK) {
 		transmitting_ = false;
 	}
@@ -102,6 +104,7 @@ void Uart::TransmitCompleteCallback()
 {
 	tx_ringbuf_.read_update(huart_->TxXferSize);
 	if (tx_ringbuf_.read_size()) {
+		CleanDCache_by_Addr((uint8_t*)tx_ringbuf_.get_read_ptr(), tx_ringbuf_.read_size());
 		if (HAL_UART_Transmit_DMA(huart_, (uint8_t*)tx_ringbuf_.get_read_ptr(), tx_ringbuf_.read_size()) != HAL_OK) {
 			transmitting_ = false;
 		}
@@ -117,6 +120,7 @@ ssize_t Uart::ReceiveOnce(char* buffer, size_t nsize)
 	rx_ringbuf_.reset_wp(rx_ringbuf_.capacity() - __HAL_DMA_GET_COUNTER(huart_->hdmarx));
 	nsize = std::min(rx_ringbuf_.read_size(), nsize);
 	if (nsize) {
+		InvalidateDCache_by_Addr(rx_ringbuf_.get_read_ptr(), nsize);
 		std::copy(rx_ringbuf_.get_read_ptr(), rx_ringbuf_.get_read_ptr() + nsize, buffer);
 		rx_ringbuf_.read_update(nsize);
 	}

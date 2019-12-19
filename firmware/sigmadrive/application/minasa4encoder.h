@@ -225,7 +225,7 @@ public:
 	uint32_t error_count_ = 0;
 	osThreadId_t thread_sendrecv_;
 	osMutexId_t mutex_sendrecv_;
-	MA4EncoderReply5 reply5_;
+	__attribute__ ((aligned (32))) MA4EncoderReply5 reply5_;
 
 
 public:
