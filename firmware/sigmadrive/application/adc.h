@@ -32,7 +32,7 @@ public:
 
 public:
 	ADC_HandleTypeDef* hadc_;
-	__attribute__ ((aligned (32))) int32_t regdata_[16];
+	int32_t regdata_[16];
 };
 
 #endif /* APPLICATION_ADC_H_ */

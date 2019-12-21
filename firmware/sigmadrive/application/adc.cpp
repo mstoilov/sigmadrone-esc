@@ -45,8 +45,3 @@ void Adc::InjectedSwTrig()
 {
 	LL_ADC_INJ_StartConversionSWStart(hadc_->Instance);
 }
-
-void Adc::SyncDataDMA()
-{
-	InvalidateDCache_by_Addr(regdata_, sizeof(regdata_));
-}

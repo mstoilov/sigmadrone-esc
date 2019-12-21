@@ -167,11 +167,10 @@ uint32_t MinasA4Encoder::ResetErrorCode(uint8_t data_id)
 {
 	MA4Almc almc;
 	uint32_t counter;
-	__attribute__ ((aligned (32))) MA4EncoderReply4 reply4;
+	MA4EncoderReply4 reply4;
 	if (!ResetWithCommand(data_id, &reply4, sizeof(reply4))) {
 		return -1;
 	}
-	InvalidateDCache_by_Addr(&reply4, sizeof(reply4));
 	if (!ParseReply4(reply4, counter, almc))
 		return -1;
 	return almc.as_byte_;
@@ -235,10 +234,9 @@ error:
 uint32_t MinasA4Encoder::GetDeviceID()
 {
 	uint32_t encoder_id = -1;
-	__attribute__ ((aligned (32))) MA4EncoderReplyA replyA;
+	MA4EncoderReplyA replyA;
 	if (!UpdateWithCommand(MA4_DATA_ID_A, &replyA, sizeof(replyA)))
 		return -1;
-	InvalidateDCache_by_Addr(&replyA, sizeof(replyA));
 	if (!ParseReplyA(replyA, encoder_id))
 		return -1;
 	return encoder_id;
@@ -248,11 +246,10 @@ uint32_t MinasA4Encoder::GetLastError()
 {
 	MA4Almc almc;
 	uint32_t counter;
-	__attribute__ ((aligned (32))) MA4EncoderReply4 reply4;
+	MA4EncoderReply4 reply4;
 	if (!UpdateWithCommand(MA4_DATA_ID_4, &reply4, sizeof(reply4))) {
 		return -1;
 	}
-	InvalidateDCache_by_Addr(&reply4, sizeof(reply4));
 	if (!ParseReply4(reply4, counter, almc))
 		return -1;
 	return almc.as_byte_;
@@ -260,10 +257,9 @@ uint32_t MinasA4Encoder::GetLastError()
 
 bool MinasA4Encoder::Update()
 {
-	__attribute__ ((aligned (32))) MA4EncoderReply5 reply5;
+	MA4EncoderReply5 reply5;
 	if (!UpdateWithCommand(MA4_DATA_ID_5, &reply5, sizeof(reply5)))
 		return false;
-	InvalidateDCache_by_Addr(&reply5, sizeof(reply5));
 	if (!ParseReply5(reply5, status_, counter_, revolutions_))
 		return false;
 	return true;
@@ -277,7 +273,6 @@ bool MinasA4Encoder::UpdateBegin()
 		osMutexRelease(mutex_sendrecv_);
 		return false;
 	}
-	InvalidateDCache_by_Addr(&reply5_, sizeof(reply5_));
 	return true;
 }
 
