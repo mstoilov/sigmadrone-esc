@@ -48,10 +48,10 @@ __STATIC_INLINE void CleanDCache_by_Addr(void *addr, uint32_t dsize)
 
 #else
 
-//#define CleanInvalidateDCache_by_Addr(addr, dsize) do {} while (0)
-//#define InvalidateDCache_by_Addr(addr, dsize) do {} while (0)
-//#define CleanDCache_by_Addr(addr, dsize) do {} while (0)
-//#define EnableDCache() do {} while (0)
+#define CleanInvalidateDCache_by_Addr(addr, dsize) do {} while (0)
+#define InvalidateDCache_by_Addr(addr, dsize) do {} while (0)
+#define CleanDCache_by_Addr(addr, dsize) do {} while (0)
+#define EnableDCache() do {} while (0)
 
 #endif
 
