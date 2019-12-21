@@ -8,6 +8,7 @@
 #include <assert.h>
 #include "string.h"
 #include "cdc_iface.h"
+#include "dcache.h"
 
 CdcIface::handle_map_type CdcIface::handle_map_;
 
@@ -62,6 +63,7 @@ void CdcIface::RunTxLoop()
 			size_t nsize = tx_ringbuf_.read_size();
 			while ((nsize = tx_ringbuf_.read_size()) != 0) {
 				char* buffer = tx_ringbuf_.get_read_ptr();
+				CleanDCache_by_Addr(buffer, nsize);
 				while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
 					osDelay(2);
 				tx_ringbuf_.read_update(nsize);
@@ -107,6 +109,7 @@ size_t CdcIface::ReceiveOnce(char* buffer, size_t nsize)
 	if (!nsize)
 		return 0;
 	size_t readsize = std::min(rx_ringbuf_.read_size(), nsize);
+	InvalidateDCache_by_Addr(rx_ringbuf_.get_read_ptr(), nsize);
 	std::copy(rx_ringbuf_.get_read_ptr(), rx_ringbuf_.get_read_ptr() + readsize, buffer);
 	rx_ringbuf_.read_update(readsize);
 

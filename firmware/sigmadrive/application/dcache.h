@@ -3,7 +3,7 @@
 
 #include "core_cm7.h"
 
-//#define USE_DCACHE 1
+#define USE_DCACHE 1
 
 #ifdef USE_DCACHE
 
