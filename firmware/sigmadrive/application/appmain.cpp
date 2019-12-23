@@ -133,6 +133,35 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 
 }
 
+#include "stm32f7xx_ll_dma.h"
+
+extern "C"
+void SD_DMA1_Stream1_IRQHandler(void)
+{
+	DMA_TypeDef* DMAx = DMA1;
+	if (LL_DMA_IsActiveFlag_TC1(DMAx)) {
+		LL_DMA_ClearFlag_TC1(DMAx);
+		ma4_abs_encoder.ReceiveCompleteCallback();
+	}
+	if (LL_DMA_IsActiveFlag_DME1(DMAx)) {
+		LL_DMA_ClearFlag_DME1(DMAx);
+
+	}
+	if (LL_DMA_IsActiveFlag_FE1(DMAx)) {
+		LL_DMA_ClearFlag_FE1(DMAx);
+
+	}
+	if (LL_DMA_IsActiveFlag_HT1(DMAx)) {
+		LL_DMA_ClearFlag_HT1(DMAx);
+
+	}
+	if (LL_DMA_IsActiveFlag_TE1(DMAx)) {
+		LL_DMA_ClearFlag_TE1(DMAx);
+
+	}
+
+}
+
 
 extern "C"
 int application_main()
@@ -146,6 +175,7 @@ int application_main()
 	 * C++ wrapper objects. At this point the HAL handles
 	 * should be fully initialized.
 	 */
+	hrtimer.Attach(&htim5);
 	ma4_abs_encoder.Attach(&huart3);
 	adc1.Attach(&hadc1);
 	adc2.Attach(&hadc2);
@@ -154,7 +184,6 @@ int application_main()
 	spi3.Attach(&hspi3);
 	tim4.Attach(&htim4);
 	tim1.Attach(&htim1);
-	hrtimer.Attach(&htim5);
 //	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
 	usb_cdc.Attach(&hUsbDeviceFS);
 
@@ -225,8 +254,8 @@ int application_main()
 					old_counter = new_counter;
 				}
 			} else {
-				if (ma4_abs_encoder.UpdateBegin())
-					ma4_abs_encoder.UpdateEnd();
+//				if (ma4_abs_encoder.UpdateBegin())
+//					ma4_abs_encoder.UpdateEnd();
 				new_counter = ma4_abs_encoder.GetCounter();
 				MA4Almc almc;
 				almc.as_byte_ = ma4_abs_encoder.GetLastError();
@@ -245,7 +274,7 @@ int application_main()
 							almc.multiple_revolution_error_,
 							almc.system_down_,
 							almc.battery_alarm_,
-							ma4_abs_encoder.signal_time_ms_);
+							ma4_abs_encoder.update_time_ms_);
 					old_counter = new_counter;
 				}
 			}

@@ -18,6 +18,7 @@ extern Adc adc1;
 extern Adc adc2;
 extern Adc adc3;
 extern Drv8323 drv1;
+extern MinasA4Encoder ma4_abs_encoder;
 static std::complex<float> p1_ = std::polar<float>(1.0f, 0.0f);
 static std::complex<float> p2_ = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
 static std::complex<float> p3_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
@@ -242,6 +243,10 @@ bool MotorDrive::IsStarted()
 void MotorDrive::IrqUpdateCallback()
 {
 	if (pwm_->GetCounterDirection()) {
+		t1_ = hrtimer.GetCounter();
+		ma4_abs_encoder.Update();
+
+		encreply_.crc_ = 0;
 		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
 		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
 		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
@@ -256,8 +261,8 @@ void MotorDrive::IrqUpdateCallback()
 	} else {
 		if (update_handler_active_)
 			return;
-		if (!t1_)
-			t1_ = hrtimer.GetCounter();
+		if (!t2_)
+			t2_ = hrtimer.GetCounter();
 
 		data_.update_counter_++;
 		sched_.SignalThreadUpdate();
@@ -273,6 +278,7 @@ void MotorDrive::UpdateRotor()
 		std::complex<float> r_cur = lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
 		lpf_speed_.DoFilter(sdmath::cross(r_prev, r_cur));
 	}
+
 }
 
 void MotorDrive::UpdateVbus()
@@ -301,8 +307,6 @@ bool MotorDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 		return false;
 	} else if (flags == Scheduler::THREAD_FLAG_UPDATE) {
 		update_handler_active_ = true;
-		if (!encoder_->UpdateBegin())
-			return false;
 		/*
 		 * Sample ADC phase current
 		 */
@@ -317,12 +321,11 @@ bool MotorDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 
 		UpdateCurrent();
 		UpdateVbus();
-		signal_time_ms_ = hrtimer.GetTimeElapsedMicroSec(t1_, hrtimer.GetCounter());
-		if (!encoder_->UpdateEnd())
-			return false;
 		UpdateRotor();
+		t3_ = hrtimer.GetCounter();
+		signal_time_ms_ = hrtimer.GetTimeElapsedMicroSec(t2_, t3_);
 		bool ret = update_handler();
-		t1_ = 0;
+		t2_ = 0;
 		update_handler_active_ = false;
 		return ret;
 	}

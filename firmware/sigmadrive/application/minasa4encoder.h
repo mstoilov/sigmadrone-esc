@@ -175,7 +175,6 @@ public:
 	uint32_t ResetErrorCodeB();
 	uint32_t ResetErrorCodeE();
 	uint32_t ResetErrorCode9();
-	uint32_t ResetAllErrors();
 	uint32_t GetDeviceID();
 	bool Detect();
 	bool reset_single_revolution_data()			{ return ResetErrorCode(MA4_DATA_ID_F); }
@@ -199,19 +198,17 @@ public:
 	virtual bool UpdateEnd() override;
 
 	static const uint32_t EVENT_FLAG_RX_COMPLETE = (1u << 7);
+	static const uint32_t EVENT_TRIGGER_UPDATE = (1u << 8);
 
-private:
-	bool WaitEventRxComplete(uint32_t timeout = 2);
+public:
 	bool ParseReply4(const MA4EncoderReply4& reply4, uint32_t& counter, MA4Almc& almc);
 	bool ParseReply5(const MA4EncoderReply5& reply5, uint32_t& status, uint32_t& counter, uint32_t& revolutions);
 	bool ParseReplyA(const MA4EncoderReplyA& replyA, uint32_t& encoder_id);
 	bool ParseReply9BEF(const MA4EncoderReply4& reply4, MA4Almc& almc);
-	void EventThreadRxComplete();
-	bool UpdateWithCommand(uint8_t command, void* reply, size_t reply_size);
 	bool ResetWithCommand(uint8_t command, void* reply, size_t reply_size);
 
 
-private:
+public:
 	bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
 	static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
 
@@ -223,14 +220,14 @@ public:
 	uint32_t counter_ = 0;
 	uint32_t revolutions_ = 0;
 	uint32_t error_count_ = 0;
-	osThreadId_t thread_sendrecv_;
-	osMutexId_t mutex_sendrecv_;
-	__attribute__ ((aligned (32))) MA4EncoderReply5 reply5_;
+	uint32_t maintenance_ = 0;
+	MA4EncoderReply5 reply5_;
 
 
 public:
 	volatile uint32_t t1_ = 0;
-	uint32_t signal_time_ms_ = 0;
+	volatile uint32_t t2_ = 0;
+	uint32_t update_time_ms_ = 0;
 
 };
 

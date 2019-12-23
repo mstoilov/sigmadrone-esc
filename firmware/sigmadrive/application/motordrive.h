@@ -16,6 +16,8 @@
 #include "scheduler.h"
 #include "pidcontroller.h"
 
+#include "minasa4encoder.h"
+
 #include "hrtimer.h"
 extern HRTimer hrtimer;
 
@@ -129,6 +131,8 @@ public:
 	uint32_t update_hz_;
 	uint32_t wait_timeout_ = (uint32_t)-1;	// Forever
 	uint32_t t1_ = 0;
+	uint32_t t2_ = 0;
+	uint32_t t3_ = 0;
 	uint32_t signal_time_ms_ = 0;
 	bool run_simple_tasks_ = false;
 	bool update_handler_active_ = false;
@@ -155,6 +159,7 @@ public:
 	LowPassFilter<float, float> lpf_vbus_;
 	LowPassFilter<float, float> lpf_speed_;
 	PidController<float> pid_current_arg_;
+	MA4EncoderReply5 encreply_;
 };
 
 #endif /* _MOTOR_DRIVE_H_ */

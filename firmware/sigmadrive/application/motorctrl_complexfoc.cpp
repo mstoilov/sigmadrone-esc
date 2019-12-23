@@ -84,8 +84,8 @@ void MotorCtrlComplexFOC::DumpDebugData(float Rarg, float Iarg, float Iabs)
 	float speed = (asinf(drive_->lpf_speed_.Output()) * drive_->GetUpdateFrequency())/(M_PI*2.0 * drive_->GetPolePairs());
 
 	fprintf(stderr, "ProcTime: %5lu EncTime: %5lu, EncErr: %8lu, Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
-			hrtimer.GetTimeElapsedMicroSec(drive_->t1_, hrtimer.GetCounter()),
-			ma4_abs_encoder.signal_time_ms_,
+			hrtimer.GetTimeElapsedMicroSec(drive_->t2_, hrtimer.GetCounter()),
+			ma4_abs_encoder.update_time_ms_,
 			ma4_abs_encoder.error_count_,
 			drive_->GetBusVoltage(),
 			speed,
@@ -123,7 +123,7 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_ + pid_current_arg_.Output());
 				drive_->ApplyPhaseVoltage(config_.spin_voltage_, rotor * ri_vec, drive_->GetBusVoltage());
 				if ((display_counter++ % 143) == 0) {
-#if 1
+#if 0
 					float diff = acosf(lpf_RIdot_disp_.Output());
 					float Rarg = std::arg(rotor);
 					if (Rarg < 0.0f)
@@ -133,8 +133,8 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 					float speed = (asinf(drive_->lpf_speed_.Output()) * drive_->GetUpdateFrequency())/(M_PI*2.0 * drive_->GetPolePairs());
 
 					fprintf(stderr, "ProcTime: %5lu EncTime: %5lu, EncErr: %8lu, Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
-							hrtimer.GetTimeElapsedMicroSec(drive_->t1_, hrtimer.GetCounter()),
-							ma4_abs_encoder.signal_time_ms_,
+							hrtimer.GetTimeElapsedMicroSec(drive_->t2_, hrtimer.GetCounter()),
+							ma4_abs_encoder.update_time_ms_,
 							ma4_abs_encoder.error_count_,
 							drive_->GetBusVoltage(),
 							speed,
@@ -147,9 +147,16 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 							pid_current_arg_.Output() / M_PI * 180.0f);
 
 #elif 1
-					fprintf(stderr, "ProcTime: %5lu EncTime: %5lu, UpdC: %11lu DispC: %11lu\n",
-							hrtimer.GetTimeElapsedMicroSec(drive_->t1_, hrtimer.GetCounter()),
-							ma4_abs_encoder.signal_time_ms_,
+					uint32_t t4 = hrtimer.GetCounter();
+					fprintf(stderr, "Mot t1: %8lu Mot t2: %8lu, Mot t3: %8lu, Mot t4: %8lu, Enc t1: %8lu  Enc t2: %8lu, UpdTime: %5lu uSec, EncTime: %5lu uSec, UpdC: %10lu DispC: %10lu\n",
+							((drive_->t1_ / 108) & 0xFF),
+							((drive_->t2_ / 108) & 0xFF),
+							((drive_->t3_ / 108) & 0xFF),
+							((t4 / 108) & 0xFF),
+							((ma4_abs_encoder.t1_ / 108) & 0xFF),
+							((ma4_abs_encoder.t2_ / 108) & 0xFF),
+							hrtimer.GetTimeElapsedMicroSec(drive_->t2_, hrtimer.GetCounter()),
+							ma4_abs_encoder.update_time_ms_,
 							drive_->data_.update_counter_,
 							display_counter);
 
