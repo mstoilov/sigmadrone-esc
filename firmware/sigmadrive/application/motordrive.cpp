@@ -244,7 +244,7 @@ void MotorDrive::IrqUpdateCallback()
 {
 	if (pwm_->GetCounterDirection()) {
 		t1_ = hrtimer.GetCounter();
-		ma4_abs_encoder.Update();
+		encoder_->Update();
 
 		encreply_.crc_ = 0;
 		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);

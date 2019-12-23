@@ -159,6 +159,12 @@ struct MA4EncoderReplyA {
 
 static_assert(sizeof(MA4EncoderReplyA) == 9, "MA4EncoderReplyA must be 9 bytes long");
 
+struct MA4Update {
+	union {
+		MA4EncoderReply4 reply4_;
+		MA4EncoderReply5 reply5_;
+	};
+};
 
 class MinasA4Encoder : public IEncoder {
 public:
@@ -194,21 +200,16 @@ public:
 	virtual float GetMechanicalPosition(uint32_t position) override;
 	virtual uint32_t GetLastError() override;
 	virtual bool Update() override;
-	virtual bool UpdateBegin() override;
-	virtual bool UpdateEnd() override;
 
-	static const uint32_t EVENT_FLAG_RX_COMPLETE = (1u << 7);
-	static const uint32_t EVENT_TRIGGER_UPDATE = (1u << 8);
-
-public:
+protected:
 	bool ParseReply4(const MA4EncoderReply4& reply4, uint32_t& counter, MA4Almc& almc);
 	bool ParseReply5(const MA4EncoderReply5& reply5, uint32_t& status, uint32_t& counter, uint32_t& revolutions);
 	bool ParseReplyA(const MA4EncoderReplyA& replyA, uint32_t& encoder_id);
 	bool ParseReply9BEF(const MA4EncoderReply4& reply4, MA4Almc& almc);
 	bool ResetWithCommand(uint8_t command, void* reply, size_t reply_size);
-
-
-public:
+	bool UpdateId4();
+	bool UpdateId5();
+	bool UpdateEnd();
 	bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
 	static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
 
@@ -221,14 +222,14 @@ public:
 	uint32_t revolutions_ = 0;
 	uint32_t error_count_ = 0;
 	uint32_t maintenance_ = 0;
-	MA4EncoderReply5 reply5_;
+	MA4Almc almc_;
+	MA4Update update_;
 
 
 public:
 	volatile uint32_t t1_ = 0;
 	volatile uint32_t t2_ = 0;
 	uint32_t update_time_ms_ = 0;
-
 };
 
 #endif /* MINAS_A4_ABS_ENCODER_H_ */

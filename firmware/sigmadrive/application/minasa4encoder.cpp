@@ -73,6 +73,7 @@ void MinasA4Encoder::TransmitCompleteCallback()
 
 void MinasA4Encoder::ReceiveCompleteCallback()
 {
+	UpdateEnd();
 	t2_ = hrtimer.GetCounter();
 	update_time_ms_ = hrtimer.GetTimeElapsedMicroSec(t1_, t2_);
 }
@@ -225,25 +226,41 @@ error:
 	return error;
 }
 
-bool MinasA4Encoder::Update()
+bool MinasA4Encoder::UpdateId4()
 {
 	if (maintenance_)
 		return false;
 	t1_ = hrtimer.GetCounter();
-	reply5_.crc_ = 0;
-	if (!sendrecv_command(MA4_DATA_ID_5, &reply5_, sizeof(reply5_)))
+	update_.reply4_.crc_ = 0;
+	if (!sendrecv_command(MA4_DATA_ID_4, &update_.reply4_, sizeof(update_.reply4_)))
 		return false;
 	return true;
 }
 
-bool MinasA4Encoder::UpdateBegin()
+bool MinasA4Encoder::UpdateId5()
 {
+	if (maintenance_)
+		return false;
+	t1_ = hrtimer.GetCounter();
+	update_.reply5_.crc_ = 0;
+	if (!sendrecv_command(MA4_DATA_ID_5, &update_.reply5_, sizeof(update_.reply5_)))
+		return false;
 	return true;
+}
+
+bool MinasA4Encoder::Update()
+{
+	return UpdateId5();
 }
 
 bool MinasA4Encoder::UpdateEnd()
 {
-	return true;
+	if (update_.reply4_.ctrl_field_.as_byte == MA4_DATA_ID_4) {
+		return ParseReply4(update_.reply4_, counter_, almc_);
+	} else if (update_.reply5_.ctrl_field_.as_byte == MA4_DATA_ID_5) {
+		return ParseReply5(update_.reply5_, status_, counter_, revolutions_);
+	}
+	return false;
 }
 
 bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply_size)
@@ -264,13 +281,15 @@ bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply
 	}
 	LL_USART_TransmitData8(huart_->Instance, command);
 #else
-	if (HAL_UART_Receive_DMA(huart_, (uint8_t*)reply, reply_size) != HAL_OK) {
-		fprintf(stderr, "%s: PanasonicMA4Encoder failed to receive reply for command 0x%x\n", __FUNCTION__, command);
+	HAL_StatusTypeDef status;
+	if ((status = HAL_UART_Receive_DMA(huart_, (uint8_t*)reply, reply_size)) != HAL_OK) {
+		fprintf(stderr, "%s: PanasonicMA4Encoder failed to receive reply for command 0x%x, with status %u\n", __FUNCTION__, command, status);
 		HAL_UART_Abort(huart_);
 		return false;
 	}
-	if (HAL_UART_Transmit_DMA(huart_, (uint8_t*)&command, sizeof(command)) != HAL_OK) {
-		fprintf(stderr, "%s: PanasonicMA4Encoder failed to send command 0x%x\n", __FUNCTION__, command);
+	if ((status = HAL_UART_Transmit_DMA(huart_, (uint8_t*)&command, sizeof(command))) != HAL_OK) {
+		fprintf(stderr, "%s: PanasonicMA4Encoder failed to send command 0x%x, with status %u\n", __FUNCTION__, command, status);
+		HAL_UART_Abort(huart_);
 		return false;
 	}
 #endif
@@ -311,8 +330,10 @@ void MinasA4Encoder::ResetPosition()
 
 uint32_t MinasA4Encoder::GetCounter()
 {
+	return counter_;
+
 	uint32_t status = 0, counter = 0, revolutions = 0;
-	MA4EncoderReply5 reply5 = reply5_;
+	MA4EncoderReply5 reply5 = update_.reply5_;
 	if (!ParseReply5(reply5, status, counter, revolutions))
 		return -1;
 	return counter;
@@ -329,8 +350,10 @@ uint32_t MinasA4Encoder::GetPosition()
 
 uint32_t MinasA4Encoder::GetRevolutions()
 {
+	return revolutions_;
+
 	uint32_t status = 0, counter = 0, revolutions = 0;
-	MA4EncoderReply5 reply5 = reply5_;
+	MA4EncoderReply5 reply5 = update_.reply5_;
 	if (!ParseReply5(reply5, status, counter, revolutions))
 		return -1;
 	return revolutions;

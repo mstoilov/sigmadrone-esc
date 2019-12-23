@@ -19,8 +19,6 @@ public:
 	virtual float GetMechanicalPosition(uint32_t position) = 0;
 	virtual uint32_t GetLastError() = 0;
 	virtual bool Update() = 0;
-	virtual bool UpdateBegin() = 0;
-	virtual bool UpdateEnd() = 0;
 };
 
 #endif /* _IENCODER_H_ */

@@ -120,10 +120,10 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 				lpf_RIdot_disp_.DoFilter(ri_dot);
 				lpf_Iabs_disp_.DoFilter(Iabs);
 				pid_current_arg_.Input(lpf_RIdot_.Output(), 1.0f / drive_->GetUpdateFrequency());
-				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_ + pid_current_arg_.Output());
+				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_);// + pid_current_arg_.Output());
 				drive_->ApplyPhaseVoltage(config_.spin_voltage_, rotor * ri_vec, drive_->GetBusVoltage());
 				if ((display_counter++ % 143) == 0) {
-#if 0
+#if 1
 					float diff = acosf(lpf_RIdot_disp_.Output());
 					float Rarg = std::arg(rotor);
 					if (Rarg < 0.0f)
@@ -148,7 +148,7 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 
 #elif 1
 					uint32_t t4 = hrtimer.GetCounter();
-					fprintf(stderr, "Mot t1: %8lu Mot t2: %8lu, Mot t3: %8lu, Mot t4: %8lu, Enc t1: %8lu  Enc t2: %8lu, UpdTime: %5lu uSec, EncTime: %5lu uSec, UpdC: %10lu DispC: %10lu\n",
+					fprintf(stderr, "Mot t1: %5lu,  Mot t2: %5lu,  Mot t3: %5lu,  Mot t4: %5lu,  Enc t1: %5lu,  Enc t2: %5lu,  UpdTime: %5lu uSec,  EncTime: %5lu uSec,  UpdC: %10lu,  DispC: %10lu\n",
 							((drive_->t1_ / 108) & 0xFF),
 							((drive_->t2_ / 108) & 0xFF),
 							((drive_->t3_ / 108) & 0xFF),
