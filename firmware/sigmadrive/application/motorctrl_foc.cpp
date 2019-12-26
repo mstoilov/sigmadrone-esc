@@ -55,8 +55,10 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 		{"vab_advance_factor", &config_.vab_advance_factor_},
 	});
 
-	rpc_server.add("foc.start", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Start, "void MotorCtrlFOC::Start()"));
+	rpc_server.add("foc.torque", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Torque, "void MotorCtrlFOC::Torque()"));
 	rpc_server.add("foc.stop", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Stop, "void MotorCtrlFOC::Stop()"));
+	rpc_server.add("foc.calibration", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::RunCalibrationSequence, "void MotorCtrlFOC::RunCalibrationSequence()"));
+
 
 	pid_Vd_.SetMaxIntegralOutput(config_.pid_current_maxout_);
 	pid_Vq_.SetMaxIntegralOutput(config_.pid_current_maxout_);
@@ -67,12 +69,9 @@ void MotorCtrlFOC::Stop()
 	drive_->sched_.Abort();
 }
 
-void MotorCtrlFOC::Start()
+void MotorCtrlFOC::Torque()
 {
 	drive_->AddTaskArmMotor();
-	drive_->AddTaskResetRotor();
-	if (drive_->GetEncoderDir() == 0)
-		drive_->AddTaskDetectEncoderDir();
 
 	drive_->sched_.AddTask([&](){
 		bool ret = false;
@@ -144,3 +143,12 @@ void MotorCtrlFOC::Start()
 	drive_->sched_.Run();
 }
 
+void MotorCtrlFOC::RunCalibrationSequence()
+{
+	drive_->AddTaskCalibrationSequence();
+	drive_->sched_.AddTask([&](){
+		config_.pid_current_kp_ = config_.control_bandwidth_ * drive_->config_.inductance_;
+		config_.pid_current_ki_ = config_.control_bandwidth_ * drive_->config_.resistance_;
+	});
+	drive_->RunWaitForCompletion();
+}

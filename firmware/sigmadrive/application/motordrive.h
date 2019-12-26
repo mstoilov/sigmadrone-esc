@@ -44,6 +44,8 @@ public:
 		float spin_voltage_ = 0.4f;
 		float csa_gain_ = 10.0f;
 		float Rsense_ = 0.010f;
+		float calib_v_ = 12;
+		float calib_max_i_ = 2;
 		float resistance_ = 0.05f;
 		float inductance_ = 5.56e-05f;
 		float bias_alpha_ = 0.00035f;
@@ -55,8 +57,9 @@ public:
 		float ri_angle_ = 1.54;
 	};
 
-	void Start();
-	void Stop();
+	void Run();
+	void RunWaitForCompletion();
+	void Abort();
 	bool IsStarted();
 
 	MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz);
@@ -79,14 +82,8 @@ public:
 	bool ApplyPhaseModulation(float v_duty, const std::complex<float>& v_theta);
 	bool ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus);
 	bool ApplyPhaseVoltage(float v_alpha, float v_beta, float vbus);
-	bool ApplyPhaseModulation(float duty_alpha, float duty_beta);
 	bool ApplyPhaseDuty(float duty_a, float duty_b, float duty_c);
 	bool RunUpdateHandler(const std::function<bool(void)>& update_handler);
-	void RunSimpleTasks();
-	void RunSpinTasks();
-	float RunResistanceMeasurement(float seconds, float test_voltage, float max_current);
-	float RunResistanceMeasurementOD(float seconds, float test_current, float max_voltage);
-	float RunInductanceMeasurementOD(int num_cycles, float voltage_low, float voltage_high);
 	IEncoder* GetEncoder() const;
 	void SetEncoder(IEncoder* encoder);
 	int32_t GetEncoderDir() const;
@@ -110,9 +107,15 @@ public:
 	void AddTaskDisarmMotor();
 	void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder = true);
 	void AddTaskResetRotor();
+	void AddTaskMeasureResistance(float seconds, float test_voltage, float max_current);
+	void AddTaskMeasureInductance(float seconds, float test_voltage, float max_current);
 	void AddTaskDetectEncoderDir();
 	void RunTaskAphaPoleSearch();
 	void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir);
+	void RunSimpleTasks();
+	void AddTaskCalibrationSequence();
+	float RunResistanceMeasurement(float seconds, float test_voltage, float max_current);
+	float RunInductanceMeasurement(float seconds, float test_voltage, float max_current);
 
 	void SchedulerRun();
 	void SchedulerAbort();
