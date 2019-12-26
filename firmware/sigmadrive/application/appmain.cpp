@@ -31,6 +31,7 @@
 #include "cdc_iface.h"
 #include "motordrive.h"
 #include "motorctrl_complexfoc.h"
+#include "motorctrl_foc.h"
 #include "property.h"
 #include "minasa4encoder.h"
 #include "hrtimer.h"
@@ -53,6 +54,7 @@ Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 MotorDrive servo(&ma4_abs_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlComplexFOC cfoc(&servo);
+MotorCtrlFOC foc(&servo);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
 bool debug_encoder = false;
@@ -87,7 +89,9 @@ void SetEncoder()
 rexjson::property props =
 		rexjson::property_map {
 			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
+			{"drive", rexjson::property({servo.props_})},
 			{"cfoc", rexjson::property({cfoc.props_})},
+			{"foc", rexjson::property({foc.props_})},
 			{"use_encoder", rexjson::property(
 					&use_encoder,
 					rexjson::property_access::readwrite,

@@ -35,7 +35,7 @@ std::string CommandToJson(std::string str)
 		std::string token = *it; //tokens[i];
 		if (i != 0)
 			json += ", ";
-		if (std::isdigit(token[0]) || token[0] == '.' || token == "true" || token == "false")
+		if (std::isdigit(token[0]) || token[0] == '.' || token == "true" || token == "false" || token[0] == '+'  || token[0] == '-')
 			json += token;
 		else
 			json += "\"" + token + "\"";

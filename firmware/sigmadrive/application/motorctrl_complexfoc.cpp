@@ -61,7 +61,6 @@ MotorCtrlComplexFOC::MotorCtrlComplexFOC(MotorDrive* drive)
 		})},
 		{"ri_angle", &config_.ri_angle_},
 		{"spin_voltage", &config_.spin_voltage_},
-		{"drive", rexjson::property({drive_->props_})},
 	});
 
 	rpc_server.add("cfoc.start", rexjson::make_rpc_wrapper(this, &MotorCtrlComplexFOC::RunSpinTasks, "void ServoDrive::RunSpinTasks()"));

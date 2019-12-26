@@ -16,8 +16,6 @@
 #include "scheduler.h"
 #include "pidcontroller.h"
 
-#include "minasa4encoder.h"
-
 #include "hrtimer.h"
 extern HRTimer hrtimer;
 
@@ -40,6 +38,7 @@ public:
 		uint32_t adc_full_scale = (1<<12);
 		bool svm_saddle_ = false;
 		float Vref_ = 3.3;
+		float max_modulation_duty_ = 0.9;
 		float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
 		float reset_voltage_ = 0.4f;
 		float spin_voltage_ = 0.4f;
@@ -49,8 +48,6 @@ public:
 		float inductance_ = 5.56e-05f;
 		float bias_alpha_ = 0.00035f;
 		float abc_alpha_ = 0.25f;
-		float i_alpha_ = 0.25f;
-		float rotor_alpha_ = 1.0f;
 		float speed_alpha_ = 0.3f;
 		float ridot_alpha_ = 0.15f;
 		float ridot_disp_alpha_ = 0.01f;
@@ -75,10 +72,14 @@ public:
 	void UpdateVbus();
 	void UpdateCurrent();
 
+	float GetPhaseSpeed() const;
 	void SineSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
 	void SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
 	bool GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c);
+	bool ApplyPhaseModulation(float v_duty, const std::complex<float>& v_theta);
 	bool ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus);
+	bool ApplyPhaseVoltage(float v_alpha, float v_beta, float vbus);
+	bool ApplyPhaseModulation(float duty_alpha, float duty_beta);
 	bool ApplyPhaseDuty(float duty_a, float duty_b, float duty_c);
 	bool RunUpdateHandler(const std::function<bool(void)>& update_handler);
 	void RunSimpleTasks();
@@ -150,16 +151,14 @@ public:
 	LowPassFilter<float, float> lpf_a;
 	LowPassFilter<float, float> lpf_b;
 	LowPassFilter<float, float> lpf_c;
-	LowPassFilter<std::complex<float>, float> lpf_e_rotor_;
-	LowPassFilter<std::complex<float>, float> lpf_Iab_;
-	LowPassFilter<std::complex<float>, float> lpf_Idq_;
 	LowPassFilter<float, float> lpf_Iabs_;
 	LowPassFilter<float, float> lpf_RIdot_;
 	LowPassFilter<float, float> lpf_RIdot_disp_;
 	LowPassFilter<float, float> lpf_vbus_;
 	LowPassFilter<float, float> lpf_speed_;
+	std::complex<float> R_;
+	std::complex<float> Iab_;
 	PidController<float> pid_current_arg_;
-	MA4EncoderReply5 encreply_;
 };
 
 #endif /* _MOTOR_DRIVE_H_ */

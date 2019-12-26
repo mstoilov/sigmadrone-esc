@@ -18,7 +18,6 @@ extern Adc adc1;
 extern Adc adc2;
 extern Adc adc3;
 extern Drv8323 drv1;
-extern MinasA4Encoder ma4_abs_encoder;
 static std::complex<float> p1_ = std::polar<float>(1.0f, 0.0f);
 static std::complex<float> p2_ = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
 static std::complex<float> p3_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
@@ -34,9 +33,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	, lpf_a(config_.abc_alpha_)
 	, lpf_b(config_.abc_alpha_)
 	, lpf_c(config_.abc_alpha_)
-	, lpf_e_rotor_(config_.rotor_alpha_)
-	, lpf_Iab_(config_.i_alpha_)
-	, lpf_Idq_(config_.i_alpha_)
 	, lpf_Iabs_(config_.iabs_alpha_)
 	, lpf_RIdot_(config_.ridot_alpha_)
 	, lpf_RIdot_disp_(config_.ridot_disp_alpha_)
@@ -70,27 +66,12 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 					lpf_b.SetAlpha(config_.abc_alpha_);
 					lpf_c.SetAlpha(config_.abc_alpha_);
 				})},
-		{"i_alpha", rexjson::property(
-				&config_.i_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
-					lpf_Iab_.SetAlpha(config_.i_alpha_);
-					lpf_Idq_.SetAlpha(config_.i_alpha_);
-				})},
 		{"iabs_alpha", rexjson::property(
 				&config_.iabs_alpha_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
 					lpf_Iabs_.SetAlpha(config_.iabs_alpha_);
-				})},
-		{"rotor_alpha", rexjson::property(
-				&config_.rotor_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
-					lpf_e_rotor_.SetAlpha(config_.rotor_alpha_);
 				})},
 		{"speed_alpha", rexjson::property(
 				&config_.speed_alpha_,
@@ -113,6 +94,11 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[&](void*)->void {
 					lpf_RIdot_disp_.SetAlpha(config_.ridot_disp_alpha_);
 		})},
+		{"max_modulation_duty", rexjson::property(
+				&config_.max_modulation_duty_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");}
+		)},
 		{"csa_gain", rexjson::property(
 				&config_.csa_gain_,
 				rexjson::property_access::readwrite,
@@ -226,12 +212,12 @@ float MotorDrive::GetBusVoltage() const
 
 std::complex<float> MotorDrive::GetPhaseCurrent() const
 {
-	return lpf_Iab_.Output();
+	return Iab_;
 }
 
 std::complex<float> MotorDrive::GetElecRotation() const
 {
-	return lpf_e_rotor_.Output();
+	return R_;
 }
 
 
@@ -246,7 +232,6 @@ void MotorDrive::IrqUpdateCallback()
 		t1_ = hrtimer.GetCounter();
 		encoder_->Update();
 
-		encreply_.crc_ = 0;
 		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
 		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
 		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
@@ -274,8 +259,9 @@ void MotorDrive::UpdateRotor()
 	uint32_t rotor_position = encoder_->GetPosition();
 	if (rotor_position != (uint32_t)-1) {
 		data_.theta_ = config_.encoder_dir_ * (encoder_->GetElectricPosition(rotor_position, config_.pole_pairs));
-		std::complex<float> r_prev = lpf_e_rotor_.Output();
-		std::complex<float> r_cur = lpf_e_rotor_.DoFilter(std::polar(1.0f, data_.theta_));
+		std::complex<float> r_prev = R_;
+		R_ = std::polar(1.0f, data_.theta_);
+		std::complex<float> r_cur = R_;
 		lpf_speed_.DoFilter(sdmath::cross(r_prev, r_cur));
 	}
 
@@ -291,7 +277,12 @@ void MotorDrive::UpdateCurrent()
 	lpf_a.DoFilter(data_.phase_current_a_);
 	lpf_b.DoFilter(data_.phase_current_b_);
 	lpf_c.DoFilter(data_.phase_current_c_);
-	lpf_Iab_.DoFilter(Pa_ * data_.phase_current_a_ + Pb_ * data_.phase_current_b_ + Pc_ * (-data_.phase_current_a_ -data_.phase_current_b_));
+	Iab_ = Pa_ * data_.phase_current_a_ + Pb_ * data_.phase_current_b_ + Pc_ * (-data_.phase_current_a_ -data_.phase_current_b_);
+}
+
+float MotorDrive::GetPhaseSpeed() const
+{
+	return asinf(lpf_speed_.Output()) * GetUpdateFrequency();
 }
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
@@ -342,7 +333,7 @@ float MotorDrive::VoltageToDuty(float voltage, float v_bus)
 {
 	float v_rms = v_bus * 0.7071f;
 	float duty = voltage / v_rms;
-	return duty;
+	return std::min(duty, config_.max_modulation_duty_);
 }
 
 bool MotorDrive::GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c)
@@ -370,24 +361,35 @@ void MotorDrive::SaddleSVM(float duty, const std::complex<float>& v_theta, float
 	duty_c = 0.5 + 0.5 * duty * (theta / Pc_ + theta3).imag();
 }
 
-bool MotorDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus)
+bool MotorDrive::ApplyPhaseVoltage(float v_alpha, float v_beta, float vbus)
+{
+	std::complex<float> V = std::complex<float>(v_alpha, v_beta);
+	return ApplyPhaseVoltage(std::abs(V), std::polar(1.0f, std::arg(V)), vbus);
+}
+
+bool MotorDrive::ApplyPhaseModulation(float mod_alpha, float mod_beta)
+{
+	std::complex<float> mod(mod_alpha, mod_beta);
+	return ApplyPhaseModulation(std::abs(mod), std::polar(1.0f, std::arg(mod)));
+}
+
+bool MotorDrive::ApplyPhaseModulation(float mod, const std::complex<float>& v_theta)
 {
 	uint32_t timing_period = pwm_->GetPeriod();
 	uint32_t t1, t2, t3;
-	float duty = VoltageToDuty(v_abs, vbus);
 	float duty_a = 0, duty_b = 0, duty_c = 0;
 
 #if 0
-	std::complex<float> vec = v_theta * duty;
+	std::complex<float> vec = v_theta * mod;
 	duty_a = 0.5 + 0.5 * ((vec.real() * Pa_.real() + vec.imag() * Pa_.imag()));
 	duty_b = 0.5 + 0.5 * ((vec.real() * Pb_.real() + vec.imag() * Pb_.imag()));
 	duty_c = 0.5 + 0.5 * ((vec.real() * Pc_.real() + vec.imag() * Pc_.imag()));
 #else
 
 	if (config_.svm_saddle_) {
-		SaddleSVM(duty, v_theta, duty_a, duty_b, duty_c);
+		SaddleSVM(mod, v_theta, duty_a, duty_b, duty_c);
 	} else {
-		SineSVM(duty, v_theta, duty_a, duty_b, duty_c);
+		SineSVM(mod, v_theta, duty_a, duty_b, duty_c);
 	}
 
 #endif
@@ -397,6 +399,12 @@ bool MotorDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_the
 	pwm_->SetTiming(2, t2);
 	pwm_->SetTiming(3, t3);
 	return true;
+}
+
+
+bool MotorDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus)
+{
+	return ApplyPhaseModulation(VoltageToDuty(v_abs, vbus), v_theta);
 }
 
 bool MotorDrive::ApplyPhaseDuty(float duty_a, float duty_b, float duty_c)
@@ -511,11 +519,11 @@ void MotorDrive::RunSpinTasks()
 		data_.update_counter_ = 0;
 		do {
 			ret = RunUpdateHandler([&]()->bool {
-				std::complex<float> I = lpf_Iab_.Output();
+				std::complex<float> I = GetPhaseCurrent();
 				float Iarg = std::arg(I);
 				float Iabs = std::abs(I);
 				std::complex<float> Inorm = std::polar<float>(1.0f, Iarg);
-				std::complex<float> rotor = lpf_e_rotor_.Output();
+				std::complex<float> rotor = GetElecRotation();
 				float Rarg = std::arg(rotor);
 				float ri_dot = sdmath::dot(rotor, Inorm);
 				lpf_RIdot_.DoFilter(ri_dot);
@@ -638,7 +646,7 @@ float MotorDrive::RunResistanceMeasurementOD(float seconds, float test_current, 
 
 				if ((display_counter++ % 13) == 0) {
 					fprintf(stderr, "Vbus: %4.2f, Vt: %4.2f, arg(I): %6.1f, abs(I): %6.3f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\n",
-							lpf_vbus_.Output(), test_voltage, std::arg(lpf_Iab_.Output()) / M_PI * 180.0f, std::abs(lpf_Iab_.Output()),
+							lpf_vbus_.Output(), test_voltage, std::arg(Iab_) / M_PI * 180.0f, std::abs(Iab_),
 							lpf_a.Output(), lpf_b.Output(), lpf_c.Output(), lpf_a.Output() + lpf_b.Output() + lpf_c.Output());
 				}
 				return true;
