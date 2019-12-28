@@ -57,7 +57,7 @@ MotorCtrlComplexFOC::MotorCtrlComplexFOC(MotorDrive* drive)
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){},
 				[&](void*)->void {
-					pid_current_arg_.SetLeakRate(config_.pid_current_leak_);
+					pid_current_arg_.SetDecayRate(config_.pid_current_leak_);
 		})},
 		{"ri_angle", &config_.ri_angle_},
 		{"spin_voltage", &config_.spin_voltage_},

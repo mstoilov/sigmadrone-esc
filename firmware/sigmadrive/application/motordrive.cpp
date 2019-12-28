@@ -27,18 +27,15 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	, Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
 	, Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
 	, update_hz_(update_hz)
+	, update_period_(1.0f / update_hz_)
 	, lpf_bias_a(config_.bias_alpha_)
 	, lpf_bias_b(config_.bias_alpha_)
 	, lpf_bias_c(config_.bias_alpha_)
 	, lpf_a(config_.abc_alpha_)
 	, lpf_b(config_.abc_alpha_)
 	, lpf_c(config_.abc_alpha_)
-	, lpf_Iabs_(config_.iabs_alpha_)
-	, lpf_RIdot_(config_.ridot_alpha_)
-	, lpf_RIdot_disp_(config_.ridot_disp_alpha_)
 	, lpf_vbus_(0.5f, 12.0f)
 	, lpf_speed_(config_.speed_alpha_)
-	, pid_current_arg_(0.4, 500, 0, 0.99)
 {
 	lpf_bias_a.Reset(1 << 11);
 	lpf_bias_b.Reset(1 << 11);
@@ -66,13 +63,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 					lpf_b.SetAlpha(config_.abc_alpha_);
 					lpf_c.SetAlpha(config_.abc_alpha_);
 				})},
-		{"iabs_alpha", rexjson::property(
-				&config_.iabs_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
-					lpf_Iabs_.SetAlpha(config_.iabs_alpha_);
-				})},
 		{"speed_alpha", rexjson::property(
 				&config_.speed_alpha_,
 				rexjson::property_access::readwrite,
@@ -80,20 +70,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[&](void*)->void {
 					lpf_speed_.SetAlpha(config_.speed_alpha_);
 				})},
-		{"ridot_alpha", rexjson::property(
-				&config_.ridot_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
-					lpf_RIdot_.SetAlpha(config_.ridot_alpha_);
-		})},
-		{"ridot_disp_alpha", rexjson::property(
-				&config_.ridot_disp_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
-					lpf_RIdot_disp_.SetAlpha(config_.ridot_disp_alpha_);
-		})},
 		{"max_modulation_duty", rexjson::property(
 				&config_.max_modulation_duty_,
 				rexjson::property_access::readwrite,
@@ -115,17 +91,13 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 		{"calib_v", &config_.calib_v_},
 		{"resistance", &config_.resistance_},
 		{"inductance", &config_.inductance_},
-		{"ri_angle", &config_.ri_angle_},
 		{"pole_pairs", &config_.pole_pairs},
 		{"encoder_dir", &config_.encoder_dir_},
 		{"svm_saddle", &config_.svm_saddle_},
 		{"reset_voltage", &config_.reset_voltage_},
 		{"reset_hz", &config_.reset_hz_},
-		{"spin_voltage", &config_.spin_voltage_},
-		{"pid_current_arg_kp", &pid_current_arg_.kp_},
-		{"pid_current_arg_ki", &pid_current_arg_.ki_},
-		{"pid_current_arg_leak", &pid_current_arg_.leak_},
-		{"pid_current_arg_output_i_max", &pid_current_arg_.output_i_max_},
+		{"display_div", &config_.display_div_}
+
 	});
 
 	rpc_server.add("drive.abort", rexjson::make_rpc_wrapper(this, &MotorDrive::Abort, "void ServoDrive::Abort()"));
@@ -151,7 +123,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	sched_.SetIdleTask([&]()->void {
 	});
 
-	pid_current_arg_.SetMaxIntegralOutput(M_PI);
 }
 
 MotorDrive::~MotorDrive()
@@ -202,6 +173,12 @@ uint32_t MotorDrive::GetUpdateFrequency() const
 {
 	return update_hz_;
 }
+
+float MotorDrive::GetUpdatePeriod() const
+{
+	return update_period_;
+}
+
 
 uint32_t MotorDrive::GetPolePairs() const
 {
@@ -506,9 +483,10 @@ void MotorDrive::AddTaskDetectEncoderDir()
 
 void MotorDrive::AddTaskCalibrationSequence()
 {
+	AddTaskArmMotor();
+	AddTaskResetRotor();
 	AddTaskMeasureResistance(1, config_.calib_v_, config_.calib_max_i_);
 	AddTaskMeasureInductance(1, config_.calib_v_, config_.calib_max_i_);
-	AddTaskArmMotor();
 	AddTaskResetRotor();
 	AddTaskDetectEncoderDir();
 	AddTaskDisarmMotor();
@@ -543,7 +521,6 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage, flo
 		bool ret = false;
 
 		ApplyPhaseVoltage(0, 0, lpf_vbus_.Output());
-		pwm_->Start();
 		config_.resistance_ = 0;
 		do {
 			ret = RunUpdateHandler([&]()->bool {
@@ -565,7 +542,6 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage, flo
 		if (ret)
 			config_.resistance_ = 2.0f / 3.0f * test_voltage / lpf_a.Output();
 		ApplyPhaseVoltage(0, 0, lpf_vbus_.Output());
-		pwm_->Stop();
 	}, seconds, test_voltage, max_current));
 
 }
@@ -583,7 +559,6 @@ void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, flo
 		uint32_t t = 0;
 
 		ApplyPhaseVoltage(0, 0, lpf_vbus_.Output());
-		pwm_->Start();
 		do {
 			ret = RunUpdateHandler([&]()->bool {
 				int i = t & 1;
@@ -605,7 +580,6 @@ void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, flo
 			});
 		} while (ret && ++t < test_cycles * 2);
 		ApplyPhaseVoltage(0, 0, lpf_vbus_.Output());
-		pwm_->Stop();
 		float v_L = 0.5f * (voltage_high - voltage_low);
 		float current_meas_period = 1.0f / update_hz_;
 		float dI_by_dt = (Ialphas[0] - Ialphas[1]) / (current_meas_period * (float)test_cycles);
