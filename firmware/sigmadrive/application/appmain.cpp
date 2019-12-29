@@ -228,6 +228,14 @@ int application_main()
 #endif
 	osDelay(50);
 
+	uint32_t enc_resolution = (1<<23);
+	uint32_t enc1, enc2;
+	enc1 = enc2 = 122;
+
+	float angle = (M_PI * 2) / enc_resolution * enc1;
+	enc1 = angle / (M_PI * 2) * enc_resolution;
+	printf("enc1: %lu, enc2: %lu, angle: %f \n", enc1, enc2, angle);
+
 	osThreadAttr_t task_attributes;
 	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
 	task_attributes.name = "CommandTask";

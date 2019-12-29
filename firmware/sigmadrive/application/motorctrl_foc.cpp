@@ -1,3 +1,6 @@
+
+#include <string.h>
+
 #include "motorctrl_foc.h"
 #include "sdmath.h"
 #include "uartrpcserver.h"
@@ -123,11 +126,62 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 	rpc_server.add("foc.torque", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Torque, "void MotorCtrlFOC::Torque()"));
 	rpc_server.add("foc.stop", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Stop, "void MotorCtrlFOC::Stop()"));
 	rpc_server.add("foc.calibration", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::RunCalibrationSequence, "void MotorCtrlFOC::RunCalibrationSequence()"));
+
+	StartDebugThread();
 }
 
 void MotorCtrlFOC::Stop()
 {
 	drive_->sched_.Abort();
+}
+
+void MotorCtrlFOC::RunDebugLoop()
+{
+	for (;;) {
+		if (WaitDebugDump()) {
+			fprintf(stderr,
+					"Speed: %13.9f, Rev/sec, Idq_d: %+5.3f, Idq_q: %+6.3f, PID_Vd: %+6.3f, PID_Vq: %+6.3f, PID_VqP: %+6.3f, PID_VqI: %+6.3f, "
+					"PID_Wout: %+9.3f, PID_Wp: %+9.3f,  PID_Wi: %+9.3f, Time: %3lu\n",
+					lpf_speed_.Output(),
+					lpf_Id_.Output(),
+					lpf_Iq_.Output(),
+					pid_Vd_.Output(),
+					pid_Vq_.Output(),
+					pid_Vq_.OutputP(),
+					pid_Vq_.OutputI(),
+					pid_W_.Output(),
+					pid_W_.OutputP(),
+					pid_W_.OutputI(),
+					foc_time_
+			);
+		}
+	}
+}
+
+void MotorCtrlFOC::RunDebugLoopWrapper(void* ctx)
+{
+	reinterpret_cast<MotorCtrlFOC*>(const_cast<void*>(ctx))->RunDebugLoop();
+}
+
+bool MotorCtrlFOC::WaitDebugDump()
+{
+	return (osThreadFlagsWait(SIGNAL_DEBUG_DUMP, osFlagsWaitAll, -1) == SIGNAL_DEBUG_DUMP) ? true : false;
+}
+
+void MotorCtrlFOC::SignalDebugDump()
+{
+	if (debug_thread_)
+		osThreadFlagsSet(debug_thread_, SIGNAL_DEBUG_DUMP);
+}
+
+void MotorCtrlFOC::StartDebugThread()
+{
+	osThreadAttr_t task_attributes;
+	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+	task_attributes.name = "DebugFOC";
+	task_attributes.priority = (osPriority_t) osPriorityNormal;
+	task_attributes.stack_size = 2048;
+	debug_thread_ = osThreadNew(RunDebugLoopWrapper, this, &task_attributes);
 }
 
 void MotorCtrlFOC::Torque()
@@ -193,21 +247,10 @@ void MotorCtrlFOC::Torque()
 				 */
 				drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
 
-				uint32_t upd_time = hrtimer.GetTimeElapsedMicroSec(drive_->t2_, drive_->t3_);
-				uint32_t foc_time = hrtimer.GetTimeElapsedMicroSec(drive_->t2_, hrtimer.GetCounter());
+				upd_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_, drive_->t3_);
+				foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_, hrtimer.GetCounter());
 				if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
-					fprintf(stderr, "Speed: %6.2f Rev/sec, Idq_d: %+5.3f, Idq_q: %+5.3f, PID_Vd: %+8.3f, PID_Vq: %+8.3f, PID_Vqp: %+8.3f, PID_Vqi: %+8.3f, PID_Vqb: %+8.3f, UpdT: %4lu, FocT: %4lu \n",
-							lpf_speed_.Output(),
-							lpf_Id_.Output(),
-							lpf_Iq_.Output(),
-							pid_Vd_.Output(),
-							pid_Vq_.Output(),
-							pid_Vq_.OutputP(),
-							pid_Vq_.OutputI(),
-							pid_Vq_.OutputB(),
-							upd_time,
-							foc_time
-					);
+					SignalDebugDump();
 				}
 				return true;
 			});
@@ -284,25 +327,12 @@ void MotorCtrlFOC::Speed()
 				 */
 				drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
 
-				uint32_t upd_time = hrtimer.GetTimeElapsedMicroSec(drive_->t2_, drive_->t3_);
-				uint32_t foc_time = hrtimer.GetTimeElapsedMicroSec(drive_->t2_, hrtimer.GetCounter());
+				upd_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_, drive_->t3_);
+				foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_, hrtimer.GetCounter());
 				if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
-					fprintf(stderr,
-							"Speed: %6.2f Rev/sec, Idq_d: %+5.3f, Idq_q: %+6.3f, PID_Vd: %+6.3f, PID_Vq: %+6.3f, PID_VqP: %+6.3f, PID_VqI: %+6.3f, "
-							"Werr: %+9.3f, PID_Wout: %+9.3f, PID_Wp: %+9.3f,  PID_Wi: %+9.3f,  \n",
-							lpf_speed_.Output(),
-							lpf_Id_.Output(),
-							lpf_Iq_.Output(),
-							pid_Vd_.Output(),
-							pid_Vq_.Output(),
-							pid_Vq_.OutputP(),
-							pid_Vq_.OutputI(),
-							Werr,
-							Iq_out,
-							pid_W_.OutputP(),
-							pid_W_.OutputI()
-					);
+					SignalDebugDump();
 				}
+
 				return true;
 			});
 		} while (ret);
@@ -323,8 +353,8 @@ void MotorCtrlFOC::RunCalibrationSequence()
 		pid_Vd_.SetGainI(config_.pid_current_ki_);
 		pid_Vq_.SetGainI(config_.pid_current_ki_);
 
-		config_.pid_w_kp_ = drive_->config_.inductance_;
-		config_.pid_w_ki_ = drive_->config_.resistance_;
+		config_.pid_w_kp_ = drive_->config_.inductance_ * 4.0f;
+		config_.pid_w_ki_ = drive_->config_.resistance_ * 4.0f;
 		pid_W_.SetGainP(config_.pid_w_kp_);
 		pid_W_.SetGainI(config_.pid_w_ki_);
 	});

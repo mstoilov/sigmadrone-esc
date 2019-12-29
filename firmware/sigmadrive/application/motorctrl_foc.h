@@ -30,7 +30,7 @@ public:
 		float w_bias_ = 0;
 		float id_alpha_ = 0.3;
 		float iq_alpha_ = 0.01;
-		float speed_disp_alpha_ = 0.1;
+		float speed_disp_alpha_ = 0.005;
 		float i_trip_ = 8.0;
 		float iq_setpoint_ = 0.08;
 		float w_setpoint_ = 2; // Rev/Sec
@@ -46,8 +46,23 @@ public:
 	void Speed();
 	void RunCalibrationSequence();
 
+protected:
+	void RunDebugLoop();
+	void StartDebugThread();
+	bool WaitDebugDump();
+	void SignalDebugDump();
+	static void RunDebugLoopWrapper(void *ctx);
+
 public:
 	rexjson::property props_;
+
+protected:
+    enum Signals {
+        SIGNAL_DEBUG_DUMP = 1u << 0
+    };
+
+
+	osThreadId_t debug_thread_;
 	Config config_;
 	MotorDrive *drive_;
 	LowPassFilter<float, float> lpf_Id_;
@@ -58,6 +73,8 @@ public:
 	PidController<float> pid_Vq_;
 	PidController<float> pid_W_;
 	LowPassFilter<float, float> lpf_speed_;
+	uint32_t upd_time_;
+	uint32_t foc_time_;
 
 };
 

@@ -367,7 +367,8 @@ uint32_t MinasA4Encoder::GetIndexPosition()
 
 float MinasA4Encoder::GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs)
 {
-	return 2.0f * M_PI * (position % (resolution_ / motor_pole_pairs)) / (resolution_ / motor_pole_pairs);
+	uint32_t resolution_per_pair = (resolution_ / motor_pole_pairs);
+	return 2.0f * M_PI * (position % resolution_per_pair) / resolution_per_pair;
 }
 
 float MinasA4Encoder::GetMechanicalPosition(uint32_t position)
