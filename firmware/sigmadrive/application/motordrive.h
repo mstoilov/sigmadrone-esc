@@ -36,7 +36,7 @@ public:
 		uint32_t reset_hz_ = 35;
 		uint32_t pole_pairs = 7;
 		uint32_t adc_full_scale = (1<<12);
-		uint32_t display_div_ = 797;
+		uint32_t display_div_ = 2999;
 		bool svm_saddle_ = false;
 		float Vref_ = 3.3;
 		float max_modulation_duty_ = 0.95;
@@ -71,7 +71,7 @@ public:
 	void UpdateVbus();
 	void UpdateCurrent();
 
-	float GetPhaseSpeed() const;
+	float GetPhaseSpeedVector() const;
 	void SineSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
 	void SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
 	bool GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c);

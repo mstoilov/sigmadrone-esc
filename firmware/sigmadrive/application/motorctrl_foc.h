@@ -25,15 +25,15 @@ public:
 		float pid_w_maxout_ = 5;
 
 		float control_bandwidth_ = 1200; // Rad/Sec
-		float vab_advance_factor_ = 1.35;
+		float vab_advance_factor_ = 10000; //1.35;
 		float vq_bias_ = 0;
 		float w_bias_ = 0;
-		float id_alpha_ = 0.3;
-		float iq_alpha_ = 0.01;
+		float id_alpha_ = 0.001;
+		float iq_alpha_ = 0.001;
 		float speed_disp_alpha_ = 0.005;
 		float i_trip_ = 8.0;
 		float iq_setpoint_ = 0.08;
-		float w_setpoint_ = 2; // Rev/Sec
+		float w_setpoint_ = 0.0013;
 		float ri_angle_ = 1.57;
 		bool display_ = true;
 	};
@@ -43,8 +43,9 @@ public:
 	MotorCtrlFOC(MotorDrive* drive);
 	void Stop();
 	void Torque();
-	void Speed();
+	void Velocity();
 	void RunCalibrationSequence();
+	float VelocitySetPoint(float revpersec);
 
 protected:
 	void RunDebugLoop();
@@ -72,9 +73,10 @@ protected:
 	PidController<float> pid_Vd_;
 	PidController<float> pid_Vq_;
 	PidController<float> pid_W_;
-	LowPassFilter<float, float> lpf_speed_;
-	uint32_t upd_time_;
-	uint32_t foc_time_;
+	LowPassFilter<float, float> lpf_speed_disp_;
+	uint32_t upd_time_ = 0;
+	uint32_t foc_time_ = 0;
+	float Werr_ = 0;
 
 };
 

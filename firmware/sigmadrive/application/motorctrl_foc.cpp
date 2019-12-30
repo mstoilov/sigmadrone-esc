@@ -14,7 +14,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 	, pid_Vd_(config_.pid_current_kp_, config_.pid_current_ki_, 0, config_.pid_current_decay_, config_.pid_current_maxout_)
 	, pid_Vq_(config_.pid_current_kp_, config_.pid_current_ki_, 0, config_.pid_current_decay_, config_.pid_current_maxout_)
 	, pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, config_.pid_w_decay_, config_.pid_w_maxout_)
-	, lpf_speed_(config_.speed_disp_alpha_)
+	, lpf_speed_disp_(config_.speed_disp_alpha_)
 {
 	props_= rexjson::property_map({
 		{"id_alpha", rexjson::property(
@@ -110,7 +110,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_speed_.SetAlpha(config_.speed_disp_alpha_);
+					lpf_speed_disp_.SetAlpha(config_.speed_disp_alpha_);
 				})},
 
 		{"control_bandwith", &config_.control_bandwidth_},
@@ -122,7 +122,8 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 		{"display", &config_.display_},
 	});
 
-	rpc_server.add("foc.speed", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Speed, "void MotorCtrlFOC::Speed()"));
+	rpc_server.add("foc.vel_setpoint", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocitySetPoint, "void MotorCtrlFOC::VelocitySetPoint(float revpersec)"));
+	rpc_server.add("foc.velocity", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Velocity, "void MotorCtrlFOC::Velocity()"));
 	rpc_server.add("foc.torque", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Torque, "void MotorCtrlFOC::Torque()"));
 	rpc_server.add("foc.stop", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Stop, "void MotorCtrlFOC::Stop()"));
 	rpc_server.add("foc.calibration", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::RunCalibrationSequence, "void MotorCtrlFOC::RunCalibrationSequence()"));
@@ -140,19 +141,20 @@ void MotorCtrlFOC::RunDebugLoop()
 	for (;;) {
 		if (WaitDebugDump()) {
 			fprintf(stderr,
-					"Speed: %13.9f, Rev/sec, Idq_d: %+5.3f, Idq_q: %+6.3f, PID_Vd: %+6.3f, PID_Vq: %+6.3f, PID_VqP: %+6.3f, PID_VqI: %+6.3f, "
-					"PID_Wout: %+9.3f, PID_Wp: %+9.3f,  PID_Wi: %+9.3f, Time: %3lu\n",
-					lpf_speed_.Output(),
+					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, PID_Vd: %+7.3f, PID_Vq: %+7.3f, PID_VqP: %+7.3f, PID_VqI: %+7.3f, "
+					"Werr: %+12.9f, PID_W: %+12.9f, PID_WP: %+12.9f, PID_WI: %+12.9f\n",
+					lpf_speed_disp_.Output(),
+					asinf(lpf_speed_disp_.Output()) * drive_->GetUpdateFrequency() / (M_PI * 2 * drive_->GetPolePairs()),
 					lpf_Id_.Output(),
 					lpf_Iq_.Output(),
 					pid_Vd_.Output(),
 					pid_Vq_.Output(),
 					pid_Vq_.OutputP(),
 					pid_Vq_.OutputI(),
+					Werr_,
 					pid_W_.Output(),
 					pid_W_.OutputP(),
-					pid_W_.OutputI(),
-					foc_time_
+					pid_W_.OutputI()
 			);
 		}
 	}
@@ -190,7 +192,6 @@ void MotorCtrlFOC::Torque()
 
 	drive_->sched_.AddTask([&](){
 		bool ret = false;
-		float rotor_speed_factor = 1.0f / (M_PI * 2 * drive_->GetPolePairs());
 		float update_period = drive_->GetUpdatePeriod();
 		uint32_t display_counter = 0;
 		drive_->data_.update_counter_ = 0;
@@ -204,8 +205,8 @@ void MotorCtrlFOC::Torque()
 			ret = drive_->RunUpdateHandler([&]()->bool {
 				std::complex<float> Iab = drive_->GetPhaseCurrent();
 				std::complex<float> R = drive_->GetElecRotation();
-				float phase_speed = drive_->GetPhaseSpeed();
-				float rotor_speed = phase_speed * rotor_speed_factor;
+				float phase_speed = drive_->GetPhaseSpeedVector();
+//				float rotor_speed = phase_speed * rotor_speed_factor;
 
 				/*
 				 *  Park Transform
@@ -225,8 +226,8 @@ void MotorCtrlFOC::Torque()
 				if (std::abs(Idq) > config_.i_trip_)
 					return false;
 
-				pid_Vd_.Input(0.0f - lpf_Id_.Output(), update_period);
-				pid_Vq_.Input(config_.iq_setpoint_ - lpf_Iq_.Output(), update_period);
+				pid_Vd_.Input(0.0f - Idq.real(), update_period);
+				pid_Vq_.Input(config_.iq_setpoint_ - Idq.imag(), update_period);
 				/*
 				 * Inverse Park Transform
 				 * Va = Vd * cos(R) - Vq * sin(R)
@@ -240,7 +241,7 @@ void MotorCtrlFOC::Torque()
 				 * Apply advance
 				 */
 				V_ab *= std::polar<float>(1.0f, config_.vab_advance_factor_ * phase_speed * update_period);
-				lpf_speed_.DoFilter(rotor_speed);
+				lpf_speed_disp_.DoFilter(phase_speed);
 
 				/*
 				 * Apply the voltage timings
@@ -260,13 +261,12 @@ void MotorCtrlFOC::Torque()
 	drive_->sched_.Run();
 }
 
-void MotorCtrlFOC::Speed()
+void MotorCtrlFOC::Velocity()
 {
 	drive_->AddTaskArmMotor();
 
 	drive_->sched_.AddTask([&](){
 		bool ret = false;
-		float rotor_speed_factor = 1.0f / (M_PI * 2 * drive_->GetPolePairs());
 		float update_period = drive_->GetUpdatePeriod();
 		uint32_t display_counter = 0;
 		drive_->data_.update_counter_ = 0;
@@ -280,8 +280,8 @@ void MotorCtrlFOC::Speed()
 			ret = drive_->RunUpdateHandler([&]()->bool {
 				std::complex<float> Iab = drive_->GetPhaseCurrent();
 				std::complex<float> R = drive_->GetElecRotation();
-				float phase_speed = drive_->GetPhaseSpeed();
-				float rotor_speed = phase_speed * rotor_speed_factor;
+				float phase_speed = drive_->GetPhaseSpeedVector();
+//				float rotor_speed = phase_speed * rotor_speed_factor;
 
 				/*
 				 *  Park Transform
@@ -297,13 +297,13 @@ void MotorCtrlFOC::Speed()
 				 */
 				lpf_Id_.DoFilter(Idq.real());
 				lpf_Iq_.DoFilter(Idq.imag());
-				lpf_speed_.DoFilter(rotor_speed);
+				lpf_speed_disp_.DoFilter(phase_speed);
 
 				if (std::abs(Idq) > config_.i_trip_)
 					return false;
 
-				float Werr = config_.w_setpoint_ - rotor_speed;
-				float Iq_out = pid_W_.Input(Werr, update_period);
+				Werr_ = config_.w_setpoint_ - phase_speed;
+				float Iq_out = pid_W_.Input(Werr_, update_period);
 				pid_Vd_.Input(0.0f - lpf_Id_.Output(), update_period);
 				pid_Vq_.Input(Iq_out - lpf_Iq_.Output(), update_period);
 
@@ -341,6 +341,11 @@ void MotorCtrlFOC::Speed()
 	drive_->sched_.Run();
 }
 
+float MotorCtrlFOC::VelocitySetPoint(float revpersec)
+{
+	config_.w_setpoint_ = std::sin(M_PI * 2 * revpersec * drive_->GetPolePairs() * drive_->GetUpdatePeriod());
+	return config_.w_setpoint_;
+}
 
 void MotorCtrlFOC::RunCalibrationSequence()
 {
@@ -353,8 +358,8 @@ void MotorCtrlFOC::RunCalibrationSequence()
 		pid_Vd_.SetGainI(config_.pid_current_ki_);
 		pid_Vq_.SetGainI(config_.pid_current_ki_);
 
-		config_.pid_w_kp_ = drive_->config_.inductance_ * 4.0f;
-		config_.pid_w_ki_ = drive_->config_.resistance_ * 4.0f;
+		config_.pid_w_kp_ = drive_->config_.inductance_ * config_.control_bandwidth_;
+		config_.pid_w_ki_ = drive_->config_.resistance_ * config_.control_bandwidth_;
 		pid_W_.SetGainP(config_.pid_w_kp_);
 		pid_W_.SetGainI(config_.pid_w_ki_);
 	});

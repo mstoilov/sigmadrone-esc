@@ -214,8 +214,8 @@ void MotorDrive::IrqUpdateCallback()
 		encoder_->Update();
 
 		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
-		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
-		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
+		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
+		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
 		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
 
 		/*
@@ -229,6 +229,18 @@ void MotorDrive::IrqUpdateCallback()
 			return;
 		if (!t2_)
 			t2_ = hrtimer.GetCounter();
+
+		/*
+		 * Sample ADC phase current
+		 */
+		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
+		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
+		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
+		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
+
+		data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
+		data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_a.Output());
+		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_a.Output());
 
 		data_.update_counter_++;
 		sched_.SignalThreadUpdate();
@@ -261,9 +273,16 @@ void MotorDrive::UpdateCurrent()
 	Iab_ = Pa_ * data_.phase_current_a_ + Pb_ * data_.phase_current_b_ + Pc_ * (-data_.phase_current_a_ -data_.phase_current_b_);
 }
 
-float MotorDrive::GetPhaseSpeed() const
+/*
+ * Phase speed vector per Update Period
+ *
+ * To convert to Rad/sec:
+ * asin(GetPhaseSpeed()) * update_hz_ / (M_PI * 2)
+ *
+ */
+float MotorDrive::GetPhaseSpeedVector() const
 {
-	return asinf(lpf_speed_.Output()) * GetUpdateFrequency();
+	return lpf_speed_.Output();
 }
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
@@ -279,17 +298,6 @@ bool MotorDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 		return false;
 	} else if (flags == Scheduler::THREAD_FLAG_UPDATE) {
 		update_handler_active_ = true;
-		/*
-		 * Sample ADC phase current
-		 */
-		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
-		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc2.hadc_->Instance, LL_ADC_INJ_RANK_1);
-		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc3.hadc_->Instance, LL_ADC_INJ_RANK_1);
-		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
-
-		data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
-		data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_a.Output());
-		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_a.Output());
 
 		UpdateCurrent();
 		UpdateVbus();
@@ -479,6 +487,11 @@ void MotorDrive::AddTaskDetectEncoderDir()
 		if (RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, true))
 			config_.encoder_dir_ = (encoder_->GetMechanicalPosition(encoder_->GetPosition()) > M_PI) ? -1 : 1;
 	});
+	sched_.AddTask([&](){
+		RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, false);
+	});
+
+
 }
 
 void MotorDrive::AddTaskCalibrationSequence()
