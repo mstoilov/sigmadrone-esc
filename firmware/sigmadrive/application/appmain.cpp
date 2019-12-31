@@ -64,18 +64,28 @@ void SetEncoder()
 {
 	if (use_encoder == "minas") {
 		servo.SetEncoder(&ma4_abs_encoder);
+		tim1.EnableCounter(false);
 		ma4_abs_encoder.Detect();
+		tim1.EnableCounter(true);
+		servo.config_.calib_max_i_ = 2;
+		servo.config_.calib_v_ = 12;
 		servo.config_.reset_voltage_ = 3.4;
 		servo.config_.pole_pairs = 4;
 		cfoc.config_.spin_voltage_ = 3.4;
 	} else if (use_encoder == "minas6") {
 		servo.SetEncoder(&ma4_abs_encoder);
+		tim1.EnableCounter(false);
 		ma4_abs_encoder.Detect();
+		tim1.EnableCounter(true);
+		servo.config_.calib_max_i_ = 4;
+		servo.config_.calib_v_ = 12;
 		servo.config_.reset_voltage_ = 3.4;
 		servo.config_.pole_pairs = 5;
 		cfoc.config_.spin_voltage_ = 3.4;
 	} else if (use_encoder == "quadrature") {
 		servo.SetEncoder(&tim4);
+		servo.config_.calib_max_i_ = 10;
+		servo.config_.calib_v_ = 0.5;
 		servo.config_.reset_voltage_ = 0.4;
 		servo.config_.pole_pairs = 7;
 		cfoc.config_.spin_voltage_ = 0.4;

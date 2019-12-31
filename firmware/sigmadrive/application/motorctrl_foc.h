@@ -24,7 +24,7 @@ public:
 		float pid_w_decay_ = 0.01;
 		float pid_w_maxout_ = 5;
 
-		float control_bandwidth_ = 1200; // Rad/Sec
+		float control_bandwidth_ = 700; // Rad/Sec
 		float vab_advance_factor_ = 10000; //1.35;
 		float vq_bias_ = 0;
 		float w_bias_ = 0;

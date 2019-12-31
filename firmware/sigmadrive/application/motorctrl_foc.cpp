@@ -223,8 +223,11 @@ void MotorCtrlFOC::Torque()
 				lpf_Id_.DoFilter(Idq.real());
 				lpf_Iq_.DoFilter(Idq.imag());
 
-				if (std::abs(Idq) > config_.i_trip_)
+				if (std::abs(Idq) > config_.i_trip_) {
+					drive_->Abort();
+					fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
 					return false;
+				}
 
 				pid_Vd_.Input(0.0f - Idq.real(), update_period);
 				pid_Vq_.Input(config_.iq_setpoint_ - Idq.imag(), update_period);
@@ -299,8 +302,11 @@ void MotorCtrlFOC::Velocity()
 				lpf_Iq_.DoFilter(Idq.imag());
 				lpf_speed_disp_.DoFilter(phase_speed);
 
-				if (std::abs(Idq) > config_.i_trip_)
+				if (std::abs(Idq) > config_.i_trip_) {
+					drive_->Abort();
+					fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
 					return false;
+				}
 
 				Werr_ = config_.w_setpoint_ - phase_speed;
 				float Iq_out = pid_W_.Input(Werr_, update_period);
