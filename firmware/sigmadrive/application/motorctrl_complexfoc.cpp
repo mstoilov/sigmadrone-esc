@@ -83,7 +83,7 @@ void MotorCtrlComplexFOC::DumpDebugData(float Rarg, float Iarg, float Iabs)
 	float speed = (asinf(drive_->lpf_speed_.Output()) * drive_->GetUpdateFrequency())/(M_PI*2.0 * drive_->GetPolePairs());
 
 	fprintf(stderr, "ProcTime: %5lu EncTime: %5lu, EncErr: %8lu, Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
-			hrtimer.GetTimeElapsedMicroSec(drive_->t2_, hrtimer.GetCounter()),
+			hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter()),
 			ma4_abs_encoder.update_time_ms_,
 			ma4_abs_encoder.error_count_,
 			drive_->GetBusVoltage(),
@@ -132,7 +132,7 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 					float speed = (asinf(drive_->lpf_speed_.Output()) * drive_->GetUpdateFrequency())/(M_PI*2.0 * drive_->GetPolePairs());
 
 					fprintf(stderr, "ProcTime: %5lu EncTime: %5lu, EncErr: %8lu, Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
-							hrtimer.GetTimeElapsedMicroSec(drive_->t2_, hrtimer.GetCounter()),
+							hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter()),
 							ma4_abs_encoder.update_time_ms_,
 							ma4_abs_encoder.error_count_,
 							drive_->GetBusVoltage(),
@@ -149,12 +149,12 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 					uint32_t t4 = hrtimer.GetCounter();
 					fprintf(stderr, "Mot t1: %5lu,  Mot t2: %5lu,  Mot t3: %5lu,  Mot t4: %5lu,  Enc t1: %5lu,  Enc t2: %5lu,  UpdTime: %5lu uSec,  EncTime: %5lu uSec,  UpdC: %10lu,  DispC: %10lu\n",
 							((drive_->t1_ / 108) & 0xFF),
-							((drive_->t2_ / 108) & 0xFF),
+							((drive_->t2_begin_ / 108) & 0xFF),
 							((drive_->t3_ / 108) & 0xFF),
 							((t4 / 108) & 0xFF),
 							((ma4_abs_encoder.t1_ / 108) & 0xFF),
-							((ma4_abs_encoder.t2_ / 108) & 0xFF),
-							hrtimer.GetTimeElapsedMicroSec(drive_->t2_, hrtimer.GetCounter()),
+							((ma4_abs_encoder.t2_begin_ / 108) & 0xFF),
+							hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter()),
 							ma4_abs_encoder.update_time_ms_,
 							drive_->data_.update_counter_,
 							display_counter);

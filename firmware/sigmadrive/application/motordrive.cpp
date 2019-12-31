@@ -210,7 +210,7 @@ bool MotorDrive::IsStarted()
 void MotorDrive::IrqUpdateCallback()
 {
 	if (pwm_->GetCounterDirection()) {
-		t1_ = hrtimer.GetCounter();
+		t1_begin_ = hrtimer.GetCounter();
 		encoder_->Update();
 
 		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
@@ -224,11 +224,11 @@ void MotorDrive::IrqUpdateCallback()
 		lpf_bias_a.DoFilter(data_.injdata_[0]);
 		lpf_bias_b.DoFilter(data_.injdata_[1]);
 		lpf_bias_c.DoFilter(data_.injdata_[2]);
+		t1_span_ = hrtimer.GetTimeElapsedMicroSec(t1_begin_, hrtimer.GetCounter());
 	} else {
 		if (update_handler_active_)
 			return;
-		if (!t2_)
-			t2_ = hrtimer.GetCounter();
+		t2_begin_ = hrtimer.GetCounter();
 
 		/*
 		 * Sample ADC phase current
@@ -244,6 +244,9 @@ void MotorDrive::IrqUpdateCallback()
 
 		data_.update_counter_++;
 		sched_.SignalThreadUpdate();
+		t2_end_ = hrtimer.GetCounter();
+		t2_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_,t2_end_);
+
 	}
 }
 
@@ -298,14 +301,13 @@ bool MotorDrive::RunUpdateHandler(const std::function<bool(void)>& update_handle
 		return false;
 	} else if (flags == Scheduler::THREAD_FLAG_UPDATE) {
 		update_handler_active_ = true;
-
+		signal_time_ms_ = hrtimer.GetTimeElapsedMicroSec(t2_end_, hrtimer.GetCounter());
+		t3_begin_ = hrtimer.GetCounter();
 		UpdateCurrent();
 		UpdateVbus();
 		UpdateRotor();
-		t3_ = hrtimer.GetCounter();
-		signal_time_ms_ = hrtimer.GetTimeElapsedMicroSec(t2_, t3_);
+		t3_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
 		bool ret = update_handler();
-		t2_ = 0;
 		update_handler_active_ = false;
 		return ret;
 	}

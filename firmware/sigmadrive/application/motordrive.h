@@ -32,7 +32,7 @@ public:
 	};
 
 	struct Config {
-		int32_t encoder_dir_ = 0;				// (1) - encoder increasing or (-1) encoder decreasing
+		int32_t encoder_dir_ = 1;				// (1) - encoder increasing or (-1) encoder decreasing
 		uint32_t reset_hz_ = 35;
 		uint32_t pole_pairs = 7;
 		uint32_t adc_full_scale = (1<<12);
@@ -132,9 +132,14 @@ public:
 	uint32_t update_hz_;
 	float update_period_;
 	uint32_t wait_timeout_ = (uint32_t)-1;	// Forever
-	uint32_t t1_ = 0;
-	uint32_t t2_ = 0;
-	uint32_t t3_ = 0;
+	uint32_t t1_begin_ = 0;
+	uint32_t t1_span_ = 0;
+	uint32_t t2_begin_ = 0;
+	uint32_t t2_end_ = 0;
+	uint32_t t2_span_ = 0;
+	uint32_t t3_begin_ = 0;
+	uint32_t t3_span_ = 0;
+
 	uint32_t signal_time_ms_ = 0;
 	bool run_simple_tasks_ = false;
 	bool update_handler_active_ = false;

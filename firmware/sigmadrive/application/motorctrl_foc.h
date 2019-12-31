@@ -35,6 +35,7 @@ public:
 		float iq_setpoint_ = 0.08;
 		float w_setpoint_ = 0.0013;
 		float ri_angle_ = 1.57;
+		float spin_voltage_ = 3.5f;
 		bool display_ = true;
 	};
 
@@ -44,6 +45,7 @@ public:
 	void Stop();
 	void Torque();
 	void Velocity();
+	void Spin();
 	void RunCalibrationSequence();
 	float VelocitySetPoint(float revpersec);
 
@@ -51,7 +53,8 @@ protected:
 	void RunDebugLoop();
 	void StartDebugThread();
 	bool WaitDebugDump();
-	void SignalDebugDump();
+	void SignalDumpTorque();
+	void SignalDumpSpin();
 	static void RunDebugLoopWrapper(void *ctx);
 
 public:
@@ -59,7 +62,8 @@ public:
 
 protected:
     enum Signals {
-        SIGNAL_DEBUG_DUMP = 1u << 0
+        SIGNAL_DEBUG_DUMP_TORQUE = 1u << 0,
+        SIGNAL_DEBUG_DUMP_SPIN = 1u << 1,
     };
 
 
