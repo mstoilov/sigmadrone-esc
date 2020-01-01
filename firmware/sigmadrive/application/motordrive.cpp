@@ -256,7 +256,7 @@ void MotorDrive::UpdateRotor()
 	if (rotor_position != (uint32_t)-1) {
 		data_.theta_ = config_.encoder_dir_ * (encoder_->GetElectricPosition(rotor_position, config_.pole_pairs));
 		std::complex<float> r_prev = R_;
-		R_ = std::polar(1.0f, data_.theta_);
+		R_ = std::complex<float>(cosf(data_.theta_), sinf(data_.theta_));
 		std::complex<float> r_cur = R_;
 		lpf_speed_.DoFilter(sdmath::cross(r_prev, r_cur));
 	}
@@ -338,24 +338,24 @@ bool MotorDrive::GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32
 void MotorDrive::SineSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c)
 {
 	std::complex<float> theta = v_theta * std::complex<float>(0, 1);
-	duty_a = 0.5 + 0.5 * duty * (theta / Pa_).imag();
-	duty_b = 0.5 + 0.5 * duty * (theta / Pb_).imag();
-	duty_c = 0.5 + 0.5 * duty * (theta / Pc_).imag();
+	duty_a = 0.5f + 0.5f * duty * (theta * std::conj(Pa_)).imag();
+	duty_b = 0.5f + 0.5f * duty * (theta * std::conj(Pb_)).imag();
+	duty_c = 0.5f + 0.5f * duty * (theta * std::conj(Pc_)).imag();
 }
 
 void MotorDrive::SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c)
 {
 	std::complex<float> theta = v_theta * std::complex<float>(0, 1);
 	std::complex<float> theta3 = theta * theta * theta * 0.3333f;
-	duty_a = 0.5 + 0.5 * duty * (theta / Pa_ + theta3).imag();
-	duty_b = 0.5 + 0.5 * duty * (theta / Pb_ + theta3).imag();
-	duty_c = 0.5 + 0.5 * duty * (theta / Pc_ + theta3).imag();
+	duty_a = 0.5f + 0.5f * duty * (theta * std::conj(Pa_) + theta3).imag();
+	duty_b = 0.5f + 0.5f * duty * (theta * std::conj(Pb_) + theta3).imag();
+	duty_c = 0.5f + 0.5f * duty * (theta * std::conj(Pc_) + theta3).imag();
 }
 
 bool MotorDrive::ApplyPhaseVoltage(float v_alpha, float v_beta, float vbus)
 {
-	std::complex<float> V = std::complex<float>(v_alpha, v_beta);
-	return ApplyPhaseModulation(VoltageToDuty(std::abs(V), vbus), std::polar(1.0f, std::arg(V)));
+	float v_abs = sqrtf(v_alpha * v_alpha + v_beta * v_beta);
+	return ApplyPhaseModulation(VoltageToDuty(v_abs, vbus), std::complex<float>(v_alpha/v_abs, v_beta/v_abs));
 }
 
 bool MotorDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus)

@@ -410,6 +410,13 @@ void MotorCtrlFOC::Spin()
 				}
 
 				/*
+				 * Apply filters
+				 */
+				lpf_Id_.DoFilter(Idq.real());
+				lpf_Iq_.DoFilter(Idq.imag());
+				lpf_speed_disp_.DoFilter(phase_speed);
+
+				/*
 				 * Inverse Park Transform
 				 * Va = Vd * cos(R) - Vq * sin(R)
 				 * Vb = Vd * sin(R) + Vq * cos(R)

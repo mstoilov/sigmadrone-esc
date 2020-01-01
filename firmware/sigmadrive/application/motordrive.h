@@ -29,6 +29,7 @@ public:
 		int32_t vbus_ = 0;
 		float theta_ = 0.0f;
 		uint32_t update_counter_ = 0;
+		uint32_t bias_counter_ = 0;
 	};
 
 	struct Config {
