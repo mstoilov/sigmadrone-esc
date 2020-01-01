@@ -231,7 +231,6 @@ void MotorCtrlFOC::Torque()
 				std::complex<float> Iab = drive_->GetPhaseCurrent();
 				std::complex<float> R = drive_->GetElecRotation();
 				float phase_speed = drive_->GetPhaseSpeedVector();
-//				float rotor_speed = phase_speed * rotor_speed_factor;
 
 				/*
 				 *  Park Transform
@@ -310,7 +309,6 @@ void MotorCtrlFOC::Velocity()
 				std::complex<float> Iab = drive_->GetPhaseCurrent();
 				std::complex<float> R = drive_->GetElecRotation();
 				float phase_speed = drive_->GetPhaseSpeedVector();
-//				float rotor_speed = phase_speed * rotor_speed_factor;
 
 				/*
 				 *  Park Transform

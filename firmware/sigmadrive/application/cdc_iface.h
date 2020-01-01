@@ -20,8 +20,9 @@ public:
 
 	CdcIface();
 	virtual ~CdcIface();
-	void Attach(USBD_HandleTypeDef* usbd);
+	void Attach(USBD_HandleTypeDef* usbd, bool start_tx_thread = false);
 	int8_t ReceiveComplete(uint8_t* buf, uint32_t len);
+	size_t TransmitNoWait(const char* buffer, size_t nsize);
 	size_t Transmit(const char* buffer, size_t nsize);
 	size_t Receive(char* buffer, size_t nsize);
 	void RunTxLoop();

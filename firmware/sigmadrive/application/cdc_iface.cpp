@@ -25,16 +25,17 @@ CdcIface::~CdcIface()
 	// TODO Auto-generated destructor stub
 }
 
-void CdcIface::Attach(USBD_HandleTypeDef* usbd)
+void CdcIface::Attach(USBD_HandleTypeDef* usbd, bool start_tx_thread)
 {
 	usbd_ = usbd;
 	assert(handle_map_.find(usbd) == handle_map_.end());
 	handle_map_[usbd_] = this;
-	StartTxThread();
+	if (start_tx_thread)
+		StartTxThread();
 
 }
 
-size_t CdcIface::Transmit(const char* buffer, size_t nsize)
+size_t CdcIface::TransmitNoWait(const char* buffer, size_t nsize)
 {
 	size_t space_size = tx_ringbuf_.space_size();
 	if ((space_size < tx_ringbuf_.capacity() / 2) || !nsize) {
@@ -56,6 +57,14 @@ size_t CdcIface::Transmit(const char* buffer, size_t nsize)
 	return nsize;
 }
 
+size_t CdcIface::Transmit(const char* buffer, size_t nsize)
+{
+	while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
+		osDelay(2);
+	return nsize;
+}
+
+
 void CdcIface::RunTxLoop()
 {
 	for (;;) {
@@ -63,8 +72,7 @@ void CdcIface::RunTxLoop()
 			size_t nsize = tx_ringbuf_.read_size();
 			while ((nsize = tx_ringbuf_.read_size()) != 0) {
 				char* buffer = tx_ringbuf_.get_read_ptr();
-				while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
-					osDelay(2);
+				Transmit(buffer, nsize);
 				tx_ringbuf_.read_update(nsize);
 			}
 		}
