@@ -135,7 +135,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 
 void MotorCtrlFOC::Stop()
 {
-	drive_->sched_.Abort();
+	drive_->Abort();
 }
 
 void MotorCtrlFOC::RunDebugLoop()
@@ -146,8 +146,8 @@ void MotorCtrlFOC::RunDebugLoop()
 			continue;
 		} else if (status & SIGNAL_DEBUG_DUMP_TORQUE) {
 			fprintf(stderr,
-					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, PID_Vd: %+7.3f, PID_Vq: %+7.3f, PID_VqP: %+7.3f, PID_VqI: %+7.3f, "
-					"Werr: %+12.9f, PID_W: %+12.9f, PID_WP: %+12.9f, PID_WI: %+12.9f\n",
+					"Speed: %11.9f (%5.2f), I_d: %+6.3f, I_q: %+6.3f, PVd: %+7.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
+					"Werr: %+12.9f, PID_W: %+12.9f, PID_WP: %+12.9f, PID_WI: %+12.9f, T: %4lu\n",
 					lpf_speed_disp_.Output(),
 					asinf(lpf_speed_disp_.Output()) * drive_->GetUpdateFrequency() / (M_PI * 2 * drive_->GetPolePairs()),
 					lpf_Id_.Output(),
@@ -159,11 +159,12 @@ void MotorCtrlFOC::RunDebugLoop()
 					Werr_,
 					pid_W_.Output(),
 					pid_W_.OutputP(),
-					pid_W_.OutputI()
+					pid_W_.OutputI(),
+					foc_time_
 			);
 		} else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
 			fprintf(stderr,
-					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, signal: %4lu, UpdT: %4lu, FocT: %4lu, \n",
+					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, signal: %4lu, T: %4lu, \n",
 					lpf_speed_disp_.Output(),
 					asinf(lpf_speed_disp_.Output()) * drive_->GetUpdateFrequency() / (M_PI * 2 * drive_->GetPolePairs()),
 					lpf_Id_.Output(),
@@ -171,7 +172,6 @@ void MotorCtrlFOC::RunDebugLoop()
 					drive_->t1_span_,
 					drive_->t2_span_,
 					drive_->signal_time_ms_,
-					upd_time_,
 					foc_time_
 			);
 		}
@@ -227,62 +227,63 @@ void MotorCtrlFOC::Torque()
 		lpf_Iq_.Reset();
 		drive_->lpf_speed_.Reset();
 		do {
-			ret = drive_->RunUpdateHandler([&]()->bool {
-				std::complex<float> Iab = drive_->GetPhaseCurrent();
-				std::complex<float> R = drive_->GetElecRotation();
-				float phase_speed = drive_->GetPhaseSpeedVector();
-
-				/*
-				 *  Park Transform
-				 *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
-				 *  Iq = Ibeta  * cos(R) - Ialpha * sin(R)
-				 *
-				 *  Idq = std::complex<float>(Id, Iq);
-				 */
-				std::complex<float> Idq = Iab * std::conj(R);
-
-				/*
-				 * Apply filters
-				 */
-				lpf_Id_.DoFilter(Idq.real());
-				lpf_Iq_.DoFilter(Idq.imag());
-				lpf_speed_disp_.DoFilter(phase_speed);
-
-				if (std::abs(Idq) > config_.i_trip_) {
-					drive_->Abort();
-					fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
-					return false;
-				}
-
-				pid_Vd_.Input(0.0f - Idq.real(), update_period);
-				pid_Vq_.Input(config_.iq_setpoint_ - Idq.imag(), update_period);
-
-				/*
-				 * Inverse Park Transform
-				 * Va = Vd * cos(R) - Vq * sin(R)
-				 * Vb = Vd * sin(R) + Vq * cos(R)
-				 *
-				 * Vab = std::complex<float>(Va, Vb)
-				 */
-				std::complex<float> V_ab = std::complex<float>(pid_Vd_.Output(), pid_Vq_.Output()) * R;
-
-				/*
-				 * Apply advance
-				 */
-				V_ab *= std::polar<float>(1.0f, config_.vab_advance_factor_ * phase_speed * update_period);
-
-				/*
-				 * Apply the voltage timings
-				 */
-				drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
-
-				upd_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, drive_->t3_begin_);
-				foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
-				if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
-					SignalDumpTorque();
-				}
-				return true;
+			ret = drive_->sched_.RunUpdateHandler([&]()->bool {
+				return false;
 			});
+
+			std::complex<float> Iab = drive_->GetPhaseCurrent();
+			std::complex<float> R = drive_->GetElecRotation();
+			float phase_speed = drive_->GetPhaseSpeedVector();
+
+			/*
+			 *  Park Transform
+			 *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
+			 *  Iq = Ibeta  * cos(R) - Ialpha * sin(R)
+			 *
+			 *  Idq = std::complex<float>(Id, Iq);
+			 */
+			std::complex<float> Idq = Iab * std::conj(R);
+
+			/*
+			 * Apply filters
+			 */
+			lpf_Id_.DoFilter(Idq.real());
+			lpf_Iq_.DoFilter(Idq.imag());
+			lpf_speed_disp_.DoFilter(phase_speed);
+
+			if (std::abs(Idq) > config_.i_trip_) {
+				drive_->Abort();
+				fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
+				return;
+			}
+
+			pid_Vd_.Input(0.0f - Idq.real(), update_period);
+			pid_Vq_.Input(config_.iq_setpoint_ - Idq.imag(), update_period);
+
+			/*
+			 * Inverse Park Transform
+			 * Va = Vd * cos(R) - Vq * sin(R)
+			 * Vb = Vd * sin(R) + Vq * cos(R)
+			 *
+			 * Vab = std::complex<float>(Va, Vb)
+			 */
+			std::complex<float> V_ab = std::complex<float>(pid_Vd_.Output(), pid_Vq_.Output()) * R;
+
+			/*
+			 * Apply advance
+			 */
+			V_ab *= std::polar<float>(1.0f, config_.vab_advance_factor_ * phase_speed * update_period);
+
+			/*
+			 * Apply the voltage timings
+			 */
+			drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
+
+			foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
+			if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+				SignalDumpTorque();
+			}
+
 		} while (ret);
 	});
 	drive_->AddTaskDisarmMotor();
@@ -294,7 +295,6 @@ void MotorCtrlFOC::Velocity()
 	drive_->AddTaskArmMotor();
 
 	drive_->sched_.AddTask([&](){
-		bool ret = false;
 		float update_period = drive_->GetUpdatePeriod();
 		uint32_t display_counter = 0;
 		drive_->data_.update_counter_ = 0;
@@ -304,68 +304,65 @@ void MotorCtrlFOC::Velocity()
 		lpf_Id_.Reset();
 		lpf_Iq_.Reset();
 		drive_->lpf_speed_.Reset();
-		do {
-			ret = drive_->RunUpdateHandler([&]()->bool {
-				std::complex<float> Iab = drive_->GetPhaseCurrent();
-				std::complex<float> R = drive_->GetElecRotation();
-				float phase_speed = drive_->GetPhaseSpeedVector();
+		drive_->sched_.RunUpdateHandler([&]()->bool {
+			std::complex<float> Iab = drive_->GetPhaseCurrent();
+			std::complex<float> R = drive_->GetElecRotation();
+			float phase_speed = drive_->GetPhaseSpeedVector();
 
-				/*
-				 *  Park Transform
-				 *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
-				 *  Iq = Ibeta  * cos(R) - Ialpha * sin(R)
-				 *
-				 *  Idq = std::complex<float>(Id, Iq);
-				 */
-				std::complex<float> Idq = Iab * std::conj(R);
+			/*
+			 *  Park Transform
+			 *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
+			 *  Iq = Ibeta  * cos(R) - Ialpha * sin(R)
+			 *
+			 *  Idq = std::complex<float>(Id, Iq);
+			 */
+			std::complex<float> Idq = Iab * std::conj(R);
 
-				/*
-				 * Apply filters
-				 */
-				lpf_Id_.DoFilter(Idq.real());
-				lpf_Iq_.DoFilter(Idq.imag());
-				lpf_speed_disp_.DoFilter(phase_speed);
+			/*
+			 * Apply filters
+			 */
+			lpf_Id_.DoFilter(Idq.real());
+			lpf_Iq_.DoFilter(Idq.imag());
+			lpf_speed_disp_.DoFilter(phase_speed);
 
-				if (std::abs(Idq) > config_.i_trip_) {
-					drive_->Abort();
-					fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
-					return false;
-				}
+			if (std::abs(Idq) > config_.i_trip_) {
+				drive_->Abort();
+				fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
+				return false;
+			}
 
-				Werr_ = config_.w_setpoint_ - phase_speed;
-				float Iq_out = pid_W_.Input(Werr_, update_period);
-				pid_Vd_.Input(0.0f - lpf_Id_.Output(), update_period);
-				pid_Vq_.Input(Iq_out - lpf_Iq_.Output(), update_period);
+			Werr_ = config_.w_setpoint_ - phase_speed;
+			float Iq_out = pid_W_.Input(Werr_, update_period);
+			pid_Vd_.Input(0.0f - lpf_Id_.Output(), update_period);
+			pid_Vq_.Input(Iq_out - lpf_Iq_.Output(), update_period);
 
 
-				/*
-				 * Inverse Park Transform
-				 * Va = Vd * cos(R) - Vq * sin(R)
-				 * Vb = Vd * sin(R) + Vq * cos(R)
-				 *
-				 * Vab = std::complex<float>(Va, Vb)
-				 */
-				std::complex<float> V_ab = std::complex<float>(pid_Vd_.Output(), pid_Vq_.Output()) * R;
+			/*
+			 * Inverse Park Transform
+			 * Va = Vd * cos(R) - Vq * sin(R)
+			 * Vb = Vd * sin(R) + Vq * cos(R)
+			 *
+			 * Vab = std::complex<float>(Va, Vb)
+			 */
+			std::complex<float> V_ab = std::complex<float>(pid_Vd_.Output(), pid_Vq_.Output()) * R;
 
-				/*
-				 * Apply advance
-				 */
-				V_ab *= std::polar<float>(1.0f, config_.vab_advance_factor_ * phase_speed * update_period);
+			/*
+			 * Apply advance
+			 */
+			V_ab *= std::polar<float>(1.0f, config_.vab_advance_factor_ * phase_speed * update_period);
 
-				/*
-				 * Apply the voltage timings
-				 */
-				drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
+			/*
+			 * Apply the voltage timings
+			 */
+			drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
 
-				upd_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, drive_->t3_begin_);
-				foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
-				if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
-					SignalDumpTorque();
-				}
+			foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
+			if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+				SignalDumpTorque();
+			}
 
-				return true;
-			});
-		} while (ret);
+			return true;
+		});
 	});
 	drive_->AddTaskDisarmMotor();
 	drive_->sched_.Run();
@@ -376,7 +373,6 @@ void MotorCtrlFOC::Spin()
 	drive_->AddTaskArmMotor();
 
 	drive_->sched_.AddTask([&](){
-		bool ret = false;
 		float update_period = drive_->GetUpdatePeriod();
 		uint32_t display_counter = 0;
 		drive_->data_.update_counter_ = 0;
@@ -386,68 +382,63 @@ void MotorCtrlFOC::Spin()
 		lpf_Id_.Reset();
 		lpf_Iq_.Reset();
 		drive_->lpf_speed_.Reset();
-		do {
-			ret = drive_->RunUpdateHandler([&]()->bool {
-				std::complex<float> Iab = drive_->GetPhaseCurrent();
-				std::complex<float> R = drive_->GetElecRotation();
-				float phase_speed = drive_->GetPhaseSpeedVector();
+		drive_->sched_.RunUpdateHandler([&]()->bool {
+			std::complex<float> Iab = drive_->GetPhaseCurrent();
+			std::complex<float> R = drive_->GetElecRotation();
+			float phase_speed = drive_->GetPhaseSpeedVector();
 
-				/*
-				 *  Park Transform
-				 *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
-				 *  Iq = Ibeta  * cos(R) - Ialpha * sin(R)
-				 *
-				 *  Idq = std::complex<float>(Id, Iq);
-				 */
-				std::complex<float> Idq = Iab * std::conj(R);
+			/*
+			 *  Park Transform
+			 *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
+			 *  Iq = Ibeta  * cos(R) - Ialpha * sin(R)
+			 *
+			 *  Idq = std::complex<float>(Id, Iq);
+			 */
+			std::complex<float> Idq = Iab * std::conj(R);
 
-				if (std::abs(Idq) > config_.i_trip_) {
-					drive_->Abort();
-					fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
-					return false;
-				}
+			if (std::abs(Idq) > config_.i_trip_) {
+				drive_->Abort();
+				fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
+				return false;
+			}
 
-				/*
-				 * Apply filters
-				 */
-				lpf_Id_.DoFilter(Idq.real());
-				lpf_Iq_.DoFilter(Idq.imag());
-				lpf_speed_disp_.DoFilter(phase_speed);
+			/*
+			 * Apply filters
+			 */
+			lpf_Id_.DoFilter(Idq.real());
+			lpf_Iq_.DoFilter(Idq.imag());
+			lpf_speed_disp_.DoFilter(phase_speed);
 
-				/*
-				 * Inverse Park Transform
-				 * Va = Vd * cos(R) - Vq * sin(R)
-				 * Vb = Vd * sin(R) + Vq * cos(R)
-				 *
-				 * Vab = std::complex<float>(Va, Vb)
-				 */
-				std::complex<float> V_ab = std::complex<float>(0, config_.spin_voltage_) * R;
+			/*
+			 * Inverse Park Transform
+			 * Va = Vd * cos(R) - Vq * sin(R)
+			 * Vb = Vd * sin(R) + Vq * cos(R)
+			 *
+			 * Vab = std::complex<float>(Va, Vb)
+			 */
+			std::complex<float> V_ab = std::complex<float>(0, config_.spin_voltage_) * R;
 
-				/*
-				 * Apply advance
-				 */
-				V_ab *= std::polar<float>(1.0f, config_.vab_advance_factor_ * phase_speed * update_period);
+			/*
+			 * Apply advance
+			 */
+			V_ab *= std::polar<float>(1.0f, config_.vab_advance_factor_ * phase_speed * update_period);
 
-				/*
-				 * Apply the voltage timings
-				 */
-				drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
+			/*
+			 * Apply the voltage timings
+			 */
+			drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
 
-				upd_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, drive_->t3_begin_);
-				foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
-				if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
-					SignalDumpSpin();
-				}
+			foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
+			if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+				SignalDumpSpin();
+			}
 
-				return true;
-			});
-		} while (ret);
+			return true;
+		});
 	});
 	drive_->AddTaskDisarmMotor();
 	drive_->sched_.Run();
 }
-
-
 
 float MotorCtrlFOC::VelocitySetPoint(float revpersec)
 {

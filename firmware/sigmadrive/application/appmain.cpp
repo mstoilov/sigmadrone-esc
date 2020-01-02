@@ -196,7 +196,7 @@ int application_main()
 	tim4.Attach(&htim4);
 	tim1.Attach(&htim1);
 //	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
-	usb_cdc.Attach(&hUsbDeviceFS);
+	usb_cdc.Attach(&hUsbDeviceFS, true);
 
 	drv1.WriteReg(2, 0x0);
 	drv1.WriteReg(3, 0x0);

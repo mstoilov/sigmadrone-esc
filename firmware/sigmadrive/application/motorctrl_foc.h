@@ -78,7 +78,6 @@ protected:
 	PidController<float> pid_Vq_;
 	PidController<float> pid_W_;
 	LowPassFilter<float, float> lpf_speed_disp_;
-	uint32_t upd_time_ = 0;
 	uint32_t foc_time_ = 0;
 	float Werr_ = 0;
 

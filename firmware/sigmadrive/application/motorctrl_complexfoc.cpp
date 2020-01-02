@@ -69,7 +69,7 @@ MotorCtrlComplexFOC::MotorCtrlComplexFOC(MotorDrive* drive)
 
 void MotorCtrlComplexFOC::Stop()
 {
-	drive_->sched_.Abort();
+	drive_->Abort();
 }
 
 void MotorCtrlComplexFOC::DumpDebugData(float Rarg, float Iarg, float Iabs)
@@ -108,7 +108,7 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 		uint32_t display_counter = 0;
 		drive_->data_.update_counter_ = 0;
 		do {
-			ret = drive_->RunUpdateHandler([&]()->bool {
+			ret = drive_->sched_.RunUpdateHandler([&]()->bool {
 				std::complex<float> I = drive_->GetPhaseCurrent();
 				std::complex<float> rotor = drive_->GetElecRotation();
 				float Iarg = std::arg(I);
@@ -166,7 +166,7 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 #endif
 
 				}
-				return true;
+				return false;
 			});
 		} while (ret);
 	});

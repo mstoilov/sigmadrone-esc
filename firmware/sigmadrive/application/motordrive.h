@@ -138,12 +138,9 @@ public:
 	uint32_t t2_begin_ = 0;
 	uint32_t t2_end_ = 0;
 	uint32_t t2_span_ = 0;
-	uint32_t t3_begin_ = 0;
-	uint32_t t3_span_ = 0;
 
 	uint32_t signal_time_ms_ = 0;
 	bool run_simple_tasks_ = false;
-	bool update_handler_active_ = false;
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
 	SampledData data_;

@@ -5,6 +5,8 @@
  *      Author: mstoilov
  */
 
+#include "stm32f7xx.h"
+
 //#include "main.h"
 #include <string.h>
 #include "scheduler.h"
@@ -34,14 +36,32 @@ void Scheduler::SetAbortTask(const std::function<void(void)>& task)
 	abort_task_ = task;
 }
 
+void Scheduler::OnUpdate()
+{
+	if (update_handler_) {
+		if (!(*update_handler_)() || dispatch_queue_.empty()) {
+			update_handler_ = nullptr;
+			SignalThreadUpdateDone();
+		}
+	}
+}
+
+bool Scheduler::RunUpdateHandler(const std::function<bool(void)>& update_handler)
+{
+	if (dispatch_queue_.empty())
+		return false;
+	update_handler_ = &update_handler;
+	while (!WaitSignalUpdateDone(-1))
+		;
+	return true;
+}
 
 void Scheduler::Abort()
 {
-	taskENTER_CRITICAL();
+	__disable_irq();
 	dispatch_queue_.clear();
-	taskEXIT_CRITICAL();
+	__enable_irq();
 	SignalThreadAbort();
-	abort_task_();
 }
 
 void Scheduler::Run()
@@ -89,11 +109,6 @@ void Scheduler::RunSchedulerLoop()
 			 * Clear IDLE in case it was set
 			 */
 			osEventFlagsClear(event_dispatcher_idle_, EVENT_FLAG_IDLE);
-
-			/*
-			 * Clear UPDATE signal
-			 */
-			osThreadFlagsClear(THREAD_FLAG_UPDATE);
 
 			while (!dispatch_queue_.empty()) {
 				std::function<void(void)> task = [](void){};
@@ -188,10 +203,11 @@ uint32_t Scheduler::WaitEvents(osEventFlagsId_t event, uint32_t s, uint32_t time
 }
 
 
-bool Scheduler::WaitSignalUpdate(uint32_t timeout_msec)
+bool Scheduler::WaitSignalUpdateDone(uint32_t timeout_msec)
 {
-	return (WaitSignals(THREAD_FLAG_UPDATE, timeout_msec) == THREAD_FLAG_UPDATE) ? true : false;
+	return (WaitSignals(THREAD_FLAG_UPDATE_DONE, timeout_msec) == THREAD_FLAG_UPDATE_DONE) ? true : false;
 }
+
 
 bool Scheduler::WaitSignalTask(uint32_t timeout_msec)
 {
@@ -208,12 +224,13 @@ bool Scheduler::WaitEventIdle(uint32_t timeout_msec)
 	return (WaitEvents(event_dispatcher_idle_, EVENT_FLAG_IDLE, timeout_msec) == EVENT_FLAG_IDLE) ? true : false;
 }
 
-void Scheduler::SignalThreadUpdate()
+void Scheduler::SignalThreadUpdateDone()
 {
-	if (scheduler_thread_id_ && !dispatch_queue_.empty()) {
-		osThreadFlagsSet(scheduler_thread_id_, THREAD_FLAG_UPDATE);
+	if (scheduler_thread_id_) {
+		osThreadFlagsSet(scheduler_thread_id_, THREAD_FLAG_UPDATE_DONE);
 	}
 }
+
 
 void Scheduler::SignalThreadTask()
 {
