@@ -211,7 +211,6 @@ void MotorDrive::IrqUpdateCallback()
 {
 	if (pwm_->GetCounterDirection()) {
 		t1_begin_ = hrtimer.GetCounter();
-		encoder_->Update();
 
 		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
 		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
@@ -226,8 +225,10 @@ void MotorDrive::IrqUpdateCallback()
 		lpf_bias_c.DoFilter(data_.injdata_[2]);
 		t1_span_ = hrtimer.GetTimeElapsedMicroSec(t1_begin_, hrtimer.GetCounter());
 	} else {
-		data_.update_counter_++;
+		t2_to_t2_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
 		t2_begin_ = hrtimer.GetCounter();
+
+		data_.update_counter_++;
 
 		/*
 		 * Sample ADC phase current
@@ -241,9 +242,16 @@ void MotorDrive::IrqUpdateCallback()
 		data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_a.Output());
 		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_a.Output());
 
+//		if (data_.update_counter_ & 1)
+//			encoder_->Update();
+//		else
+//			UpdateRotor();
+
+		encoder_->Update();
+		UpdateRotor();
 		UpdateCurrent();
 		UpdateVbus();
-		UpdateRotor();
+
 
 		sched_.OnUpdate();
 		t2_end_ = hrtimer.GetCounter();

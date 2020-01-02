@@ -4,7 +4,9 @@
 #include "motorctrl_foc.h"
 #include "sdmath.h"
 #include "uartrpcserver.h"
+#include "minasa4encoder.h"
 
+extern MinasA4Encoder ma4_abs_encoder;
 extern UartRpcServer rpc_server;
 
 MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
@@ -164,15 +166,16 @@ void MotorCtrlFOC::RunDebugLoop()
 			);
 		} else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
 			fprintf(stderr,
-					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, signal: %4lu, T: %4lu, \n",
+					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, EncT: %4lu\n",
 					lpf_speed_disp_.Output(),
 					asinf(lpf_speed_disp_.Output()) * drive_->GetUpdateFrequency() / (M_PI * 2 * drive_->GetPolePairs()),
 					lpf_Id_.Output(),
 					lpf_Iq_.Output(),
 					drive_->t1_span_,
 					drive_->t2_span_,
-					drive_->signal_time_ms_,
-					foc_time_
+					drive_->t2_to_t2_,
+					foc_time_,
+					ma4_abs_encoder.update_time_ms_
 			);
 		}
 	}
@@ -383,6 +386,7 @@ void MotorCtrlFOC::Spin()
 		lpf_Iq_.Reset();
 		drive_->lpf_speed_.Reset();
 		drive_->sched_.RunUpdateHandler([&]()->bool {
+
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
 			std::complex<float> R = drive_->GetElecRotation();
 			float phase_speed = drive_->GetPhaseSpeedVector();
