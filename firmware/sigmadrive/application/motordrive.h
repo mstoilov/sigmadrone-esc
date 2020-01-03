@@ -106,14 +106,14 @@ public:
 	void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder = true);
 	void AddTaskResetRotor();
 	void AddTaskMeasureResistance(float seconds, float test_voltage, float max_current);
-	void AddTaskMeasureInductance(float seconds, float test_voltage, float max_current);
+	void AddTaskMeasureInductance(float seconds, float test_voltage, float max_current, uint32_t test_hz);
 	void AddTaskDetectEncoderDir();
 	void RunTaskAphaPoleSearch();
 	void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir);
 	void RunSimpleTasks();
 	void AddTaskCalibrationSequence();
 	float RunResistanceMeasurement(float seconds, float test_voltage, float max_current);
-	float RunInductanceMeasurement(float seconds, float test_voltage, float max_current);
+	float RunInductanceMeasurement(float seconds, float test_voltage, float max_current, uint32_t test_hz);
 
 	void SchedulerRun();
 	void SchedulerAbort();
@@ -132,7 +132,6 @@ public:
 
 	uint32_t update_hz_;
 	float update_period_;
-	uint32_t wait_timeout_ = (uint32_t)-1;	// Forever
 	uint32_t t1_begin_ = 0;
 	uint32_t t1_span_ = 0;
 	uint32_t t2_begin_ = 0;
@@ -152,9 +151,6 @@ public:
 	LowPassFilter<float, float> lpf_bias_a;
 	LowPassFilter<float, float> lpf_bias_b;
 	LowPassFilter<float, float> lpf_bias_c;
-	LowPassFilter<float, float> lpf_a;
-	LowPassFilter<float, float> lpf_b;
-	LowPassFilter<float, float> lpf_c;
 	LowPassFilter<float, float> lpf_vbus_;
 	LowPassFilter<float, float> lpf_speed_;
 	std::complex<float> R_;
