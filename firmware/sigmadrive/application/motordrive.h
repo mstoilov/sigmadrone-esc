@@ -27,7 +27,6 @@ public:
 		float phase_current_b_;
 		float phase_current_c_;
 		int32_t vbus_ = 0;
-		float theta_ = 0.0f;
 		uint32_t update_counter_ = 0;
 		uint32_t bias_counter_ = 0;
 	};
@@ -51,7 +50,6 @@ public:
 		float inductance_ = 5.56e-05f;
 		float bias_alpha_ = 0.00035f;
 		float abc_alpha_ = 0.5f;
-		float speed_alpha_ = 1.0f;
 	};
 
 	void Run();
@@ -72,7 +70,6 @@ public:
 	void UpdateVbus();
 	void UpdateCurrent();
 
-	float GetPhaseSpeedVector() const;
 	void SineSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
 	void SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
 	bool GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c);
@@ -89,7 +86,6 @@ public:
 	uint32_t GetPolePairs() const;
 	float GetBusVoltage() const;
 	std::complex<float> GetPhaseCurrent() const;
-	std::complex<float> GetElecRotation() const;
 
 	/*
 	 * UpdateHandlers
@@ -152,8 +148,7 @@ public:
 	LowPassFilter<float, float> lpf_bias_b;
 	LowPassFilter<float, float> lpf_bias_c;
 	LowPassFilter<float, float> lpf_vbus_;
-	LowPassFilter<float, float> lpf_speed_;
-	std::complex<float> R_;
+//	LowPassFilter<float, float> lpf_speed_;
 	std::complex<float> Iab_;
 };
 

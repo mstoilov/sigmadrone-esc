@@ -32,7 +32,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	, lpf_bias_b(config_.bias_alpha_)
 	, lpf_bias_c(config_.bias_alpha_)
 	, lpf_vbus_(0.5f, 12.0f)
-	, lpf_speed_(config_.speed_alpha_)
 {
 	lpf_bias_a.Reset(1 << 11);
 	lpf_bias_b.Reset(1 << 11);
@@ -40,7 +39,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	encoder_ = encoder;
 	pwm_ = pwm;
 	props_= rexjson::property_map({
-		{"speed", rexjson::property(&lpf_speed_.out_, rexjson::property_access::readonly)},
 		{"update_hz", rexjson::property(&update_hz, rexjson::property_access::readonly)},
 		{"bias_alpha", rexjson::property(
 				&config_.bias_alpha_,
@@ -50,13 +48,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 					lpf_bias_a.SetAlpha(config_.bias_alpha_);
 					lpf_bias_b.SetAlpha(config_.bias_alpha_);
 					lpf_bias_c.SetAlpha(config_.bias_alpha_);
-				})},
-		{"speed_alpha", rexjson::property(
-				&config_.speed_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
-					lpf_speed_.SetAlpha(config_.speed_alpha_);
 				})},
 		{"max_modulation_duty", rexjson::property(
 				&config_.max_modulation_duty_,
@@ -184,12 +175,6 @@ std::complex<float> MotorDrive::GetPhaseCurrent() const
 	return Iab_;
 }
 
-std::complex<float> MotorDrive::GetElecRotation() const
-{
-	return R_;
-}
-
-
 bool MotorDrive::IsStarted()
 {
 	return pwm_->IsStarted();
@@ -204,6 +189,7 @@ void MotorDrive::IrqUpdateCallback()
 		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
 		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
 		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
+		UpdateVbus();
 
 		/*
 		 * Sample ADC bias
@@ -224,21 +210,19 @@ void MotorDrive::IrqUpdateCallback()
 		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
 		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
 		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
-		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
 
 		data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
 		data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_a.Output());
 		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_a.Output());
+		UpdateCurrent();
 
 //		if (data_.update_counter_ & 1)
 //			encoder_->Update();
 //		else
 //			UpdateRotor();
 
-		encoder_->Update();
-		UpdateRotor();
-		UpdateCurrent();
-		UpdateVbus();
+//		encoder_->Update();
+//		UpdateRotor();
 
 		sched_.OnUpdate();
 		t2_end_ = hrtimer.GetCounter();
@@ -247,6 +231,7 @@ void MotorDrive::IrqUpdateCallback()
 	}
 }
 
+#if 0
 void MotorDrive::UpdateRotor()
 {
 	uint32_t rotor_position = encoder_->GetPosition();
@@ -259,6 +244,7 @@ void MotorDrive::UpdateRotor()
 	}
 
 }
+#endif
 
 void MotorDrive::UpdateVbus()
 {
@@ -268,18 +254,6 @@ void MotorDrive::UpdateVbus()
 void MotorDrive::UpdateCurrent()
 {
 	Iab_ = Pa_ * data_.phase_current_a_ + Pb_ * data_.phase_current_b_ + Pc_ * (-data_.phase_current_a_ -data_.phase_current_b_);
-}
-
-/*
- * Phase speed vector per Update Period
- *
- * To convert to Rad/sec:
- * asin(GetPhaseSpeed()) * update_hz_ / (M_PI * 2)
- *
- */
-float MotorDrive::GetPhaseSpeedVector() const
-{
-	return lpf_speed_.Output();
 }
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)

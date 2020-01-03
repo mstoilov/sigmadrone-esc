@@ -67,34 +67,38 @@ MotorCtrlComplexFOC::MotorCtrlComplexFOC(MotorDrive* drive)
 	rpc_server.add("cfoc.stop", rexjson::make_rpc_wrapper(this, &MotorCtrlComplexFOC::Stop, "void ServoDrive::Stop()"));
 }
 
+void MotorCtrlComplexFOC::UpdateRotor()
+{
+	uint32_t rotor_position = drive_->encoder_->GetPosition();
+	if (rotor_position != (uint32_t)-1) {
+		float theta = drive_->GetEncoderDir() * (drive_->encoder_->GetElectricPosition(rotor_position, drive_->GetPolePairs()));
+		std::complex<float> r_prev = R_;
+		R_ = std::complex<float>(cosf(theta), sinf(theta));
+		std::complex<float> r_cur = R_;
+		W_ = sdmath::cross(r_prev, r_cur);;
+	}
+}
+
+
+std::complex<float> MotorCtrlComplexFOC::GetElecRotation()
+{
+	return R_;
+}
+
+float MotorCtrlComplexFOC::GetPhaseSpeedVector()
+{
+	return W_;
+}
+
+float MotorCtrlComplexFOC::GetEncoderPeriod()
+{
+	return drive_->GetUpdatePeriod() * (config_.enc_skip_updates + 1);
+}
+
+
 void MotorCtrlComplexFOC::Stop()
 {
 	drive_->Abort();
-}
-
-void MotorCtrlComplexFOC::DumpDebugData(float Rarg, float Iarg, float Iabs)
-{
-	float diff = acosf(lpf_RIdot_disp_.Output());
-
-	if (Rarg < 0.0f)
-		Rarg += M_PI * 2.0f;
-	if (Iarg < 0.0f)
-		Iarg += M_PI * 2.0f;
-	float speed = (asinf(drive_->lpf_speed_.Output()) * drive_->GetUpdateFrequency())/(M_PI*2.0 * drive_->GetPolePairs());
-
-	fprintf(stderr, "ProcTime: %5lu EncTime: %5lu, EncErr: %8lu, Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
-			hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter()),
-			ma4_abs_encoder.update_time_ms_,
-			ma4_abs_encoder.error_count_,
-			drive_->GetBusVoltage(),
-			speed,
-			Rarg / M_PI * 180.0f,
-			Iarg / M_PI * 180.0f,
-			lpf_Iabs_disp_.Output(),
-			diff / M_PI * 180.0f,
-			lpf_RIdot_disp_.Output(),
-			pid_current_arg_.Output(),
-			pid_current_arg_.Output() / M_PI * 180.0f);
 }
 
 void MotorCtrlComplexFOC::RunSpinTasks()
@@ -109,8 +113,13 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 		drive_->data_.update_counter_ = 0;
 		do {
 			ret = drive_->sched_.RunUpdateHandler([&]()->bool {
+				if (drive_->data_.update_counter_ % (config_.enc_skip_updates + 1) == 0) {
+					drive_->encoder_->Update();
+					UpdateRotor();
+				}
+
 				std::complex<float> I = drive_->GetPhaseCurrent();
-				std::complex<float> rotor = drive_->GetElecRotation();
+				std::complex<float> rotor = GetElecRotation();
 				float Iarg = std::arg(I);
 				float Iabs = std::abs(I);
 				std::complex<float> Inorm = std::polar<float>(1.0f, Iarg);
@@ -129,7 +138,7 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 						Rarg += M_PI * 2.0f;
 					if (Iarg < 0.0f)
 						Iarg += M_PI * 2.0f;
-					float speed = (asinf(drive_->lpf_speed_.Output()) * drive_->GetUpdateFrequency())/(M_PI*2.0 * drive_->GetPolePairs());
+					float speed = asinf(GetPhaseSpeedVector()) / (GetEncoderPeriod() * M_PI * 2 * drive_->GetPolePairs());
 
 					fprintf(stderr, "ProcTime: %5lu EncTime: %5lu, EncErr: %8lu, Vbus: %4.2f, RPM: %6.1f, arg(R): %6.1f, arg(I): %6.1f, abs(I): %6.3f, DIFF: %+7.1f (%+4.2f), Pid.Out: %8.5f (%5.2f)\n",
 							hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter()),
@@ -161,7 +170,6 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 
 #else
 
-					DumpDebugData(std::arg(rotor), Iarg, Iabs);
 
 #endif
 

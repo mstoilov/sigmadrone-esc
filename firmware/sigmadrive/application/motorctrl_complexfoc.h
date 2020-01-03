@@ -22,6 +22,7 @@ public:
 		float pid_current_kp_ = 0.4;
 		float pid_current_ki_ = 500;
 		float pid_current_leak_ = 0.99;
+		uint32_t enc_skip_updates = 2;
 	};
 
 
@@ -29,9 +30,10 @@ public:
 	MotorCtrlComplexFOC(MotorDrive* drive);
 	void Stop();
 	void RunSpinTasks();
-
-private:
-	void DumpDebugData(float Rarg, float Iarg, float Iabs);
+	std::complex<float> GetElecRotation();
+	float GetPhaseSpeedVector();
+	float GetEncoderPeriod();
+	void UpdateRotor();
 
 public:
 	rexjson::property props_;
@@ -41,6 +43,8 @@ public:
 	LowPassFilter<float, float> lpf_RIdot_;
 	LowPassFilter<float, float> lpf_RIdot_disp_;
 	PidController<float> pid_current_arg_;
+	std::complex<float> R_;
+	float W_;
 
 };
 
