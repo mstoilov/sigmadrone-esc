@@ -39,7 +39,7 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	encoder_ = encoder;
 	pwm_ = pwm;
 	props_= rexjson::property_map({
-		{"update_hz", rexjson::property(&update_hz, rexjson::property_access::readonly)},
+		{"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
 		{"bias_alpha", rexjson::property(
 				&config_.bias_alpha_,
 				rexjson::property_access::readwrite,
@@ -500,7 +500,6 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage, flo
 {
 	sched_.AddTask(std::bind([&](float seconds, float test_voltage, float max_current){
 		uint32_t i = 0;
-		uint32_t display_counter = 0;
 		uint32_t test_cycles = update_hz_ * seconds;
 		bool ret = false;
 
@@ -508,22 +507,21 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage, flo
 		config_.resistance_ = 0;
 		do {
 			ret = sched_.RunUpdateHandler([&]()->bool {
+				ApplyPhaseVoltage(test_voltage, std::polar<float>(1, 0), lpf_vbus_.Output());
+				if (data_.phase_current_a_ > max_current) {
+					Abort();
+					fprintf(stderr, "Max current exceeded! Current: %5.2f, MAX: %5.2f\n", data_.phase_current_a_, max_current);
+				}
 				return false;
 			});
 
-			ApplyPhaseVoltage(test_voltage, std::polar<float>(1, 0), lpf_vbus_.Output());
-			if (data_.phase_current_a_ > max_current) {
-				Abort();
-				fprintf(stderr, "Max current exceeded! Current: %5.2f\n", data_.phase_current_a_);
-				return;
-			}
-
-			if ((display_counter++ % 13) == 0) {
+#if 0
+			if ((data_.update_counter_ % 13) == 0) {
 				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\n",
 						lpf_vbus_.Output(), data_.phase_current_a_, data_.phase_current_b_, data_.phase_current_c_,
 						data_.phase_current_a_ + data_.phase_current_b_ + data_.phase_current_c_);
 			}
-
+#endif
 		} while (ret && i++ < test_cycles);
 		if (ret)
 			config_.resistance_ = 2.0f / 3.0f * test_voltage / data_.phase_current_a_;
@@ -558,12 +556,12 @@ void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, flo
 
 				return false;
 			});
-
+#if 0
 			if ((i % 13) == 0) {
 				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\n",
 						lpf_vbus_.Output(), lpf_a.Output());
 			}
-
+#endif
 		}
 
 		float X = (lpf_vbus_.Output() - lpf_a.Output() * config_.resistance_)/ lpf_a.Output();

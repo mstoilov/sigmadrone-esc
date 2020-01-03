@@ -322,23 +322,18 @@ uint8_t MinasA4Encoder::calc_crc_x8_1(uint8_t* data, uint8_t size)
 void MinasA4Encoder::ResetPosition()
 {
 	UpdateId4();
-	for (uint32_t i = 0; i < 50000000 && update_.reply4_.crc_ == 0; i++)
-		;
-	uint32_t counter = GetCounter();
-	if (counter == (uint32_t)-1)
+	HAL_Delay(2);
+	if (update_.reply4_.crc_ == 0) {
+		fprintf(stderr, "%s: PanasonicMA4Encoder failed to reset position\n", __FUNCTION__);
 		return;
+	}
+	uint32_t counter = GetCounter();
 	offset_ = counter;
 }
 
 uint32_t MinasA4Encoder::GetCounter()
 {
 	return counter_;
-
-	uint32_t status = 0, counter = 0, revolutions = 0;
-	MA4EncoderReply5 reply5 = update_.reply5_;
-	if (!ParseReply5(reply5, status, counter, revolutions))
-		return -1;
-	return counter;
 }
 
 
@@ -353,12 +348,6 @@ uint32_t MinasA4Encoder::GetPosition()
 uint32_t MinasA4Encoder::GetRevolutions()
 {
 	return revolutions_;
-
-	uint32_t status = 0, counter = 0, revolutions = 0;
-	MA4EncoderReply5 reply5 = update_.reply5_;
-	if (!ParseReply5(reply5, status, counter, revolutions))
-		return -1;
-	return revolutions;
 }
 
 

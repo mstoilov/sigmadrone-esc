@@ -26,6 +26,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 				[&](void*)->void {
 					lpf_Id_.SetAlpha(config_.id_alpha_);
 				})},
+
 		{"iq_alpha", rexjson::property(
 				&config_.iq_alpha_,
 				rexjson::property_access::readwrite,
@@ -33,38 +34,40 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 				[&](void*)->void {
 					lpf_Iq_.SetAlpha(config_.iq_alpha_);
 				})},
-		{"pid_current_kp", rexjson::property(
+
+		{"pid_qcurrent_kp", rexjson::property(
 				&config_.pid_current_kp_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){},
 				[&](void*)->void {
-					pid_Vd_.SetGainP(config_.pid_current_kp_);
 					pid_Vq_.SetGainP(config_.pid_current_kp_);
+					pid_Vd_.SetGainP(config_.pid_current_kp_);
 				})},
-		{"pid_current_ki", rexjson::property(
+		{"pid_qcurrent_ki", rexjson::property(
 				&config_.pid_current_ki_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){},
 				[&](void*)->void {
-					pid_Vd_.SetGainI(config_.pid_current_ki_);
 					pid_Vq_.SetGainI(config_.pid_current_ki_);
+					pid_Vd_.SetGainI(config_.pid_current_ki_);
 				})},
-		{"pid_current_decay", rexjson::property(
+		{"pid_qcurrent_decay", rexjson::property(
 				&config_.pid_current_decay_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){},
 				[&](void*)->void {
-					pid_Vd_.SetDecayRate(config_.pid_current_decay_);
 					pid_Vq_.SetDecayRate(config_.pid_current_decay_);
+					pid_Vd_.SetDecayRate(config_.pid_current_decay_);
 				})},
-		{"pid_current_maxout", rexjson::property(
+		{"pid_qcurrent_maxout", rexjson::property(
 				&config_.pid_current_maxout_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){},
 				[&](void*)->void {
-					pid_Vd_.SetMaxIntegralOutput(config_.pid_current_maxout_);
 					pid_Vq_.SetMaxIntegralOutput(config_.pid_current_maxout_);
+					pid_Vd_.SetMaxIntegralOutput(config_.pid_current_maxout_);
 				})},
+
 		{"vq_bias", rexjson::property(
 				&config_.vq_bias_,
 				rexjson::property_access::readwrite,
@@ -148,7 +151,7 @@ void MotorCtrlFOC::RunDebugLoop()
 			continue;
 		} else if (status & SIGNAL_DEBUG_DUMP_TORQUE) {
 			fprintf(stderr,
-					"Speed: %11.9f (%5.2f), I_d: %+6.3f, I_q: %+6.3f, PVd: %+7.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
+					"Speed: %+12.9f (%+6.2f), I_d: %+6.3f, I_q: %+6.3f, PVd: %+7.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
 					"Werr: %+12.9f, PID_W: %+12.9f, PID_WP: %+12.9f, PID_WI: %+12.9f, T: %4lu\n",
 					lpf_speed_disp_.Output(),
 					asinf(lpf_speed_disp_.Output()) / (GetEncoderPeriod() * M_PI * 2 * drive_->GetPolePairs()),
@@ -489,7 +492,7 @@ void MotorCtrlFOC::Spin()
 
 float MotorCtrlFOC::VelocitySetPoint(float revpersec)
 {
-	config_.w_setpoint_ = std::sin(M_PI * 2 * revpersec * drive_->GetPolePairs() * drive_->GetUpdatePeriod());
+	config_.w_setpoint_ = std::sin(M_PI * 2 * revpersec * drive_->GetPolePairs() * GetEncoderPeriod());
 	return config_.w_setpoint_;
 }
 
@@ -499,12 +502,12 @@ void MotorCtrlFOC::RunCalibrationSequence()
 	drive_->sched_.AddTask([&](){
 
 #if 0
-		config_.pid_current_kp_ = config_.control_bandwidth_ * drive_->config_.inductance_;
-		config_.pid_current_ki_ = config_.control_bandwidth_ * drive_->config_.resistance_;
-		pid_Vd_.SetGainP(config_.pid_current_kp_);
-		pid_Vq_.SetGainP(config_.pid_current_kp_);
-		pid_Vd_.SetGainI(config_.pid_current_ki_);
-		pid_Vq_.SetGainI(config_.pid_current_ki_);
+		config_.pid_dcurrent_kp_ = config_.control_bandwidth_ * drive_->config_.inductance_;
+		config_.pid_dcurrent_ki_ = config_.control_bandwidth_ * drive_->config_.resistance_;
+		pid_Vd_.SetGainP(config_.pid_dcurrent_kp_);
+		pid_Vq_.SetGainP(config_.pid_dcurrent_kp_);
+		pid_Vd_.SetGainI(config_.pid_dcurrent_ki_);
+		pid_Vq_.SetGainI(config_.pid_dcurrent_ki_);
 
 		config_.pid_w_kp_ = drive_->config_.inductance_ * config_.control_bandwidth_;
 		config_.pid_w_ki_ = drive_->config_.resistance_ * config_.control_bandwidth_;

@@ -14,13 +14,13 @@ class MotorCtrlFOC
 {
 public:
 	struct Config {
-		float pid_current_kp_ = 0.5;
-		float pid_current_ki_ = 300;
+		float pid_current_kp_ = 5;
+		float pid_current_ki_ = 2000;
 		float pid_current_decay_ = 0.01;
 		float pid_current_maxout_ = 45;
 
-		float pid_w_kp_ = 0.5;
-		float pid_w_ki_ = 300;
+		float pid_w_kp_ = 50;
+		float pid_w_ki_ = 20000;
 		float pid_w_decay_ = 0.01;
 		float pid_w_maxout_ = 5;
 
@@ -28,8 +28,8 @@ public:
 		float vab_advance_factor_ = 12000; //1.35;
 		float vq_bias_ = 0;
 		float w_bias_ = 0;
-		float id_alpha_ = 0.001;
-		float iq_alpha_ = 0.001;
+		float id_alpha_ = 1;
+		float iq_alpha_ = 1;
 		float speed_disp_alpha_ = 0.005;
 		float i_trip_ = 8.0;
 		float iq_setpoint_ = 0.08;
