@@ -29,7 +29,7 @@ public:
 	LowPassFilter(const CoeffType& alpha = 0, const DataType& val = 0) : alpha_(alpha) { Reset(val); }
 	~LowPassFilter() = default;
 
-	void Reset(const DataType& out = {0})
+	void Reset(const DataType& out = 0)
 	{
 		out_ = out;
 	}

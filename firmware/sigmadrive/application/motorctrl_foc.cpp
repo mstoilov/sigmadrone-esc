@@ -312,7 +312,7 @@ void MotorCtrlFOC::Torque()
 				SignalDumpTorque();
 			}
 
-			return false;
+			return true;
 		});
 
 	});
@@ -339,6 +339,7 @@ void MotorCtrlFOC::Velocity()
 		pid_W_.Reset();
 		lpf_Id_.Reset();
 		lpf_Iq_.Reset();
+		lpf_speed_disp_.Reset();
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 			if (drive_->data_.update_counter_ % (config_.enc_skip_updates + 1) == 0) {
 				drive_->encoder_->Update();
@@ -496,6 +497,8 @@ void MotorCtrlFOC::RunCalibrationSequence()
 {
 	drive_->AddTaskCalibrationSequence();
 	drive_->sched_.AddTask([&](){
+
+#if 0
 		config_.pid_current_kp_ = config_.control_bandwidth_ * drive_->config_.inductance_;
 		config_.pid_current_ki_ = config_.control_bandwidth_ * drive_->config_.resistance_;
 		pid_Vd_.SetGainP(config_.pid_current_kp_);
@@ -507,6 +510,7 @@ void MotorCtrlFOC::RunCalibrationSequence()
 		config_.pid_w_ki_ = drive_->config_.resistance_ * config_.control_bandwidth_;
 		pid_W_.SetGainP(config_.pid_w_kp_);
 		pid_W_.SetGainI(config_.pid_w_ki_);
+#endif
 	});
 	drive_->RunWaitForCompletion();
 }

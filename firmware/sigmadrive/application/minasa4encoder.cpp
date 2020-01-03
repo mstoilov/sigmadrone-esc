@@ -230,7 +230,6 @@ bool MinasA4Encoder::UpdateId4()
 {
 	if (maintenance_)
 		return false;
-	t1_ = hrtimer.GetCounter();
 	update_.reply4_.crc_ = 0;
 	if (!sendrecv_command(MA4_DATA_ID_4, &update_.reply4_, sizeof(update_.reply4_)))
 		return false;
@@ -241,7 +240,6 @@ bool MinasA4Encoder::UpdateId5()
 {
 	if (maintenance_)
 		return false;
-	t1_ = hrtimer.GetCounter();
 	update_.reply5_.crc_ = 0;
 	if (!sendrecv_command(MA4_DATA_ID_5, &update_.reply5_, sizeof(update_.reply5_)))
 		return false;
@@ -250,6 +248,7 @@ bool MinasA4Encoder::UpdateId5()
 
 bool MinasA4Encoder::Update()
 {
+	t1_ = hrtimer.GetCounter();
 	return UpdateId5();
 }
 
@@ -322,6 +321,9 @@ uint8_t MinasA4Encoder::calc_crc_x8_1(uint8_t* data, uint8_t size)
 
 void MinasA4Encoder::ResetPosition()
 {
+	UpdateId4();
+	for (uint32_t i = 0; i < 50000000 && update_.reply4_.crc_ == 0; i++)
+		;
 	uint32_t counter = GetCounter();
 	if (counter == (uint32_t)-1)
 		return;
