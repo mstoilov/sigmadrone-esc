@@ -45,7 +45,7 @@ public:
 		float csa_gain_ = 10.0f;
 		float Rsense_ = 0.010f;
 		float calib_v_ = 12;
-		float calib_max_i_ = 2;
+		float calib_max_i_ = 4;
 		float resistance_ = 0.05f;
 		float inductance_ = 5.56e-05f;
 		float bias_alpha_ = 0.00035f;

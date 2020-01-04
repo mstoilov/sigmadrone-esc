@@ -25,7 +25,7 @@ public:
 		float pid_w_maxout_ = 5;
 
 		float control_bandwidth_ = 700; // Rad/Sec
-		float vab_advance_factor_ = 12000; //1.35;
+		float vab_advance_factor_ = 12000;
 		float vq_bias_ = 0;
 		float w_bias_ = 0;
 		float id_alpha_ = 1;
