@@ -119,8 +119,8 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 				})},
 
 		{"control_bandwith", &config_.control_bandwidth_},
-		{"iq_setpoint", &config_.iq_setpoint_},
-		{"w_setpoint", &config_.w_setpoint_},
+		{"iq_setpoint", &iq_setpoint_},
+		{"w_setpoint", &w_setpoint_},
 		{"i_trip", &config_.i_trip_},
 		{"vab_advance_factor", &config_.vab_advance_factor_},
 		{"ri_angle", &config_.ri_angle_},
@@ -288,7 +288,7 @@ void MotorCtrlFOC::Torque()
 			}
 
 			pid_Vd_.Input(0.0f - Idq.real(), update_period);
-			pid_Vq_.Input(config_.iq_setpoint_ - Idq.imag(), update_period);
+			pid_Vq_.Input(iq_setpoint_ - Idq.imag(), update_period);
 
 			/*
 			 * Inverse Park Transform
@@ -308,7 +308,7 @@ void MotorCtrlFOC::Torque()
 			/*
 			 * Apply the voltage timings
 			 */
-			drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
+			drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
 
 			foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
 			if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
@@ -347,7 +347,7 @@ void MotorCtrlFOC::Velocity()
 			if (drive_->data_.update_counter_ % (config_.enc_skip_updates + 1) == 0) {
 				drive_->encoder_->Update();
 				UpdateRotor();
-				Werr_ = config_.w_setpoint_ - GetPhaseSpeedVector();
+				Werr_ = w_setpoint_ - GetPhaseSpeedVector();
 				pid_W_.Input(Werr_, enc_update_period);
 			}
 
@@ -398,7 +398,7 @@ void MotorCtrlFOC::Velocity()
 			/*
 			 * Apply the voltage timings
 			 */
-			drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
+			drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
 
 			foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
 			if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
@@ -476,7 +476,7 @@ void MotorCtrlFOC::Spin()
 			/*
 			 * Apply the voltage timings
 			 */
-			drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag(), drive_->GetBusVoltage());
+			drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
 
 			foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
 			if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
@@ -492,8 +492,8 @@ void MotorCtrlFOC::Spin()
 
 float MotorCtrlFOC::VelocitySetPoint(float revpersec)
 {
-	config_.w_setpoint_ = std::sin(M_PI * 2 * revpersec * drive_->GetPolePairs() * GetEncoderPeriod());
-	return config_.w_setpoint_;
+	w_setpoint_ = std::sin(M_PI * 2 * revpersec * drive_->GetPolePairs() * GetEncoderPeriod());
+	return w_setpoint_;
 }
 
 void MotorCtrlFOC::RunCalibrationSequence()

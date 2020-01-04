@@ -74,8 +74,8 @@ public:
 	void SaddleSVM(float duty, const std::complex<float>& v_theta, float& duty_a, float& duty_b, float& duty_c);
 	bool GetDutyTimings(float duty_a, float duty_b, float duty_c, uint32_t timing_period, uint32_t& timing_a, uint32_t& timing_b, uint32_t& timing_c);
 	bool ApplyPhaseModulation(float v_duty, const std::complex<float>& v_theta);
-	bool ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus);
-	bool ApplyPhaseVoltage(float v_alpha, float v_beta, float vbus);
+	bool ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta);
+	bool ApplyPhaseVoltage(float v_alpha, float v_beta);
 	bool ApplyPhaseDuty(float duty_a, float duty_b, float duty_c);
 	bool RunUpdateHandler(const std::function<bool(void)>& update_handler);
 	IEncoder* GetEncoder() const;

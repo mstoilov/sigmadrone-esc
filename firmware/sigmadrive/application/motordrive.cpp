@@ -319,15 +319,15 @@ void MotorDrive::SaddleSVM(float duty, const std::complex<float>& v_theta, float
 	duty_c = 0.5f + 0.5f * duty * (theta * std::conj(Pc_) + theta3).imag();
 }
 
-bool MotorDrive::ApplyPhaseVoltage(float v_alpha, float v_beta, float vbus)
+bool MotorDrive::ApplyPhaseVoltage(float v_alpha, float v_beta)
 {
 	float v_abs = sqrtf(v_alpha * v_alpha + v_beta * v_beta);
-	return ApplyPhaseModulation(VoltageToDuty(v_abs, vbus), std::complex<float>(v_alpha/v_abs, v_beta/v_abs));
+	return ApplyPhaseModulation(VoltageToDuty(v_abs, GetBusVoltage()), std::complex<float>(v_alpha/v_abs, v_beta/v_abs));
 }
 
-bool MotorDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta, float vbus)
+bool MotorDrive::ApplyPhaseVoltage(float v_abs, const std::complex<float>& v_theta)
 {
-	return ApplyPhaseModulation(VoltageToDuty(v_abs, vbus), v_theta);
+	return ApplyPhaseModulation(VoltageToDuty(v_abs, GetBusVoltage()), v_theta);
 }
 
 bool MotorDrive::ApplyPhaseModulation(float mod, const std::complex<float>& v_theta)
@@ -373,7 +373,7 @@ bool MotorDrive::ApplyPhaseDuty(float duty_a, float duty_b, float duty_c)
 void MotorDrive::AddTaskArmMotor()
 {
 	sched_.AddTask([&](){
-		ApplyPhaseVoltage(0, std::polar<float>(1.0f, 0.0f), lpf_vbus_.Output());
+		ApplyPhaseVoltage(0, std::polar<float>(1.0f, 0.0f));
 		pwm_->Start();
 	});
 }
@@ -381,7 +381,7 @@ void MotorDrive::AddTaskArmMotor()
 void MotorDrive::AddTaskDisarmMotor()
 {
 	sched_.AddTask([&](){
-		ApplyPhaseVoltage(0, std::polar<float>(0.0f, 0.0f), lpf_vbus_.Output());
+		ApplyPhaseVoltage(0, std::polar<float>(0.0f, 0.0f));
 		pwm_->Stop();
 	});
 }
@@ -400,7 +400,7 @@ bool MotorDrive::RunUpdateHandlerRotateMotor(float angle, float speed, float vol
 		step = std::conj(step);
 	for (size_t i = 0; ret && i < total_cycles; i++) {
 		ret = sched_.RunUpdateHandler([&]()->bool {
-			ApplyPhaseVoltage(voltage, rotation, lpf_vbus_.Output());
+			ApplyPhaseVoltage(voltage, rotation);
 			rotation *= step;
 			return false;
 		});
@@ -428,20 +428,20 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 		for (float angle = M_PI_4; angle > 0.1; angle = angle * 3 / 4) {
 			for (size_t i = 0; (i < set_angle_cycles) && ret; i++) {
 				ret = sched_.RunUpdateHandler([&]()->bool {
-					ApplyPhaseVoltage(reset_voltage, std::polar<float>(1.0f, angle), lpf_vbus_.Output());
+					ApplyPhaseVoltage(reset_voltage, std::polar<float>(1.0f, angle));
 					return false;
 				});
 			};
 			for (size_t i = 0; (i < set_angle_cycles) && ret; i++) {
 				ret = sched_.RunUpdateHandler([&]()->bool {
-					ApplyPhaseVoltage(reset_voltage, std::polar<float>(1.0f, -angle), lpf_vbus_.Output());
+					ApplyPhaseVoltage(reset_voltage, std::polar<float>(1.0f, -angle));
 					return false;
 				});
 			};
 		}
 		for (size_t i = 0; (i < update_hz_) && ret; i++) {
 			ret = sched_.RunUpdateHandler([&]()->bool {
-				ApplyPhaseVoltage(reset_voltage * 1.5, std::polar<float>(1.0f, 0), lpf_vbus_.Output());
+				ApplyPhaseVoltage(reset_voltage * 1.5, std::polar<float>(1.0f, 0));
 				return false;
 			});
 		};
@@ -503,11 +503,11 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage, flo
 		uint32_t test_cycles = update_hz_ * seconds;
 		bool ret = false;
 
-		ApplyPhaseVoltage(0, 0, lpf_vbus_.Output());
+		ApplyPhaseVoltage(0, 0);
 		config_.resistance_ = 0;
 		do {
 			ret = sched_.RunUpdateHandler([&]()->bool {
-				ApplyPhaseVoltage(test_voltage, std::polar<float>(1, 0), lpf_vbus_.Output());
+				ApplyPhaseVoltage(test_voltage, std::polar<float>(1, 0));
 				if (data_.phase_current_a_ > max_current) {
 					Abort();
 					fprintf(stderr, "Max current exceeded! Current: %5.2f, MAX: %5.2f\n", data_.phase_current_a_, max_current);
@@ -525,7 +525,7 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage, flo
 		} while (ret && i++ < test_cycles);
 		if (ret)
 			config_.resistance_ = 2.0f / 3.0f * test_voltage / data_.phase_current_a_;
-		ApplyPhaseVoltage(0, 0, lpf_vbus_.Output());
+		ApplyPhaseVoltage(0, 0);
 	}, seconds, test_voltage, max_current));
 }
 
@@ -539,7 +539,7 @@ void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, flo
 		std::complex<float> V(1.0, 0.0);
 		std::complex<float> r = std::polar<float>(1.0, M_PI * 2 / sine_steps);
 
-		ApplyPhaseVoltage(0, 0, lpf_vbus_.Output());
+		ApplyPhaseVoltage(0, 0);
 		for (uint32_t i = 0; ret && i < test_cycles;  i++) {
 
 			ret = sched_.RunUpdateHandler([&]()->bool {
@@ -548,7 +548,7 @@ void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, flo
 				V = V * r;
 
 				// Test voltage along phase A
-				if (!ApplyPhaseVoltage(test_voltage * V.real(), std::complex<float>(1.0f, 0.0f), lpf_vbus_.Output())) {
+				if (!ApplyPhaseVoltage(test_voltage * V.real(), std::complex<float>(1.0f, 0.0f))) {
 					Abort();
 					fprintf(stderr, "ApplyPhaseVoltage failed...\n");
 					return false;

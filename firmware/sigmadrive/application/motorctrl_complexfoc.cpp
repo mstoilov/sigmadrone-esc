@@ -129,7 +129,7 @@ void MotorCtrlComplexFOC::RunSpinTasks()
 				lpf_Iabs_disp_.DoFilter(Iabs);
 				pid_current_arg_.Input(lpf_RIdot_.Output(), 1.0f / drive_->GetUpdateFrequency());
 				std::complex<float> ri_vec = std::polar<float>(1.0f, config_.ri_angle_);// + pid_current_arg_.Output());
-				drive_->ApplyPhaseVoltage(config_.spin_voltage_, rotor * ri_vec, drive_->GetBusVoltage());
+				drive_->ApplyPhaseVoltage(config_.spin_voltage_, rotor * ri_vec);
 				if ((display_counter++ % 143) == 0) {
 #if 1
 					float diff = acosf(lpf_RIdot_disp_.Output());

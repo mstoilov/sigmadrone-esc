@@ -32,8 +32,6 @@ public:
 		float iq_alpha_ = 1;
 		float speed_disp_alpha_ = 0.005;
 		float i_trip_ = 8.0;
-		float iq_setpoint_ = 0.08;
-		float w_setpoint_ = 0.0013;
 		float ri_angle_ = 1.57;
 		float spin_voltage_ = 3.5f;
 		bool display_ = true;
@@ -87,6 +85,8 @@ protected:
 	float W_;
 	uint32_t foc_time_ = 0;
 	float Werr_ = 0;
+	float iq_setpoint_ = 0.08;
+	float w_setpoint_ = 0.0013;
 
 };
 

@@ -456,7 +456,7 @@ int cl_editline(const char *pszPrompt, char *pszBuffer, unsigned int uBufferSize
 	cl_history_head();
 
 	if (pszPrompt)
-		cl_printf("%d, %s", EL.uTermWidth, pszPrompt);
+		cl_printf("<%d> %s", EL.uTermWidth, pszPrompt);
 
 	EL.uColPos = cl_term_cursor_col();
 
