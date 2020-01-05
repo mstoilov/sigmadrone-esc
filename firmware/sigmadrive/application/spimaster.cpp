@@ -50,7 +50,9 @@ void SPIMaster::Detach()
 
 void SPIMaster::ChipSelect(GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin, bool select)
 {
+	HAL_Delay(5);
 	HAL_GPIO_WritePin(NSS_GPIOx, NSS_GPIO_Pin, select ? GPIO_PIN_RESET : GPIO_PIN_SET);
+	HAL_Delay(5);
 }
 
 bool SPIMaster::Transmit(uint8_t *pData, uint16_t Size)

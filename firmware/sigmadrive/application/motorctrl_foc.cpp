@@ -169,7 +169,7 @@ void MotorCtrlFOC::RunDebugLoop()
 			);
 		} else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
 			fprintf(stderr,
-					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, EncT: %4lu\n",
+					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, EncT: %4lu, Bias: %+5.2f, %+5.2f, %+5.2f\n",
 					lpf_speed_disp_.Output(),
 					asinf(lpf_speed_disp_.Output()) / (GetEncoderPeriod() * M_PI * 2 * drive_->GetPolePairs()),
 					lpf_Id_.Output(),
@@ -178,7 +178,10 @@ void MotorCtrlFOC::RunDebugLoop()
 					drive_->t2_span_,
 					drive_->t2_to_t2_,
 					foc_time_,
-					ma4_abs_encoder.update_time_ms_
+					ma4_abs_encoder.update_time_ms_,
+					drive_->lpf_bias_a.Output(),
+					drive_->lpf_bias_b.Output(),
+					drive_->lpf_bias_c.Output()
 			);
 		}
 	}

@@ -62,11 +62,17 @@ void Scheduler::Abort()
 	dispatch_queue_.clear();
 	__enable_irq();
 	SignalThreadAbort();
+	abort_task_();
 }
 
 void Scheduler::Run()
 {
 	if (!dispatch_queue_.empty()) {
+		/*
+		 * Clear error message
+		 */
+		ClearError();
+
 		dispatching_ = true;
 		SignalThreadTask();
 	}
@@ -75,6 +81,10 @@ void Scheduler::Run()
 void Scheduler::RunWaitForCompletion()
 {
 	if (!dispatch_queue_.empty()) {
+		/*
+		 * Clear error message
+		 */
+		ClearError();
 
 		/*
 		 * Clear IDLE in case it was set
@@ -231,7 +241,6 @@ void Scheduler::SignalThreadUpdateDone()
 	}
 }
 
-
 void Scheduler::SignalThreadTask()
 {
 	if (scheduler_thread_id_)
@@ -247,5 +256,20 @@ void Scheduler::SignalThreadAbort()
 void Scheduler::EventThreadIdle()
 {
 	osEventFlagsSet(event_dispatcher_idle_, EVENT_FLAG_IDLE);
+}
+
+void Scheduler::SetError(const std::string& error)
+{
+	if (error_.empty())
+		error_ = error;
+}
+std::string Scheduler::GetError()
+{
+	return error_;
+}
+
+void Scheduler::ClearError()
+{
+	error_.clear();
 }
 

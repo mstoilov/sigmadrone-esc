@@ -49,7 +49,10 @@ public:
 		float resistance_ = 0.05f;
 		float inductance_ = 5.56e-05f;
 		float bias_alpha_ = 0.00035f;
-		float abc_alpha_ = 0.5f;
+		float vbus_alpha_ = 0.2f;
+		float iabc_alpha_ = 0.75;
+		float trip_i_ = 5.0f;
+		float trip_v_ = 45.0f;
 	};
 
 	void Run();
@@ -86,6 +89,10 @@ public:
 	uint32_t GetPolePairs() const;
 	float GetBusVoltage() const;
 	std::complex<float> GetPhaseCurrent() const;
+	void DefaultIdleTask();
+	bool CheckPhaseCurrentViolation(float current);
+	bool CheckPhaseVoltageViolation(float voltage);
+	bool CheckTripViolations();
 
 	/*
 	 * UpdateHandlers
@@ -101,15 +108,15 @@ public:
 	void AddTaskDisarmMotor();
 	void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder = true);
 	void AddTaskResetRotor();
-	void AddTaskMeasureResistance(float seconds, float test_voltage, float max_current);
-	void AddTaskMeasureInductance(float seconds, float test_voltage, float max_current, uint32_t test_hz);
+	void AddTaskMeasureResistance(float seconds, float test_voltage);
+	void AddTaskMeasureInductance(float seconds, float test_voltage, uint32_t test_hz);
 	void AddTaskDetectEncoderDir();
 	void RunTaskAphaPoleSearch();
 	void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir);
 	void RunSimpleTasks();
 	void AddTaskCalibrationSequence();
-	float RunResistanceMeasurement(float seconds, float test_voltage, float max_current);
-	float RunInductanceMeasurement(float seconds, float test_voltage, float max_current, uint32_t test_hz);
+	float RunResistanceMeasurement(float seconds, float test_voltage);
+	float RunInductanceMeasurement(float seconds, float test_voltage, uint32_t test_hz);
 
 	void SchedulerRun();
 	void SchedulerAbort();
@@ -133,6 +140,7 @@ public:
 	uint32_t t2_begin_ = 0;
 	uint32_t t2_end_ = 0;
 	uint32_t t2_span_ = 0;
+	uint32_t delay_trip_check_ = 0;
 
 	uint32_t t2_to_t2_ = 0;
 	bool run_simple_tasks_ = false;
@@ -148,7 +156,9 @@ public:
 	LowPassFilter<float, float> lpf_bias_b;
 	LowPassFilter<float, float> lpf_bias_c;
 	LowPassFilter<float, float> lpf_vbus_;
-//	LowPassFilter<float, float> lpf_speed_;
+	LowPassFilter<float, float> lpf_Ia_;
+	LowPassFilter<float, float> lpf_Ib_;
+	LowPassFilter<float, float> lpf_Ic_;
 	std::complex<float> Iab_;
 };
 

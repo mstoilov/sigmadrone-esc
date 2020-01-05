@@ -31,7 +31,10 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	, lpf_bias_a(config_.bias_alpha_)
 	, lpf_bias_b(config_.bias_alpha_)
 	, lpf_bias_c(config_.bias_alpha_)
-	, lpf_vbus_(0.5f, 12.0f)
+	, lpf_vbus_(config_.vbus_alpha_, 12.0f)
+	, lpf_Ia_(config_.iabc_alpha_)
+	, lpf_Ib_(config_.iabc_alpha_)
+	, lpf_Ic_(config_.iabc_alpha_)
 {
 	lpf_bias_a.Reset(1 << 11);
 	lpf_bias_b.Reset(1 << 11);
@@ -40,6 +43,10 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	pwm_ = pwm;
 	props_= rexjson::property_map({
 		{"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
+		{"error", rexjson::property(&sched_.error_, rexjson::property_access::readonly)},
+		{"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
+		{"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_access::readonly)},
+		{"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_access::readonly)},
 		{"bias_alpha", rexjson::property(
 				&config_.bias_alpha_,
 				rexjson::property_access::readwrite,
@@ -48,6 +55,22 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 					lpf_bias_a.SetAlpha(config_.bias_alpha_);
 					lpf_bias_b.SetAlpha(config_.bias_alpha_);
 					lpf_bias_c.SetAlpha(config_.bias_alpha_);
+				})},
+		{"vbus_alpha", rexjson::property(
+				&config_.vbus_alpha_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+				[&](void*)->void {
+					lpf_vbus_.SetAlpha(config_.vbus_alpha_);
+				})},
+		{"iabc_alpha", rexjson::property(
+				&config_.iabc_alpha_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+				[&](void*)->void {
+					lpf_Ia_.SetAlpha(config_.iabc_alpha_);
+					lpf_Ib_.SetAlpha(config_.iabc_alpha_);
+					lpf_Ic_.SetAlpha(config_.iabc_alpha_);
 				})},
 		{"max_modulation_duty", rexjson::property(
 				&config_.max_modulation_duty_,
@@ -66,6 +89,8 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[](const rexjson::value& v){},
 				[&](void*){ if (run_simple_tasks_) RunSimpleTasks(); else sched_.Abort(); }
 		)},
+		{"trip_i", &config_.trip_i_},
+		{"trip_v", &config_.trip_v_},
 		{"calib_max_i", &config_.calib_max_i_},
 		{"calib_v", &config_.calib_v_},
 		{"resistance", &config_.resistance_},
@@ -76,12 +101,11 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 		{"reset_voltage", &config_.reset_voltage_},
 		{"reset_hz", &config_.reset_hz_},
 		{"display_div", &config_.display_div_}
-
 	});
 
 	rpc_server.add("drive.abort", rexjson::make_rpc_wrapper(this, &MotorDrive::Abort, "void ServoDrive::Abort()"));
-	rpc_server.add("drive.measure_resistance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage, float max_current)"));
-	rpc_server.add("drive.measure_inductance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunInductanceMeasurement, "float ServoDrive::RunInductanceMeasurement(uint32_t seconds, float test_voltage, float max_current, uint32_t test_hz);"));
+	rpc_server.add("drive.measure_resistance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
+	rpc_server.add("drive.measure_inductance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunInductanceMeasurement, "float ServoDrive::RunInductanceMeasurement(uint32_t seconds, float test_voltage, uint32_t test_hz);"));
 
 	rpc_server.add("drive.scheduler_run", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerRun, "void SchedulerRun()"));
 	rpc_server.add("drive.scheduler_abort", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerAbort, "void SchedulerAbort()"));
@@ -100,6 +124,7 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	});
 
 	sched_.SetIdleTask([&]()->void {
+//		DefaultIdleTask();
 	});
 
 }
@@ -114,6 +139,8 @@ void MotorDrive::Attach()
 	drv1.SetCSAGainValue(config_.csa_gain_);
 	sched_.StartDispatcherThread();
 }
+
+
 
 void MotorDrive::Run()
 {
@@ -212,17 +239,10 @@ void MotorDrive::IrqUpdateCallback()
 		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
 
 		data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
-		data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_a.Output());
-		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_a.Output());
+		data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
+		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_c.Output());
 		UpdateCurrent();
-
-//		if (data_.update_counter_ & 1)
-//			encoder_->Update();
-//		else
-//			UpdateRotor();
-
-//		encoder_->Update();
-//		UpdateRotor();
+		CheckTripViolations();
 
 		sched_.OnUpdate();
 		t2_end_ = hrtimer.GetCounter();
@@ -253,7 +273,10 @@ void MotorDrive::UpdateVbus()
 
 void MotorDrive::UpdateCurrent()
 {
-	Iab_ = Pa_ * data_.phase_current_a_ + Pb_ * data_.phase_current_b_ + Pc_ * (-data_.phase_current_a_ -data_.phase_current_b_);
+	lpf_Ia_.DoFilter(data_.phase_current_a_);
+	lpf_Ib_.DoFilter(data_.phase_current_b_);
+	lpf_Ic_.DoFilter(-data_.phase_current_a_ -data_.phase_current_b_);
+	Iab_ = Pa_ * lpf_Ia_.Output() + Pb_ * lpf_Ib_.Output() + Pc_ * lpf_Ic_.Output();
 }
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
@@ -469,8 +492,8 @@ void MotorDrive::AddTaskCalibrationSequence()
 {
 	AddTaskArmMotor();
 	AddTaskResetRotor();
-	AddTaskMeasureResistance(1, config_.calib_v_, config_.calib_max_i_);
-	AddTaskMeasureInductance(1, config_.calib_v_, config_.calib_max_i_, 3000);
+	AddTaskMeasureResistance(1, config_.calib_v_);
+	AddTaskMeasureInductance(1, config_.calib_v_, 3000);
 	AddTaskResetRotor();
 	AddTaskDetectEncoderDir();
 	AddTaskDisarmMotor();
@@ -496,9 +519,9 @@ void MotorDrive::RunTaskAphaPoleSearch()
 	sched_.Run();
 }
 
-void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage, float max_current)
+void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage)
 {
-	sched_.AddTask(std::bind([&](float seconds, float test_voltage, float max_current){
+	sched_.AddTask(std::bind([&](float seconds, float test_voltage){
 		uint32_t i = 0;
 		uint32_t test_cycles = update_hz_ * seconds;
 		bool ret = false;
@@ -508,10 +531,6 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage, flo
 		do {
 			ret = sched_.RunUpdateHandler([&]()->bool {
 				ApplyPhaseVoltage(test_voltage, std::polar<float>(1, 0));
-				if (data_.phase_current_a_ > max_current) {
-					Abort();
-					fprintf(stderr, "Max current exceeded! Current: %5.2f, MAX: %5.2f\n", data_.phase_current_a_, max_current);
-				}
 				return false;
 			});
 
@@ -526,12 +545,12 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage, flo
 		if (ret)
 			config_.resistance_ = 2.0f / 3.0f * test_voltage / data_.phase_current_a_;
 		ApplyPhaseVoltage(0, 0);
-	}, seconds, test_voltage, max_current));
+	}, seconds, test_voltage));
 }
 
-void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, float max_current, uint32_t test_hz)
+void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, uint32_t test_hz)
 {
-	sched_.AddTask(std::bind([&](float seconds, float test_voltage, float max_current, uint32_t test_hz){
+	sched_.AddTask(std::bind([&](float seconds, float test_voltage, uint32_t test_hz){
 		LowPassFilter<float, float> lpf_a(0.001);
 		uint32_t sine_steps = update_hz_ / test_hz;
 		uint32_t test_cycles = update_hz_ * seconds;
@@ -548,12 +567,7 @@ void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, flo
 				V = V * r;
 
 				// Test voltage along phase A
-				if (!ApplyPhaseVoltage(test_voltage * V.real(), std::complex<float>(1.0f, 0.0f))) {
-					Abort();
-					fprintf(stderr, "ApplyPhaseVoltage failed...\n");
-					return false;
-				}
-
+				ApplyPhaseVoltage(test_voltage * V.real(), std::complex<float>(1.0f, 0.0f));
 				return false;
 			});
 #if 0
@@ -564,26 +578,28 @@ void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, flo
 #endif
 		}
 
-		float X = (lpf_vbus_.Output() - lpf_a.Output() * config_.resistance_)/ lpf_a.Output();
-		float L = X / (2 * M_PI * test_hz);
-		config_.inductance_ = L;
-	}, seconds, test_voltage, max_current, test_hz));
+		if (ret) {
+			float X = (lpf_vbus_.Output() - lpf_a.Output() * config_.resistance_)/ lpf_a.Output();
+			float L = X / (2 * M_PI * test_hz);
+			config_.inductance_ = L;
+		}
+	}, seconds, test_voltage, test_hz));
 }
 
 
-float MotorDrive::RunResistanceMeasurement(float seconds, float test_voltage, float max_current)
+float MotorDrive::RunResistanceMeasurement(float seconds, float test_voltage)
 {
 	AddTaskArmMotor();
-	AddTaskMeasureResistance(seconds, test_voltage, max_current);
+	AddTaskMeasureResistance(seconds, test_voltage);
 	AddTaskDisarmMotor();
 	sched_.RunWaitForCompletion();
 	return config_.resistance_;
 }
 
-float MotorDrive::RunInductanceMeasurement(float seconds, float test_voltage, float max_current, uint32_t test_hz)
+float MotorDrive::RunInductanceMeasurement(float seconds, float test_voltage, uint32_t test_hz)
 {
 	AddTaskArmMotor();
-	AddTaskMeasureInductance(seconds, test_voltage, max_current, test_hz);
+	AddTaskMeasureInductance(seconds, test_voltage, test_hz);
 	AddTaskDisarmMotor();
 	sched_.RunWaitForCompletion();
 	return config_.inductance_;
@@ -599,6 +615,47 @@ void MotorDrive::RunTaskRotateMotor(float angle, float speed, float voltage, boo
 	sched_.RunWaitForCompletion();
 }
 
+void MotorDrive::DefaultIdleTask()
+{
+	fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\n",
+			lpf_vbus_.Output(), lpf_bias_a.Output(), lpf_bias_b.Output(), lpf_bias_c.Output(), data_.phase_current_a_, data_.phase_current_b_, data_.phase_current_c_);
+}
+
+bool MotorDrive::CheckPhaseCurrentViolation(float current)
+{
+	if (current > config_.trip_i_) {
+		Abort();
+		sched_.SetError(current, "Current limit violation!");
+		return true;
+	}
+	return false;
+}
+
+bool MotorDrive::CheckPhaseVoltageViolation(float voltage)
+{
+	if (voltage > config_.trip_v_) {
+		Abort();
+		sched_.SetError(voltage, "Voltage bus limit violation!");
+		return true;
+	}
+	return false;
+}
+
+bool MotorDrive::CheckTripViolations()
+{
+	bool ret = false;
+	if (delay_trip_check_ < 10000) {
+		delay_trip_check_++;
+		return false;
+	}
+	ret |= CheckPhaseVoltageViolation(lpf_vbus_.Output());
+	ret |= CheckPhaseCurrentViolation(lpf_Ia_.Output());
+	ret |= CheckPhaseCurrentViolation(lpf_Ib_.Output());
+	ret |= CheckPhaseCurrentViolation(lpf_Ic_.Output());
+	if (ret)
+		delay_trip_check_ = 0;
+	return ret;
+}
 
 void MotorDrive::RunSimpleTasks()
 {

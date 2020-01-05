@@ -225,7 +225,12 @@ int application_main()
 	drv1.SetCSAGain(Drv8323::CSA_GAIN_10VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
-	fprintf(stdout, "\n\nmain_task 1\n");
+
+	osDelay(150);
+#if 1
+	g_properties->enumerate_children("props", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
+#endif
+
 	fprintf(stdout, "DRV1: \n");
 	drv1.DumpRegs();
 
@@ -233,10 +238,6 @@ int application_main()
 	SetEncoder();
 	servo.Attach();
 
-#if 1
-	g_properties->enumerate_children("props", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
-#endif
-	osDelay(50);
 
 	uint32_t enc_resolution = (1<<23);
 	uint32_t enc1, enc2;
@@ -253,11 +254,17 @@ int application_main()
 	task_attributes.stack_size = 12000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 
+	rpc_server.add("drv1.EnableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::EnableVREFDiv, "void Drv8323::EnableVREFDiv()"));
+	rpc_server.add("drv1.DisableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DisableVREFDiv, "void Drv8323::DisableVREFDiv()"));
+	rpc_server.add("drv1.DumpRegs", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DumpRegs, "void Drv8323::DumpRegs()"));
+
 	rpc_server.add("minas.resetF", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeF, "uint32_t MinasA4Encoder::ResetErrorCodeF()"));
 	rpc_server.add("minas.resetB", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeB, "uint32_t MinasA4Encoder::ResetErrorCodeB()"));
 	rpc_server.add("minas.resetE", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeE, "uint32_t MinasA4Encoder::ResetErrorCodeE()"));
 	rpc_server.add("minas.reset9", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCode9, "uint32_t MinasA4Encoder::ResetErrorCode9()"));
 	rpc_server.add("minas.reset_position", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetPosition, "void MinasA4Encoder::ResetPosition()"));
+
+
 
 	uint32_t old_counter = 0, new_counter = 0;
 
