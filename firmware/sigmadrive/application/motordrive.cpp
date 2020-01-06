@@ -64,12 +64,15 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[&](void*)->void {
 					lpf_vbus_.SetAlpha(config_.vbus_alpha_);
 				})},
-		{"enc_skip_updates_", rexjson::property(
+		{"enc_skip_updates", rexjson::property(
 				&config_.enc_skip_updates_,
 				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
+				[&](const rexjson::value& v){ pwm_->Stop(); },
 				[&](void*)->void {
 					update_enc_period_ = (1.0f / (update_hz / (config_.enc_skip_updates_ + 1)));
+					data_.update_counter_ = 0;
+					HAL_Delay(2);
+					pwm_->Start();
 				})},
 
 		{"iabc_alpha", rexjson::property(
@@ -457,12 +460,11 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 		for (size_t i = 0; (i < update_hz_) && ret; i++) {
 			ret = sched_.RunUpdateHandler([&]()->bool {
 				ApplyPhaseVoltage(reset_voltage * 1.5, std::polar<float>(1.0f, 0));
+				if (reset_encoder)
+					encoder_->ResetPosition();
 				return false;
 			});
 		};
-
-		if (reset_encoder)
-			encoder_->ResetPosition();
 
 	}, reset_voltage, reset_hz, reset_encoder));
 }
@@ -636,7 +638,7 @@ bool MotorDrive::CheckPhaseVoltageViolation(float voltage)
 bool MotorDrive::CheckTripViolations()
 {
 	bool ret = false;
-	if (delay_trip_check_ < 10000) {
+	if (delay_trip_check_ < (update_hz_ / 4)) {
 		delay_trip_check_++;
 		return false;
 	}

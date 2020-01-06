@@ -11,31 +11,34 @@ extern UartRpcServer rpc_server;
 
 MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 	: drive_(drive)
-	, lpf_Id_(config_.id_alpha_)
-	, lpf_Iq_(config_.iq_alpha_)
+	, lpf_Id_(config_.idq_alpha_)
+	, lpf_Id_disp_(config_.idq_disp_alpha_)
+	, lpf_Iq_disp_(config_.idq_disp_alpha_)
 	, pid_Vd_(config_.pid_current_kp_, config_.pid_current_ki_, 0, config_.pid_current_decay_, config_.pid_current_maxout_)
 	, pid_Vq_(config_.pid_current_kp_, config_.pid_current_ki_, 0, config_.pid_current_decay_, config_.pid_current_maxout_)
 	, pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, config_.pid_w_decay_, config_.pid_w_maxout_)
 	, lpf_speed_disp_(config_.speed_disp_alpha_)
 {
 	props_= rexjson::property_map({
-		{"id_alpha", rexjson::property(
-				&config_.id_alpha_,
+		{"idq_alpha", rexjson::property(
+				&config_.idq_alpha_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_Id_.SetAlpha(config_.id_alpha_);
+					lpf_Id_.SetAlpha(config_.idq_alpha_);
+					lpf_Iq_.SetAlpha(config_.idq_alpha_);
 				})},
 
-		{"iq_alpha", rexjson::property(
-				&config_.iq_alpha_,
+		{"idq_disp_alpha", rexjson::property(
+				&config_.idq_disp_alpha_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
 				[&](void*)->void {
-					lpf_Iq_.SetAlpha(config_.iq_alpha_);
+					lpf_Id_disp_.SetAlpha(config_.idq_disp_alpha_);
+					lpf_Iq_disp_.SetAlpha(config_.idq_disp_alpha_);
 				})},
 
-		{"pid_qcurrent_kp", rexjson::property(
+		{"pid_current_kp", rexjson::property(
 				&config_.pid_current_kp_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){},
@@ -43,7 +46,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 					pid_Vq_.SetGainP(config_.pid_current_kp_);
 					pid_Vd_.SetGainP(config_.pid_current_kp_);
 				})},
-		{"pid_qcurrent_ki", rexjson::property(
+		{"pid_current_ki", rexjson::property(
 				&config_.pid_current_ki_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){},
@@ -51,7 +54,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 					pid_Vq_.SetGainI(config_.pid_current_ki_);
 					pid_Vd_.SetGainI(config_.pid_current_ki_);
 				})},
-		{"pid_qcurrent_decay", rexjson::property(
+		{"pid_current_decay", rexjson::property(
 				&config_.pid_current_decay_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){},
@@ -59,7 +62,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 					pid_Vq_.SetDecayRate(config_.pid_current_decay_);
 					pid_Vd_.SetDecayRate(config_.pid_current_decay_);
 				})},
-		{"pid_qcurrent_maxout", rexjson::property(
+		{"pid_current_maxout", rexjson::property(
 				&config_.pid_current_maxout_,
 				rexjson::property_access::readwrite,
 				[](const rexjson::value& v){},
@@ -145,17 +148,32 @@ void MotorCtrlFOC::Stop()
 void MotorCtrlFOC::RunDebugLoop()
 {
 	for (;;) {
-		uint32_t status = osThreadFlagsWait(SIGNAL_DEBUG_DUMP_TORQUE | SIGNAL_DEBUG_DUMP_SPIN, osFlagsWaitAny, -1);
+		uint32_t status = osThreadFlagsWait(SIGNAL_DEBUG_DUMP_VELOCITY | SIGNAL_DEBUG_DUMP_TORQUE | SIGNAL_DEBUG_DUMP_SPIN, osFlagsWaitAny, -1);
 		if (status & osFlagsError) {
 			continue;
 		} else if (status & SIGNAL_DEBUG_DUMP_TORQUE) {
+			fprintf(stderr,
+					"Speed: %+12.9f (%+6.2f), I_d: %+14.9f, I_q: %+14.9f, PVd: %+14.9f, PVq: %+14.9f, PVqP: %+14.9f, PVqI: %+14.9f, "
+					"Ierr: %+14.9f, T: %4lu\n",
+					lpf_speed_disp_.Output(),
+					asinf(lpf_speed_disp_.Output()) / (drive_->GetEncoderPeriod() * M_PI * 2 * drive_->GetPolePairs()),
+					lpf_Id_disp_.Output(),
+					lpf_Iq_disp_.Output(),
+					pid_Vd_.Output(),
+					pid_Vq_.Output(),
+					pid_Vq_.OutputP(),
+					pid_Vq_.OutputI(),
+					Ierr_,
+					foc_time_
+			);
+		} else if (status & SIGNAL_DEBUG_DUMP_VELOCITY) {
 			fprintf(stderr,
 					"Speed: %+12.9f (%+6.2f), I_d: %+6.3f, I_q: %+6.3f, PVd: %+7.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
 					"Werr: %+12.9f, PID_W: %+12.9f, PID_WP: %+12.9f, PID_WI: %+12.9f, T: %4lu\n",
 					lpf_speed_disp_.Output(),
 					asinf(lpf_speed_disp_.Output()) / (drive_->GetEncoderPeriod() * M_PI * 2 * drive_->GetPolePairs()),
-					lpf_Id_.Output(),
-					lpf_Iq_.Output(),
+					lpf_Id_disp_.Output(),
+					lpf_Iq_disp_.Output(),
 					pid_Vd_.Output(),
 					pid_Vq_.Output(),
 					pid_Vq_.OutputP(),
@@ -171,8 +189,8 @@ void MotorCtrlFOC::RunDebugLoop()
 					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, EncT: %4lu\n",
 					lpf_speed_disp_.Output(),
 					asinf(lpf_speed_disp_.Output()) / (drive_->GetEncoderPeriod() * M_PI * 2 * drive_->GetPolePairs()),
-					lpf_Id_.Output(),
-					lpf_Iq_.Output(),
+					lpf_Id_disp_.Output(),
+					lpf_Iq_disp_.Output(),
 					drive_->t1_span_,
 					drive_->t2_span_,
 					drive_->t2_to_t2_,
@@ -188,9 +206,10 @@ void MotorCtrlFOC::RunDebugLoopWrapper(void* ctx)
 	reinterpret_cast<MotorCtrlFOC*>(const_cast<void*>(ctx))->RunDebugLoop();
 }
 
-bool MotorCtrlFOC::WaitDebugDump()
+void MotorCtrlFOC::SignalDumpVelocity()
 {
-	return (osThreadFlagsWait(SIGNAL_DEBUG_DUMP_TORQUE, osFlagsWaitAll, -1) == SIGNAL_DEBUG_DUMP_TORQUE) ? true : false;
+	if (debug_thread_)
+		osThreadFlagsSet(debug_thread_, SIGNAL_DEBUG_DUMP_VELOCITY);
 }
 
 void MotorCtrlFOC::SignalDumpTorque()
@@ -230,8 +249,10 @@ void MotorCtrlFOC::Torque()
 		pid_W_.Reset();
 		lpf_Id_.Reset();
 		lpf_Iq_.Reset();
-		pid_Vq_.SetMaxIntegralOutput(drive_->GetBusVoltage());
-		pid_Vd_.SetMaxIntegralOutput(drive_->GetBusVoltage());
+		lpf_Id_disp_.Reset();
+		lpf_Iq_disp_.Reset();
+		pid_Vq_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
+		pid_Vd_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
@@ -252,13 +273,16 @@ void MotorCtrlFOC::Torque()
 			 */
 			lpf_Id_.DoFilter(Idq.real());
 			lpf_Iq_.DoFilter(Idq.imag());
+			lpf_Id_disp_.DoFilter(Idq.real());
+			lpf_Iq_disp_.DoFilter(Idq.imag());
 			lpf_speed_disp_.DoFilter(phase_speed);
 
 			/*
 			 * Update D/Q PID Regulators.
 			 */
-			pid_Vd_.Input(0.0f - Idq.real(), update_period);
-			pid_Vq_.Input(iq_setpoint_ - Idq.imag(), update_period);
+			Ierr_ = iq_setpoint_ - lpf_Iq_.Output();
+			pid_Vd_.Input(0.0f - lpf_Id_.Output(), update_period);
+			pid_Vq_.Input(Ierr_, update_period);
 
 			/*
 			 * Inverse Park Transform
@@ -308,17 +332,18 @@ void MotorCtrlFOC::Velocity()
 		lpf_Id_.Reset();
 		lpf_Iq_.Reset();
 		lpf_speed_disp_.Reset();
-		pid_Vq_.SetMaxIntegralOutput(drive_->GetBusVoltage());
-		pid_Vd_.SetMaxIntegralOutput(drive_->GetBusVoltage());
+		pid_Vq_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
+		pid_Vd_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
 		drive_->sched_.RunUpdateHandler([&]()->bool {
-			if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
-				Werr_ = w_setpoint_ - drive_->GetPhaseSpeedVector();
-				pid_W_.Input(Werr_, enc_update_period);
-			}
-
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
 			std::complex<float> R = drive_->GetElecRotation();
 			float phase_speed = drive_->GetPhaseSpeedVector();
+
+			if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
+				Werr_ = w_setpoint_ - phase_speed;
+				pid_W_.Input(Werr_, enc_update_period);
+			}
+
 			/*
 			 *  Park Transform
 			 *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
@@ -333,14 +358,16 @@ void MotorCtrlFOC::Velocity()
 			 */
 			lpf_Id_.DoFilter(Idq.real());
 			lpf_Iq_.DoFilter(Idq.imag());
-			lpf_speed_disp_.DoFilter(phase_speed);
+			lpf_Id_disp_.DoFilter(Idq.real());
+			lpf_Iq_disp_.DoFilter(Idq.imag());
+			lpf_speed_disp_.DoFilter(drive_->GetPhaseSpeedVector());
 
 			/*
 			 * Update D/Q PID Regulators.
 			 */
+			Ierr_ = pid_W_.Output() - lpf_Iq_.Output();
 			pid_Vd_.Input(0.0f - lpf_Id_.Output(), update_period);
-			pid_Vq_.Input(pid_W_.Output() - lpf_Iq_.Output(), update_period);
-
+			pid_Vq_.Input(Ierr_, update_period);
 
 			/*
 			 * Inverse Park Transform
@@ -364,7 +391,7 @@ void MotorCtrlFOC::Velocity()
 
 			foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
 			if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
-				SignalDumpTorque();
+				SignalDumpVelocity();
 			}
 
 			return true;
@@ -401,12 +428,6 @@ void MotorCtrlFOC::Spin()
 			 *  Idq = std::complex<float>(Id, Iq);
 			 */
 			std::complex<float> Idq = Iab * std::conj(R);
-
-			if (std::abs(Idq) > config_.i_trip_) {
-				drive_->Abort();
-				fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
-				return false;
-			}
 
 			/*
 			 * Apply filters

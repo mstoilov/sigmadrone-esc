@@ -321,12 +321,6 @@ uint8_t MinasA4Encoder::calc_crc_x8_1(uint8_t* data, uint8_t size)
 
 void MinasA4Encoder::ResetPosition()
 {
-	UpdateId4();
-	HAL_Delay(2);
-	if (update_.reply4_.crc_ == 0) {
-		fprintf(stderr, "%s: PanasonicMA4Encoder failed to reset position\n", __FUNCTION__);
-		return;
-	}
 	uint32_t counter = GetCounter();
 	offset_ = counter;
 }

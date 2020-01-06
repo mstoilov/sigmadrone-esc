@@ -258,9 +258,9 @@ void Scheduler::EventThreadIdle()
 	osEventFlagsSet(event_dispatcher_idle_, EVENT_FLAG_IDLE);
 }
 
-void Scheduler::SetError(const std::string& error)
+void Scheduler::SetError(const char *error)
 {
-	if (error_.empty())
+	if (error_.empty() && error)
 		error_ = error;
 }
 std::string Scheduler::GetError()

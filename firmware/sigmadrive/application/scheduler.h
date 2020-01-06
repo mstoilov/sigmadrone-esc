@@ -46,7 +46,7 @@ public:
 
 	std::string GetError();
 	void ClearError();
-	void SetError(const std::string& error);
+	void SetError(const char *error);
 	template<typename T>
 	void SetError(const T& value, const std::string& error)
 	{

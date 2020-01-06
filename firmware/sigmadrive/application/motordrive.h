@@ -37,7 +37,7 @@ public:
 		uint32_t pole_pairs = 7;
 		uint32_t adc_full_scale = (1<<12);
 		uint32_t display_div_ = 2999;
-		uint32_t enc_skip_updates_ = 3;
+		uint32_t enc_skip_updates_ = 2;
 		bool svm_saddle_ = false;
 		float Vref_ = 3.3;
 		float max_modulation_duty_ = 0.95;
