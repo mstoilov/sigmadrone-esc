@@ -28,6 +28,7 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	, Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
 	, update_hz_(update_hz)
 	, update_period_(1.0f / update_hz_)
+	, update_enc_period_(1.0f / (update_hz / (config_.enc_skip_updates_ + 1)))
 	, lpf_bias_a(config_.bias_alpha_)
 	, lpf_bias_b(config_.bias_alpha_)
 	, lpf_bias_c(config_.bias_alpha_)
@@ -63,6 +64,14 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				[&](void*)->void {
 					lpf_vbus_.SetAlpha(config_.vbus_alpha_);
 				})},
+		{"enc_skip_updates_", rexjson::property(
+				&config_.enc_skip_updates_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){},
+				[&](void*)->void {
+					update_enc_period_ = (1.0f / (update_hz / (config_.enc_skip_updates_ + 1)));
+				})},
+
 		{"iabc_alpha", rexjson::property(
 				&config_.iabc_alpha_,
 				rexjson::property_access::readwrite,
@@ -140,8 +149,6 @@ void MotorDrive::Attach()
 	sched_.StartDispatcherThread();
 }
 
-
-
 void MotorDrive::Run()
 {
 	sched_.Run();
@@ -169,7 +176,6 @@ void MotorDrive::SetEncoder(IEncoder* encoder)
 		encoder_ = encoder;
 }
 
-
 int32_t MotorDrive::GetEncoderDir() const
 {
 	return config_.encoder_dir_;
@@ -185,12 +191,10 @@ float MotorDrive::GetUpdatePeriod() const
 	return update_period_;
 }
 
-
 uint32_t MotorDrive::GetPolePairs() const
 {
 	return config_.pole_pairs;
 }
-
 
 float MotorDrive::GetBusVoltage() const
 {
@@ -228,8 +232,11 @@ void MotorDrive::IrqUpdateCallback()
 	} else {
 		t2_to_t2_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
 		t2_begin_ = hrtimer.GetCounter();
-
 		data_.update_counter_++;
+		if (data_.update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
+			encoder_->Update();
+			UpdateRotor();
+		}
 
 		/*
 		 * Sample ADC phase current
@@ -243,28 +250,12 @@ void MotorDrive::IrqUpdateCallback()
 		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_c.Output());
 		UpdateCurrent();
 		CheckTripViolations();
-
 		sched_.OnUpdate();
 		t2_end_ = hrtimer.GetCounter();
 		t2_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_,t2_end_);
 
 	}
 }
-
-#if 0
-void MotorDrive::UpdateRotor()
-{
-	uint32_t rotor_position = encoder_->GetPosition();
-	if (rotor_position != (uint32_t)-1) {
-		data_.theta_ = config_.encoder_dir_ * (encoder_->GetElectricPosition(rotor_position, config_.pole_pairs));
-		std::complex<float> r_prev = R_;
-		R_ = std::complex<float>(cosf(data_.theta_), sinf(data_.theta_));
-		std::complex<float> r_cur = R_;
-		lpf_speed_.DoFilter(sdmath::cross(r_prev, r_cur));
-	}
-
-}
-#endif
 
 void MotorDrive::UpdateVbus()
 {
@@ -279,36 +270,37 @@ void MotorDrive::UpdateCurrent()
 	Iab_ = Pa_ * lpf_Ia_.Output() + Pb_ * lpf_Ib_.Output() + Pc_ * lpf_Ic_.Output();
 }
 
+void MotorDrive::UpdateRotor()
+{
+	uint32_t rotor_position = encoder_->GetPosition();
+	if (rotor_position != (uint32_t)-1) {
+		float theta = GetEncoderDir() * (encoder_->GetElectricPosition(rotor_position, GetPolePairs()));
+		std::complex<float> r_prev = R_;
+		R_ = std::complex<float>(cosf(theta), sinf(theta));
+		std::complex<float> r_cur = R_;
+		W_ = sdmath::cross(r_prev, r_cur);
+	}
+}
+
+std::complex<float> MotorDrive::GetElecRotation()
+{
+	return R_;
+}
+
+float MotorDrive::GetPhaseSpeedVector()
+{
+	return W_;
+}
+
+float MotorDrive::GetEncoderPeriod()
+{
+	return update_enc_period_;
+}
+
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
 {
 	return ((adc_bias - adc_val) * config_.Vref_ / config_.adc_full_scale) / config_.Rsense_ / config_.csa_gain_;
 }
-
-#if 0
-bool MotorDrive::RunUpdateHandler(const std::function<bool(void)>& update_handler)
-{
-	uint32_t flags = sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT | Scheduler::THREAD_FLAG_UPDATE, 3);
-	if (flags == Scheduler::THREAD_FLAG_ABORT) {
-		pwm_->Stop();
-		return false;
-	} else if (flags == Scheduler::THREAD_FLAG_UPDATE) {
-		update_handler_active_ = true;
-		signal_time_ms_ = hrtimer.GetTimeElapsedMicroSec(t2_end_, hrtimer.GetCounter());
-		t3_begin_ = hrtimer.GetCounter();
-		t3_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
-		bool ret = update_handler();
-		update_handler_active_ = false;
-		return ret;
-	}
-
-	/*
-	 * If we got here the UPDATE didn't come
-	 */
-	pwm_->Stop();
-	sched_.Abort();
-	return false;
-}
-#endif
 
 float MotorDrive::VoltageToDuty(float voltage, float v_bus)
 {

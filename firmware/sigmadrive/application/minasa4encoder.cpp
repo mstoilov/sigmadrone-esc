@@ -78,7 +78,7 @@ void MinasA4Encoder::ReceiveCompleteCallback()
 	update_time_ms_ = hrtimer.GetTimeElapsedMicroSec(t1_, t2_);
 }
 
-bool MinasA4Encoder::ParseReply4(const MA4EncoderReply4& reply4, uint32_t& counter, MA4Almc& almc)
+bool MinasA4Encoder::ParseReply4(const MA4EncoderReply4& reply4, uint32_t& status, uint32_t& counter, MA4Almc& almc)
 {
 	uint8_t crc = calc_crc_x8_1((uint8_t*)&reply4, sizeof(reply4) - 1);
 	if (crc != reply4.crc_) {
@@ -90,6 +90,7 @@ bool MinasA4Encoder::ParseReply4(const MA4EncoderReply4& reply4, uint32_t& count
 			((uint32_t)reply4.absolute_data_[2] << 16) +
 			((uint32_t)reply4.absolute_data_[1] << 8) +
 			reply4.absolute_data_[0];
+	status = (reply4.status_field_.ea1 << 1) | (reply4.status_field_.ea0);
 	counter = abs_data;
 	almc = reply4.almc_;
 	return true;
@@ -158,11 +159,12 @@ uint32_t MinasA4Encoder::ResetErrorCode(uint8_t data_id)
 {
 	MA4Almc almc;
 	uint32_t counter;
+	uint32_t status;
 	MA4EncoderReply4 reply4;
 	if (!ResetWithCommand(data_id, &reply4, sizeof(reply4))) {
 		return -1;
 	}
-	if (!ParseReply4(reply4, counter, almc))
+	if (!ParseReply4(reply4, status, counter, almc))
 		return -1;
 	return almc.as_byte_;
 }
@@ -210,6 +212,7 @@ uint32_t MinasA4Encoder::GetLastError()
 	uint32_t error = 1;
 	MA4Almc almc;
 	uint32_t counter;
+	uint32_t status;
 	MA4EncoderReply4 reply4;
 	maintenance_ = 1;
 	osDelay(2);
@@ -217,7 +220,7 @@ uint32_t MinasA4Encoder::GetLastError()
 	if (!sendrecv_command(MA4_DATA_ID_4, &reply4, sizeof(reply4)))
 		goto error;
 	osDelay(2);
-	if (!ParseReply4(reply4, counter, almc))
+	if (!ParseReply4(reply4, status, counter, almc))
 		goto error;
 	error = almc.as_byte_;
 
@@ -248,14 +251,16 @@ bool MinasA4Encoder::UpdateId5()
 
 bool MinasA4Encoder::Update()
 {
+	uint32_t prev_t1 = t1_;
 	t1_ = hrtimer.GetCounter();
+	t1_to_t1_ = hrtimer.GetTimeElapsedMicroSec(prev_t1, t1_);
 	return UpdateId5();
 }
 
 bool MinasA4Encoder::UpdateEnd()
 {
 	if (update_.reply4_.ctrl_field_.as_byte == MA4_DATA_ID_4) {
-		return ParseReply4(update_.reply4_, counter_, almc_);
+		return ParseReply4(update_.reply4_, status_, counter_, almc_);
 	} else if (update_.reply5_.ctrl_field_.as_byte == MA4_DATA_ID_5) {
 		return ParseReply5(update_.reply5_, status_, counter_, revolutions_);
 	}
@@ -273,12 +278,6 @@ bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply
 	LL_DMA_EnableIT_TC(DMA1, LL_DMA_STREAM_1);
 	LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_1);
 
-	if (!LL_USART_IsActiveFlag_TXE(huart_->Instance)) {
-		fprintf(stderr, "%s: PanasonicMA4Encoder failed to send command 0x%x\n", __FUNCTION__, command);
-		HAL_UART_Abort(huart_);
-		return false;
-	}
-	LL_USART_TransmitData8(huart_->Instance, command);
 #else
 	HAL_StatusTypeDef status;
 	if ((status = HAL_UART_Receive_DMA(huart_, (uint8_t*)reply, reply_size)) != HAL_OK) {
@@ -286,12 +285,13 @@ bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply
 		HAL_UART_Abort(huart_);
 		return false;
 	}
-	if ((status = HAL_UART_Transmit_DMA(huart_, (uint8_t*)&command, sizeof(command))) != HAL_OK) {
-		fprintf(stderr, "%s: PanasonicMA4Encoder failed to send command 0x%x, with status %u\n", __FUNCTION__, command, status);
+#endif
+	if (!LL_USART_IsActiveFlag_TXE(huart_->Instance)) {
+		fprintf(stderr, "%s: PanasonicMA4Encoder failed to send command 0x%x\n", __FUNCTION__, command);
 		HAL_UART_Abort(huart_);
 		return false;
 	}
-#endif
+	LL_USART_TransmitData8(huart_->Instance, command);
 	return true;
 }
 

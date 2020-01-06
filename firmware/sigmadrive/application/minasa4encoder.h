@@ -202,7 +202,7 @@ public:
 	virtual bool Update() override;
 
 protected:
-	bool ParseReply4(const MA4EncoderReply4& reply4, uint32_t& counter, MA4Almc& almc);
+	bool ParseReply4(const MA4EncoderReply4& reply4, uint32_t& status, uint32_t& counter, MA4Almc& almc);
 	bool ParseReply5(const MA4EncoderReply5& reply5, uint32_t& status, uint32_t& counter, uint32_t& revolutions);
 	bool ParseReplyA(const MA4EncoderReplyA& replyA, uint32_t& encoder_id);
 	bool ParseReply9BEF(const MA4EncoderReply4& reply4, MA4Almc& almc);
@@ -229,6 +229,7 @@ public:
 public:
 	volatile uint32_t t1_ = 0;
 	volatile uint32_t t2_ = 0;
+	volatile uint32_t t1_to_t1_ = 0;
 	uint32_t update_time_ms_ = 0;
 };
 

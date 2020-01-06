@@ -30,7 +30,6 @@
 #include "ring.h"
 #include "cdc_iface.h"
 #include "motordrive.h"
-#include "motorctrl_complexfoc.h"
 #include "motorctrl_foc.h"
 #include "property.h"
 #include "minasa4encoder.h"
@@ -53,7 +52,6 @@ Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 MotorDrive servo(&ma4_abs_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
-MotorCtrlComplexFOC cfoc(&servo);
 MotorCtrlFOC foc(&servo);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
@@ -71,7 +69,6 @@ void SetEncoder()
 		servo.config_.calib_v_ = 12;
 		servo.config_.reset_voltage_ = 3.4;
 		servo.config_.pole_pairs = 4;
-		cfoc.config_.spin_voltage_ = 3.4;
 	} else if (use_encoder == "minas6") {
 		servo.SetEncoder(&ma4_abs_encoder);
 		tim1.EnableCounter(false);
@@ -81,14 +78,12 @@ void SetEncoder()
 		servo.config_.calib_v_ = 12;
 		servo.config_.reset_voltage_ = 3.4;
 		servo.config_.pole_pairs = 5;
-		cfoc.config_.spin_voltage_ = 3.4;
 	} else if (use_encoder == "quadrature") {
 		servo.SetEncoder(&tim4);
 		servo.config_.calib_max_i_ = 10;
 		servo.config_.calib_v_ = 0.5;
 		servo.config_.reset_voltage_ = 0.4;
 		servo.config_.pole_pairs = 7;
-		cfoc.config_.spin_voltage_ = 0.4;
 	}
 }
 
@@ -97,7 +92,6 @@ rexjson::property props =
 		rexjson::property_map {
 			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
 			{"drive", rexjson::property({servo.props_})},
-			{"cfoc", rexjson::property({cfoc.props_})},
 			{"foc", rexjson::property({foc.props_})},
 			{"use_encoder", rexjson::property(
 					&use_encoder,
@@ -225,27 +219,17 @@ int application_main()
 	drv1.SetCSAGain(Drv8323::CSA_GAIN_10VV);
 	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 
+	fprintf(stdout, "DRV1: \n");
+	drv1.DumpRegs();
 
-	osDelay(150);
+	osDelay(50);
 #if 1
 	g_properties->enumerate_children("props", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
 #endif
 
-	fprintf(stdout, "DRV1: \n");
-	drv1.DumpRegs();
-
 	tim4.Start();
 	SetEncoder();
 	servo.Attach();
-
-
-	uint32_t enc_resolution = (1<<23);
-	uint32_t enc1, enc2;
-	enc1 = enc2 = 122;
-
-	float angle = (M_PI * 2) / enc_resolution * enc1;
-	enc1 = angle / (M_PI * 2) * enc_resolution;
-	printf("enc1: %lu, enc2: %lu, angle: %f \n", enc1, enc2, angle);
 
 	osThreadAttr_t task_attributes;
 	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
@@ -286,7 +270,7 @@ int application_main()
 				MA4Almc almc;
 				almc.as_byte_ = ma4_abs_encoder.GetLastError();
 				if (new_counter != old_counter || ma4_abs_encoder.status_) {
-					fprintf(stderr, "Minas Enc(0x%x): %7.2f, Cnt: %7lu, Pos: %7lu, Rev: %7lu, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (Time: %8lu uSec)\n",
+					fprintf(stderr, "Minas Enc(0x%x): %7.2f, Cnt: %7lu, Pos: %7lu, Rev: %7lu, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (UpdT: %5lu, t1_to_t1: %5lu)\n",
 							(int)ma4_abs_encoder.GetDeviceID(),
 							ma4_abs_encoder.GetMechanicalPosition(new_counter) / M_PI * 180.0f,
 							new_counter,
@@ -300,7 +284,8 @@ int application_main()
 							almc.multiple_revolution_error_,
 							almc.system_down_,
 							almc.battery_alarm_,
-							ma4_abs_encoder.update_time_ms_);
+							ma4_abs_encoder.update_time_ms_,
+							ma4_abs_encoder.t1_to_t1_);
 					old_counter = new_counter;
 				}
 			}

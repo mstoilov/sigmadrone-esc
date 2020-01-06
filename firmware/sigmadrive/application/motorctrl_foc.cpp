@@ -123,7 +123,6 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 		{"w_setpoint", &w_setpoint_},
 		{"i_trip", &config_.i_trip_},
 		{"vab_advance_factor", &config_.vab_advance_factor_},
-		{"ri_angle", &config_.ri_angle_},
 		{"display", &config_.display_},
 		{"spin_voltage", &config_.spin_voltage_},
 	});
@@ -154,7 +153,7 @@ void MotorCtrlFOC::RunDebugLoop()
 					"Speed: %+12.9f (%+6.2f), I_d: %+6.3f, I_q: %+6.3f, PVd: %+7.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
 					"Werr: %+12.9f, PID_W: %+12.9f, PID_WP: %+12.9f, PID_WI: %+12.9f, T: %4lu\n",
 					lpf_speed_disp_.Output(),
-					asinf(lpf_speed_disp_.Output()) / (GetEncoderPeriod() * M_PI * 2 * drive_->GetPolePairs()),
+					asinf(lpf_speed_disp_.Output()) / (drive_->GetEncoderPeriod() * M_PI * 2 * drive_->GetPolePairs()),
 					lpf_Id_.Output(),
 					lpf_Iq_.Output(),
 					pid_Vd_.Output(),
@@ -169,19 +168,16 @@ void MotorCtrlFOC::RunDebugLoop()
 			);
 		} else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
 			fprintf(stderr,
-					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, EncT: %4lu, Bias: %+5.2f, %+5.2f, %+5.2f\n",
+					"Speed: %13.9f (%5.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, EncT: %4lu\n",
 					lpf_speed_disp_.Output(),
-					asinf(lpf_speed_disp_.Output()) / (GetEncoderPeriod() * M_PI * 2 * drive_->GetPolePairs()),
+					asinf(lpf_speed_disp_.Output()) / (drive_->GetEncoderPeriod() * M_PI * 2 * drive_->GetPolePairs()),
 					lpf_Id_.Output(),
 					lpf_Iq_.Output(),
 					drive_->t1_span_,
 					drive_->t2_span_,
 					drive_->t2_to_t2_,
 					foc_time_,
-					ma4_abs_encoder.update_time_ms_,
-					drive_->lpf_bias_a.Output(),
-					drive_->lpf_bias_b.Output(),
-					drive_->lpf_bias_c.Output()
+					ma4_abs_encoder.update_time_ms_
 			);
 		}
 	}
@@ -220,36 +216,13 @@ void MotorCtrlFOC::StartDebugThread()
 	debug_thread_ = osThreadNew(RunDebugLoopWrapper, this, &task_attributes);
 }
 
-void MotorCtrlFOC::UpdateRotor()
-{
-	uint32_t rotor_position = drive_->encoder_->GetPosition();
-	if (rotor_position != (uint32_t)-1) {
-		float theta = drive_->GetEncoderDir() * (drive_->encoder_->GetElectricPosition(rotor_position, drive_->GetPolePairs()));
-		std::complex<float> r_prev = R_;
-		R_ = std::complex<float>(cosf(theta), sinf(theta));
-		std::complex<float> r_cur = R_;
-		W_ = sdmath::cross(r_prev, r_cur);;
-	}
-}
-
-
-std::complex<float> MotorCtrlFOC::GetElecRotation()
-{
-	return R_;
-}
-
-float MotorCtrlFOC::GetPhaseSpeedVector()
-{
-	return W_;
-}
-
 void MotorCtrlFOC::Torque()
 {
 	drive_->AddTaskArmMotor();
 
 	drive_->sched_.AddTask([&](){
 		float update_period = drive_->GetUpdatePeriod();
-		float enc_update_period = GetEncoderPeriod();
+		float enc_update_period = drive_->GetEncoderPeriod();
 		uint32_t display_counter = 0;
 		drive_->data_.update_counter_ = 0;
 		pid_Vd_.Reset();
@@ -257,16 +230,13 @@ void MotorCtrlFOC::Torque()
 		pid_W_.Reset();
 		lpf_Id_.Reset();
 		lpf_Iq_.Reset();
+		pid_Vq_.SetMaxIntegralOutput(drive_->GetBusVoltage());
+		pid_Vd_.SetMaxIntegralOutput(drive_->GetBusVoltage());
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 
-			if (drive_->data_.update_counter_ % (config_.enc_skip_updates + 1) == 0) {
-				drive_->encoder_->Update();
-				UpdateRotor();
-			}
-
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
-			std::complex<float> R = GetElecRotation();
-			float phase_speed = GetPhaseSpeedVector();
+			std::complex<float> R = drive_->GetElecRotation();
+			float phase_speed = drive_->GetPhaseSpeedVector();
 
 			/*
 			 *  Park Transform
@@ -284,12 +254,9 @@ void MotorCtrlFOC::Torque()
 			lpf_Iq_.DoFilter(Idq.imag());
 			lpf_speed_disp_.DoFilter(phase_speed);
 
-			if (std::abs(Idq) > config_.i_trip_) {
-				drive_->Abort();
-				fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
-				return false;
-			}
-
+			/*
+			 * Update D/Q PID Regulators.
+			 */
 			pid_Vd_.Input(0.0f - Idq.real(), update_period);
 			pid_Vq_.Input(iq_setpoint_ - Idq.imag(), update_period);
 
@@ -326,18 +293,13 @@ void MotorCtrlFOC::Torque()
 	drive_->sched_.Run();
 }
 
-float MotorCtrlFOC::GetEncoderPeriod()
-{
-	return drive_->GetUpdatePeriod() * (config_.enc_skip_updates + 1);
-}
-
 void MotorCtrlFOC::Velocity()
 {
 	drive_->AddTaskArmMotor();
 
 	drive_->sched_.AddTask([&](){
 		float update_period = drive_->GetUpdatePeriod();
-		float enc_update_period = GetEncoderPeriod();
+		float enc_update_period = drive_->GetEncoderPeriod();
 		uint32_t display_counter = 0;
 		drive_->data_.update_counter_ = 0;
 		pid_Vd_.Reset();
@@ -346,17 +308,17 @@ void MotorCtrlFOC::Velocity()
 		lpf_Id_.Reset();
 		lpf_Iq_.Reset();
 		lpf_speed_disp_.Reset();
+		pid_Vq_.SetMaxIntegralOutput(drive_->GetBusVoltage());
+		pid_Vd_.SetMaxIntegralOutput(drive_->GetBusVoltage());
 		drive_->sched_.RunUpdateHandler([&]()->bool {
-			if (drive_->data_.update_counter_ % (config_.enc_skip_updates + 1) == 0) {
-				drive_->encoder_->Update();
-				UpdateRotor();
-				Werr_ = w_setpoint_ - GetPhaseSpeedVector();
+			if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
+				Werr_ = w_setpoint_ - drive_->GetPhaseSpeedVector();
 				pid_W_.Input(Werr_, enc_update_period);
 			}
 
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
-			std::complex<float> R = GetElecRotation();
-			float phase_speed = GetPhaseSpeedVector();
+			std::complex<float> R = drive_->GetElecRotation();
+			float phase_speed = drive_->GetPhaseSpeedVector();
 			/*
 			 *  Park Transform
 			 *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
@@ -373,12 +335,9 @@ void MotorCtrlFOC::Velocity()
 			lpf_Iq_.DoFilter(Idq.imag());
 			lpf_speed_disp_.DoFilter(phase_speed);
 
-			if (std::abs(Idq) > config_.i_trip_) {
-				drive_->Abort();
-				fprintf(stderr, "i_trip: %7.2f, exceeded by abs(Idq): %7.2f\n", config_.i_trip_, std::abs(Idq));
-				return false;
-			}
-
+			/*
+			 * Update D/Q PID Regulators.
+			 */
 			pid_Vd_.Input(0.0f - lpf_Id_.Output(), update_period);
 			pid_Vq_.Input(pid_W_.Output() - lpf_Iq_.Output(), update_period);
 
@@ -420,7 +379,7 @@ void MotorCtrlFOC::Spin()
 	drive_->AddTaskArmMotor();
 
 	drive_->sched_.AddTask([&](){
-		float enc_update_period = GetEncoderPeriod();
+		float enc_update_period = drive_->GetEncoderPeriod();
 		uint32_t display_counter = 0;
 		drive_->data_.update_counter_ = 0;
 		pid_Vd_.Reset();
@@ -430,14 +389,9 @@ void MotorCtrlFOC::Spin()
 		lpf_Iq_.Reset();
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 
-			if (drive_->data_.update_counter_ % (config_.enc_skip_updates + 1) == 0) {
-				drive_->encoder_->Update();
-				UpdateRotor();
-			}
-
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
-			std::complex<float> R = GetElecRotation();
-			float phase_speed = GetPhaseSpeedVector();
+			std::complex<float> R = drive_->GetElecRotation();
+			float phase_speed = drive_->GetPhaseSpeedVector();
 
 			/*
 			 *  Park Transform
@@ -495,7 +449,7 @@ void MotorCtrlFOC::Spin()
 
 float MotorCtrlFOC::VelocitySetPoint(float revpersec)
 {
-	w_setpoint_ = std::sin(M_PI * 2 * revpersec * drive_->GetPolePairs() * GetEncoderPeriod());
+	w_setpoint_ = std::sin(M_PI * 2 * revpersec * drive_->GetPolePairs() * drive_->GetEncoderPeriod());
 	return w_setpoint_;
 }
 

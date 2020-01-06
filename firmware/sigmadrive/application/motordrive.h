@@ -37,6 +37,7 @@ public:
 		uint32_t pole_pairs = 7;
 		uint32_t adc_full_scale = (1<<12);
 		uint32_t display_div_ = 2999;
+		uint32_t enc_skip_updates_ = 3;
 		bool svm_saddle_ = false;
 		float Vref_ = 3.3;
 		float max_modulation_duty_ = 0.95;
@@ -88,6 +89,10 @@ public:
 	float GetUpdatePeriod() const;
 	uint32_t GetPolePairs() const;
 	float GetBusVoltage() const;
+	std::complex<float> GetElecRotation();
+	float GetPhaseSpeedVector();
+	float GetEncoderPeriod();
+
 	std::complex<float> GetPhaseCurrent() const;
 	void DefaultIdleTask();
 	bool CheckPhaseCurrentViolation(float current);
@@ -129,12 +134,14 @@ public:
 	rexjson::property props_;
 
 public:
+	Config config_;
 	std::complex<float> Pa_;
 	std::complex<float> Pb_;
 	std::complex<float> Pc_;
 
 	uint32_t update_hz_;
 	float update_period_;
+	float update_enc_period_;
 	uint32_t t1_begin_ = 0;
 	uint32_t t1_span_ = 0;
 	uint32_t t2_begin_ = 0;
@@ -147,7 +154,6 @@ public:
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
 	SampledData data_;
-	Config config_;
 
 /*
  * Derived Data
@@ -160,6 +166,9 @@ public:
 	LowPassFilter<float, float> lpf_Ib_;
 	LowPassFilter<float, float> lpf_Ic_;
 	std::complex<float> Iab_;
+	std::complex<float> R_;
+	float W_;
+
 };
 
 #endif /* _MOTOR_DRIVE_H_ */

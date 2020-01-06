@@ -30,12 +30,10 @@ public:
 		float w_bias_ = 0;
 		float id_alpha_ = 1;
 		float iq_alpha_ = 1;
-		float speed_disp_alpha_ = 0.005;
+		float speed_disp_alpha_ = 1;
 		float i_trip_ = 8.0;
-		float ri_angle_ = 1.57;
 		float spin_voltage_ = 3.5f;
 		bool display_ = true;
-		uint32_t enc_skip_updates = 2;
 	};
 
 
@@ -47,9 +45,6 @@ public:
 	void Spin();
 	void RunCalibrationSequence();
 	float VelocitySetPoint(float revpersec);
-	std::complex<float> GetElecRotation();
-	float GetPhaseSpeedVector();
-	float GetEncoderPeriod();
 
 protected:
 	void UpdateRotor();
@@ -81,8 +76,6 @@ protected:
 	PidController<float> pid_Vq_;
 	PidController<float> pid_W_;
 	LowPassFilter<float, float> lpf_speed_disp_;
-	std::complex<float> R_;
-	float W_;
 	uint32_t foc_time_ = 0;
 	float Werr_ = 0;
 	float iq_setpoint_ = 0.08;
