@@ -30,6 +30,7 @@ public:
 	virtual property& navigate(property &parent, const std::string& path) = 0;
 	virtual property& operator[](const std::string& name) = 0;
 	virtual property& push_back(const property& v) = 0;
+	virtual property_access access() const = 0;
 };
 
 
@@ -100,6 +101,11 @@ public:
 	virtual property& push_back(const property& v) override
 	{
 		throw std::runtime_error("property_object: Invalid call to push_back()");
+	}
+
+	virtual property_access access() const override
+	{
+		return access_;
 	}
 
 	template <typename U>
@@ -221,6 +227,11 @@ public:
 		throw std::runtime_error("property_object: Invalid call to push_back()");
 	}
 
+	virtual property_access access() const override
+	{
+		return access_;
+	}
+
 };
 
 template<typename T>
@@ -316,8 +327,10 @@ public:
 	property& navigate(const std::string& path);
 	void set_prop(const rexjson::value& val);
 	rexjson::value get_prop();
+	property_access access() const;
 	void enumerate_children(const std::string& path, const enumarate_children_callback& callback);
 	void check_object();
+	rexjson::value to_json();
 
 
 protected:
@@ -363,6 +376,11 @@ public:
 	virtual property& push_back(const property& v) override
 	{
 		throw std::runtime_error("property_map: Invalid call to push_back()");
+	}
+
+	virtual property_access access() const override
+	{
+		throw std::runtime_error("Invalid call to method access()");
 	}
 
 
@@ -416,6 +434,10 @@ public:
 		return *array_.rbegin();
 	}
 
+	virtual property_access access() const override
+	{
+		throw std::runtime_error("Invalid call to method access()");
+	}
 
 protected:
 	std::vector<property> array_;

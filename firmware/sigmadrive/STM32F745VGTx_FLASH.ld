@@ -62,7 +62,8 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 320K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 1024K
+FLASH (rx)     : ORIGIN = 0x8000000, LENGTH = 1024K - 128K
+FLASHCFG (wrx) : ORIGIN = 0x80E0000, LENGTH = 128K
 }
 
 /*
@@ -82,6 +83,14 @@ SECTIONS
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >FLASH
+  
+  .flash_config :
+  {
+	. = ALIGN(4);
+	*(.flash_config)
+	. = ALIGN(4);
+  } > FLASHCFG
+  
 
   /* The program code and other data goes into FLASH */
   .text :

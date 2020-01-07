@@ -38,12 +38,12 @@ public:
 		uint32_t adc_full_scale = (1<<12);
 		uint32_t display_div_ = 2999;
 		uint32_t enc_skip_updates_ = 2;
+		uint32_t csa_gain_ = 10;
 		bool svm_saddle_ = false;
 		float Vref_ = 3.3;
 		float max_modulation_duty_ = 0.95;
 		float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
 		float reset_voltage_ = 0.4f;
-		float csa_gain_ = 10.0f;
 		float Rsense_ = 0.010f;
 		float calib_v_ = 12;
 		float calib_max_i_ = 4;

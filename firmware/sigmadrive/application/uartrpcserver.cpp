@@ -112,7 +112,7 @@ Arguments:
 
 rexjson::value UartRpcServer::rpc_getset_property(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
-	static std::string prefix = "props";
+	static std::string prefix = "";
 	std::ostringstream oss;
 	static unsigned int types[] = {rexjson::rpc_str_type, rexjson::rpc_str_type|rexjson::rpc_int_type|rexjson::rpc_real_type|rexjson::rpc_bool_type|rexjson::rpc_null_type};
 	static const char *help_msg = R"desc(

@@ -82,6 +82,11 @@ rexjson::value property::get_prop()
 	return object_->get_prop();
 }
 
+property_access property::access() const
+{
+	return object_->access();
+}
+
 void property::enumerate_children(const std::string& path, const enumarate_children_callback& callback)
 {
 	check_object();
@@ -92,6 +97,15 @@ void property::check_object()
 {
 	if (!object_)
 		throw std::runtime_error("Invalid property");
+}
+
+rexjson::value property::to_json()
+{
+	rexjson::object ret;
+	enumerate_children("", [&](const std::string& path, rexjson::property& prop)->void {
+		ret[path] = prop.get_prop();
+	});
+	return ret;
 }
 
 }

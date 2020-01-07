@@ -35,10 +35,14 @@ std::string CommandToJson(std::string str)
 		std::string token = *it; //tokens[i];
 		if (i != 0)
 			json += ", ";
-		if (std::isdigit(token[0]) || token[0] == '.' || token == "true" || token == "false" || token[0] == '+'  || token[0] == '-')
+		if (std::isdigit(token[0])
+			|| (token[0] == '-' && token.size() > 1 && std::isdigit(token[1]))
+			|| token == "true"
+			|| token == "false") {
 			json += token;
-		else
+		} else {
 			json += "\"" + token + "\"";
+		}
 	}
 	json += "]}";
 	return json;

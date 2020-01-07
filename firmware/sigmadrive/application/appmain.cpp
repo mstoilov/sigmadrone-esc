@@ -34,9 +34,13 @@
 #include "property.h"
 #include "minasa4encoder.h"
 #include "hrtimer.h"
+#include "flashmemory.h"
 
 #define MOTOR_POLE_PAIRS 7
 
+__attribute__((__section__(".flash_config"))) char flashregion[128*1024];
+
+FlashMemory flash_config(flashregion, sizeof(flashregion), FLASH_SECTOR_7, 1);
 UartRpcServer rpc_server;
 osThreadId_t commandTaskHandle;
 Adc adc1;
@@ -167,6 +171,37 @@ void SD_DMA1_Stream1_IRQHandler(void)
 
 }
 
+void SaveConfig()
+{
+	std::string ret;
+	rexjson::value props = g_properties->to_json();
+	ret = props.write(true, true, 4, 9);
+	std::cout << ret << std::endl;
+	flash_config.erase();
+	flash_config.program(ret.c_str(), ret.size() + 1);
+	if (ret != flashregion)
+		throw std::runtime_error("Failed to save configuration!");
+}
+
+void LoadConfig()
+{
+	std::string configuration(flashregion);
+	rexjson::value props = rexjson::read(configuration);
+	g_properties->enumerate_children("", [&](const std::string& path, rexjson::property& prop)->void {
+
+		if (prop.access() & rexjson::property_access::writeonly) {
+			rexjson::object::const_iterator it = props.get_obj().find(path);
+			if (it != props.get_obj().end()) {
+				try {
+					prop.set_prop(it->second);
+				} catch (std::exception& e) {
+					std::cout << e.what() << ", Failed to set " << path << " : " << it->second.to_string() << std::endl;
+				}
+			}
+		}
+	});
+}
+
 
 extern "C"
 int application_main()
@@ -174,6 +209,8 @@ int application_main()
 	*_impure_ptr = *_impure_data_ptr;
 
 	Exti exti_usr_button(USER_BTN_Pin, []()->void{HAL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);});
+
+	std::string testmsg("This is a test for flash config.");
 
 	/*
 	 * Attach the HAL handles to the
@@ -224,7 +261,7 @@ int application_main()
 
 	osDelay(50);
 #if 1
-	g_properties->enumerate_children("props", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
+	g_properties->enumerate_children("", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
 #endif
 
 	tim4.Start();
@@ -238,6 +275,8 @@ int application_main()
 	task_attributes.stack_size = 12000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 
+	rpc_server.add("LoadConfig", rexjson::make_rpc_wrapper(LoadConfig, "void LoadConfig()"));
+	rpc_server.add("SaveConfig", rexjson::make_rpc_wrapper(SaveConfig, "void SaveConfig()"));
 	rpc_server.add("drv1.EnableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::EnableVREFDiv, "void Drv8323::EnableVREFDiv()"));
 	rpc_server.add("drv1.DisableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DisableVREFDiv, "void Drv8323::DisableVREFDiv()"));
 	rpc_server.add("drv1.DumpRegs", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DumpRegs, "void Drv8323::DumpRegs()"));
