@@ -44,9 +44,10 @@ MinasA4Encoder::~MinasA4Encoder()
 
 bool MinasA4Encoder::Detect()
 {
-	if (ResetErrorCodeE() == 0 && GetDeviceID() == 0xa7)
+	ResetErrorCodeE();
+	if (GetDeviceID() == 0xa7)
 		resolution_ = (1 << 23);
-	else if (ResetErrorCodeE() == 0 && GetDeviceID() == 0x11)
+	else if (GetDeviceID() == 0x11)
 		resolution_ = (1 << 17);
 	else
 		return false;

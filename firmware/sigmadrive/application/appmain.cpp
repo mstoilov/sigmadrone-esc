@@ -212,6 +212,8 @@ int application_main()
 
 	std::string testmsg("This is a test for flash config.");
 
+	osDelay(500);
+
 	/*
 	 * Attach the HAL handles to the
 	 * C++ wrapper objects. At this point the HAL handles
@@ -264,8 +266,8 @@ int application_main()
 	g_properties->enumerate_children("", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
 #endif
 
-	tim4.Start();
 	SetEncoder();
+	tim4.Start();
 	servo.Attach();
 
 	osThreadAttr_t task_attributes;
