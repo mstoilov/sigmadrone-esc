@@ -314,7 +314,7 @@ void MotorCtrlFOC::Torque()
 
 	});
 	drive_->AddTaskDisarmMotor();
-	drive_->sched_.Run();
+	drive_->Run();
 }
 
 void MotorCtrlFOC::Velocity()
@@ -398,7 +398,7 @@ void MotorCtrlFOC::Velocity()
 		});
 	});
 	drive_->AddTaskDisarmMotor();
-	drive_->sched_.Run();
+	drive_->Run();
 }
 
 void MotorCtrlFOC::Spin()
@@ -465,7 +465,7 @@ void MotorCtrlFOC::Spin()
 		});
 	});
 	drive_->AddTaskDisarmMotor();
-	drive_->sched_.Run();
+	drive_->Run();
 }
 
 float MotorCtrlFOC::VelocitySetPoint(float revpersec)

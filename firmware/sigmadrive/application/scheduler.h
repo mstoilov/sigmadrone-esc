@@ -44,19 +44,6 @@ public:
 	bool WaitSignalAbort(uint32_t timeout_msec);
 	bool WaitEventIdle(uint32_t timeout_msec);
 
-	std::string GetError();
-	void ClearError();
-	void SetError(const char *error);
-	template<typename T>
-	void SetError(const T& value, const std::string& error)
-	{
-		if (error_.empty()) {
-			std::ostringstream os;
-			os << value << ", " << error;
-			error_ = os.str();
-		}
-	}
-
 
 	static const uint32_t THREAD_FLAG_TASK = (1u << 0);
 	static const uint32_t THREAD_FLAG_ABORT = (1u << 2);
@@ -69,9 +56,6 @@ public:
 
 	uint32_t wait_timeout_ = (uint32_t)-1;
 	osThreadId_t scheduler_thread_id_ = 0;
-
-public:
-	std::string error_;
 
 protected:
 	uint32_t run_idle_ms_ = 200;

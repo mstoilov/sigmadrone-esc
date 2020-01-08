@@ -44,7 +44,8 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	pwm_ = pwm;
 	props_= rexjson::property_map({
 		{"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
-		{"error", rexjson::property(&sched_.error_, rexjson::property_access::readonly)},
+		{"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
+		{"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
 		{"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
 		{"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_access::readonly)},
 		{"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_access::readonly)},
@@ -154,11 +155,13 @@ void MotorDrive::Attach()
 
 void MotorDrive::Run()
 {
+	error_info_.ClearError();
 	sched_.Run();
 }
 
 void MotorDrive::RunWaitForCompletion()
 {
+	error_info_.ClearError();
 	sched_.RunWaitForCompletion();
 }
 
@@ -619,7 +622,7 @@ bool MotorDrive::CheckPhaseCurrentViolation(float current)
 {
 	if (current > config_.trip_i_) {
 		Abort();
-		sched_.SetError(current, "Current limit violation!");
+		error_info_.SetError(e_trip_voltage, "Current limit violation, %f", current);
 		return true;
 	}
 	return false;
@@ -629,7 +632,7 @@ bool MotorDrive::CheckPhaseVoltageViolation(float voltage)
 {
 	if (voltage > config_.trip_v_) {
 		Abort();
-		sched_.SetError(voltage, "Voltage bus limit violation!");
+		error_info_.SetError(e_trip_voltage, "Voltage bus limit violation, %f", voltage);
 		return true;
 	}
 	return false;
@@ -642,10 +645,10 @@ bool MotorDrive::CheckTripViolations()
 		delay_trip_check_++;
 		return false;
 	}
-	ret |= CheckPhaseVoltageViolation(lpf_vbus_.Output());
-	ret |= CheckPhaseCurrentViolation(lpf_Ia_.Output());
-	ret |= CheckPhaseCurrentViolation(lpf_Ib_.Output());
-	ret |= CheckPhaseCurrentViolation(lpf_Ic_.Output());
+	ret = ret || CheckPhaseVoltageViolation(lpf_vbus_.Output());
+	ret = ret || CheckPhaseCurrentViolation(lpf_Ia_.Output());
+	ret = ret || CheckPhaseCurrentViolation(lpf_Ib_.Output());
+	ret = ret || CheckPhaseCurrentViolation(lpf_Ic_.Output());
 	if (ret)
 		delay_trip_check_ = 0;
 	return ret;

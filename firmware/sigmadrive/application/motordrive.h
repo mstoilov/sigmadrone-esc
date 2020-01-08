@@ -15,6 +15,7 @@
 #include "property.h"
 #include "scheduler.h"
 #include "pidcontroller.h"
+#include "errorinfo.h"
 
 #include "hrtimer.h"
 extern HRTimer hrtimer;
@@ -154,6 +155,7 @@ public:
 	IEncoder *encoder_ = nullptr;
 	IPwmGenerator *pwm_ = nullptr;
 	SampledData data_;
+	ErrorInfo error_info_;
 
 /*
  * Derived Data
