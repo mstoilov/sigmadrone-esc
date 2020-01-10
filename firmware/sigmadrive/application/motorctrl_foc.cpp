@@ -222,18 +222,18 @@ void MotorCtrlFOC::RunDebugLoop()
 			if (Rarg < 0)
 				Rarg += M_PI * 2;
 			fprintf(stderr,
-					"Position: %+12.9f (%+6.2f), I_q: %+6.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
-					"Rerr: %+12.9f, PID_P: %+12.9f, PID_PP: %+12.9f, PID_PI: %+12.9f, T: %4lu\n",
+					"Position: %+12.9f ( %13lu ), I_q: %+6.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
+					"Rerr: %+12.9f, Werr: %+12.9f, PID_P: %+12.9f, PID_W: %+12.9f, T: %4lu\n",
 					Rarg,
-					Rarg / (M_PI * 2),
+					enc_position_,
 					lpf_Iq_disp_.Output(),
 					pid_Vq_.Output(),
 					pid_Vq_.OutputP(),
 					pid_Vq_.OutputI(),
 					Rerr_,
+					Werr_,
 					pid_P_.Output(),
-					pid_P_.OutputP(),
-					pid_P_.OutputI(),
+					pid_W_.Output(),
 					foc_time_
 			);
 		} else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
@@ -476,24 +476,34 @@ void MotorCtrlFOC::Position()
 		lpf_speed_disp_.Reset();
 		pid_Vq_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
 		pid_Vd_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
-		p_setpoint_ = std::arg(drive_->GetMechRotation());
+		p_setpoint_ = drive_->encoder_->GetPosition();
+
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
 			std::complex<float> E = drive_->GetElecRotation();
 			R_ = drive_->GetMechRotation();
-
-
-
 			float phase_speed = drive_->GetPhaseSpeedVector();
 
 			if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
-				Rerr_ = sdmath::cross(R_, std::complex<float>(cosf(p_setpoint_), sinf(p_setpoint_)));
-				pid_P_.Input(Rerr_, enc_update_period);
-				if (Rerr_ < 1.0 || Rerr_ > -1.0)
+				enc_position_ = drive_->encoder_->GetPosition();
+				float target_angle = drive_->encoder_->GetMechanicalPosition(p_setpoint_);
+
+				int32_t Eerr = enc_position_ - p_setpoint_;
+				if (std::abs(Eerr) < (1 << 14)) {
+					Rerr_ = sdmath::cross(R_, std::complex<float>(cosf(target_angle), sinf(target_angle)));
 					Werr_ = Rerr_ * w_setpoint_ - phase_speed;
-				else
-					Werr_ = w_setpoint_ - phase_speed;
+				} else {
+					if (Eerr < 0)
+						Werr_ = w_setpoint_ - phase_speed;
+					else
+						Werr_ = -w_setpoint_ - phase_speed;
+					Rerr_ = 0;
+				}
+
+
+				pid_P_.Input(Rerr_, enc_update_period);
 				pid_W_.Input(Werr_, enc_update_period);
+
 			}
 
 			/*
@@ -517,7 +527,7 @@ void MotorCtrlFOC::Position()
 			/*
 			 * Update D/Q PID Regulators.
 			 */
-			Ierr_ = pid_P_.Output() - lpf_Iq_.Output();
+			Ierr_ = pid_W_.Output() - lpf_Iq_.Output();
 			pid_Vd_.Input(0.0f - lpf_Id_.Output(), update_period);
 			pid_Vq_.Input(Ierr_, update_period);
 
@@ -528,7 +538,7 @@ void MotorCtrlFOC::Position()
 			 *
 			 * Vab = std::complex<float>(Va, Vb)
 			 */
-			std::complex<float> V_ab = std::complex<float>(pid_Vd_.Output(), pid_P_.Output()) * E;
+			std::complex<float> V_ab = std::complex<float>(pid_Vd_.Output(), pid_Vq_.Output() + pid_P_.Output()) * E;
 
 			/*
 			 * Apply advance

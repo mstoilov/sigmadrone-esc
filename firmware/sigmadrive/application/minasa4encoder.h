@@ -215,7 +215,9 @@ protected:
 
 public:
 	UART_HandleTypeDef* huart_;
-	uint32_t resolution_ = (1 << 17);
+	static const uint32_t resolution_bits_ = 16;
+	static const uint32_t resolution_ = (1 << resolution_bits_);
+	uint32_t shift_ = 17 - resolution_bits_;
 	uint32_t offset_ = 0;
 	uint32_t status_ = 0;
 	uint32_t counter_ = 0;

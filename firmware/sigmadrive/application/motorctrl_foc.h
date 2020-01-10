@@ -91,12 +91,14 @@ protected:
 	LowPassFilter<float, float> lpf_speed_disp_;
 	std::complex<float> R_;
 	uint32_t foc_time_ = 0;
+	uint32_t enc_position_ = 0;
+	uint32_t p_setpoint_ = 0;
+
 	float Werr_ = 0;
 	float Ierr_ = 0;
 	float Rerr_ = 0;
 	float iq_setpoint_ = 0.08;
 	float w_setpoint_ = 0.0013;
-	float p_setpoint_ = 0.0;
 
 
 };
