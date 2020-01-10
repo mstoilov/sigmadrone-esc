@@ -222,13 +222,11 @@ void MotorCtrlFOC::RunDebugLoop()
 			if (Rarg < 0)
 				Rarg += M_PI * 2;
 			fprintf(stderr,
-					"Position: %+12.9f (%+6.2f), I_d: %+6.3f, I_q: %+6.3f, PVd: %+7.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
+					"Position: %+12.9f (%+6.2f), I_q: %+6.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
 					"Rerr: %+12.9f, PID_P: %+12.9f, PID_PP: %+12.9f, PID_PI: %+12.9f, T: %4lu\n",
 					Rarg,
 					Rarg / (M_PI * 2),
-					lpf_Id_disp_.Output(),
 					lpf_Iq_disp_.Output(),
-					pid_Vd_.Output(),
 					pid_Vq_.Output(),
 					pid_Vq_.OutputP(),
 					pid_Vq_.OutputI(),
@@ -483,6 +481,8 @@ void MotorCtrlFOC::Position()
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
 			std::complex<float> E = drive_->GetElecRotation();
 			R_ = drive_->GetMechRotation();
+
+
 
 			float phase_speed = drive_->GetPhaseSpeedVector();
 
