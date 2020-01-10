@@ -294,8 +294,8 @@ int application_main()
 	uint32_t old_counter = 0, new_counter = 0;
 
 	for (size_t i = 0; ; i++) {
-		vTaskDelay(50 / portTICK_RATE_MS);
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_RESET);
+		vTaskDelay(150 / portTICK_RATE_MS);
+		HAL_GPIO_WritePin(LED_WARN_GPIO_Port, LED_WARN_Pin, GPIO_PIN_RESET);
 
 		if (debug_encoder) {
 			if (use_encoder == "quadrature") {
@@ -305,8 +305,6 @@ int application_main()
 					old_counter = new_counter;
 				}
 			} else {
-//				if (ma4_abs_encoder.UpdateBegin())
-//					ma4_abs_encoder.UpdateEnd();
 				new_counter = ma4_abs_encoder.GetCounter();
 				MA4Almc almc;
 				almc.as_byte_ = ma4_abs_encoder.GetLastError();
@@ -331,8 +329,8 @@ int application_main()
 				}
 			}
 		}
-		vTaskDelay(50 / portTICK_RATE_MS);
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+		vTaskDelay(150 / portTICK_RATE_MS);
+		HAL_GPIO_WritePin(LED_WARN_GPIO_Port, LED_WARN_Pin, GPIO_PIN_SET);
 	}
 
 	return 0;

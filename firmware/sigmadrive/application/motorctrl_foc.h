@@ -24,6 +24,12 @@ public:
 		float pid_w_decay_ = 0.01;
 		float pid_w_maxout_ = 5;
 
+		float pid_p_kp_ = 0.1;
+		float pid_p_ki_ = 0.0;
+		float pid_p_decay_ = 0.01;
+		float pid_p_maxout_ = 1;
+
+
 		float control_bandwidth_ = 700; // Rad/Sec
 		float vab_advance_factor_ = 12000;
 		float vq_bias_ = 0;
@@ -42,6 +48,7 @@ public:
 	void Stop();
 	void Torque();
 	void Velocity();
+	void Position();
 	void Spin();
 	void RunCalibrationSequence();
 	float VelocitySetPoint(float revpersec);
@@ -52,6 +59,7 @@ protected:
 	void StartDebugThread();
 	void SignalDumpTorque();
 	void SignalDumpVelocity();
+	void SignalDumpPosition();
 	void SignalDumpSpin();
 	static void RunDebugLoopWrapper(void *ctx);
 
@@ -63,6 +71,7 @@ protected:
 		SIGNAL_DEBUG_DUMP_SPIN = 1u << 1,
 		SIGNAL_DEBUG_DUMP_TORQUE = 1u << 2,
 		SIGNAL_DEBUG_DUMP_VELOCITY = 1u << 3,
+		SIGNAL_DEBUG_DUMP_POSITION = 1u << 4,
     };
 
 
@@ -78,12 +87,17 @@ protected:
 	PidController<float> pid_Vd_;
 	PidController<float> pid_Vq_;
 	PidController<float> pid_W_;
+	PidController<float> pid_P_;
 	LowPassFilter<float, float> lpf_speed_disp_;
+	std::complex<float> R_;
 	uint32_t foc_time_ = 0;
 	float Werr_ = 0;
 	float Ierr_ = 0;
+	float Rerr_ = 0;
 	float iq_setpoint_ = 0.08;
 	float w_setpoint_ = 0.0013;
+	float p_setpoint_ = 0.0;
+
 
 };
 

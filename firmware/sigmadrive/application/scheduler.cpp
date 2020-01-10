@@ -5,10 +5,12 @@
  *      Author: mstoilov
  */
 
-#include "stm32f7xx.h"
-
-//#include "main.h"
 #include <string.h>
+
+#include "stm32f7xx.h"
+#include "stm32f7xx_hal_gpio.h"
+#include "main.h"
+
 #include "scheduler.h"
 
 Scheduler::Scheduler()
@@ -127,6 +129,11 @@ void Scheduler::RunSchedulerLoop()
 				osThreadFlagsClear(THREAD_FLAG_ABORT);
 
 				/*
+				 * Turn on Status LED
+				 */
+				HAL_GPIO_WritePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin, GPIO_PIN_RESET);
+
+				/*
 				 * Run the task
 				 */
 				task();
@@ -141,6 +148,7 @@ void Scheduler::RunSchedulerLoop()
 			}
 			dispatching_ = false;
 		} else {
+			HAL_GPIO_WritePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin, GPIO_PIN_SET);
 			EventThreadIdle();
 			idle_task_();
 		}

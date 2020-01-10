@@ -280,17 +280,24 @@ void MotorDrive::UpdateRotor()
 {
 	uint32_t rotor_position = encoder_->GetPosition();
 	if (rotor_position != (uint32_t)-1) {
-		float theta = GetEncoderDir() * (encoder_->GetElectricPosition(rotor_position, GetPolePairs()));
-		std::complex<float> r_prev = R_;
-		R_ = std::complex<float>(cosf(theta), sinf(theta));
-		std::complex<float> r_cur = R_;
+		float theta_e = GetEncoderDir() * encoder_->GetElectricPosition(rotor_position, GetPolePairs());
+		float theta_m = GetEncoderDir() * encoder_->GetMechanicalPosition(rotor_position);
+		std::complex<float> r_prev = E_;
+		E_ = std::complex<float>(cosf(theta_e), sinf(theta_e));
+		R_ = std::complex<float>(cosf(theta_m), sinf(theta_m));
+		std::complex<float> r_cur = E_;
 		W_ = sdmath::cross(r_prev, r_cur);
 	}
 }
 
-std::complex<float> MotorDrive::GetElecRotation()
+std::complex<float> MotorDrive::GetMechRotation()
 {
 	return R_;
+}
+
+std::complex<float> MotorDrive::GetElecRotation()
+{
+	return E_;
 }
 
 float MotorDrive::GetPhaseSpeedVector()

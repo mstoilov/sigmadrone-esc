@@ -91,6 +91,7 @@ public:
 	uint32_t GetPolePairs() const;
 	float GetBusVoltage() const;
 	std::complex<float> GetElecRotation();
+	std::complex<float> GetMechRotation();
 	float GetPhaseSpeedVector();
 	float GetEncoderPeriod();
 
@@ -168,6 +169,7 @@ public:
 	LowPassFilter<float, float> lpf_Ib_;
 	LowPassFilter<float, float> lpf_Ic_;
 	std::complex<float> Iab_;
+	std::complex<float> E_;
 	std::complex<float> R_;
 	float W_;
 
