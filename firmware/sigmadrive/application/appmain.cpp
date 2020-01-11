@@ -60,7 +60,7 @@ MotorCtrlFOC foc(&servo);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
 bool debug_encoder = false;
-std::string use_encoder = "minas6";
+std::string use_encoder = "minas";
 
 void SetEncoder()
 {

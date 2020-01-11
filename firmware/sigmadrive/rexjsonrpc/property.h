@@ -135,7 +135,7 @@ public:
 	set_prop_impl(U* prop, const rexjson::value& val)
 	{
 		if (val.get_type() == rexjson::int_type) {
-			*prop = val.get_int();
+			*prop = val.get_int64();
 		}
 	}
 
@@ -370,7 +370,10 @@ public:
 
 	virtual property& operator[](const std::string& name)
 	{
-		return map_.operator [](name);
+		std::map<std::string, property>::iterator it = map_.find(name);
+		if (it == map_.end())
+			throw std::runtime_error("Invalid property: " + name);
+		return it->second;
 	}
 
 	virtual property& push_back(const property& v) override
