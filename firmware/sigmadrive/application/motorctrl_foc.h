@@ -22,9 +22,9 @@ public:
 		float pid_w_kp_ = 12;
 		float pid_w_ki_ = 4000;
 		float pid_w_decay_ = 0.01;
-		float pid_w_maxout_ = 5;
+		float pid_w_maxout_ = 1.1;
 
-		float pid_p_kp_ = 0.1;
+		float pid_p_kp_ = 2;
 		float pid_p_ki_ = 0.0;
 		float pid_p_decay_ = 0.01;
 		float pid_p_maxout_ = 1;

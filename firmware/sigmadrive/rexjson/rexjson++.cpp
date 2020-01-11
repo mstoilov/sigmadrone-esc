@@ -669,7 +669,7 @@ void input::parse_primitive(value& v)
 		v = (token_.length() > 2) ? token_.substr(1, token_.length() - 2) : std::string();
 		break;
 	case TOKEN_INT:
-		v = (int64_t)strtol(token_.c_str(), NULL, 10);
+		v = (int64_t)strtoll(token_.c_str(), NULL, 10);
 		break;
 	case TOKEN_NUMBER:
 		v = strtod(token_.c_str(), NULL);

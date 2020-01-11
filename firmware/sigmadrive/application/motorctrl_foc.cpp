@@ -162,13 +162,13 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 		{"spin_voltage", &config_.spin_voltage_},
 	});
 
-	rpc_server.add("foc.VelocitySetPoint", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocitySetPoint, "void MotorCtrlFOC::VelocitySetPoint(float revpersec)"));
-	rpc_server.add("foc.Position", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Position, "void MotorCtrlFOC::Position()"));
-	rpc_server.add("foc.Velocity", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Velocity, "void MotorCtrlFOC::Velocity()"));
-	rpc_server.add("foc.Torque", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Torque, "void MotorCtrlFOC::Torque()"));
-	rpc_server.add("foc.Spin", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Spin, "void MotorCtrlFOC::Spin()"));
-	rpc_server.add("foc.Stop", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Stop, "void MotorCtrlFOC::Stop()"));
-	rpc_server.add("foc.Calibration", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::RunCalibrationSequence, "void MotorCtrlFOC::RunCalibrationSequence()"));
+	rpc_server.add("foc.velocity_setpoint", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocitySetPoint, "void MotorCtrlFOC::VelocitySetPoint(float revpersec)"));
+	rpc_server.add("foc.position", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Position, "void MotorCtrlFOC::Position()"));
+	rpc_server.add("foc.velocity", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Velocity, "void MotorCtrlFOC::Velocity()"));
+	rpc_server.add("foc.torque", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Torque, "void MotorCtrlFOC::Torque()"));
+	rpc_server.add("foc.spin", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Spin, "void MotorCtrlFOC::Spin()"));
+	rpc_server.add("foc.stop", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Stop, "void MotorCtrlFOC::Stop()"));
+	rpc_server.add("foc.calibration", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::RunCalibrationSequence, "void MotorCtrlFOC::RunCalibrationSequence()"));
 
 	StartDebugThread();
 }
