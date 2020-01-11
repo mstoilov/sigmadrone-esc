@@ -46,9 +46,9 @@ bool MinasA4Encoder::Detect()
 {
 	ResetErrorCodeE();
 	if (GetDeviceID() == 0xa7) {
-		shift_ = 23 - resolution_bits_;
+		rotation_bits_ = 23;
 	} else if (GetDeviceID() == 0x11) {
-		shift_ = 17 - resolution_bits_;
+		rotation_bits_ = 17;
 	} else {
 		return false;
 	}
@@ -93,7 +93,7 @@ bool MinasA4Encoder::ParseReply4(const MA4EncoderReply4& reply4, uint32_t& statu
 			((uint32_t)reply4.absolute_data_[1] << 8) +
 			reply4.absolute_data_[0];
 	status = (reply4.status_field_.ea1 << 1) | (reply4.status_field_.ea0);
-	counter = abs_data >> shift_;
+	counter = abs_data;
 	almc = reply4.almc_;
 	return true;
 }
@@ -123,7 +123,7 @@ bool MinasA4Encoder::ParseReply5(const MA4EncoderReply5& reply5, uint32_t& statu
 			((uint32_t)reply5.absolute_data_[1] << 8) +
 			reply5.absolute_data_[0];
 	status = (reply5.status_field_.ea1 << 1) | (reply5.status_field_.ea0);
-	counter = abs_data >> shift_;
+	counter = abs_data;
 	revolutions = *reinterpret_cast<const uint16_t*>(reply5.revolution_data_);
 	return true;
 }
@@ -333,13 +333,14 @@ uint32_t MinasA4Encoder::GetCounter()
 }
 
 
-uint32_t MinasA4Encoder::GetPosition()
+uint64_t MinasA4Encoder::GetPosition()
 {
-	uint32_t counter = GetCounter();
-	if (counter == (uint32_t)-1)
+	uint32_t resolution  = 1 << rotation_bits_;
+	uint64_t counter = GetCounter();
+	if (counter == (uint64_t)-1)
 		return -1;
-	uint32_t rot = (counter + resolution_ - offset_) % resolution_;
-	return (revolutions_ << resolution_bits_) | rot;
+	uint64_t rot = (counter + resolution - offset_) % resolution;
+	return ((uint64_t)revolutions_ << rotation_bits_) | rot;
 }
 
 uint32_t MinasA4Encoder::GetRevolutions()
@@ -353,13 +354,15 @@ uint32_t MinasA4Encoder::GetIndexPosition()
 	return 0;
 }
 
-float MinasA4Encoder::GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs)
+float MinasA4Encoder::GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs)
 {
-	uint32_t resolution_per_pair = (resolution_ / motor_pole_pairs);
+	uint32_t resolution  = 1 << rotation_bits_;
+	uint32_t resolution_per_pair = (resolution / motor_pole_pairs);
 	return 2.0f * M_PI * (position % resolution_per_pair) / resolution_per_pair;
 }
 
-float MinasA4Encoder::GetMechanicalPosition(uint32_t position)
+float MinasA4Encoder::GetMechanicalPosition(uint64_t position)
 {
-	return 2.0f * M_PI * (position % (resolution_)) / (resolution_);
+	uint32_t resolution  = 1 << rotation_bits_;
+	return 2.0f * M_PI * (position % (resolution)) / (resolution);
 }

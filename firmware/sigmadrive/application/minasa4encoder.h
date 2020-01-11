@@ -191,13 +191,13 @@ public:
 	virtual void Start() override {}
 	virtual void Stop() override {}
 	virtual uint32_t GetCounter() override;
-	virtual uint32_t GetMaxPosition() override { return resolution_; }
+	virtual uint32_t GetMaxRotation() override { return (1 << rotation_bits_); }
 	virtual void ResetPosition() override;
-	virtual uint32_t GetPosition() override;
+	virtual uint64_t GetPosition() override;
 	virtual uint32_t GetRevolutions() override;
 	virtual uint32_t GetIndexPosition() override;
-	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) override;
-	virtual float GetMechanicalPosition(uint32_t position) override;
+	virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) override;
+	virtual float GetMechanicalPosition(uint64_t position) override;
 	virtual uint32_t GetLastError() override;
 	virtual bool Update() override;
 
@@ -215,9 +215,7 @@ protected:
 
 public:
 	UART_HandleTypeDef* huart_;
-	static const uint32_t resolution_bits_ = 16;
-	static const uint32_t resolution_ = (1 << resolution_bits_);
-	uint32_t shift_ = 17 - resolution_bits_;
+	uint32_t rotation_bits_ = 17;
 	uint32_t offset_ = 0;
 	uint32_t status_ = 0;
 	uint32_t counter_ = 0;

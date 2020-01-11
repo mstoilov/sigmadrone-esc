@@ -515,7 +515,7 @@ void MotorDrive::RunTaskAphaPoleSearch()
 		AddTaskRotateMotor((M_PI * 2)/config_.pole_pairs, M_PI, 0.45, true);
 		AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
 		sched_.AddTask([&](void){
-			fprintf(stderr, "Enc: %7lu\n", encoder_->GetPosition());
+			fprintf(stderr, "Enc: %7llu\n", encoder_->GetPosition());
 			encoder_->ResetPosition();
 		});
 	}

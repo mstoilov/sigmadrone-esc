@@ -10,13 +10,13 @@ public:
 	virtual void Start() = 0;
 	virtual void Stop() = 0;
 	virtual uint32_t GetCounter() = 0;
-	virtual uint32_t GetMaxPosition() = 0;
-	virtual uint32_t GetPosition() = 0;
+	virtual uint32_t GetMaxRotation() = 0;
+	virtual uint64_t GetPosition() = 0;
 	virtual uint32_t GetRevolutions() = 0;
 	virtual uint32_t GetIndexPosition() = 0;
 	virtual void ResetPosition() = 0;
-	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) = 0;
-	virtual float GetMechanicalPosition(uint32_t position) = 0;
+	virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) = 0;
+	virtual float GetMechanicalPosition(uint64_t position) = 0;
 	virtual uint32_t GetLastError() = 0;
 	virtual bool Update() = 0;
 };

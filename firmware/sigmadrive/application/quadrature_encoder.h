@@ -31,13 +31,13 @@ public:
 	virtual void Start() override;
 	virtual void Stop() override;
 	virtual uint32_t GetCounter() override;
-	virtual uint32_t GetMaxPosition() override;
+	virtual uint32_t GetMaxRotation() override;
 	virtual void ResetPosition() override;
-	virtual uint32_t GetPosition() override;
+	virtual uint64_t GetPosition() override;
 	virtual uint32_t GetRevolutions() override;
 	virtual uint32_t GetIndexPosition() override;
-	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) override;
-	virtual float GetMechanicalPosition(uint32_t position) override;
+	virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) override;
+	virtual float GetMechanicalPosition(uint64_t position) override;
 	virtual uint32_t GetLastError() override { return 0; }
 	virtual bool Update() override { return true; }
 

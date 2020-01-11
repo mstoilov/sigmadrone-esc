@@ -309,7 +309,7 @@ int application_main()
 				MA4Almc almc;
 				almc.as_byte_ = ma4_abs_encoder.GetLastError();
 				if (new_counter != old_counter || ma4_abs_encoder.status_) {
-					fprintf(stderr, "Minas Enc(0x%x): %7.2f, Cnt: %7lu, Pos: %7lu, Rev: %7lu, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (UpdT: %5lu, t1_to_t1: %5lu)\n",
+					fprintf(stderr, "Minas Enc(0x%x): %7.2f, Cnt: %7lu, Pos: %7llu, Rev: %7lu, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (UpdT: %5lu, t1_to_t1: %5lu)\n",
 							(int)ma4_abs_encoder.GetDeviceID(),
 							ma4_abs_encoder.GetMechanicalPosition(new_counter) / M_PI * 180.0f,
 							new_counter,
