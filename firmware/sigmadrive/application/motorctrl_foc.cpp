@@ -222,7 +222,7 @@ void MotorCtrlFOC::RunDebugLoop()
 			if (Rarg < 0)
 				Rarg += M_PI * 2;
 			fprintf(stderr,
-					"Position: %+12.9f ( %13lu ), I_q: %+6.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
+					"Position: %+12.9f ( %13llu ), I_q: %+6.3f, PVq: %+7.3f, PVqP: %+7.3f, PVqI: %+7.3f, "
 					"Rerr: %+12.9f, Werr: %+12.9f, PID_P: %+12.9f, PID_W: %+12.9f, T: %4lu\n",
 					Rarg,
 					enc_position_,
@@ -488,8 +488,8 @@ void MotorCtrlFOC::Position()
 				enc_position_ = drive_->encoder_->GetPosition();
 				float target_angle = drive_->encoder_->GetMechanicalPosition(p_setpoint_);
 
-				int32_t Eerr = enc_position_ - p_setpoint_;
-				if (std::abs(Eerr) < (1 << 14)) {
+				int64_t Eerr = enc_position_ - p_setpoint_;
+				if (std::abs(Eerr) < (drive_->encoder_->GetMaxRotation() >> 2)) {
 					Rerr_ = sdmath::cross(R_, std::complex<float>(cosf(target_angle), sinf(target_angle)));
 					Werr_ = Rerr_ * w_setpoint_ - phase_speed;
 				} else {
