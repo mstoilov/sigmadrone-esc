@@ -47,6 +47,7 @@ Adc adc1;
 Adc adc2;
 Adc adc3;
 Uart uart1;
+Uart uart2;
 SPIMaster spi3;
 PwmGenerator tim1;
 CdcIface usb_cdc;
@@ -61,36 +62,7 @@ HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
 bool debug_encoder = false;
 std::string use_encoder = "minas";
-
-void SetEncoder()
-{
-	if (use_encoder == "minas") {
-		servo.SetEncoder(&ma4_abs_encoder);
-		tim1.EnableCounter(false);
-		ma4_abs_encoder.Detect();
-		tim1.EnableCounter(true);
-		servo.config_.calib_max_i_ = 2;
-		servo.config_.calib_v_ = 12;
-		servo.config_.reset_voltage_ = 3.4;
-		servo.config_.pole_pairs = 4;
-	} else if (use_encoder == "minas6") {
-		servo.SetEncoder(&ma4_abs_encoder);
-		tim1.EnableCounter(false);
-		ma4_abs_encoder.Detect();
-		tim1.EnableCounter(true);
-		servo.config_.calib_max_i_ = 4;
-		servo.config_.calib_v_ = 12;
-		servo.config_.reset_voltage_ = 3.4;
-		servo.config_.pole_pairs = 5;
-	} else if (use_encoder == "quadrature") {
-		servo.SetEncoder(&tim4);
-		servo.config_.calib_max_i_ = 10;
-		servo.config_.calib_v_ = 0.5;
-		servo.config_.reset_voltage_ = 0.4;
-		servo.config_.pole_pairs = 7;
-	}
-}
-
+void SetEncoder();
 
 rexjson::property props =
 		rexjson::property_map {
@@ -108,6 +80,31 @@ rexjson::property props =
 		};
 rexjson::property* g_properties = &props;
 
+
+extern "C"
+void RunRpcTask(void *argument)
+{
+	char rxbuffer[512];
+	char txbuffer[512];
+	int ret;
+	std::string str;
+	int i = 0;
+
+	for (;;) {
+		memset(rxbuffer, 0, sizeof(rxbuffer));
+		ret = uart2.Receive(rxbuffer, sizeof(rxbuffer)-1);
+		if (ret > 0) {
+			std::string str(rxbuffer);
+			fprintf(stderr, "Received: %s\n", rxbuffer);
+		}
+
+		memset(txbuffer, 0, sizeof(txbuffer));
+		sprintf(txbuffer, "Transmit... %d, Received: %s\r\n", i++, rxbuffer);
+		uart2.Transmit(txbuffer, strlen(txbuffer));
+
+		osDelay(500);
+	}
+}
 
 extern "C"
 void SD_TIM1_IRQHandler(TIM_HandleTypeDef* htim)
@@ -171,6 +168,36 @@ void SD_DMA1_Stream1_IRQHandler(void)
 
 }
 
+void SetEncoder()
+{
+	if (use_encoder == "minas") {
+		servo.SetEncoder(&ma4_abs_encoder);
+		tim1.EnableCounter(false);
+		ma4_abs_encoder.Detect();
+		tim1.EnableCounter(true);
+		servo.config_.calib_max_i_ = 2;
+		servo.config_.calib_v_ = 12;
+		servo.config_.reset_voltage_ = 3.4;
+		servo.config_.pole_pairs = 4;
+	} else if (use_encoder == "minas6") {
+		servo.SetEncoder(&ma4_abs_encoder);
+		tim1.EnableCounter(false);
+		ma4_abs_encoder.Detect();
+		tim1.EnableCounter(true);
+		servo.config_.calib_max_i_ = 4;
+		servo.config_.calib_v_ = 12;
+		servo.config_.reset_voltage_ = 3.4;
+		servo.config_.pole_pairs = 5;
+	} else if (use_encoder == "quadrature") {
+		servo.SetEncoder(&tim4);
+		servo.config_.calib_max_i_ = 10;
+		servo.config_.calib_v_ = 0.5;
+		servo.config_.reset_voltage_ = 0.4;
+		servo.config_.pole_pairs = 7;
+	}
+}
+
+
 void SaveConfig()
 {
 	std::string ret;
@@ -225,6 +252,7 @@ int application_main()
 	adc2.Attach(&hadc2);
 	adc3.Attach(&hadc3);
 	uart1.Attach(&huart1);
+	uart2.Attach(&huart2);
 	spi3.Attach(&hspi3);
 	tim4.Attach(&htim4);
 	tim1.Attach(&htim1);
@@ -265,6 +293,7 @@ int application_main()
 #if 1
 	g_properties->enumerate_children("", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
 #endif
+	osDelay(250);
 
 	SetEncoder();
 	tim4.Start();
@@ -276,6 +305,14 @@ int application_main()
 	task_attributes.priority = (osPriority_t) osPriorityNormal;
 	task_attributes.stack_size = 12000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
+
+	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+	task_attributes.name = "RpcTask";
+	task_attributes.priority = (osPriority_t) osPriorityNormal;
+	task_attributes.stack_size = 12000;
+//	commandTaskHandle = osThreadNew(RunRpcTask, NULL, &task_attributes);
+
+
 
 	rpc_server.add("LoadConfig", rexjson::make_rpc_wrapper(LoadConfig, "void LoadConfig()"));
 	rpc_server.add("SaveConfig", rexjson::make_rpc_wrapper(SaveConfig, "void SaveConfig()"));

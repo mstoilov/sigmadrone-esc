@@ -98,7 +98,7 @@ protected:
 	float Ierr_ = 0;
 	float Rerr_ = 0;
 	float iq_setpoint_ = 0.08;
-	float w_setpoint_ = 0.0013;
+	float w_setpoint_ = 0.007;
 
 
 };

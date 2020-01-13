@@ -14,7 +14,10 @@
  * uart1 is defined in appmain.cpp file.
  */
 extern Uart uart1;
+extern Uart uart2;
 extern CdcIface usb_cdc;
+
+Uart *sio = &uart1;
 
 #ifdef __cplusplus
 extern "C"
@@ -31,16 +34,17 @@ int _write(int fd,
 		int* last_char = &_impure_ptr->_unspecified_locale_info;
 		for (ret = 0; ret < nbyte; ret++) {
 			if (buf[ret] != '\n' || *last_char == cr) {
-				uart1.Transmit(&buf[ret], 1);
+				sio->Transmit(&buf[ret], 1);
 			} else {
-				uart1.Transmit(&cr, 1);
-				uart1.Transmit(&buf[ret], 1);
+				sio->Transmit(&cr, 1);
+				sio->Transmit(&buf[ret], 1);
 				*last_char = buf[ret];
 			}
 		}
 		return ret;
 	} else if (fd == 2) {
 		return usb_cdc.TransmitNoWait(buf, nbyte);
+//		return uart2.Transmit(buf, nbyte);
 	}
 
 	errno = ENOSYS;
@@ -58,7 +62,7 @@ int _read(int fd __attribute__((unused)), char* buf __attribute__((unused)),
 
 	// STDIN are routed to the trace device
 	if (fd == 0) {
-		while ((ret = uart1.Receive(buf, nbyte)) <= 0)
+		while ((ret = sio->Receive(buf, nbyte)) <= 0)
 			osDelay(50);
 		return ret;
 	}

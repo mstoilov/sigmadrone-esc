@@ -55,12 +55,11 @@ void RunCommandTask(void *argument)
 
 	cl_mem_init(cl_heap, sizeof(cl_heap), 100);
 	cl_history_init();
-	char szBuffer[512];
+	char szBuffer[2048];
 	int elret;
 	/*
 	 * wait for input from the terminal.
 	 */
-//	getchar();
 	while (1) {
 		if ((elret = cl_editline("sigmadrive # ", szBuffer, sizeof(szBuffer), 15)) > 0) {
 			printf("\r\n");
