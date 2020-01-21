@@ -60,6 +60,7 @@ MotorDrive servo(&ma4_abs_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_C
 MotorCtrlFOC foc(&servo);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
+bool rs485_tx = true;
 bool debug_encoder = false;
 std::string use_encoder = "minas";
 void SetEncoder();
@@ -77,6 +78,7 @@ rexjson::property props =
 						SetEncoder();
 					})},
 			{"debug_encoder", &debug_encoder},
+			{"rs485_tx", &rs485_tx},
 		};
 rexjson::property* g_properties = &props;
 
@@ -86,29 +88,40 @@ bool disable_rs485_rpc = false;
 extern "C"
 void RunRpcTask(void *argument)
 {
-	char rxbuffer[512];
-	int ret;
-
 	for (;;) {
-		memset(rxbuffer, 0, sizeof(rxbuffer));
-		if (disable_rs485_rpc) {
-			ret = 0;
-		} else {
-			ret = uart2.Receive(rxbuffer, sizeof(rxbuffer) - 1);
-		}
-		if (ret > 0) {
+		if (!disable_rs485_rpc) {
 			try {
-				std::string req(rxbuffer);
+				std::string req = uart2.GetLine();
 				rexjson::value res = rpc_server.call(req);
 				std::string response = res.write(false, false, 0, 9);
-				uart2.Transmit(response + "\n");
+				response += "\n";
+				uart2.Transmit(response);
+				usb_cdc.Transmit(req);
+				usb_cdc.Transmit(response);
 			} catch (std::exception& e) {
 
 			}
 		}
-		osDelay(50);
 	}
 }
+
+
+extern "C"
+void RunRS485Task(void *argument)
+{
+	std::string test = "This is a test string, do you read it correctly? ";
+
+	for (size_t i = 0;true; i++) {
+		if (rs485_tx) {
+			std::string recv = uart2.GetLine();
+			usb_cdc.Transmit(recv);
+		} else {
+			uart2.Transmit(test + std::to_string(i) + "\n");
+		}
+		osDelay(1);
+	}
+}
+
 
 extern "C"
 void RunCdcRpcTask(void *argument)
@@ -352,11 +365,11 @@ int application_main()
 	task_attributes.stack_size = 12000;
 	commandTaskHandle = osThreadNew(RunRpcTask, NULL, &task_attributes);
 
-	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
-	task_attributes.name = "UsbRpcTask";
-	task_attributes.priority = (osPriority_t) osPriorityNormal;
-	task_attributes.stack_size = 12000;
-	commandTaskHandle = osThreadNew(RunCdcRpcTask, NULL, &task_attributes);
+//	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+//	task_attributes.name = "UsbRpcTask";
+//	task_attributes.priority = (osPriority_t) osPriorityNormal;
+//	task_attributes.stack_size = 12000;
+//	commandTaskHandle = osThreadNew(RunCdcRpcTask, NULL, &task_attributes);
 
 
 	rpc_server.add("LoadConfig", rexjson::make_rpc_wrapper(LoadConfig, "void LoadConfig()"));

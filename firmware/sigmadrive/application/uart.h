@@ -14,13 +14,14 @@
 #include "stm32f745xx.h"
 #include "stm32f7xx.h"
 #include "stm32f7xx_hal_uart.h"
+#include "stm32f7xx_hal.h"
 
 #include "ring.h"
 
 class Uart {
 public:
 	using handle_map_type = std::map<UART_HandleTypeDef*, Uart*>;
-	Uart();
+	Uart(size_t poll_delay = 5);
 	virtual ~Uart();
 	void Attach(UART_HandleTypeDef* huart);
 	void Detach();
@@ -30,6 +31,7 @@ public:
 
 	void TransmitCompleteCallback();
 	size_t Receive(char* buffer, size_t nsize);
+	std::string GetLine();
 	void ReceiveCompleteCallback();
 	void ErrorCallback();
 
@@ -45,6 +47,7 @@ protected:
 	volatile bool transmitting_ = false;
 	Ring<char, 1024> tx_ringbuf_;
 	Ring<char, 2048> rx_ringbuf_;
+	size_t poll_delay_;
 };
 
 #endif /* APPLICATION_UART_H_ */

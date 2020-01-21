@@ -36,7 +36,8 @@ extern "C" void error_callback(UART_HandleTypeDef* huart)
 }
 
 
-Uart::Uart()
+Uart::Uart(size_t poll_delay)
+	: poll_delay_(poll_delay)
 {
 }
 
@@ -174,6 +175,25 @@ size_t Uart::Receive(char* buffer, size_t nsize)
 	return ret;
 }
 
+std::string Uart::GetLine()
+{
+	char rxbuffer[64];
+	size_t ret = 0;
+	std::string recv;
+
+again:
+	while ((ret = Receive(rxbuffer, sizeof(rxbuffer) - 1)) == 0) {
+		/*
+		 * Poll
+		 */
+		HAL_Delay(poll_delay_);
+	}
+	recv += std::string(rxbuffer, ret);
+	if (rxbuffer[ret - 1] != '\n')
+		goto again;
+	return recv;
+}
+
 void Uart::ReceiveCompleteCallback()
 {
 }
@@ -191,7 +211,6 @@ void Uart::ErrorCallback()
 		rx_ringbuf_.reset_rp(0);
 		HAL_UART_Receive_DMA(huart_, (uint8_t*)rx_ringbuf_.get_write_ptr(), rx_ringbuf_.capacity());
 	}
-
 
 }
 
