@@ -81,28 +81,68 @@ rexjson::property props =
 rexjson::property* g_properties = &props;
 
 
+bool disable_rs485_rpc = false;
+
 extern "C"
 void RunRpcTask(void *argument)
 {
 	char rxbuffer[512];
-	char txbuffer[512];
 	int ret;
-	std::string str;
-	int i = 0;
 
 	for (;;) {
 		memset(rxbuffer, 0, sizeof(rxbuffer));
-		ret = uart2.Receive(rxbuffer, sizeof(rxbuffer)-1);
+		if (disable_rs485_rpc) {
+			ret = 0;
+		} else {
+			ret = uart2.Receive(rxbuffer, sizeof(rxbuffer) - 1);
+		}
 		if (ret > 0) {
-			std::string str(rxbuffer);
-			fprintf(stderr, "Received: %s\n", rxbuffer);
+			try {
+				std::string req(rxbuffer);
+				rexjson::value res = rpc_server.call(req);
+				std::string response = res.write(false, false, 0, 9);
+				uart2.Transmit(response + "\n");
+			} catch (std::exception& e) {
+
+			}
+		}
+		osDelay(50);
+	}
+}
+
+extern "C"
+void RunCdcRpcTask(void *argument)
+{
+	char rxbuffer[512];
+	int ret;
+
+	for (;;) {
+		memset(rxbuffer, 0, sizeof(rxbuffer));
+		ret = usb_cdc.ReceiveLine(rxbuffer, sizeof(rxbuffer)-1);
+		if (ret > 0) {
+			try {
+				std::string req(rxbuffer);
+				rexjson::value v;
+				v.read(req);
+				if (v.get_obj()["id"].get_str() == "relay") {
+					disable_rs485_rpc = true;
+					uart2.Transmit(req);
+					osDelay(200);
+					memset(rxbuffer, 0, sizeof(rxbuffer));
+					int n = uart2.Receive(rxbuffer, sizeof(rxbuffer) - 1);
+					usb_cdc.Transmit(rxbuffer, n);
+
+				} else {
+					rexjson::value res = rpc_server.call(req);
+					std::string response = res.write(false, false, 0, 9);
+					usb_cdc.Transmit(response + "\n");
+				}
+			} catch (std::exception& e) {
+
+			}
 		}
 
-		memset(txbuffer, 0, sizeof(txbuffer));
-		sprintf(txbuffer, "Transmit... %d, Received: %s\r\n", i++, rxbuffer);
-		uart2.Transmit(txbuffer, strlen(txbuffer));
-
-		osDelay(500);
+		osDelay(50);
 	}
 }
 
@@ -310,8 +350,13 @@ int application_main()
 	task_attributes.name = "RpcTask";
 	task_attributes.priority = (osPriority_t) osPriorityNormal;
 	task_attributes.stack_size = 12000;
-//	commandTaskHandle = osThreadNew(RunRpcTask, NULL, &task_attributes);
+	commandTaskHandle = osThreadNew(RunRpcTask, NULL, &task_attributes);
 
+	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+	task_attributes.name = "UsbRpcTask";
+	task_attributes.priority = (osPriority_t) osPriorityNormal;
+	task_attributes.stack_size = 12000;
+	commandTaskHandle = osThreadNew(RunCdcRpcTask, NULL, &task_attributes);
 
 
 	rpc_server.add("LoadConfig", rexjson::make_rpc_wrapper(LoadConfig, "void LoadConfig()"));

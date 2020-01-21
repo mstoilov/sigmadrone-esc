@@ -24,15 +24,18 @@ public:
 	virtual ~Uart();
 	void Attach(UART_HandleTypeDef* huart);
 	void Detach();
-	ssize_t Transmit(const char* buffer, size_t nsize);
+	size_t TransmitOnce(const char* buffer, size_t nsize);
+	size_t Transmit(const char* buffer, size_t nsize);
+	size_t Transmit(const std::string& str);
+
 	void TransmitCompleteCallback();
-	ssize_t Receive(char* buffer, size_t nsize);
+	size_t Receive(char* buffer, size_t nsize);
 	void ReceiveCompleteCallback();
 
 	static handle_map_type handle_map_;
 
 protected:
-	ssize_t ReceiveOnce(char* buffer, size_t nsize);
+	size_t ReceiveOnce(char* buffer, size_t nsize);
 
 public:
 	UART_HandleTypeDef* huart_ = nullptr;

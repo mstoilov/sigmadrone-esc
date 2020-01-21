@@ -57,11 +57,30 @@ size_t CdcIface::TransmitNoWait(const char* buffer, size_t nsize)
 	return nsize;
 }
 
-size_t CdcIface::Transmit(const char* buffer, size_t nsize)
+size_t CdcIface::TransmitOnce(const char* buffer, size_t nsize)
 {
 	while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
 		osDelay(2);
 	return nsize;
+}
+
+size_t CdcIface::Transmit(const char* buffer, size_t nsize)
+{
+	const char *p = buffer;
+	size_t size = nsize;
+	size_t offset = 0;
+	size_t ret = 0;
+	while (size) {
+		ret = TransmitOnce(p + offset, std::min(size, (size_t)64));
+		offset += ret;
+		size -= ret;
+	}
+	return nsize;
+}
+
+size_t CdcIface::Transmit(const std::string& str)
+{
+	return Transmit(str.c_str(), str.size());
 }
 
 
@@ -141,6 +160,25 @@ size_t CdcIface::Receive(char* buffer, size_t nsize)
 	}
 	return ret;
 }
+
+size_t CdcIface::ReceiveLine(char* buffer, size_t nsize)
+{
+	ssize_t recvsiz = 0;
+	size_t ret = 0;
+	size_t offset = 0;
+	while (nsize) {
+		recvsiz = ReceiveOnce(buffer + offset, 1);
+		if (recvsiz <= 0)
+			break;
+		if (buffer[offset] == '\n')
+			return ret + recvsiz;
+		ret += recvsiz;
+		offset += recvsiz;
+		nsize -= recvsiz;
+	}
+	return ret;
+}
+
 
 int8_t CdcIface::ReceiveComplete(uint8_t* buf, uint32_t len)
 {

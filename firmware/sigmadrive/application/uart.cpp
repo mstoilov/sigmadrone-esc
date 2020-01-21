@@ -70,7 +70,7 @@ void Uart::Detach()
 	huart_ = nullptr;
 }
 
-ssize_t Uart::Transmit(const char* buffer, size_t nsize)
+size_t Uart::TransmitOnce(const char* buffer, size_t nsize)
 {
 	uint32_t vector = __get_xPSR() & 0xFF;
 	if ((vector && !tx_ringbuf_.space_size()) || !nsize) {
@@ -99,6 +99,25 @@ ssize_t Uart::Transmit(const char* buffer, size_t nsize)
 	return nsize;
 }
 
+size_t Uart::Transmit(const char* buffer, size_t nsize)
+{
+	const char *p = buffer;
+	size_t size = nsize;
+	size_t offset = 0;
+	size_t ret = 0;
+	while (size) {
+		ret = TransmitOnce(p + offset, size);
+		offset += ret;
+		size -= ret;
+	}
+	return nsize;
+}
+
+size_t Uart::Transmit(const std::string& str)
+{
+	return Transmit(str.c_str(), str.size());
+}
+
 void Uart::TransmitCompleteCallback()
 {
 	tx_ringbuf_.read_update(huart_->TxXferSize);
@@ -111,27 +130,32 @@ void Uart::TransmitCompleteCallback()
 	}
 }
 
-ssize_t Uart::ReceiveOnce(char* buffer, size_t nsize)
+size_t Uart::ReceiveOnce(char* buffer, size_t nsize)
 {
 	if (!nsize)
 		return 0;
 	rx_ringbuf_.reset_wp(rx_ringbuf_.capacity() - __HAL_DMA_GET_COUNTER(huart_->hdmarx));
 	nsize = std::min(rx_ringbuf_.read_size(), nsize);
 	if (nsize) {
-		std::copy(rx_ringbuf_.get_read_ptr(), rx_ringbuf_.get_read_ptr() + nsize, buffer);
+		const char *src = rx_ringbuf_.get_read_ptr();
+		for (size_t i = 0; i < nsize; i++) {
+			buffer[i] = src[i];
+			if (buffer[i] == '\n')
+				nsize = i + 1;
+		}
 		rx_ringbuf_.read_update(nsize);
 	}
 	return nsize;
 }
 
-ssize_t Uart::Receive(char* buffer, size_t nsize)
+size_t Uart::Receive(char* buffer, size_t nsize)
 {
-	ssize_t recvsiz = 0;
+	size_t recvsiz = 0;
 	size_t ret = 0;
 	size_t offset = 0;
 	while (nsize) {
 		recvsiz = ReceiveOnce(buffer + offset, nsize);
-		if (recvsiz <= 0)
+		if (recvsiz == 0)
 			break;
 		ret += recvsiz;
 		offset += recvsiz;

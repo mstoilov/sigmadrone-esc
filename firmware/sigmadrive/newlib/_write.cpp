@@ -43,7 +43,7 @@ int _write(int fd,
 		}
 		return ret;
 	} else if (fd == 2) {
-		return usb_cdc.TransmitNoWait(buf, nbyte);
+//		return usb_cdc.TransmitNoWait(buf, nbyte);
 //		return uart2.Transmit(buf, nbyte);
 	}
 
