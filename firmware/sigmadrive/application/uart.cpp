@@ -27,6 +27,15 @@ extern "C" void rx_complete(UART_HandleTypeDef* huart)
 	}
 }
 
+extern "C" void error_callback(UART_HandleTypeDef* huart)
+{
+	Uart* ptr = Uart::handle_map_[huart];
+	if (ptr) {
+		ptr->ErrorCallback();
+	}
+}
+
+
 Uart::Uart()
 {
 }
@@ -45,6 +54,7 @@ void Uart::Attach(UART_HandleTypeDef* huart)
 	assert(handle_map_.find(huart_) == handle_map_.end());
 	handle_map_[huart_] = this;
 	huart_->TxCpltCallback = ::tx_complete;
+	huart_->ErrorCallback = ::error_callback;
 
 	if (huart_->Init.Mode & UART_MODE_RX) {
 		/*
@@ -167,3 +177,22 @@ size_t Uart::Receive(char* buffer, size_t nsize)
 void Uart::ReceiveCompleteCallback()
 {
 }
+
+void Uart::ErrorCallback()
+{
+	if (huart_->Init.Mode & UART_MODE_RX) {
+		/*
+		 * The DMA must be initialized in DMA_CIRCULAR mode.
+		 */
+		assert(huart_->hdmarx);
+		assert(huart_->hdmarx->Init.Mode == DMA_CIRCULAR);
+
+		rx_ringbuf_.reset_wp(0);
+		rx_ringbuf_.reset_rp(0);
+		HAL_UART_Receive_DMA(huart_, (uint8_t*)rx_ringbuf_.get_write_ptr(), rx_ringbuf_.capacity());
+	}
+
+
+}
+
+

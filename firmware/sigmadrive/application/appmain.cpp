@@ -113,7 +113,7 @@ void RunRpcTask(void *argument)
 extern "C"
 void RunCdcRpcTask(void *argument)
 {
-	char rxbuffer[512];
+	char rxbuffer[2048];
 	int ret;
 
 	for (;;) {

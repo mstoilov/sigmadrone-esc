@@ -31,6 +31,7 @@ public:
 	void TransmitCompleteCallback();
 	size_t Receive(char* buffer, size_t nsize);
 	void ReceiveCompleteCallback();
+	void ErrorCallback();
 
 	static handle_map_type handle_map_;
 
@@ -43,7 +44,7 @@ public:
 protected:
 	volatile bool transmitting_ = false;
 	Ring<char, 1024> tx_ringbuf_;
-	Ring<char, 1024> rx_ringbuf_;
+	Ring<char, 2048> rx_ringbuf_;
 };
 
 #endif /* APPLICATION_UART_H_ */
