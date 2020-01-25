@@ -96,8 +96,8 @@ void RunRpcTask(void *argument)
 				std::string response = res.write(false, false, 0, 9);
 				response += "\n";
 				uart2.Transmit(response);
-				usb_cdc.Transmit(req);
-				usb_cdc.Transmit(response);
+//				usb_cdc.Transmit(req);
+//				usb_cdc.Transmit(response);
 			} catch (std::exception& e) {
 
 			}
