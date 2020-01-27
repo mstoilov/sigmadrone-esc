@@ -27,6 +27,22 @@ extern "C" void rx_complete(UART_HandleTypeDef* huart)
 	}
 }
 
+extern "C" void SD_UART_IrqHandler(UART_HandleTypeDef* huart)
+{
+	uint32_t isrflags   = READ_REG(huart->Instance->ISR);
+	uint32_t cr1its     = READ_REG(huart->Instance->CR1);
+
+	if ((isrflags & USART_ISR_IDLE) && (cr1its & USART_ISR_IDLE) ) {
+		__HAL_UART_CLEAR_FLAG(huart, UART_CLEAR_IDLEF);
+
+		Uart::handle_map_type::iterator it = Uart::handle_map_.find(huart);
+		if (it != Uart::handle_map_.end()) {
+			it->second->ReceiveCompleteCallback();
+		}
+	}
+
+}
+
 extern "C" void error_callback(UART_HandleTypeDef* huart)
 {
 	Uart* ptr = Uart::handle_map_[huart];
@@ -38,6 +54,7 @@ extern "C" void error_callback(UART_HandleTypeDef* huart)
 
 Uart::Uart(size_t poll_delay)
 	: poll_delay_(poll_delay)
+	, event_(osEventFlagsNew(NULL))
 {
 }
 
@@ -51,13 +68,14 @@ void Uart::Attach(UART_HandleTypeDef* huart)
 	huart_ = huart;
 	assert(huart_);
 	assert(huart_->hdmatx);
-
 	assert(handle_map_.find(huart_) == handle_map_.end());
+
 	handle_map_[huart_] = this;
 	huart_->TxCpltCallback = ::tx_complete;
 	huart_->ErrorCallback = ::error_callback;
 
 	if (huart_->Init.Mode & UART_MODE_RX) {
+//		__HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
 		/*
 		 * The DMA must be initialized in DMA_CIRCULAR mode.
 		 */
@@ -146,6 +164,11 @@ size_t Uart::ReceiveOnce(char* buffer, size_t nsize)
 	if (!nsize)
 		return 0;
 	rx_ringbuf_.reset_wp(rx_ringbuf_.capacity() - __HAL_DMA_GET_COUNTER(huart_->hdmarx));
+//	if (rx_ringbuf_.empty()) {
+//		while (osEventFlagsWait(event_, EVENT_FLAG_DATA, osFlagsWaitAll, osWaitForever) != EVENT_FLAG_DATA)
+//			;
+//		rx_ringbuf_.reset_wp(rx_ringbuf_.capacity() - __HAL_DMA_GET_COUNTER(huart_->hdmarx));
+//	}
 	nsize = std::min(rx_ringbuf_.read_size(), nsize);
 	if (nsize) {
 		const char *src = rx_ringbuf_.get_read_ptr();
@@ -196,6 +219,7 @@ again:
 
 void Uart::ReceiveCompleteCallback()
 {
+	osEventFlagsSet(event_, EVENT_FLAG_DATA);
 }
 
 void Uart::ErrorCallback()

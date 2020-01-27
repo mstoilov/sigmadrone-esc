@@ -11,6 +11,7 @@
 #include <array>
 #include <map>
 #include <functional>
+#include "cmsis_os2.h"
 #include "stm32f745xx.h"
 #include "stm32f7xx.h"
 #include "stm32f7xx_hal_uart.h"
@@ -37,6 +38,8 @@ public:
 
 	static handle_map_type handle_map_;
 
+	static const uint32_t EVENT_FLAG_DATA = (1u << 9);
+
 protected:
 	size_t ReceiveOnce(char* buffer, size_t nsize);
 
@@ -48,6 +51,7 @@ protected:
 	Ring<char, 1024> tx_ringbuf_;
 	Ring<char, 2048> rx_ringbuf_;
 	size_t poll_delay_;
+	osEventFlagsId_t event_;
 };
 
 #endif /* APPLICATION_UART_H_ */
