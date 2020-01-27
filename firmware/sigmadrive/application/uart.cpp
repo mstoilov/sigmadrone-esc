@@ -72,10 +72,12 @@ void Uart::Attach(UART_HandleTypeDef* huart)
 
 	handle_map_[huart_] = this;
 	huart_->TxCpltCallback = ::tx_complete;
+	huart_->RxHalfCpltCallback = ::rx_complete;
+	huart_->RxCpltCallback = ::rx_complete;
 	huart_->ErrorCallback = ::error_callback;
 
 	if (huart_->Init.Mode & UART_MODE_RX) {
-//		__HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
+		__HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
 		/*
 		 * The DMA must be initialized in DMA_CIRCULAR mode.
 		 */
@@ -164,11 +166,6 @@ size_t Uart::ReceiveOnce(char* buffer, size_t nsize)
 	if (!nsize)
 		return 0;
 	rx_ringbuf_.reset_wp(rx_ringbuf_.capacity() - __HAL_DMA_GET_COUNTER(huart_->hdmarx));
-//	if (rx_ringbuf_.empty()) {
-//		while (osEventFlagsWait(event_, EVENT_FLAG_DATA, osFlagsWaitAll, osWaitForever) != EVENT_FLAG_DATA)
-//			;
-//		rx_ringbuf_.reset_wp(rx_ringbuf_.capacity() - __HAL_DMA_GET_COUNTER(huart_->hdmarx));
-//	}
 	nsize = std::min(rx_ringbuf_.read_size(), nsize);
 	if (nsize) {
 		const char *src = rx_ringbuf_.get_read_ptr();
@@ -187,6 +184,11 @@ size_t Uart::Receive(char* buffer, size_t nsize)
 	size_t recvsiz = 0;
 	size_t ret = 0;
 	size_t offset = 0;
+	rx_ringbuf_.reset_wp(rx_ringbuf_.capacity() - __HAL_DMA_GET_COUNTER(huart_->hdmarx));
+	if (rx_ringbuf_.empty()) {
+		while (osEventFlagsWait(event_, EVENT_FLAG_DATA, osFlagsWaitAll, osWaitForever) != EVENT_FLAG_DATA)
+			;
+	}
 	while (nsize) {
 		recvsiz = ReceiveOnce(buffer + offset, nsize);
 		if (recvsiz == 0)
@@ -205,12 +207,7 @@ std::string Uart::GetLine()
 	std::string recv;
 
 again:
-	while ((ret = Receive(rxbuffer, sizeof(rxbuffer) - 1)) == 0) {
-		/*
-		 * Poll
-		 */
-		HAL_Delay(poll_delay_);
-	}
+	ret = Receive(rxbuffer, sizeof(rxbuffer) - 1);
 	recv += std::string(rxbuffer, ret);
 	if (rxbuffer[ret - 1] != '\n')
 		goto again;
