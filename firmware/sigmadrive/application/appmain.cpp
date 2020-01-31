@@ -36,8 +36,6 @@
 #include "hrtimer.h"
 #include "flashmemory.h"
 
-#define MOTOR_POLE_PAIRS 7
-
 __attribute__((__section__(".flash_config"))) char flashregion[128*1024];
 
 FlashMemory flash_config(flashregion, sizeof(flashregion), FLASH_SECTOR_7, 1);
@@ -60,7 +58,6 @@ MotorDrive servo(&ma4_abs_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_C
 MotorCtrlFOC foc(&servo);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
-bool rs485_tx = true;
 bool debug_encoder = false;
 std::string use_encoder = "minas";
 void SetEncoder();
@@ -78,86 +75,28 @@ rexjson::property props =
 						SetEncoder();
 					})},
 			{"debug_encoder", &debug_encoder},
-			{"rs485_tx", &rs485_tx},
 		};
 rexjson::property* g_properties = &props;
 
-
-bool disable_rs485_rpc = false;
 
 extern "C"
 void RunRpcTask(void *argument)
 {
 	for (;;) {
-		if (!disable_rs485_rpc) {
-			try {
-				std::string req = uart2.GetLine();
-				rexjson::value res = rpc_server.call(req);
-				std::string response = res.write(false, false, 0, 9);
-				response += "\n";
-				uart2.Transmit(response);
-//				usb_cdc.Transmit(req);
-//				usb_cdc.Transmit(response);
-			} catch (std::exception& e) {
+		try {
+			std::string req = uart2.GetLine();
+			rexjson::value res = rpc_server.call(req);
+			std::string response = res.write(false, false, 0, 9);
+			response += "\n";
+			uart2.Transmit(response);
+//			usb_cdc.Transmit(req);
+//			usb_cdc.Transmit(response);
+		} catch (std::exception& e) {
 
-			}
 		}
 	}
 }
 
-
-extern "C"
-void RunRS485Task(void *argument)
-{
-	std::string test = "This is a test string, do you read it correctly? ";
-
-	for (size_t i = 0;true; i++) {
-		if (rs485_tx) {
-			std::string recv = uart2.GetLine();
-			usb_cdc.Transmit(recv);
-		} else {
-			uart2.Transmit(test + std::to_string(i) + "\n");
-		}
-		osDelay(1);
-	}
-}
-
-
-extern "C"
-void RunCdcRpcTask(void *argument)
-{
-	char rxbuffer[2048];
-	int ret;
-
-	for (;;) {
-		memset(rxbuffer, 0, sizeof(rxbuffer));
-		ret = usb_cdc.ReceiveLine(rxbuffer, sizeof(rxbuffer)-1);
-		if (ret > 0) {
-			try {
-				std::string req(rxbuffer);
-				rexjson::value v;
-				v.read(req);
-				if (v.get_obj()["id"].get_str() == "relay") {
-					disable_rs485_rpc = true;
-					uart2.Transmit(req);
-					osDelay(200);
-					memset(rxbuffer, 0, sizeof(rxbuffer));
-					int n = uart2.Receive(rxbuffer, sizeof(rxbuffer) - 1);
-					usb_cdc.Transmit(rxbuffer, n);
-
-				} else {
-					rexjson::value res = rpc_server.call(req);
-					std::string response = res.write(false, false, 0, 9);
-					usb_cdc.Transmit(response + "\n");
-				}
-			} catch (std::exception& e) {
-
-			}
-		}
-
-		osDelay(50);
-	}
-}
 
 extern "C"
 void SD_TIM1_IRQHandler(TIM_HandleTypeDef* htim)
@@ -348,10 +287,6 @@ int application_main()
 #endif
 	osDelay(250);
 
-	SetEncoder();
-	tim4.Start();
-	servo.Attach();
-
 	osThreadAttr_t task_attributes;
 	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
 	task_attributes.name = "CommandTask";
@@ -365,11 +300,9 @@ int application_main()
 	task_attributes.stack_size = 12000;
 	commandTaskHandle = osThreadNew(RunRpcTask, NULL, &task_attributes);
 
-//	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
-//	task_attributes.name = "UsbRpcTask";
-//	task_attributes.priority = (osPriority_t) osPriorityNormal;
-//	task_attributes.stack_size = 12000;
-//	commandTaskHandle = osThreadNew(RunCdcRpcTask, NULL, &task_attributes);
+	SetEncoder();
+	tim4.Start();
+	servo.Attach();
 
 
 	rpc_server.add("LoadConfig", rexjson::make_rpc_wrapper(LoadConfig, "void LoadConfig()"));
