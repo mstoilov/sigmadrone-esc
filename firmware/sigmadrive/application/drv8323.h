@@ -143,6 +143,7 @@ public:
 	uint32_t GetFaultStatus1() { return ReadReg(0x0); }
 	uint32_t GetFaultStatus2() { return ReadReg(0x1); }
 
+	void InitializeServoDefaults();
 	void LockRegisters();
 	void UnlockRegisters();
 	void SetIDriveP_HS(uint32_t idrivep);

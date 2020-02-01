@@ -22,6 +22,35 @@ Drv8323::~Drv8323()
 
 }
 
+void Drv8323::InitializeServoDefaults()
+{
+	WriteReg(3, 0x0);
+	WriteReg(4, 0x0);
+	WriteReg(5, 0x0);
+	WriteReg(6, 0x0);
+
+	SetIDriveP_HS(Drv8323::IDRIVEP_370mA);
+	SetIDriveN_HS(Drv8323::IDRIVEN_1360mA);
+	SetIDriveP_LS(Drv8323::IDRIVEP_370mA);
+	SetIDriveN_LS(Drv8323::IDRIVEN_1360mA);
+	SetTDrive(Drv8323::TDRIVE_4000ns);
+	EnableCBC();
+	DisableCPUV();
+	EnableCPUV();
+	DisableGDF();
+	EnableGDF();
+	EnableOTW();
+	DisableOTW();
+	SetPWMMode(Drv8323::PWM_MODE_6X);
+	SetDeadTime(Drv8323::DEADTIME_100ns);
+	SetOCPMode(Drv8323::OCP_RETRY_FAULT);
+	SetOCPDeglitch(Drv8323::OCP_DEG_4us);
+	SetVDSLevel(Drv8323::VDS_LVL_060V);
+	EnableVREFDiv();
+	SetCSAGain(Drv8323::CSA_GAIN_10VV);
+	SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
+}
+
 uint32_t Drv8323::ReadReg(uint32_t addr)
 {
 	uint16_t data = (0x1 << 15) | ((addr & 0xF) << 11);

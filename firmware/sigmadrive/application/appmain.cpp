@@ -227,11 +227,9 @@ int application_main()
 {
 	*_impure_ptr = *_impure_data_ptr;
 
-	Exti exti_usr_button(USER_BTN_Pin, []()->void{HAL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);});
-
-	std::string testmsg("This is a test for flash config.");
 
 	osDelay(500);
+//	Exti exti_usr_button(USER_BTN_Pin, []()->void{HAL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);});
 
 	/*
 	 * Attach the HAL handles to the
@@ -251,33 +249,7 @@ int application_main()
 //	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
 	usb_cdc.Attach(&hUsbDeviceFS, true);
 
-	drv1.WriteReg(2, 0x0);
-	drv1.WriteReg(3, 0x0);
-	drv1.WriteReg(4, 0x0);
-	drv1.WriteReg(5, 0x0);
-	drv1.WriteReg(6, 0x0);
-
-	drv1.SetIDriveP_HS(Drv8323::IDRIVEP_370mA);
-	drv1.SetIDriveN_HS(Drv8323::IDRIVEN_1360mA);
-	drv1.SetIDriveP_LS(Drv8323::IDRIVEP_370mA);
-	drv1.SetIDriveN_LS(Drv8323::IDRIVEN_1360mA);
-	drv1.SetTDrive(Drv8323::TDRIVE_4000ns);
-	drv1.EnableCBC();
-	drv1.DisableCPUV();
-	drv1.EnableCPUV();
-	drv1.DisableGDF();
-	drv1.EnableGDF();
-	drv1.EnableOTW();
-	drv1.DisableOTW();
-	drv1.SetPWMMode(Drv8323::PWM_MODE_6X);
-	drv1.SetDeadTime(Drv8323::DEADTIME_100ns);
-	drv1.SetOCPMode(Drv8323::OCP_RETRY_FAULT);
-	drv1.SetOCPDeglitch(Drv8323::OCP_DEG_4us);
-	drv1.SetVDSLevel(Drv8323::VDS_LVL_060V);
-	drv1.EnableVREFDiv();
-	drv1.SetCSAGain(Drv8323::CSA_GAIN_10VV);
-	drv1.SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
-
+	drv1.InitializeServoDefaults();
 	fprintf(stdout, "DRV1: \n");
 	drv1.DumpRegs();
 
