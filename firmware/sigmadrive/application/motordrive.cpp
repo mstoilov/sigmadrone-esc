@@ -27,8 +27,8 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	, Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
 	, Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
 	, update_hz_(update_hz)
-	, update_period_(1.0f / update_hz_)
-	, update_enc_period_(1.0f / (update_hz / (config_.enc_skip_updates_ + 1)))
+	, time_slice_(1.0f / update_hz_)
+	, enc_time_slice_(1.0f / (update_hz / (config_.enc_skip_updates_ + 1)))
 	, lpf_bias_a(config_.bias_alpha_)
 	, lpf_bias_b(config_.bias_alpha_)
 	, lpf_bias_c(config_.bias_alpha_)
@@ -42,7 +42,50 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 	lpf_bias_c.Reset(1 << 11);
 	encoder_ = encoder;
 	pwm_ = pwm;
-	props_= rexjson::property_map({
+
+	sched_.SetAbortTask([&]()->void {
+		pwm_->Stop();
+	});
+
+	sched_.SetIdleTask([&]()->void {
+//		DefaultIdleTask();
+	});
+
+	RegisterRpcMethods();
+}
+
+MotorDrive::~MotorDrive()
+{
+	// TODO Auto-generated destructor stub
+}
+
+void MotorDrive::Attach()
+{
+	drv1.SetCSAGainValue(config_.csa_gain_);
+	sched_.StartDispatcherThread();
+}
+
+void MotorDrive::RegisterRpcMethods()
+{
+	rpc_server.add("drive.abort", rexjson::make_rpc_wrapper(this, &MotorDrive::Abort, "void ServoDrive::Abort()"));
+	rpc_server.add("drive.measure_resistance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
+	rpc_server.add("drive.measure_inductance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunInductanceMeasurement, "float ServoDrive::RunInductanceMeasurement(uint32_t seconds, float test_voltage, uint32_t test_hz);"));
+	rpc_server.add("drive.scheduler_run", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerRun, "void SchedulerRun()"));
+	rpc_server.add("drive.scheduler_abort", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerAbort, "void SchedulerAbort()"));
+	rpc_server.add("drive.add_task_arm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
+	rpc_server.add("drive.add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
+	rpc_server.add("drive.add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
+	rpc_server.add("drive.add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz)"));
+	rpc_server.add("drive.alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAphaPoleSearch, "void RunTaskAphaPoleSearch()"));
+	rpc_server.add("drive.rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
+	rpc_server.add("drive.drv_get_fault1", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
+	rpc_server.add("drive.drv_get_fault2", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
+	rpc_server.add("drive.drv_clear_fault", rexjson::make_rpc_wrapper(&drv1, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
+}
+
+rexjson::property MotorDrive::GetPropertyMap()
+{
+	rexjson::property props= rexjson::property_map({
 		{"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
 		{"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
 		{"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
@@ -70,7 +113,7 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 				rexjson::property_access::readwrite,
 				[&](const rexjson::value& v){ pwm_->Stop(); },
 				[&](void*)->void {
-					update_enc_period_ = (1.0f / (update_hz / (config_.enc_skip_updates_ + 1)));
+					enc_time_slice_ = (1.0f / (update_hz_ / (config_.enc_skip_updates_ + 1)));
 					data_.update_counter_ = 0;
 					HAL_Delay(2);
 					pwm_->Start();
@@ -115,42 +158,7 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
 		{"reset_hz", &config_.reset_hz_},
 		{"display_div", &config_.display_div_}
 	});
-
-	rpc_server.add("drive.abort", rexjson::make_rpc_wrapper(this, &MotorDrive::Abort, "void ServoDrive::Abort()"));
-	rpc_server.add("drive.measure_resistance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
-	rpc_server.add("drive.measure_inductance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunInductanceMeasurement, "float ServoDrive::RunInductanceMeasurement(uint32_t seconds, float test_voltage, uint32_t test_hz);"));
-
-	rpc_server.add("drive.scheduler_run", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerRun, "void SchedulerRun()"));
-	rpc_server.add("drive.scheduler_abort", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerAbort, "void SchedulerAbort()"));
-	rpc_server.add("drive.add_task_arm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
-	rpc_server.add("drive.add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
-	rpc_server.add("drive.add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
-	rpc_server.add("drive.add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz)"));
-	rpc_server.add("drive.alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAphaPoleSearch, "void RunTaskAphaPoleSearch()"));
-	rpc_server.add("drive.rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
-	rpc_server.add("drive.drv_get_fault1", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
-	rpc_server.add("drive.drv_get_fault2", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
-	rpc_server.add("drive.drv_clear_fault", rexjson::make_rpc_wrapper(&drv1, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
-
-	sched_.SetAbortTask([&]()->void {
-		pwm_->Stop();
-	});
-
-	sched_.SetIdleTask([&]()->void {
-//		DefaultIdleTask();
-	});
-
-}
-
-MotorDrive::~MotorDrive()
-{
-	// TODO Auto-generated destructor stub
-}
-
-void MotorDrive::Attach()
-{
-	drv1.SetCSAGainValue(config_.csa_gain_);
-	sched_.StartDispatcherThread();
+	return props;
 }
 
 void MotorDrive::Run()
@@ -192,9 +200,14 @@ uint32_t MotorDrive::GetUpdateFrequency() const
 	return update_hz_;
 }
 
-float MotorDrive::GetUpdatePeriod() const
+float MotorDrive::GetTimeSlice() const
 {
-	return update_period_;
+	return time_slice_;
+}
+
+float MotorDrive::GetEncoderTimeSlice() const
+{
+	return enc_time_slice_;
 }
 
 uint32_t MotorDrive::GetPolePairs() const
@@ -303,11 +316,6 @@ std::complex<float> MotorDrive::GetElecRotation()
 float MotorDrive::GetPhaseSpeedVector()
 {
 	return W_;
-}
-
-float MotorDrive::GetEncoderPeriod()
-{
-	return update_enc_period_;
 }
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
@@ -515,7 +523,7 @@ void MotorDrive::RunTaskAphaPoleSearch()
 		AddTaskRotateMotor((M_PI * 2)/config_.pole_pairs, M_PI, 0.45, true);
 		AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
 		sched_.AddTask([&](void){
-			fprintf(stderr, "Enc: %7llu\n", encoder_->GetPosition());
+			fprintf(stderr, "Enc: %7lu\n", encoder_->GetPosition());
 			encoder_->ResetPosition();
 		});
 	}

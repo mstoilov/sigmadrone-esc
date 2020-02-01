@@ -188,16 +188,15 @@ public:
 	uint32_t get_error_count() const 			{ return error_count_; }
 
 public:
-	virtual void Start() override {}
-	virtual void Stop() override {}
-	virtual uint32_t GetCounter() override;
-	virtual uint32_t GetMaxRotation() override { return (1 << rotation_bits_); }
+	virtual uint32_t GetCounter();
+	virtual uint32_t GetResolutionBits() override;
 	virtual void ResetPosition() override;
-	virtual uint64_t GetPosition() override;
+	virtual uint32_t GetPosition() override;
 	virtual uint32_t GetRevolutions() override;
 	virtual uint32_t GetIndexPosition() override;
-	virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) override;
-	virtual float GetMechanicalPosition(uint64_t position) override;
+	virtual uint64_t GetAbsolutePosition() override;
+	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) override;
+	virtual float GetMechanicalPosition(uint32_t position) override;
 	virtual uint32_t GetLastError() override;
 	virtual bool Update() override;
 

@@ -26,7 +26,6 @@
 #include "drv8323.h"
 #include "exti.h"
 #include "pwm_generator.h"
-#include "quadrature_encoder.h"
 #include "ring.h"
 #include "cdc_iface.h"
 #include "motordrive.h"
@@ -49,11 +48,11 @@ Uart uart2;
 SPIMaster spi3;
 PwmGenerator tim1;
 CdcIface usb_cdc;
-QuadratureEncoder tim4(0x2000);
+// QuadratureEncoder tim4(0x2000);
+// Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 MinasA4Encoder ma4_abs_encoder;
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
-Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 MotorDrive servo(&ma4_abs_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlFOC foc(&servo);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
@@ -65,8 +64,8 @@ void SetEncoder();
 rexjson::property props =
 		rexjson::property_map {
 			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
-			{"drive", rexjson::property({servo.props_})},
-			{"foc", rexjson::property({foc.props_})},
+			{"drive", rexjson::property({servo.GetPropertyMap()})},
+			{"foc", rexjson::property({foc.GetPropertyMap()})},
 			{"use_encoder", rexjson::property(
 					&use_encoder,
 					rexjson::property_access::readwrite,
@@ -180,12 +179,6 @@ void SetEncoder()
 		servo.config_.calib_v_ = 12;
 		servo.config_.reset_voltage_ = 3.4;
 		servo.config_.pole_pairs = 5;
-	} else if (use_encoder == "quadrature") {
-		servo.SetEncoder(&tim4);
-		servo.config_.calib_max_i_ = 10;
-		servo.config_.calib_v_ = 0.5;
-		servo.config_.reset_voltage_ = 0.4;
-		servo.config_.pole_pairs = 7;
 	}
 }
 
@@ -244,8 +237,9 @@ int application_main()
 	uart1.Attach(&huart1);
 	uart2.Attach(&huart2);
 	spi3.Attach(&hspi3);
-	tim4.Attach(&htim4);
 	tim1.Attach(&htim1);
+//	tim4.Attach(&htim4);
+//	tim4.Start();
 //	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
 	usb_cdc.Attach(&hUsbDeviceFS, true);
 
@@ -273,7 +267,6 @@ int application_main()
 	commandTaskHandle = osThreadNew(RunRpcTask, NULL, &task_attributes);
 
 	SetEncoder();
-	tim4.Start();
 	servo.Attach();
 
 
@@ -287,7 +280,7 @@ int application_main()
 	rpc_server.add("minas.resetB", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeB, "uint32_t MinasA4Encoder::ResetErrorCodeB()"));
 	rpc_server.add("minas.resetE", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCodeE, "uint32_t MinasA4Encoder::ResetErrorCodeE()"));
 	rpc_server.add("minas.reset9", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetErrorCode9, "uint32_t MinasA4Encoder::ResetErrorCode9()"));
-	rpc_server.add("minas.reset_position", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetPosition, "void MinasA4Encoder::ResetPosition()"));
+	rpc_server.add("minas.reset_counter", rexjson::make_rpc_wrapper(&ma4_abs_encoder, &MinasA4Encoder::ResetPosition, "void MinasA4Encoder::ResetPosition()"));
 
 
 
@@ -298,35 +291,27 @@ int application_main()
 		HAL_GPIO_WritePin(LED_WARN_GPIO_Port, LED_WARN_Pin, GPIO_PIN_RESET);
 
 		if (debug_encoder) {
-			if (use_encoder == "quadrature") {
-				new_counter = tim4.GetPosition();
-				if (new_counter != old_counter) {
-					fprintf(stderr, "Counter: %lu\n", new_counter);
-					old_counter = new_counter;
-				}
-			} else {
-				new_counter = ma4_abs_encoder.GetCounter();
-				MA4Almc almc;
-				almc.as_byte_ = ma4_abs_encoder.GetLastError();
-				if (new_counter != old_counter || ma4_abs_encoder.status_) {
-					fprintf(stderr, "Minas Enc(0x%x): %7.2f, Cnt: %7lu, Pos: %7llu, Rev: %7lu, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (UpdT: %5lu, t1_to_t1: %5lu)\n",
-							(int)ma4_abs_encoder.GetDeviceID(),
-							ma4_abs_encoder.GetMechanicalPosition(new_counter) / M_PI * 180.0f,
-							new_counter,
-							ma4_abs_encoder.GetPosition(),
-							ma4_abs_encoder.GetRevolutions(),
-							ma4_abs_encoder.status_,
-							almc.overspeed_,
-							almc.full_abs_status_,
-							almc.count_error_,
-							almc.counter_overflow_,
-							almc.multiple_revolution_error_,
-							almc.system_down_,
-							almc.battery_alarm_,
-							ma4_abs_encoder.update_time_ms_,
-							ma4_abs_encoder.t1_to_t1_);
-					old_counter = new_counter;
-				}
+			new_counter = ma4_abs_encoder.GetCounter();
+			MA4Almc almc;
+			almc.as_byte_ = ma4_abs_encoder.GetLastError();
+			if (new_counter != old_counter || ma4_abs_encoder.status_) {
+				fprintf(stderr, "Minas Enc(0x%x): %7.2f, Cnt: %7lu, Pos: %7llu, Rev: %7lu, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (UpdT: %5lu, t1_to_t1: %5lu)\n",
+						(int)ma4_abs_encoder.GetDeviceID(),
+						ma4_abs_encoder.GetMechanicalPosition(new_counter) / M_PI * 180.0f,
+						new_counter,
+						ma4_abs_encoder.GetAbsolutePosition(),
+						ma4_abs_encoder.GetRevolutions(),
+						ma4_abs_encoder.status_,
+						almc.overspeed_,
+						almc.full_abs_status_,
+						almc.count_error_,
+						almc.counter_overflow_,
+						almc.multiple_revolution_error_,
+						almc.system_down_,
+						almc.battery_alarm_,
+						ma4_abs_encoder.update_time_ms_,
+						ma4_abs_encoder.t1_to_t1_);
+				old_counter = new_counter;
 			}
 		}
 		vTaskDelay(150 / portTICK_RATE_MS);

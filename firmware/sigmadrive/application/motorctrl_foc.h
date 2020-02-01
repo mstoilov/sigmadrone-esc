@@ -52,6 +52,8 @@ public:
 	void Spin();
 	void RunCalibrationSequence();
 	float VelocitySetPoint(float revpersec);
+	rexjson::property GetPropertyMap();
+	void RegisterRpcMethods();
 
 protected:
 	void UpdateRotor();
@@ -62,9 +64,6 @@ protected:
 	void SignalDumpPosition();
 	void SignalDumpSpin();
 	static void RunDebugLoopWrapper(void *ctx);
-
-public:
-	rexjson::property props_;
 
 protected:
     enum Signals {

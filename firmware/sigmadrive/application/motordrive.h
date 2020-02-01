@@ -87,19 +87,21 @@ public:
 	void SetEncoder(IEncoder* encoder);
 	int32_t GetEncoderDir() const;
 	uint32_t GetUpdateFrequency() const;
-	float GetUpdatePeriod() const;
+	float GetTimeSlice() const;
+	float GetEncoderTimeSlice() const;
 	uint32_t GetPolePairs() const;
 	float GetBusVoltage() const;
 	std::complex<float> GetElecRotation();
 	std::complex<float> GetMechRotation();
 	float GetPhaseSpeedVector();
-	float GetEncoderPeriod();
 
 	std::complex<float> GetPhaseCurrent() const;
 	void DefaultIdleTask();
 	bool CheckPhaseCurrentViolation(float current);
 	bool CheckPhaseVoltageViolation(float voltage);
 	bool CheckTripViolations();
+	void RegisterRpcMethods();
+	rexjson::property GetPropertyMap();
 
 	/*
 	 * UpdateHandlers
@@ -131,10 +133,6 @@ public:
 public:
 	Scheduler sched_;
 
-
-public:
-	rexjson::property props_;
-
 public:
 	Config config_;
 	std::complex<float> Pa_;
@@ -142,8 +140,8 @@ public:
 	std::complex<float> Pc_;
 
 	uint32_t update_hz_;
-	float update_period_;
-	float update_enc_period_;
+	float time_slice_;
+	float enc_time_slice_;
 	uint32_t t1_begin_ = 0;
 	uint32_t t1_span_ = 0;
 	uint32_t t2_begin_ = 0;
