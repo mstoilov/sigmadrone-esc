@@ -25,8 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "appmain.h"
-#include "dcache.h"
+#include "application/appmain.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

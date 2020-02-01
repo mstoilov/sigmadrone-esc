@@ -24,7 +24,7 @@
 
 /* USER CODE BEGIN INCLUDE */
 #include <string.h>
-#include "appmain.h"
+#include "application/appmain.h"
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/

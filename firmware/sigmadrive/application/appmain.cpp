@@ -31,7 +31,7 @@
 #include "cdc_iface.h"
 #include "motordrive.h"
 #include "motorctrl_foc.h"
-#include "property.h"
+#include "rexjsonrpc/property.h"
 #include "minasa4encoder.h"
 #include "hrtimer.h"
 #include "flashmemory.h"

@@ -10,7 +10,7 @@
 
 #include <assert.h>
 #include <functional>
-#include "rexjson++.h"
+#include "rexjson/rexjson++.h"
 
 namespace rexjson {
 

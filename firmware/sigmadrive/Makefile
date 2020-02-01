@@ -161,10 +161,7 @@ AS_INCLUDES =
 
 # C includes
 C_INCLUDES =  \
--Iapplication \
--Irexjson \
--Irexjsonrpc \
--Icommandline \
+-I. \
 -IInc \
 -IDrivers/STM32F7xx_HAL_Driver/Inc \
 -IDrivers/STM32F7xx_HAL_Driver/Inc/Legacy \

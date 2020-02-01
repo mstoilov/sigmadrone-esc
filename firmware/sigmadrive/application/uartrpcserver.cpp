@@ -27,7 +27,7 @@
 #include "drv8323.h"
 #include "motordrive.h"
 #include "motordrive.h"
-#include "property.h"
+#include "rexjsonrpc/property.h"
 
 extern rexjson::property *g_properties;
 extern CdcIface usb_cdc;

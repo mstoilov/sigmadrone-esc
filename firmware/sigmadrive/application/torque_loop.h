@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <complex>
 #include "pwm_generator.h"
-#include "property.h"
+#include "rexjsonrpc/property.h"
 
 class PwmGenerator;
 

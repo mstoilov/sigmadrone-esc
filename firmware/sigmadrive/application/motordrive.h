@@ -12,7 +12,7 @@
 #include "iencoder.h"
 #include "ipwmgenerator.h"
 #include "lowpassfilter.h"
-#include "property.h"
+#include "rexjsonrpc/property.h"
 #include "scheduler.h"
 #include "pidcontroller.h"
 #include "errorinfo.h"

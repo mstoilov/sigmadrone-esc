@@ -1,8 +1,8 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <string.h>
-#include "uart.h"
-#include "cdc_iface.h"
+#include "application/uart.h"
+#include "application/cdc_iface.h"
 #include "cmsis_os2.h"
 
 /*
