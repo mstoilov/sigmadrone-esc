@@ -108,7 +108,7 @@ Arguments:
 	if (params[0].type() == rexjson::int_type) {
 		drv1.SetCSAGain(params[0].get_int());
 	}
-	return (int) drv1.GetCSAGain();
+	return drv1.GetCSAGain();
 }
 
 rexjson::value UartRpcServer::rpc_get_property(rexjson::array& params, rexjson::rpc_exec_mode mode)
