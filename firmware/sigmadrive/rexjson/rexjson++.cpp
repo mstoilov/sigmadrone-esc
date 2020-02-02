@@ -197,6 +197,12 @@ value::value(int64_t v)
 	store_.v_int_ = v;
 }
 
+value::value(uint64_t v)
+{
+	value_type_ = int_type;
+	store_.v_int_ = (int64_t)v;
+}
+
 value::value(double v)
 {
 	value_type_ = real_type;

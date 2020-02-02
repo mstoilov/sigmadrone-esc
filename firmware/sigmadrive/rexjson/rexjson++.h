@@ -61,6 +61,7 @@ public:
 	value(int v);
 	value(long unsigned int v);
 	value(int64_t v);
+	value(uint64_t v);
 	value(double v);
 	value(const object& v);
 	value(const array& v);

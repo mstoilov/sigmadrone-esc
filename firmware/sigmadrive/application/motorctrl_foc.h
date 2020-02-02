@@ -46,12 +46,14 @@ public:
 public:
 	MotorCtrlFOC(MotorDrive* drive);
 	void Stop();
-	void Torque();
-	void Velocity();
-	void Position();
-	void Spin();
-	void RunCalibrationSequence();
-	float VelocitySetPoint(float revpersec);
+	void ModeClosedLoopTorque();
+	void ModeClosedLoopVelocity();
+	void ModeClosedLoopPosition();
+	void ModeSpin();
+	uint64_t MoveToPosition(uint64_t position);
+	uint64_t MoveRelative(int64_t position);
+	void RunCalibrationSequence(bool reset_rotor);
+	float Velocity(float revpersec);
 	rexjson::property GetPropertyMap();
 	void RegisterRpcMethods();
 
@@ -91,15 +93,13 @@ protected:
 	std::complex<float> R_;
 	uint32_t foc_time_ = 0;
 	uint64_t enc_position_ = 0;
-	uint64_t p_setpoint_ = 0;
+	uint64_t position_ = 0;
 
 	float Werr_ = 0;
 	float Ierr_ = 0;
 	float Rerr_ = 0;
 	float iq_setpoint_ = 0.08;
-	float w_setpoint_ = 0.007;
-
-
+	float velocity_ = 0.007;
 };
 
 

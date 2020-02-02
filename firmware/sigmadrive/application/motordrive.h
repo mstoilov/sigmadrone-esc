@@ -116,14 +116,13 @@ public:
 	void AddTaskArmMotor();
 	void AddTaskDisarmMotor();
 	void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder = true);
-	void AddTaskResetRotor();
 	void AddTaskMeasureResistance(float seconds, float test_voltage);
 	void AddTaskMeasureInductance(float seconds, float test_voltage, uint32_t test_hz);
 	void AddTaskDetectEncoderDir();
 	void RunTaskAphaPoleSearch();
 	void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir);
 	void RunSimpleTasks();
-	void AddTaskCalibrationSequence();
+	void AddTaskCalibrationSequence(bool reset_rotor);
 	float RunResistanceMeasurement(float seconds, float test_voltage);
 	float RunInductanceMeasurement(float seconds, float test_voltage, uint32_t test_hz);
 

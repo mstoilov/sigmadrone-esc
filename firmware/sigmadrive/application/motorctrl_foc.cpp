@@ -26,13 +26,16 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 
 void MotorCtrlFOC::RegisterRpcMethods()
 {
-	rpc_server.add("foc.velocity_setpoint", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocitySetPoint, "void MotorCtrlFOC::VelocitySetPoint(float revpersec)"));
-	rpc_server.add("foc.position", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Position, "void MotorCtrlFOC::Position()"));
-	rpc_server.add("foc.velocity", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Velocity, "void MotorCtrlFOC::Velocity()"));
-	rpc_server.add("foc.torque", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Torque, "void MotorCtrlFOC::Torque()"));
-	rpc_server.add("foc.spin", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Spin, "void MotorCtrlFOC::Spin()"));
+	rpc_server.add("foc.modeclp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopPosition, "void MotorCtrlFOC::ModeClosedLoopPosition()"));
+	rpc_server.add("foc.modeclv", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopVelocity, "void MotorCtrlFOC::ModeClosedLoopVelocity()"));
+	rpc_server.add("foc.modeclt", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopTorque, "void MotorCtrlFOC::ModeClosedLoopTorque()"));
+	rpc_server.add("foc.modespin", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeSpin, "void MotorCtrlFOC::ModeSpin()"));
 	rpc_server.add("foc.stop", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Stop, "void MotorCtrlFOC::Stop()"));
-	rpc_server.add("foc.calibration", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::RunCalibrationSequence, "void MotorCtrlFOC::RunCalibrationSequence()"));
+	rpc_server.add("foc.calibration", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::RunCalibrationSequence, "void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)"));
+	rpc_server.add("foc.velocity", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Velocity, "void MotorCtrlFOC::Velocity(float revpersec)"));
+	rpc_server.add("foc.mvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveToPosition, "void MotorCtrlFOC::MoveToPosition(uint64_t position)"));
+	rpc_server.add("foc.mvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelative, "void MotorCtrlFOC::MoveRelative(int64_t relative)"));
+
 }
 
 rexjson::property MotorCtrlFOC::GetPropertyMap()
@@ -88,7 +91,6 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
 					pid_Vq_.SetMaxIntegralOutput(config_.pid_current_maxout_);
 					pid_Vd_.SetMaxIntegralOutput(config_.pid_current_maxout_);
 				})},
-
 		{"vq_bias", rexjson::property(
 				&config_.vq_bias_,
 				rexjson::property_access::readwrite,
@@ -171,8 +173,8 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
 
 		{"control_bandwith", &config_.control_bandwidth_},
 		{"iq_setpoint", &iq_setpoint_},
-		{"w_setpoint", &w_setpoint_},
-		{"p_setpoint", &p_setpoint_},
+		{"velocity", &velocity_},
+		{"position", &position_},
 		{"i_trip", &config_.i_trip_},
 		{"vab_advance_factor", &config_.vab_advance_factor_},
 		{"display", &config_.display_},
@@ -302,7 +304,7 @@ void MotorCtrlFOC::StartDebugThread()
 	debug_thread_ = osThreadNew(RunDebugLoopWrapper, this, &task_attributes);
 }
 
-void MotorCtrlFOC::Torque()
+void MotorCtrlFOC::ModeClosedLoopTorque()
 {
 	drive_->AddTaskArmMotor();
 
@@ -384,7 +386,7 @@ void MotorCtrlFOC::Torque()
 	drive_->Run();
 }
 
-void MotorCtrlFOC::Velocity()
+void MotorCtrlFOC::ModeClosedLoopVelocity()
 {
 	drive_->AddTaskArmMotor();
 
@@ -407,7 +409,7 @@ void MotorCtrlFOC::Velocity()
 			float phase_speed = drive_->GetPhaseSpeedVector();
 
 			if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
-				Werr_ = w_setpoint_ - phase_speed;
+				Werr_ = velocity_ - phase_speed;
 				pid_W_.Input(Werr_, enc_update_period);
 			}
 
@@ -468,7 +470,7 @@ void MotorCtrlFOC::Velocity()
 	drive_->Run();
 }
 
-void MotorCtrlFOC::Position()
+void MotorCtrlFOC::ModeClosedLoopPosition()
 {
 	drive_->AddTaskArmMotor();
 
@@ -485,7 +487,7 @@ void MotorCtrlFOC::Position()
 		lpf_speed_disp_.Reset();
 		pid_Vq_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
 		pid_Vd_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
-		p_setpoint_ = drive_->encoder_->GetAbsolutePosition();
+		position_ = drive_->encoder_->GetAbsolutePosition();
 
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
@@ -495,17 +497,18 @@ void MotorCtrlFOC::Position()
 
 			if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
 				enc_position_ = drive_->encoder_->GetAbsolutePosition();
-				float target_angle = drive_->encoder_->GetMechanicalPosition(p_setpoint_);
+				float target_angle = drive_->encoder_->GetMechanicalPosition(position_);
 
-				int64_t Eerr = enc_position_ - p_setpoint_;
+				int64_t Eerr = enc_position_ - position_;
+				float p_velocity = (velocity_ > 0) ? velocity_ : -velocity_;
 				if (std::abs(Eerr) < ( 1 << (drive_->encoder_->GetResolutionBits() - 2))) {
 					Rerr_ = sdmath::cross(R_, std::complex<float>(cosf(target_angle), sinf(target_angle)));
-					Werr_ = Rerr_ * w_setpoint_ - phase_speed;
+					Werr_ = Rerr_ * p_velocity - phase_speed;
 				} else {
 					if (Eerr < 0)
-						Werr_ = w_setpoint_ - phase_speed;
+						Werr_ = p_velocity - phase_speed;
 					else
-						Werr_ = -w_setpoint_ - phase_speed;
+						Werr_ = -p_velocity - phase_speed;
 					Rerr_ = 0;
 				}
 
@@ -573,7 +576,7 @@ void MotorCtrlFOC::Position()
 }
 
 
-void MotorCtrlFOC::Spin()
+void MotorCtrlFOC::ModeSpin()
 {
 	drive_->AddTaskArmMotor();
 
@@ -640,15 +643,32 @@ void MotorCtrlFOC::Spin()
 	drive_->Run();
 }
 
-float MotorCtrlFOC::VelocitySetPoint(float revpersec)
+float MotorCtrlFOC::Velocity(float revpersec)
 {
-	w_setpoint_ = std::sin(M_PI * 2 * revpersec * drive_->GetPolePairs() * drive_->GetEncoderTimeSlice());
-	return w_setpoint_;
+	velocity_ = std::sin(M_PI * 2 * revpersec * drive_->GetPolePairs() * drive_->GetEncoderTimeSlice());
+	return velocity_;
 }
 
-void MotorCtrlFOC::RunCalibrationSequence()
+uint64_t MotorCtrlFOC::MoveToPosition(uint64_t position)
 {
-	drive_->AddTaskCalibrationSequence();
+	if (position >= drive_->encoder_->GetAbsolutePositionMax())
+		throw std::range_error("Invalid position");
+	position_ = position;
+	return position_;
+}
+
+uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
+{
+	int64_t newpos = relative + drive_->encoder_->GetAbsolutePosition();
+	if (newpos < 0 || newpos >= (int64_t)drive_->encoder_->GetAbsolutePositionMax())
+		throw std::range_error("Invalid position");
+	position_ = newpos;
+	return position_;
+}
+
+void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)
+{
+	drive_->AddTaskCalibrationSequence(reset_rotor);
 	drive_->sched_.AddTask([&](){
 
 #if 0

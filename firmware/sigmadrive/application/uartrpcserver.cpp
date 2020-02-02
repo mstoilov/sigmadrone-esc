@@ -42,7 +42,8 @@ UartRpcServer::UartRpcServer()
 	add("adc_injswstart", &UartRpcServer::rpc_adc_injswstart);
 	add("drv_calibration", &UartRpcServer::rpc_drv_calibration);
 	add("drv_csagain", &UartRpcServer::rpc_drv_csagain);
-	add("getset", &UartRpcServer::rpc_getset_property);
+	add("get", &UartRpcServer::rpc_get_property);
+	add("set", &UartRpcServer::rpc_set_property);
 }
 
 UartRpcServer::~UartRpcServer()
@@ -110,13 +111,13 @@ Arguments:
 	return (int) drv1.GetCSAGain();
 }
 
-rexjson::value UartRpcServer::rpc_getset_property(rexjson::array& params, rexjson::rpc_exec_mode mode)
+rexjson::value UartRpcServer::rpc_get_property(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
 	static std::string prefix = "";
 	std::ostringstream oss;
-	static unsigned int types[] = {rexjson::rpc_str_type, rexjson::rpc_str_type|rexjson::rpc_int_type|rexjson::rpc_real_type|rexjson::rpc_bool_type|rexjson::rpc_null_type};
+	static unsigned int types[] = {rexjson::rpc_str_type};
 	static const char *help_msg = R"desc(
-Get/Set property.
+Get property.
 
 )desc";
 
@@ -131,8 +132,30 @@ Get/Set property.
 	}
 	verify_parameters(params, types, ARRAYSIZE(types));
 	std::string path = params[0].get_str();
-	if (params[1].type() != rexjson::null_type) {
-		g_properties->navigate(path.substr(prefix.size())).set_prop(params[1]);
+	return g_properties->navigate(path.substr(prefix.size())).get_prop();
+}
+
+rexjson::value UartRpcServer::rpc_set_property(rexjson::array& params, rexjson::rpc_exec_mode mode)
+{
+	static std::string prefix = "";
+	std::ostringstream oss;
+	static unsigned int types[] = {rexjson::rpc_str_type, rexjson::rpc_str_type|rexjson::rpc_int_type|rexjson::rpc_real_type|rexjson::rpc_bool_type};
+	static const char *help_msg = R"desc(
+Set property.
+
+)desc";
+
+	if (mode != rexjson::execute) {
+		g_properties->enumerate_children(prefix, [&](const std::string& path, rexjson::property& prop)->void
+				{
+					oss << path << " : " << prop.get_prop().to_string() << std::endl;
+				});
+		std::string help = help_msg;
+		help += oss.str();
+		return noexec(params, mode, types, ARRAYSIZE(types), help);
 	}
+	verify_parameters(params, types, ARRAYSIZE(types));
+	std::string path = params[0].get_str();
+	g_properties->navigate(path.substr(prefix.size())).set_prop(params[1]);
 	return g_properties->navigate(path.substr(prefix.size())).get_prop();
 }

@@ -195,8 +195,9 @@ public:
 	virtual uint32_t GetRevolutions() override;
 	virtual uint32_t GetIndexPosition() override;
 	virtual uint64_t GetAbsolutePosition() override;
-	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) override;
-	virtual float GetMechanicalPosition(uint32_t position) override;
+	virtual uint64_t GetAbsolutePositionMax() override;
+	virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) override;
+	virtual float GetMechanicalPosition(uint64_t position) override;
 	virtual uint32_t GetLastError() override;
 	virtual bool Update() override;
 

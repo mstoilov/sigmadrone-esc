@@ -33,6 +33,13 @@ public:
 	virtual uint64_t GetAbsolutePosition() = 0;
 
 	/*
+	 * Combined revolutios and position max value
+	 * AbsPos = (1 << (revolution_bits + position_bits))
+	 */
+	virtual uint64_t GetAbsolutePositionMax() = 0;
+
+
+	/*
 	 * Return the number of completed revolutions.
 	 */
 	virtual uint32_t GetRevolutions() = 0;
@@ -47,13 +54,13 @@ public:
 	 * Calculate the electric angle for the specified position
 	 * in Rad
 	 */
-	virtual float GetElectricPosition(uint32_t position, uint32_t motor_pole_pairs) = 0;
+	virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) = 0;
 
 	/*
 	 * Calculate the mechanical angle for the specified position
 	 * in Rad
 	 */
-	virtual float GetMechanicalPosition(uint32_t position) = 0;
+	virtual float GetMechanicalPosition(uint64_t position) = 0;
 
 	/*
 	 * Return the last error.

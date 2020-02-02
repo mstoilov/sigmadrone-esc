@@ -292,15 +292,13 @@ void MotorDrive::UpdateCurrent()
 void MotorDrive::UpdateRotor()
 {
 	uint32_t rotor_position = encoder_->GetPosition();
-	if (rotor_position != (uint32_t)-1) {
-		float theta_e = GetEncoderDir() * encoder_->GetElectricPosition(rotor_position, GetPolePairs());
-		float theta_m = GetEncoderDir() * encoder_->GetMechanicalPosition(rotor_position);
-		std::complex<float> r_prev = E_;
-		E_ = std::complex<float>(cosf(theta_e), sinf(theta_e));
-		R_ = std::complex<float>(cosf(theta_m), sinf(theta_m));
-		std::complex<float> r_cur = E_;
-		W_ = sdmath::cross(r_prev, r_cur);
-	}
+	float theta_e = GetEncoderDir() * encoder_->GetElectricPosition(rotor_position, GetPolePairs());
+	float theta_m = GetEncoderDir() * encoder_->GetMechanicalPosition(rotor_position);
+	std::complex<float> r_prev = E_;
+	E_ = std::complex<float>(cosf(theta_e), sinf(theta_e));
+	R_ = std::complex<float>(cosf(theta_m), sinf(theta_m));
+	std::complex<float> r_cur = E_;
+	W_ = sdmath::cross(r_prev, r_cur);
 }
 
 std::complex<float> MotorDrive::GetMechRotation()
@@ -451,11 +449,6 @@ void MotorDrive::AddTaskRotateMotor(float angle, float speed, float voltage, boo
 	}, angle, speed, voltage, dir));
 }
 
-void MotorDrive::AddTaskResetRotor()
-{
-	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, true);
-}
-
 void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder)
 {
 	sched_.AddTask(std::bind([&](float reset_voltage, uint32_t reset_hz, bool reset_encoder){
@@ -478,12 +471,11 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 		for (size_t i = 0; (i < update_hz_) && ret; i++) {
 			ret = sched_.RunUpdateHandler([&]()->bool {
 				ApplyPhaseVoltage(reset_voltage * 1.5, std::polar<float>(1.0f, 0));
-				if (reset_encoder)
-					encoder_->ResetPosition();
 				return false;
 			});
 		};
-
+		if (reset_encoder)
+			encoder_->ResetPosition();
 	}, reset_voltage, reset_hz, reset_encoder));
 }
 
@@ -500,14 +492,14 @@ void MotorDrive::AddTaskDetectEncoderDir()
 
 }
 
-void MotorDrive::AddTaskCalibrationSequence()
+void MotorDrive::AddTaskCalibrationSequence(bool reset_rotor)
 {
 	AddTaskArmMotor();
-	AddTaskResetRotor();
+	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, reset_rotor);
 	AddTaskMeasureResistance(1, config_.calib_v_);
 	AddTaskMeasureInductance(1, config_.calib_v_, 3000);
-	AddTaskResetRotor();
 	AddTaskDetectEncoderDir();
+	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
 	AddTaskDisarmMotor();
 }
 
