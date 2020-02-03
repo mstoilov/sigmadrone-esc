@@ -44,7 +44,7 @@ public:
 		float Vref_ = 3.3;
 		float max_modulation_duty_ = 0.95;
 		float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;
-		float reset_voltage_ = 0.4f;
+		float reset_voltage_ = 3.5f;
 		float Rsense_ = 0.010f;
 		float calib_v_ = 12;
 		float calib_max_i_ = 4;

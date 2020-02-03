@@ -14,7 +14,6 @@ CdcIface::handle_map_type CdcIface::handle_map_;
 
 
 CdcIface::CdcIface()
-	: rx_initiated_(true)
 {
 	// TODO Auto-generated constructor stub
 
@@ -57,25 +56,36 @@ size_t CdcIface::TransmitNoWait(const char* buffer, size_t nsize)
 	return nsize;
 }
 
-size_t CdcIface::TransmitOnce(const char* buffer, size_t nsize)
-{
-	while (CDC_Transmit_FS((uint8_t*)buffer, nsize) == USBD_BUSY)
-		osDelay(2);
-	return nsize;
-}
-
-size_t CdcIface::Transmit(const char* buffer, size_t nsize)
+size_t CdcIface::TransmitCanWait(const char* buffer, size_t nsize)
 {
 	const char *p = buffer;
 	size_t size = nsize;
 	size_t offset = 0;
 	size_t ret = 0;
 	while (size) {
-		ret = TransmitOnce(p + offset, std::min(size, (size_t)64));
+		ret = TransmitOnce(p + offset, size);
 		offset += ret;
 		size -= ret;
 	}
 	return nsize;
+}
+
+
+size_t CdcIface::TransmitOnce(const char* buffer, size_t nsize)
+{
+	size_t ret = std::min(nsize, (size_t)64);
+	while (CDC_Transmit_FS((uint8_t*)buffer, ret) == USBD_BUSY)
+		osDelay(2);
+	return ret;
+}
+
+size_t CdcIface::Transmit(const char* buffer, size_t nsize)
+{
+	if (tx_thread_) {
+		return TransmitNoWait(buffer, nsize);
+	} else {
+		return TransmitCanWait(buffer, nsize);
+	}
 }
 
 size_t CdcIface::Transmit(const std::string& str)
@@ -83,16 +93,15 @@ size_t CdcIface::Transmit(const std::string& str)
 	return Transmit(str.c_str(), str.size());
 }
 
-
 void CdcIface::RunTxLoop()
 {
 	for (;;) {
 		if (WaitDataToTransmit()) {
-			size_t nsize = tx_ringbuf_.read_size();
+			size_t nsize = 0;
 			while ((nsize = tx_ringbuf_.read_size()) != 0) {
 				char* buffer = tx_ringbuf_.get_read_ptr();
-				Transmit(buffer, nsize);
-				tx_ringbuf_.read_update(nsize);
+				size_t ret = TransmitOnce(buffer, nsize);
+				tx_ringbuf_.read_update(ret);
 			}
 		}
 	}

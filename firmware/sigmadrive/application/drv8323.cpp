@@ -22,7 +22,7 @@ Drv8323::~Drv8323()
 
 }
 
-void Drv8323::InitializeServoDefaults()
+void Drv8323::InitializeDefaults()
 {
 	WriteReg(3, 0x0);
 	WriteReg(4, 0x0);
