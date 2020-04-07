@@ -14,6 +14,7 @@
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "task.h"
+#include "stm32f7xx_ll_dma.h"
 
 #include "main.h"
 #include "appmain.h"
@@ -32,11 +33,12 @@
 #include "motorctrl_foc.h"
 #include "rexjsonrpc/property.h"
 #include "minasa4encoder.h"
+#include "dumbencoder.h"
 #include "hrtimer.h"
 #include "flashmemory.h"
 #include "blinkled.h"
 
-__attribute__((__section__(".flash_config"))) char flashregion[128*1024];
+__attribute__((__section__(".flash_config"))) char flashregion[128 * 1024];
 
 FlashMemory flash_config(flashregion, sizeof(flashregion), FLASH_SECTOR_7, 1);
 UartRpcServer rpc_server;
@@ -51,7 +53,7 @@ PwmGenerator tim1;
 CdcIface usb_cdc;
 // QuadratureEncoder tim4(0x2000);
 // Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
-IEncoder dumb_encoder;
+DumbEncoder dumb_encoder;
 MinasA4Encoder ma4_abs_encoder;
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
@@ -60,7 +62,7 @@ MotorCtrlFOC foc(&motor_dirve);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
 
 bool debug_encoder = false;
-std::string use_encoder = "minas";
+
 void DetectMinasEncoder();
 
 rexjson::property props =
@@ -68,19 +70,6 @@ rexjson::property props =
 			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
 			{"drive", rexjson::property({motor_dirve.GetPropertyMap()})},
 			{"foc", rexjson::property({foc.GetPropertyMap()})},
-			{"use_encoder", rexjson::property(
-				&use_encoder,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v) {
-					if (v.get_str() != "minas" && v.get_str() != "quadrature")
-						throw std::range_error("Invalid value");
-					if (use_encoder == "minas") {
-						DetectMinasEncoder();
-						motor_dirve.SetEncoder(&ma4_abs_encoder);
-					}
-				},
-				[&](void*)->void { })
-			},
 			{"debug_encoder", &debug_encoder},
 		};
 rexjson::property* g_properties = &props;
@@ -135,10 +124,8 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 	if (LL_ADC_IsActiveFlag_AWD1(ADCx) && LL_ADC_IsEnabledIT_AWD1(ADCx)) {
 		LL_ADC_ClearFlag_AWD1(ADCx);
 	}
-
 }
 
-#include "stm32f7xx_ll_dma.h"
 
 extern "C"
 void SD_DMA1_Stream1_IRQHandler(void)
@@ -162,35 +149,20 @@ void SD_DMA1_Stream1_IRQHandler(void)
 	}
 	if (LL_DMA_IsActiveFlag_TE1(DMAx)) {
 		LL_DMA_ClearFlag_TE1(DMAx);
-
-	}
-
-}
-
-void DetectMinasEncoder()
-{
-	if (ma4_abs_encoder.Detect()) {
-		uint32_t bits = ma4_abs_encoder.GetResolutionBits();
-		if (bits == 17) {
-			motor_dirve.config_.pole_pairs = 4;
-		} else if (bits == 23) {
-			motor_dirve.config_.pole_pairs = 5;
-		}
-	} else {
-		throw std::runtime_error("Failed to detect Minas encoder.");
 	}
 }
 
 void SetEncoder()
 {
-	if (use_encoder == "minas") {
-		try {
-			DetectMinasEncoder();
-			motor_dirve.SetEncoder(&ma4_abs_encoder);
-		} catch (std::exception& e) {
-			fprintf(stdout, "Error: %s\n", e.what());
-		}
-	}
+    try {
+        motor_dirve.SetEncoder(&ma4_abs_encoder);
+        if (motor_dirve.encoder_->GetResolutionBits() == 17)
+            motor_dirve.config_.pole_pairs = 4;
+        else if (motor_dirve.encoder_->GetResolutionBits() == 23)
+            motor_dirve.config_.pole_pairs = 5;
+    } catch (std::exception& e) {
+        fprintf(stdout, "Error: %s\n", e.what());
+    }
 }
 
 void SaveConfig()

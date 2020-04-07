@@ -186,8 +186,11 @@ IEncoder* MotorDrive::GetEncoder() const
 
 void MotorDrive::SetEncoder(IEncoder* encoder)
 {
-	if (encoder)
-		encoder_ = encoder;
+	if (encoder) {
+		if (!encoder->Initialize())
+		    throw std::runtime_error("Encoder initialization error.");
+        encoder_ = encoder;
+	}
 }
 
 int32_t MotorDrive::GetEncoderDir() const
