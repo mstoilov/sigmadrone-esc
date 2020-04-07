@@ -51,6 +51,12 @@ void Drv8323::InitializeDefaults()
 	SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 }
 
+/**
+ * Read the specified register.
+ *
+ * @param addr
+ * @return The value of the register.
+ */
 uint32_t Drv8323::ReadReg(uint32_t addr)
 {
 	uint16_t data = (0x1 << 15) | ((addr & 0xF) << 11);
@@ -64,6 +70,13 @@ uint32_t Drv8323::ReadReg(uint32_t addr)
 	return ret & 0x7FF;
 }
 
+
+/**
+ * Write a new value for the specified register.
+ *
+ * @param addr Address of the register to be modified.
+ * @param value New value for the register.
+ */
 void Drv8323::WriteReg(uint32_t addr, uint32_t value)
 {
 	uint16_t data = (uint16_t)(((addr & 0xF) << 11) | (value & 0x7FF));
