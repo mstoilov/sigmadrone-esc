@@ -34,6 +34,7 @@
 #include "minasa4encoder.h"
 #include "hrtimer.h"
 #include "flashmemory.h"
+#include "blinkled.h"
 
 __attribute__((__section__(".flash_config"))) char flashregion[128*1024];
 
@@ -298,24 +299,19 @@ void DisplayDrvRegs()
 
 void EnterMainLoop()
 {
+    BlinkLed warnblinker(LED_WARN_GPIO_Port, LED_WARN_Pin, 150, 150);
+
 	for (;;) {
-		/*
-		 * Blink the LED
-		 */
-		osDelay(150);
-		HAL_GPIO_WritePin(LED_WARN_GPIO_Port, LED_WARN_Pin, GPIO_PIN_RESET);
+	    /*
+	     * Blink the WARN LED
+	     */
+	    warnblinker.Blink();
 
 		/*
 		 * Dump Encoder Info
 		 */
 		if (debug_encoder)
 			DisplayEncoderDebugInfo();
-
-		/*
-		 * Blink the LED
-		 */
-		osDelay(150);
-		HAL_GPIO_WritePin(LED_WARN_GPIO_Port, LED_WARN_Pin, GPIO_PIN_SET);
 	}
 }
 
