@@ -1,3 +1,7 @@
+/*
+ * Posible power supply:
+ * JUNTEK DPH8920-RF
+ */
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
