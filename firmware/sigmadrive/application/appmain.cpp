@@ -44,6 +44,7 @@
 
 __attribute__((__section__(".flash_config"))) char flashregion[128 * 1024];
 
+const unsigned boot_delay = 500;    /**< Wait for the encoder to boot up, before attempting to initialize */
 FlashMemory flash_config(flashregion, sizeof(flashregion), FLASH_SECTOR_7, 1);
 UartRpcServer rpc_server;
 osThreadId_t commandTaskHandle;
@@ -303,6 +304,7 @@ int application_main()
 	 * C++ wrapper objects. At this point the HAL handles
 	 * should be fully initialized.
 	 */
+	osDelay(boot_delay);
 	hrtimer.Attach(&htim5);
 	ma4_abs_encoder.Attach(&huart3);
 	adc1.Attach(&hadc1);
