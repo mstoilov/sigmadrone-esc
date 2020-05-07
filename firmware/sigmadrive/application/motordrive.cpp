@@ -23,260 +23,259 @@ static std::complex<float> p2_ = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
 static std::complex<float> p3_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
 
 MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
-	: Pa_(std::polar<float>(1.0f, 0.0f))
-	, Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
-	, Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
-	, update_hz_(update_hz)
-	, time_slice_(1.0f / update_hz_)
-	, enc_time_slice_(1.0f / (update_hz / (config_.enc_skip_updates_ + 1)))
-	, lpf_bias_a(config_.bias_alpha_)
-	, lpf_bias_b(config_.bias_alpha_)
-	, lpf_bias_c(config_.bias_alpha_)
-	, lpf_vbus_(config_.vbus_alpha_, 12.0f)
-	, lpf_Ia_(config_.iabc_alpha_)
-	, lpf_Ib_(config_.iabc_alpha_)
-	, lpf_Ic_(config_.iabc_alpha_)
+    : Pa_(std::polar<float>(1.0f, 0.0f))
+    , Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
+    , Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
+    , update_hz_(update_hz)
+    , time_slice_(1.0f / update_hz_)
+    , enc_time_slice_(1.0f / (update_hz / (config_.enc_skip_updates_ + 1)))
+    , lpf_bias_a(config_.bias_alpha_)
+    , lpf_bias_b(config_.bias_alpha_)
+    , lpf_bias_c(config_.bias_alpha_)
+    , lpf_vbus_(config_.vbus_alpha_, 12.0f)
+    , lpf_Ia_(config_.iabc_alpha_)
+    , lpf_Ib_(config_.iabc_alpha_)
+    , lpf_Ic_(config_.iabc_alpha_)
 {
-	lpf_bias_a.Reset(1 << 11);
-	lpf_bias_b.Reset(1 << 11);
-	lpf_bias_c.Reset(1 << 11);
-	encoder_ = encoder;
-	pwm_ = pwm;
+    lpf_bias_a.Reset(1 << 11);
+    lpf_bias_b.Reset(1 << 11);
+    lpf_bias_c.Reset(1 << 11);
+    encoder_ = encoder;
+    pwm_ = pwm;
 
-	sched_.SetAbortTask([&]()->void {
-		pwm_->Stop();
-	});
+    sched_.SetAbortTask([&]() -> void {
+        pwm_->Stop();
+    });
 
-	sched_.SetIdleTask([&]()->void {
+    sched_.SetIdleTask([&]() -> void {
 //		DefaultIdleTask();
-	});
+    });
 
-	RegisterRpcMethods();
+    RegisterRpcMethods();
 }
 
 MotorDrive::~MotorDrive()
 {
-	// TODO Auto-generated destructor stub
 }
 
 void MotorDrive::Attach()
 {
-	drv1.SetCSAGainValue(config_.csa_gain_);
-	sched_.StartDispatcherThread();
+    drv1.SetCSAGainValue(config_.csa_gain_);
+    sched_.StartDispatcherThread();
 }
 
 void MotorDrive::RegisterRpcMethods()
 {
-	rpc_server.add("drive.abort", rexjson::make_rpc_wrapper(this, &MotorDrive::Abort, "void ServoDrive::Abort()"));
-	rpc_server.add("drive.measure_resistance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
-	rpc_server.add("drive.measure_inductance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunInductanceMeasurement, "float ServoDrive::RunInductanceMeasurement(uint32_t seconds, float test_voltage, uint32_t test_hz);"));
-	rpc_server.add("drive.scheduler_run", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerRun, "void SchedulerRun()"));
-	rpc_server.add("drive.scheduler_abort", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerAbort, "void SchedulerAbort()"));
-	rpc_server.add("drive.add_task_arm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
-	rpc_server.add("drive.add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
-	rpc_server.add("drive.add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
-	rpc_server.add("drive.add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz)"));
-	rpc_server.add("drive.alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAphaPoleSearch, "void RunTaskAphaPoleSearch()"));
-	rpc_server.add("drive.rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
-	rpc_server.add("drive.drv_get_fault1", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
-	rpc_server.add("drive.drv_get_fault2", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
-	rpc_server.add("drive.drv_clear_fault", rexjson::make_rpc_wrapper(&drv1, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
+    rpc_server.add("drive.abort", rexjson::make_rpc_wrapper(this, &MotorDrive::Abort, "void ServoDrive::Abort()"));
+    rpc_server.add("drive.measure_resistance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
+    rpc_server.add("drive.measure_inductance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunInductanceMeasurement, "float ServoDrive::RunInductanceMeasurement(uint32_t seconds, float test_voltage, uint32_t test_hz);"));
+    rpc_server.add("drive.scheduler_run", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerRun, "void SchedulerRun()"));
+    rpc_server.add("drive.scheduler_abort", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerAbort, "void SchedulerAbort()"));
+    rpc_server.add("drive.add_task_arm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
+    rpc_server.add("drive.add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
+    rpc_server.add("drive.add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
+    rpc_server.add("drive.add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz)"));
+    rpc_server.add("drive.alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAphaPoleSearch, "void RunTaskAphaPoleSearch()"));
+    rpc_server.add("drive.rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
+    rpc_server.add("drive.drv_get_fault1", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
+    rpc_server.add("drive.drv_get_fault2", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
+    rpc_server.add("drive.drv_clear_fault", rexjson::make_rpc_wrapper(&drv1, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
 }
 
 rexjson::property MotorDrive::GetPropertyMap()
 {
-	rexjson::property props= rexjson::property_map({
-		{"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
-		{"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
-		{"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
-		{"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
-		{"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_access::readonly)},
-		{"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_access::readonly)},
-		{"bias_alpha", rexjson::property(
-				&config_.bias_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
-					lpf_bias_a.SetAlpha(config_.bias_alpha_);
-					lpf_bias_b.SetAlpha(config_.bias_alpha_);
-					lpf_bias_c.SetAlpha(config_.bias_alpha_);
-				})},
-		{"vbus_alpha", rexjson::property(
-				&config_.vbus_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
-					lpf_vbus_.SetAlpha(config_.vbus_alpha_);
-				})},
-		{"enc_skip_updates", rexjson::property(
-				&config_.enc_skip_updates_,
-				rexjson::property_access::readwrite,
-				[&](const rexjson::value& v){ pwm_->Stop(); },
-				[&](void*)->void {
-					enc_time_slice_ = (1.0f / (update_hz_ / (config_.enc_skip_updates_ + 1)));
-					data_.update_counter_ = 0;
-					HAL_Delay(2);
-					pwm_->Start();
-				})},
+    rexjson::property props= rexjson::property_map({
+        {"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
+        {"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
+        {"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
+        {"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
+        {"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_access::readonly)},
+        {"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_access::readonly)},
+        {"bias_alpha", rexjson::property(
+            &config_.bias_alpha_,
+            rexjson::property_access::readwrite,
+            [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+            [&](void*)->void {
+                lpf_bias_a.SetAlpha(config_.bias_alpha_);
+                lpf_bias_b.SetAlpha(config_.bias_alpha_);
+                lpf_bias_c.SetAlpha(config_.bias_alpha_);
+            })},
+        {"vbus_alpha", rexjson::property(
+                &config_.vbus_alpha_,
+                rexjson::property_access::readwrite,
+                [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+                [&](void*)->void {
+                    lpf_vbus_.SetAlpha(config_.vbus_alpha_);
+                })},
+        {"enc_skip_updates", rexjson::property(
+                &config_.enc_skip_updates_,
+                rexjson::property_access::readwrite,
+                [&](const rexjson::value& v){ pwm_->Stop(); },
+                [&](void*)->void {
+                    enc_time_slice_ = (1.0f / (update_hz_ / (config_.enc_skip_updates_ + 1)));
+                    data_.update_counter_ = 0;
+                    HAL_Delay(2);
+                    pwm_->Start();
+                })},
 
-		{"iabc_alpha", rexjson::property(
-				&config_.iabc_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
-					lpf_Ia_.SetAlpha(config_.iabc_alpha_);
-					lpf_Ib_.SetAlpha(config_.iabc_alpha_);
-					lpf_Ic_.SetAlpha(config_.iabc_alpha_);
-				})},
-		{"max_modulation_duty", rexjson::property(
-				&config_.max_modulation_duty_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");}
-		)},
-		{"csa_gain", rexjson::property(
-				&config_.csa_gain_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
-				[&](void*){drv1.SetCSAGainValue(config_.csa_gain_);}
-		)},
-		{"run_simple_tasks", rexjson::property(
-				&run_simple_tasks_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*){ if (run_simple_tasks_) RunSimpleTasks(); else sched_.Abort(); }
-		)},
-		{"trip_i", &config_.trip_i_},
-		{"trip_v", &config_.trip_v_},
-		{"calib_max_i", &config_.calib_max_i_},
-		{"calib_v", &config_.calib_v_},
-		{"resistance", &config_.resistance_},
-		{"inductance", &config_.inductance_},
-		{"pole_pairs", &config_.pole_pairs},
-		{"encoder_dir", &config_.encoder_dir_},
-		{"svm_saddle", &config_.svm_saddle_},
-		{"reset_voltage", &config_.reset_voltage_},
-		{"reset_hz", &config_.reset_hz_},
-		{"display_div", &config_.display_div_}
-	});
-	return props;
+        {"iabc_alpha", rexjson::property(
+                &config_.iabc_alpha_,
+                rexjson::property_access::readwrite,
+                [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+                [&](void*)->void {
+                    lpf_Ia_.SetAlpha(config_.iabc_alpha_);
+                    lpf_Ib_.SetAlpha(config_.iabc_alpha_);
+                    lpf_Ic_.SetAlpha(config_.iabc_alpha_);
+                })},
+        {"max_modulation_duty", rexjson::property(
+                &config_.max_modulation_duty_,
+                rexjson::property_access::readwrite,
+                [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");}
+        )},
+        {"csa_gain", rexjson::property(
+                &config_.csa_gain_,
+                rexjson::property_access::readwrite,
+                [](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
+                [&](void*){drv1.SetCSAGainValue(config_.csa_gain_);}
+        )},
+        {"run_simple_tasks", rexjson::property(
+                &run_simple_tasks_,
+                rexjson::property_access::readwrite,
+                [](const rexjson::value& v){},
+                [&](void*){ if (run_simple_tasks_) RunSimpleTasks(); else sched_.Abort(); }
+        )},
+        {"trip_i", &config_.trip_i_},
+        {"trip_v", &config_.trip_v_},
+        {"calib_max_i", &config_.calib_max_i_},
+        {"calib_v", &config_.calib_v_},
+        {"resistance", &config_.resistance_},
+        {"inductance", &config_.inductance_},
+        {"pole_pairs", &config_.pole_pairs},
+        {"encoder_dir", &config_.encoder_dir_},
+        {"svm_saddle", &config_.svm_saddle_},
+        {"reset_voltage", &config_.reset_voltage_},
+        {"reset_hz", &config_.reset_hz_},
+        {"display_div", &config_.display_div_}
+    });
+    return props;
 }
 
 void MotorDrive::Run()
 {
-	error_info_.ClearError();
-	sched_.Run();
+    error_info_.ClearError();
+    sched_.Run();
 }
 
 void MotorDrive::RunWaitForCompletion()
 {
-	error_info_.ClearError();
-	sched_.RunWaitForCompletion();
+    error_info_.ClearError();
+    sched_.RunWaitForCompletion();
 }
 
 void MotorDrive::Abort()
 {
-	pwm_->Stop();
-	sched_.Abort();
+    pwm_->Stop();
+    sched_.Abort();
 }
 
 IEncoder* MotorDrive::GetEncoder() const
 {
-	return encoder_;
+    return encoder_;
 }
 
-void MotorDrive::SetEncoder(IEncoder* encoder)
+void MotorDrive::SetEncoder(IEncoder *encoder)
 {
-	if (encoder) {
-		if (!encoder->Initialize())
-		    throw std::runtime_error("Encoder initialization error.");
+    if (encoder) {
+        if (!encoder->Initialize())
+            throw std::runtime_error("Encoder initialization error.");
         encoder_ = encoder;
-	}
+    }
 }
 
 int32_t MotorDrive::GetEncoderDir() const
 {
-	return config_.encoder_dir_;
+    return config_.encoder_dir_;
 }
 
 uint32_t MotorDrive::GetUpdateFrequency() const
 {
-	return update_hz_;
+    return update_hz_;
 }
 
 float MotorDrive::GetTimeSlice() const
 {
-	return time_slice_;
+    return time_slice_;
 }
 
 float MotorDrive::GetEncoderTimeSlice() const
 {
-	return enc_time_slice_;
+    return enc_time_slice_;
 }
 
 uint32_t MotorDrive::GetPolePairs() const
 {
-	return config_.pole_pairs;
+    return config_.pole_pairs;
 }
 
 float MotorDrive::GetBusVoltage() const
 {
-	return lpf_vbus_.Output();
+    return lpf_vbus_.Output();
 }
 
 std::complex<float> MotorDrive::GetPhaseCurrent() const
 {
-	return Iab_;
+    return Iab_;
 }
 
 bool MotorDrive::IsStarted()
 {
-	return pwm_->IsStarted();
+    return pwm_->IsStarted();
 }
 
 void MotorDrive::IrqUpdateCallback()
 {
-	if (pwm_->GetCounterDirection()) {
-		t1_begin_ = hrtimer.GetCounter();
+    if (pwm_->GetCounterDirection()) {
+        t1_begin_ = hrtimer.GetCounter();
 
-		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
-		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
-		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
-		data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
-		UpdateVbus();
+        data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
+        data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
+        data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
+        data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
+        UpdateVbus();
 
-		/*
-		 * Sample ADC bias
-		 */
-		lpf_bias_a.DoFilter(data_.injdata_[0]);
-		lpf_bias_b.DoFilter(data_.injdata_[1]);
-		lpf_bias_c.DoFilter(data_.injdata_[2]);
-		t1_span_ = hrtimer.GetTimeElapsedMicroSec(t1_begin_, hrtimer.GetCounter());
-	} else {
-		t2_to_t2_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
-		t2_begin_ = hrtimer.GetCounter();
-		data_.update_counter_++;
-		if (data_.update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
-			encoder_->Update();
-			UpdateRotor();
-		}
+        /*
+         * Sample ADC bias
+         */
+        lpf_bias_a.DoFilter(data_.injdata_[0]);
+        lpf_bias_b.DoFilter(data_.injdata_[1]);
+        lpf_bias_c.DoFilter(data_.injdata_[2]);
+        t1_span_ = hrtimer.GetTimeElapsedMicroSec(t1_begin_, hrtimer.GetCounter());
+    } else {
+        t2_to_t2_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
+        t2_begin_ = hrtimer.GetCounter();
+        data_.update_counter_++;
+        if (data_.update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
+            encoder_->Update();
+            UpdateRotor();
+        }
 
-		/*
-		 * Sample ADC phase current
-		 */
-		data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
-		data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
-		data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
+        /*
+         * Sample ADC phase current
+         */
+        data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
+        data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
+        data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
 
-		data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
-		data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
-		data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_c.Output());
-		UpdateCurrent();
-		CheckTripViolations();
-		sched_.OnUpdate();
-		t2_end_ = hrtimer.GetCounter();
-		t2_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_,t2_end_);
+        data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
+        data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
+        data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_c.Output());
+        UpdateCurrent();
+        CheckTripViolations();
+        sched_.OnUpdate();
+        t2_end_ = hrtimer.GetCounter();
+        t2_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_,t2_end_);
 
-	}
+    }
 }
 
 void MotorDrive::UpdateVbus()
@@ -528,179 +527,179 @@ void MotorDrive::RunTaskAphaPoleSearch()
 
 void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage)
 {
-	sched_.AddTask(std::bind([&](float seconds, float test_voltage){
-		uint32_t i = 0;
-		uint32_t test_cycles = update_hz_ * seconds;
-		bool ret = false;
+    sched_.AddTask(std::bind([&](float seconds, float test_voltage){
+        uint32_t i = 0;
+        uint32_t test_cycles = update_hz_ * seconds;
+        bool ret = false;
 
-		ApplyPhaseVoltage(0, 0);
-		config_.resistance_ = 0;
-		do {
-			ret = sched_.RunUpdateHandler([&]()->bool {
-				ApplyPhaseVoltage(test_voltage, std::polar<float>(1, 0));
-				return false;
-			});
+        ApplyPhaseVoltage(0, 0);
+        config_.resistance_ = 0;
+        do {
+            ret = sched_.RunUpdateHandler([&]()->bool {
+                ApplyPhaseVoltage(test_voltage, std::polar<float>(1, 0));
+                return false;
+            });
 
 #if 0
-			if ((data_.update_counter_ % 13) == 0) {
-				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\n",
-						lpf_vbus_.Output(), data_.phase_current_a_, data_.phase_current_b_, data_.phase_current_c_,
-						data_.phase_current_a_ + data_.phase_current_b_ + data_.phase_current_c_);
-			}
+            if ((data_.update_counter_ % 13) == 0) {
+                fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\n",
+                        lpf_vbus_.Output(), data_.phase_current_a_, data_.phase_current_b_, data_.phase_current_c_,
+                        data_.phase_current_a_ + data_.phase_current_b_ + data_.phase_current_c_);
+            }
 #endif
-		} while (ret && i++ < test_cycles);
-		if (ret)
-			config_.resistance_ = 2.0f / 3.0f * test_voltage / data_.phase_current_a_;
-		ApplyPhaseVoltage(0, 0);
-	}, seconds, test_voltage));
+        } while (ret && i++ < test_cycles);
+        if (ret)
+            config_.resistance_ = 2.0f / 3.0f * test_voltage / data_.phase_current_a_;
+        ApplyPhaseVoltage(0, 0);
+    }, seconds, test_voltage));
 }
 
 void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, uint32_t test_hz)
 {
-	sched_.AddTask(std::bind([&](float seconds, float test_voltage, uint32_t test_hz){
-		LowPassFilter<float, float> lpf_a(0.001);
-		uint32_t sine_steps = update_hz_ / test_hz;
-		uint32_t test_cycles = update_hz_ * seconds;
-		bool ret = true;
-		std::complex<float> V(1.0, 0.0);
-		std::complex<float> r = std::polar<float>(1.0, M_PI * 2 / sine_steps);
+    sched_.AddTask(std::bind([&](float seconds, float test_voltage, uint32_t test_hz){
+        LowPassFilter<float, float> lpf_a(0.001);
+        uint32_t sine_steps = update_hz_ / test_hz;
+        uint32_t test_cycles = update_hz_ * seconds;
+        bool ret = true;
+        std::complex<float> V(1.0, 0.0);
+        std::complex<float> r = std::polar<float>(1.0, M_PI * 2 / sine_steps);
 
-		ApplyPhaseVoltage(0, 0);
-		for (uint32_t i = 0; ret && i < test_cycles;  i++) {
+        ApplyPhaseVoltage(0, 0);
+        for (uint32_t i = 0; ret && i < test_cycles;  i++) {
 
-			ret = sched_.RunUpdateHandler([&]()->bool {
+            ret = sched_.RunUpdateHandler([&]()->bool {
 
-				lpf_a.DoFilter(std::abs(data_.phase_current_a_));
-				V = V * r;
+                lpf_a.DoFilter(std::abs(data_.phase_current_a_));
+                V = V * r;
 
-				// Test voltage along phase A
-				ApplyPhaseVoltage(test_voltage * V.real(), std::complex<float>(1.0f, 0.0f));
-				return false;
-			});
+                // Test voltage along phase A
+                ApplyPhaseVoltage(test_voltage * V.real(), std::complex<float>(1.0f, 0.0f));
+                return false;
+            });
 #if 0
-			if ((i % 13) == 0) {
-				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\n",
-						lpf_vbus_.Output(), lpf_a.Output());
-			}
+            if ((i % 13) == 0) {
+                fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\n",
+                        lpf_vbus_.Output(), lpf_a.Output());
+            }
 #endif
-		}
+        }
 
-		if (ret) {
-			float X = (lpf_vbus_.Output() - lpf_a.Output() * config_.resistance_)/ lpf_a.Output();
-			float L = X / (2 * M_PI * test_hz);
-			config_.inductance_ = L;
-		}
-	}, seconds, test_voltage, test_hz));
+        if (ret) {
+            float X = (lpf_vbus_.Output() - lpf_a.Output() * config_.resistance_)/ lpf_a.Output();
+            float L = X / (2 * M_PI * test_hz);
+            config_.inductance_ = L;
+        }
+    }, seconds, test_voltage, test_hz));
 }
 
 
 float MotorDrive::RunResistanceMeasurement(float seconds, float test_voltage)
 {
-	AddTaskArmMotor();
-	AddTaskMeasureResistance(seconds, test_voltage);
-	AddTaskDisarmMotor();
-	sched_.RunWaitForCompletion();
-	return config_.resistance_;
+    AddTaskArmMotor();
+    AddTaskMeasureResistance(seconds, test_voltage);
+    AddTaskDisarmMotor();
+    sched_.RunWaitForCompletion();
+    return config_.resistance_;
 }
 
 float MotorDrive::RunInductanceMeasurement(float seconds, float test_voltage, uint32_t test_hz)
 {
-	AddTaskArmMotor();
-	AddTaskMeasureInductance(seconds, test_voltage, test_hz);
-	AddTaskDisarmMotor();
-	sched_.RunWaitForCompletion();
-	return config_.inductance_;
+    AddTaskArmMotor();
+    AddTaskMeasureInductance(seconds, test_voltage, test_hz);
+    AddTaskDisarmMotor();
+    sched_.RunWaitForCompletion();
+    return config_.inductance_;
 }
-
 
 void MotorDrive::RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)
 {
-	AddTaskArmMotor();
-	AddTaskResetRotorWithParams(voltage, 35, false);
-	AddTaskRotateMotor(angle, speed, voltage, dir);
-	AddTaskDisarmMotor();
-	sched_.RunWaitForCompletion();
+    AddTaskArmMotor();
+    AddTaskResetRotorWithParams(voltage, 35, false);
+    AddTaskRotateMotor(angle, speed, voltage, dir);
+    AddTaskDisarmMotor();
+    sched_.RunWaitForCompletion();
 }
 
 void MotorDrive::DefaultIdleTask()
 {
-	fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\n",
-			lpf_vbus_.Output(), lpf_bias_a.Output(), lpf_bias_b.Output(), lpf_bias_c.Output(), data_.phase_current_a_, data_.phase_current_b_, data_.phase_current_c_);
+    fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\n", lpf_vbus_.Output(),
+            lpf_bias_a.Output(), lpf_bias_b.Output(), lpf_bias_c.Output(), data_.phase_current_a_, data_.phase_current_b_,
+            data_.phase_current_c_);
 }
 
 bool MotorDrive::CheckPhaseCurrentViolation(float current)
 {
-	if (current > config_.trip_i_) {
-		Abort();
-		error_info_.SetError(e_trip_voltage, "Current limit violation, %f", current);
-		return true;
-	}
-	return false;
+    if (current > config_.trip_i_) {
+        Abort();
+        error_info_.SetError(e_trip_voltage, "Current limit violation, %f", current);
+        return true;
+    }
+    return false;
 }
 
 bool MotorDrive::CheckPhaseVoltageViolation(float voltage)
 {
-	if (voltage > config_.trip_v_) {
-		Abort();
-		error_info_.SetError(e_trip_voltage, "Voltage bus limit violation, %f", voltage);
-		return true;
-	}
-	return false;
+    if (voltage > config_.trip_v_) {
+        Abort();
+        error_info_.SetError(e_trip_voltage, "Voltage bus limit violation, %f", voltage);
+        return true;
+    }
+    return false;
 }
 
 bool MotorDrive::CheckTripViolations()
 {
-	bool ret = false;
-	if (delay_trip_check_ < (update_hz_ / 4)) {
-		delay_trip_check_++;
-		return false;
-	}
-	ret = ret || CheckPhaseVoltageViolation(lpf_vbus_.Output());
-	ret = ret || CheckPhaseCurrentViolation(lpf_Ia_.Output());
-	ret = ret || CheckPhaseCurrentViolation(lpf_Ib_.Output());
-	ret = ret || CheckPhaseCurrentViolation(lpf_Ic_.Output());
-	if (ret)
-		delay_trip_check_ = 0;
-	return ret;
+    bool ret = false;
+    if (delay_trip_check_ < (update_hz_ / 4)) {
+        delay_trip_check_++;
+        return false;
+    }
+    ret = ret || CheckPhaseVoltageViolation(lpf_vbus_.Output());
+    ret = ret || CheckPhaseCurrentViolation(lpf_Ia_.Output());
+    ret = ret || CheckPhaseCurrentViolation(lpf_Ib_.Output());
+    ret = ret || CheckPhaseCurrentViolation(lpf_Ic_.Output());
+    if (ret)
+        delay_trip_check_ = 0;
+    return ret;
 }
 
 void MotorDrive::RunSimpleTasks()
 {
-	sched_.AddTask([&](){
-		uint32_t t0 = xTaskGetTickCount();
-		if (sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT, 2000) == Scheduler::THREAD_FLAG_ABORT) {
-			fprintf(stderr, "Task1 Aborting...\n\n\n");
-			return;
-		}
-		fprintf(stderr, "Task1 finished %lu\n", xTaskGetTickCount() - t0);
-	});
-	sched_.AddTask([&](){
-		uint32_t t0 = xTaskGetTickCount();
-		if (sched_.WaitSignalAbort(2000)) {
-			fprintf(stderr, "Task2 Aborting...\n\n\n");
-			return;
-		}
-		fprintf(stderr, "Task2 finished %lu\n", xTaskGetTickCount() - t0);
-	});
-	sched_.AddTask([&](){
-		uint32_t t0 = xTaskGetTickCount();
-		if (sched_.WaitSignalAbort(2000)) {
-			fprintf(stderr, "Task3 Aborting...\n\n\n");
-			return;
-		}
-		fprintf(stderr, "Task3 finished %lu\n\n\n", xTaskGetTickCount() - t0);
-	});
-	sched_.Run();
+    sched_.AddTask([&](){
+        uint32_t t0 = xTaskGetTickCount();
+        if (sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT, 2000) == Scheduler::THREAD_FLAG_ABORT) {
+            fprintf(stderr, "Task1 Aborting...\n\n\n");
+            return;
+        }
+        fprintf(stderr, "Task1 finished %lu\n", xTaskGetTickCount() - t0);
+    });
+    sched_.AddTask([&](){
+        uint32_t t0 = xTaskGetTickCount();
+        if (sched_.WaitSignalAbort(2000)) {
+            fprintf(stderr, "Task2 Aborting...\n\n\n");
+            return;
+        }
+        fprintf(stderr, "Task2 finished %lu\n", xTaskGetTickCount() - t0);
+    });
+    sched_.AddTask([&](){
+        uint32_t t0 = xTaskGetTickCount();
+        if (sched_.WaitSignalAbort(2000)) {
+            fprintf(stderr, "Task3 Aborting...\n\n\n");
+            return;
+        }
+        fprintf(stderr, "Task3 finished %lu\n\n\n", xTaskGetTickCount() - t0);
+    });
+    sched_.Run();
 
 }
 
 void MotorDrive::SchedulerRun()
 {
-	sched_.Run();
+    sched_.Run();
 }
 
 void MotorDrive::SchedulerAbort()
 {
-	sched_.Abort();
+    sched_.Abort();
 }
 
