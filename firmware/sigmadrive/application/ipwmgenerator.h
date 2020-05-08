@@ -10,6 +10,12 @@ public:
 
 	virtual void Start() = 0;
 	virtual void Stop() = 0;
+
+	/** Get the counter direction
+	 *
+	 * @return Return 0 if the counter is going up,
+	 * return 1 if the counter is going down
+	 */
 	virtual uint32_t GetCounterDirection() = 0;
 	virtual bool IsStarted() = 0;
 

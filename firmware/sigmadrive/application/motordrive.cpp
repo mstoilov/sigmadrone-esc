@@ -12,15 +12,14 @@
 #include "motordrive.h"
 #include "uartrpcserver.h"
 #include "sdmath.h"
+#include "adcdata.h"
 
 extern UartRpcServer rpc_server;
 extern Adc adc1;
 extern Adc adc2;
 extern Adc adc3;
 extern Drv8323 drv1;
-static std::complex<float> p1_ = std::polar<float>(1.0f, 0.0f);
-static std::complex<float> p2_ = std::polar<float>(1.0f, M_PI * 2.0f / 3.0f);
-static std::complex<float> p3_ = std::polar<float>(1.0f, M_PI * 4.0f / 3.0f);
+
 
 MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
     : Pa_(std::polar<float>(1.0f, 0.0f))
@@ -232,16 +231,32 @@ bool MotorDrive::IsStarted()
     return pwm_->IsStarted();
 }
 
+/** IrqUpdateCallback is the interrupt handler that drives the motor.
+ *
+ * We use center aligned PWM. When the counter is going up the
+ * current through the windings should be zero at that point
+ * we update the bias. When the counter is going down we update
+ * the current.
+ * ```
+ *   |      _____|_____      |
+ *   |     |     |     |     |
+ *   |_____|     |     |_____|
+ *   |           |           |
+ *   /\     up   /\     down
+ *    \           \
+ *     \           \___ update current
+ *      \
+ *       \___update bias
+ *
+ * ```
+ */
 void MotorDrive::IrqUpdateCallback()
 {
     if (pwm_->GetCounterDirection()) {
         t1_begin_ = hrtimer.GetCounter();
 
-        data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
-        data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
-        data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
-        data_.vbus_ = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_4);
-        UpdateVbus();
+        data_.vbus_ = AdcData::ReadBusVoltage();
+        AdcData::ReadPhaseCurrent(data_.injdata_, 3);
 
         /*
          * Sample ADC bias
@@ -262,9 +277,8 @@ void MotorDrive::IrqUpdateCallback()
         /*
          * Sample ADC phase current
          */
-        data_.injdata_[0] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_1);
-        data_.injdata_[1] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_2);
-        data_.injdata_[2] = LL_ADC_INJ_ReadConversionData12(adc1.hadc_->Instance, LL_ADC_INJ_RANK_3);
+        data_.vbus_ = AdcData::ReadBusVoltage();
+        AdcData::ReadPhaseCurrent(data_.injdata_, 3);
 
         data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
         data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
@@ -274,7 +288,6 @@ void MotorDrive::IrqUpdateCallback()
         sched_.OnUpdate();
         t2_end_ = hrtimer.GetCounter();
         t2_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_,t2_end_);
-
     }
 }
 

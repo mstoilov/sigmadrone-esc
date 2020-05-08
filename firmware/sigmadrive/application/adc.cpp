@@ -12,36 +12,61 @@
 #include "dcache.h"
 
 
-Adc::Adc()
-	: hadc_(nullptr)
+Adc::Adc() : hadc_(nullptr)
 {
-	memset(regdata_, 0, sizeof(regdata_));
+    memset(regdata_, 0, sizeof(regdata_));
 }
 
 Adc::~Adc()
 {
-
 }
 
-void Adc::Attach(ADC_HandleTypeDef* hadc)
+/** Attach this object to the hardware ADC device
+ *
+ * This method attaches to the hardware level device and
+ * starts the DMA data acquisition for the configured channels.
+ * It also enables the ADC_IT_JEOC IRQ that signals the completion
+ * of sampling of the phase current. This is a very important IRQ
+ * because it drives the @ref MotorDrive::IrqUpdateCallback and thus
+ * the whole servo drive operation.
+ *
+ * @param hadc handle to the hardware level device
+ */
+void Adc::Attach(ADC_HandleTypeDef *hadc)
 {
-	hadc_ = hadc;
-	__HAL_ADC_ENABLE(hadc_);
-	if (hadc == &hadc1) {
-		__HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
-		if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, 5) != HAL_OK) {
-			/* Start Conversation Error */
-			printf("Failed to start regular conversions\n");
-		}
-	}
+    hadc_ = hadc;
+    __HAL_ADC_ENABLE(hadc_);
+    if (hadc == &hadc1) {
+        __HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
+        if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, 5) != HAL_OK) {
+            /* Start Conversation Error */
+            printf("Failed to start regular conversions\n");
+        }
+    }
 
 }
 
-void Adc::StartRegularConversions()
-{
-}
-
+/** Trigger the injected channels conversion
+ *
+ * This method triggers the ADC data acquisition for the
+ * injected channels.
+ *
+ */
 void Adc::InjectedSwTrig()
 {
-	LL_ADC_INJ_StartConversionSWStart(hadc_->Instance);
+    LL_ADC_INJ_StartConversionSWStart(hadc_->Instance);
+}
+
+/** Read injected channel conversion data
+ *
+ * @param  Rank This parameter can be one of the following values:
+ *         @arg @ref LL_ADC_INJ_RANK_1
+ *         @arg @ref LL_ADC_INJ_RANK_2
+ *         @arg @ref LL_ADC_INJ_RANK_3
+ *         @arg @ref LL_ADC_INJ_RANK_4
+ * @return The ADC data for the specified rank
+ */
+uint32_t Adc::InjReadConversionData(uint32_t rank)
+{
+    return LL_ADC_INJ_ReadConversionData12(hadc_->Instance, rank);
 }
