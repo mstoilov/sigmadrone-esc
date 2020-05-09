@@ -159,29 +159,51 @@ rexjson::property MotorDrive::GetPropertyMap()
     return props;
 }
 
+/** Clear any outstanding error and put the
+ * scheduler in run mode.
+ *
+ * If there are any tasks loaded in the scheduler queue,
+ * they will start executing immediately.
+ */
 void MotorDrive::Run()
 {
     error_info_.ClearError();
     sched_.Run();
 }
 
+/** This method is similar to @ref MotorDrive::Run,
+ * but it will block until will all tasks finish.
+ *
+ */
 void MotorDrive::RunWaitForCompletion()
 {
     error_info_.ClearError();
     sched_.RunWaitForCompletion();
 }
 
+/** Immediately cut the PWM outputs and abort
+ * all outstanding tasks in the scheduler queue.
+ *
+ */
 void MotorDrive::Abort()
 {
     pwm_->Stop();
     sched_.Abort();
 }
 
+/** Return pointer to the currently used encoder object
+ *
+ * @return IEncoder pointer interface
+ */
 IEncoder* MotorDrive::GetEncoder() const
 {
     return encoder_;
 }
 
+/** Set the IEncoder interface
+ *
+ * @param encoder IEncoder interface
+ */
 void MotorDrive::SetEncoder(IEncoder *encoder)
 {
     if (encoder) {
@@ -191,41 +213,94 @@ void MotorDrive::SetEncoder(IEncoder *encoder)
     }
 }
 
+/** Get the configure encoder direction.
+ *
+ * The configured encoder direction allows the direction
+ * of encoder rotation and the positive direction of the
+ * rotor rotation for the current current wiring to be
+ * synchronized. It is also possible the direction synchronization
+ * to be achieved by swapping two of the cables connected to the
+ * motor.
+ *
+ * @return 1 - encoder increasing or -1 encoder decreasing,
+ * 0 the encoder direction is not set. You need this parameter to be
+ * set to 1 or -1 (depending on how the cables are connected) for
+ * the motor operate correctly.
+ */
 int32_t MotorDrive::GetEncoderDir() const
 {
     return config_.encoder_dir_;
 }
 
+/** Return the update rate of the motor drive
+ *
+ * @return Update rate
+ */
 uint32_t MotorDrive::GetUpdateFrequency() const
 {
     return update_hz_;
 }
 
+/** Return the update time period in seconds
+ *
+ * @return
+ */
 float MotorDrive::GetTimeSlice() const
 {
     return time_slice_;
 }
 
+/** Return the encoder update time period in seconds
+ *
+ * This might be different than the @ref GetTimeSlice,
+ * because the update period for the encoder might be
+ * slower (meaning it takes longer time for the encoder
+ * to update).
+ *
+ * @return Encoder update time period
+ */
 float MotorDrive::GetEncoderTimeSlice() const
 {
     return enc_time_slice_;
 }
 
+/** Get the motor pole pairs.
+ *
+ * @return motor pole pairs
+ */
 uint32_t MotorDrive::GetPolePairs() const
 {
     return config_.pole_pairs;
 }
 
+/** Get the Vbus voltage after it has been
+ * run through a low pass filter.
+ *
+ * @return Filtered Vbus voltage
+ */
 float MotorDrive::GetBusVoltage() const
 {
     return lpf_vbus_.Output();
 }
 
+/** Get the phase current as a vector (complex value).
+ *
+ * @return complex valule representing the magnitude
+ * and the direction of the phase current
+ */
 std::complex<float> MotorDrive::GetPhaseCurrent() const
 {
     return Iab_;
 }
 
+/** Check if the PWM timer counter is currently enabled.
+ *
+ * If the PWM timer is enabled it will trigger the interrupts
+ * and the @ref IrqUpdateCallback will be executed.
+ *
+ * @note This doesn't mean the outputs are enabled though.
+ * @return true if the PWM timer is enabled, false otherwise
+ */
 bool MotorDrive::IsStarted()
 {
     return pwm_->IsStarted();
@@ -238,13 +313,13 @@ bool MotorDrive::IsStarted()
  * we update the bias. When the counter is going down we update
  * the current.
  * ```
- *   |      _____|_____      |
- *   |     |     |     |     |
- *   |_____|     |     |_____|
- *   |           |           |
- *   /\     up   /\     down
- *    \           \
- *     \           \___ update current
+ *   |       _____|_____       |
+ *   |      |     |     |      |
+ *   |______|     |     |______|
+ *   |            |            |
+ *   /\     up    /\     down
+ *    \            \
+ *     \            \___ update current
  *      \
  *       \___update bias
  *
