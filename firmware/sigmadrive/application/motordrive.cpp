@@ -355,12 +355,31 @@ void MotorDrive::IrqUpdateCallback()
         data_.vbus_ = AdcData::ReadBusVoltage();
         AdcData::ReadPhaseCurrent(data_.injdata_, 3);
 
+        /*
+         * Apply the ADC bias to the current data
+         */
         data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
         data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
         data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_c.Output());
+
+        /*
+         * Update the Iab vector
+         */
         UpdateCurrent();
+
+        /*
+         * Check for abnormal conditions.
+         */
         CheckTripViolations();
+
+        /*
+         * Run the scheduler tasks
+         */
         sched_.OnUpdate();
+
+        /*
+         * Record the high resolution time.
+         */
         t2_end_ = hrtimer.GetCounter();
         t2_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_,t2_end_);
     }
