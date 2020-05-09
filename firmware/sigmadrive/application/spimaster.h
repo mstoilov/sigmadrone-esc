@@ -16,21 +16,21 @@
 
 class SPIMaster {
 public:
-	static const uint32_t timeout = 100;
+    static const uint32_t timeout = 100;
 
-	SPIMaster();
-	virtual ~SPIMaster();
+    SPIMaster();
+    virtual ~SPIMaster();
 
-	void Attach(SPI_HandleTypeDef* hspi);
-	void Detach();
-	void ChipSelect(GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin, bool select);
+    void Attach(SPI_HandleTypeDef* hspi);
+    void Detach();
+    void ChipSelect(GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin, bool select);
 
-	bool Transmit(uint8_t *pData, uint16_t Size);
-	bool Receive(uint8_t *pData, uint16_t Size);
-	bool TransmitReceive(uint8_t *pTxData, uint8_t *pRxData, uint16_t Size);
+    bool Transmit(uint8_t *pData, uint16_t Size);
+    bool Receive(uint8_t *pData, uint16_t Size);
+    bool TransmitReceive(uint8_t *pTxData, uint8_t *pRxData, uint16_t Size);
 
 public:
-	SPI_HandleTypeDef* hspi_;
+    SPI_HandleTypeDef* hspi_;
 };
 
 #endif /* APPLICATION_SPIMASTER_H_ */

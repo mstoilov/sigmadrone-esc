@@ -21,10 +21,10 @@
 #ifndef _CLDEFS_H_
 #define _CLDEFS_H_
 
-#define NULL			((void*)0)
-#define SLLOCHAR(c)		(((c) >= 'A' && (c) <= 'Z') ? (c) + ('a' - 'A'): (c))
-#define SLHICHAR(c)		(((c) >= 'a' && (c) <= 'z') ? (c) - ('a' - 'A'): (c))
-#define SLISDIGIT(c)	(((c) >= '0') && ((c) <= '9'))
-#define SLISXDIGIT(c)	(ALISDIGIT(c) || (((c) >= 'a') && ((c) <= 'f')) || (((c) >= 'A') && ((c) <= 'F')))
+#define NULL            ((void*)0)
+#define SLLOCHAR(c)     (((c) >= 'A' && (c) <= 'Z') ? (c) + ('a' - 'A'): (c))
+#define SLHICHAR(c)     (((c) >= 'a' && (c) <= 'z') ? (c) - ('a' - 'A'): (c))
+#define SLISDIGIT(c)    (((c) >= '0') && ((c) <= '9'))
+#define SLISXDIGIT(c)   (ALISDIGIT(c) || (((c) >= 'a') && ((c) <= 'f')) || (((c) >= 'A') && ((c) <= 'F')))
 
 #endif

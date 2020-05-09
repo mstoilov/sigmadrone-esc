@@ -23,19 +23,19 @@
 
 struct DLIST_HEAD
 {
-	struct DLIST_HEAD *pPrev;
-	struct DLIST_HEAD *pNext;
+    struct DLIST_HEAD *pPrev;
+    struct DLIST_HEAD *pNext;
 };
 
 #define DLIST_INIT(pHead) do { \
-	(pHead)->pPrev = (pHead); (pHead)->pNext = (pHead); \
+    (pHead)->pPrev = (pHead); (pHead)->pNext = (pHead); \
 } while (0)
 
 #define cl_dlist_parent_entry(ptr, type, member) \
-	((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
+    ((type *)((char *)(ptr) - (unsigned long)(&((type *)0)->member)))
 
 #define cl_dlist_for_each(head, pos) \
-	for (pos = (head)->pNext; pos != (head); pos = pos->pNext)
+    for (pos = (head)->pNext; pos != (head); pos = pos->pNext)
 
 #ifdef __cplusplus
 extern "C" {

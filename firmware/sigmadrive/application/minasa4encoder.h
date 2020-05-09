@@ -59,22 +59,22 @@ static const uint8_t MA4_CF_SYNC_CODE 		= 0x2;
 static const uint8_t MA4_CF_SYNC_CODE_MASK 	= 0x7;
 
 struct MA4ControlField {
-	union {
-		struct {
-			uint8_t sync_code: 3; // always 010b
-			uint8_t cc0: 1;
-			uint8_t cc1: 1;
-			uint8_t cc2: 1;
-			uint8_t cc3: 1;
-			uint8_t cc4: 1;
-		};
-		uint8_t as_byte;
-	};
+    union {
+        struct {
+            uint8_t sync_code: 3; // always 010b
+            uint8_t cc0: 1;
+            uint8_t cc1: 1;
+            uint8_t cc2: 1;
+            uint8_t cc3: 1;
+            uint8_t cc4: 1;
+        };
+        uint8_t as_byte;
+    };
 };
 
 
 struct MA4EncoderRequest {
-	MA4ControlField ctrl_field_;
+    MA4ControlField ctrl_field_;
 };
 
 // ===================================================
@@ -91,42 +91,42 @@ struct MA4EncoderRequest {
 // ===================================================
 
 struct MA4StatusField {
-	union {
-		struct {
-			uint8_t dd: 4;       // always 0
-			uint8_t ea0: 1;      // System Down
-			uint8_t ea1: 1;      // Multiple rev error, batt. alarm, full absolute status,
-			                     // counter overflow
-			uint8_t reserved: 2; // always 0
-		};
-		uint8_t as_byte;
-	};
+    union {
+        struct {
+            uint8_t dd: 4;       // always 0
+            uint8_t ea0: 1;      // System Down
+            uint8_t ea1: 1;      // Multiple rev error, batt. alarm, full absolute status,
+                                 // counter overflow
+            uint8_t reserved: 2; // always 0
+        };
+        uint8_t as_byte;
+    };
 };
 
 struct MA4Almc {
-	union {
-		struct {
-			uint8_t overspeed_ 					: 1; // OS
-			uint8_t full_abs_status_ 			: 1; // FS
-			uint8_t count_error_ 				: 1; // CE
-			uint8_t counter_overflow_ 			: 1; // OF
-			uint8_t reserved_ 					: 1; // always 0
-			uint8_t multiple_revolution_error_ 	: 1; // ME
-			uint8_t system_down_ 				: 1; // SYD
-			uint8_t battery_alarm_ 				: 1; // BA
-		};
-		uint8_t as_byte_;
-	};
+    union {
+        struct {
+            uint8_t overspeed_ 					: 1; // OS
+            uint8_t full_abs_status_ 			: 1; // FS
+            uint8_t count_error_ 				: 1; // CE
+            uint8_t counter_overflow_ 			: 1; // OF
+            uint8_t reserved_ 					: 1; // always 0
+            uint8_t multiple_revolution_error_ 	: 1; // ME
+            uint8_t system_down_ 				: 1; // SYD
+            uint8_t battery_alarm_ 				: 1; // BA
+        };
+        uint8_t as_byte_;
+    };
 };
 
 static_assert(sizeof(uint8_t) == 1, "ALMC must be 1 byte long");
 
 struct MA4EncoderReply4 {
-	MA4ControlField ctrl_field_;
-	MA4StatusField status_field_;
-	uint8_t absolute_data_[3];
-	MA4Almc almc_; // encoder error
-	uint8_t crc_;
+    MA4ControlField ctrl_field_;
+    MA4StatusField status_field_;
+    uint8_t absolute_data_[3];
+    MA4Almc almc_; // encoder error
+    uint8_t crc_;
 };
 
 typedef MA4EncoderReply4 MA4EncoderReply9;
@@ -137,100 +137,100 @@ typedef MA4EncoderReply4 MA4EncoderReplyF;
 static_assert(sizeof(MA4EncoderReply4) == 7, "MA4EncoderReply4 must be 7 bytes long");
 
 struct MA4EncoderReply5 {
-	MA4ControlField ctrl_field_;
-	MA4StatusField status_field_;
-	uint8_t absolute_data_[3];
-	uint8_t revolution_data_[2];
-	uint8_t not_used_;
-	uint8_t crc_;
+    MA4ControlField ctrl_field_;
+    MA4StatusField status_field_;
+    uint8_t absolute_data_[3];
+    uint8_t revolution_data_[2];
+    uint8_t not_used_;
+    uint8_t crc_;
 };
 
 static_assert(sizeof(MA4EncoderReply5) == 9, "MA4EncoderReply5 must be 9 bytes long");
 
 struct MA4EncoderReplyA {
-	MA4ControlField ctrl_field_;
-	MA4StatusField status_field_;
-	uint8_t absolute_data_[3];
-	uint8_t encoder_id_; // fixed to 0x11
-	uint8_t maker_id_;
-	MA4Almc almc_;
-	uint8_t crc_;
+    MA4ControlField ctrl_field_;
+    MA4StatusField status_field_;
+    uint8_t absolute_data_[3];
+    uint8_t encoder_id_; // fixed to 0x11
+    uint8_t maker_id_;
+    MA4Almc almc_;
+    uint8_t crc_;
 };
 
 static_assert(sizeof(MA4EncoderReplyA) == 9, "MA4EncoderReplyA must be 9 bytes long");
 
 struct MA4Update {
-	union {
-		MA4EncoderReply4 reply4_;
-		MA4EncoderReply5 reply5_;
-	};
+    union {
+        MA4EncoderReply4 reply4_;
+        MA4EncoderReply5 reply5_;
+    };
 };
 
 class MinasA4Encoder : public IEncoder {
 public:
-	using handle_map_type = std::map<UART_HandleTypeDef*, MinasA4Encoder*>;
-	static handle_map_type handle_map_;
+    using handle_map_type = std::map<UART_HandleTypeDef*, MinasA4Encoder*>;
+    static handle_map_type handle_map_;
 
-	MinasA4Encoder();
-	~MinasA4Encoder();
-	bool Attach(UART_HandleTypeDef* usart);
-	void TransmitCompleteCallback();
-	void ReceiveCompleteCallback();
-	uint32_t ResetErrorCode(uint8_t data_id);
-	uint32_t ResetErrorCodeF();
-	uint32_t ResetErrorCodeB();
-	uint32_t ResetErrorCodeE();
-	uint32_t ResetErrorCode9();
-	uint32_t GetDeviceID();
-	bool reset_single_revolution_data()			{ return ResetErrorCode(MA4_DATA_ID_F); }
-	bool reset_multiple_revolution_data()		{ return ResetErrorCode(MA4_DATA_ID_B); }
-	uint32_t get_error_count() const 			{ return error_count_; }
+    MinasA4Encoder();
+    ~MinasA4Encoder();
+    bool Attach(UART_HandleTypeDef* usart);
+    void TransmitCompleteCallback();
+    void ReceiveCompleteCallback();
+    uint32_t ResetErrorCode(uint8_t data_id);
+    uint32_t ResetErrorCodeF();
+    uint32_t ResetErrorCodeB();
+    uint32_t ResetErrorCodeE();
+    uint32_t ResetErrorCode9();
+    uint32_t GetDeviceID();
+    bool reset_single_revolution_data()			{ return ResetErrorCode(MA4_DATA_ID_F); }
+    bool reset_multiple_revolution_data()		{ return ResetErrorCode(MA4_DATA_ID_B); }
+    uint32_t get_error_count() const 			{ return error_count_; }
 
 public:
-	virtual bool Initialize() override;
-	virtual uint32_t GetCounter();
-	virtual uint32_t GetResolutionBits() override;
-	virtual void ResetPosition() override;
-	virtual uint32_t GetPosition() override;
-	virtual uint32_t GetRevolutions() override;
-	virtual uint32_t GetIndexPosition() override;
-	virtual uint64_t GetAbsolutePosition() override;
-	virtual uint64_t GetAbsolutePositionMax() override;
-	virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) override;
-	virtual float GetMechanicalPosition(uint64_t position) override;
-	virtual uint32_t GetLastError() override;
-	virtual bool Update() override;
+    virtual bool Initialize() override;
+    virtual uint32_t GetCounter();
+    virtual uint32_t GetResolutionBits() override;
+    virtual void ResetPosition() override;
+    virtual uint32_t GetPosition() override;
+    virtual uint32_t GetRevolutions() override;
+    virtual uint32_t GetIndexPosition() override;
+    virtual uint64_t GetAbsolutePosition() override;
+    virtual uint64_t GetAbsolutePositionMax() override;
+    virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) override;
+    virtual float GetMechanicalPosition(uint64_t position) override;
+    virtual uint32_t GetLastError() override;
+    virtual bool Update() override;
 
 protected:
-	bool ParseReply4(const MA4EncoderReply4& reply4, uint32_t& status, uint32_t& counter, MA4Almc& almc);
-	bool ParseReply5(const MA4EncoderReply5& reply5, uint32_t& status, uint32_t& counter, uint32_t& revolutions);
-	bool ParseReplyA(const MA4EncoderReplyA& replyA, uint32_t& encoder_id);
-	bool ParseReply9BEF(const MA4EncoderReply4& reply4, MA4Almc& almc);
-	bool ResetWithCommand(uint8_t command, void* reply, size_t reply_size);
-	bool UpdateId4();
-	bool UpdateId5();
-	bool UpdateEnd();
-	bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
-	static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
+    bool ParseReply4(const MA4EncoderReply4& reply4, uint32_t& status, uint32_t& counter, MA4Almc& almc);
+    bool ParseReply5(const MA4EncoderReply5& reply5, uint32_t& status, uint32_t& counter, uint32_t& revolutions);
+    bool ParseReplyA(const MA4EncoderReplyA& replyA, uint32_t& encoder_id);
+    bool ParseReply9BEF(const MA4EncoderReply4& reply4, MA4Almc& almc);
+    bool ResetWithCommand(uint8_t command, void* reply, size_t reply_size);
+    bool UpdateId4();
+    bool UpdateId5();
+    bool UpdateEnd();
+    bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
+    static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
 
 public:
-	UART_HandleTypeDef* huart_;
-	uint32_t rotation_bits_ = 17;
-	uint32_t offset_ = 0;
-	uint32_t status_ = 0;
-	uint32_t counter_ = 0;
-	uint32_t revolutions_ = 0;
-	uint32_t error_count_ = 0;
-	uint32_t maintenance_ = 0;
-	MA4Almc almc_;
-	MA4Update update_;
+    UART_HandleTypeDef* huart_;
+    uint32_t rotation_bits_ = 17;
+    uint32_t offset_ = 0;
+    uint32_t status_ = 0;
+    uint32_t counter_ = 0;
+    uint32_t revolutions_ = 0;
+    uint32_t error_count_ = 0;
+    uint32_t maintenance_ = 0;
+    MA4Almc almc_;
+    MA4Update update_;
 
 
 public:
-	volatile uint32_t t1_ = 0;
-	volatile uint32_t t2_ = 0;
-	volatile uint32_t t1_to_t1_ = 0;
-	uint32_t update_time_ms_ = 0;
+    volatile uint32_t t1_ = 0;
+    volatile uint32_t t2_ = 0;
+    volatile uint32_t t1_to_t1_ = 0;
+    uint32_t update_time_ms_ = 0;
 };
 
 #endif /* MINAS_A4_ABS_ENCODER_H_ */

@@ -65,7 +65,7 @@ char *cl_longtostr(long lVal, char *pStr, int iSize);
 char *cl_uinttohstr(unsigned int uVal, char *pStr, int iSize);
 char *cl_ulongtohstr(unsigned long ulVal, char *pStr, int iSize);
 int cl_vformat(int (*pfOut)(char const *, int, void *), void *pPrivate, 
-			   char const *pszFmt, va_list Args);
+               char const *pszFmt, va_list Args);
 int cl_vsprintf(char *pszBuffer, int iSize, char const *pszFmt, va_list Args);
 int cl_sprintf(char *pszBuffer, int iSize, char const *pszFmt, ...);
 int cl_printf(char const *pszFmt, ...);

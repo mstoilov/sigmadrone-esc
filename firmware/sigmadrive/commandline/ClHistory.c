@@ -28,19 +28,19 @@
 
 typedef struct tagHISTNODE
 {
-	struct DLIST_HEAD list;
-	unsigned int uSize;
-	char szText[1];
+    struct DLIST_HEAD list;
+    unsigned int uSize;
+    char szText[1];
 } HISTNODE;
 
 
 typedef struct tagSL_HISTORY
 {
-	unsigned int uMagic;
-	struct DLIST_HEAD head;
-	struct DLIST_HEAD *pCNode;
-	unsigned int uSize;
-	unsigned int uEntries;
+    unsigned int uMagic;
+    struct DLIST_HEAD head;
+    struct DLIST_HEAD *pCNode;
+    unsigned int uSize;
+    unsigned int uEntries;
 } SL_HISTORY;
 
 
@@ -49,137 +49,137 @@ static SL_HISTORY hist;
 
 int cl_history_init()
 {
-	SL_HISTORY *pHist = &hist;
+    SL_HISTORY *pHist = &hist;
 
-	pHist->uMagic = HISTORY_MAGIC;
-	DLIST_INIT(&pHist->head);
-	pHist->pCNode = &pHist->head;
-	pHist->uSize = 0;
-	pHist->uEntries = 0;
+    pHist->uMagic = HISTORY_MAGIC;
+    DLIST_INIT(&pHist->head);
+    pHist->pCNode = &pHist->head;
+    pHist->uSize = 0;
+    pHist->uEntries = 0;
 
-	return 0;
+    return 0;
 }
 
 
 int cl_history_is_empty()
 {
-	SL_HISTORY *pHist = &hist;
+    SL_HISTORY *pHist = &hist;
 
-	return cl_dlist_is_empty(&pHist->head) ? 1 : 0;
+    return cl_dlist_is_empty(&pHist->head) ? 1 : 0;
 }
 
 
 void cl_history_head()
 {
-	SL_HISTORY *pHist = &hist;
+    SL_HISTORY *pHist = &hist;
 
-	pHist->pCNode = &pHist->head;
+    pHist->pCNode = &pHist->head;
 }
 
 
 const char *cl_history_next()
 {
-	SL_HISTORY *pHist = &hist;
+    SL_HISTORY *pHist = &hist;
 
-	if (cl_dlist_is_empty(&pHist->head) || pHist->pCNode->pNext == &pHist->head)
-		return (void*)0;
+    if (cl_dlist_is_empty(&pHist->head) || pHist->pCNode->pNext == &pHist->head)
+        return (void*)0;
 
-	pHist->pCNode = pHist->pCNode->pNext;
+    pHist->pCNode = pHist->pCNode->pNext;
 
-	return ((HISTNODE*)pHist->pCNode)->szText;
+    return ((HISTNODE*)pHist->pCNode)->szText;
 }
 
 
 const char *cl_history_prev()
 {
-	SL_HISTORY *pHist = &hist;
+    SL_HISTORY *pHist = &hist;
 
-	if (cl_dlist_is_empty(&pHist->head) || 
-		pHist->pCNode->pPrev == &pHist->head ||
-		pHist->pCNode == &pHist->head)
-		return (void*)0;
+    if (cl_dlist_is_empty(&pHist->head) ||
+        pHist->pCNode->pPrev == &pHist->head ||
+        pHist->pCNode == &pHist->head)
+        return (void*)0;
 
-	pHist->pCNode = pHist->pCNode->pPrev;
-	if (pHist->pCNode == &pHist->head)
-		return (void*)0;
+    pHist->pCNode = pHist->pCNode->pPrev;
+    if (pHist->pCNode == &pHist->head)
+        return (void*)0;
 
-	return ((HISTNODE*)pHist->pCNode)->szText;
+    return ((HISTNODE*)pHist->pCNode)->szText;
 }
 
 static int cl_history_remove_node(struct DLIST_HEAD *pNode)
 {
-	SL_HISTORY *pHist = &hist;
+    SL_HISTORY *pHist = &hist;
 
-	if (pNode == pHist->pCNode)
-		pHist->pCNode = pHist->pCNode->pNext;
-	pHist->uSize -= ((HISTNODE*)pNode)->uSize;
-	pHist->uEntries -= 1;
-	cl_dlist_remove(pNode);
-	cl_mem_free((void*)pNode);
+    if (pNode == pHist->pCNode)
+        pHist->pCNode = pHist->pCNode->pNext;
+    pHist->uSize -= ((HISTNODE*)pNode)->uSize;
+    pHist->uEntries -= 1;
+    cl_dlist_remove(pNode);
+    cl_mem_free((void*)pNode);
 
-	return 0;
+    return 0;
 }
 
 int cl_history_remove_tail()
 {
-	SL_HISTORY *pHist = &hist;
+    SL_HISTORY *pHist = &hist;
 
-	if (cl_dlist_is_empty(&pHist->head))
-		return -1;
-	return cl_history_remove_node(pHist->head.pPrev);
+    if (cl_dlist_is_empty(&pHist->head))
+        return -1;
+    return cl_history_remove_node(pHist->head.pPrev);
 }
 
 
 int cl_history_remove_head()
 {
-	SL_HISTORY *pHist = &hist;
+    SL_HISTORY *pHist = &hist;
 
-	if (cl_dlist_is_empty(&pHist->head))
-		return -1;
-	return cl_history_remove_node(pHist->head.pNext);
+    if (cl_dlist_is_empty(&pHist->head))
+        return -1;
+    return cl_history_remove_node(pHist->head.pNext);
 }
 
 void cl_history_remove_all()
 {
-	while(cl_history_remove_tail() == 0)
-		;
+    while(cl_history_remove_tail() == 0)
+        ;
 }
 
 int cl_history_add(const char *pszText)
 {
-	SL_HISTORY *pHist = &hist;
-	int iStrSize = cl_strlen(pszText) + 1;
-	unsigned int uSize = sizeof(HISTNODE) + iStrSize;
-	HISTNODE *pNode = (void*)0;
+    SL_HISTORY *pHist = &hist;
+    int iStrSize = cl_strlen(pszText) + 1;
+    unsigned int uSize = sizeof(HISTNODE) + iStrSize;
+    HISTNODE *pNode = (void*)0;
 
-	for (pNode = (HISTNODE *)pHist->head.pNext; ((struct DLIST_HEAD *)pNode) != &pHist->head; pNode = (HISTNODE *)pNode->list.pNext) {
-		if (cl_strcmp(pNode->szText, pszText) == 0) {
-			cl_dlist_remove(&pNode->list);
-			cl_dlist_add(&pHist->head, &pNode->list);
-			return 0;
-		}
-	}
+    for (pNode = (HISTNODE *)pHist->head.pNext; ((struct DLIST_HEAD *)pNode) != &pHist->head; pNode = (HISTNODE *)pNode->list.pNext) {
+        if (cl_strcmp(pNode->szText, pszText) == 0) {
+            cl_dlist_remove(&pNode->list);
+            cl_dlist_add(&pHist->head, &pNode->list);
+            return 0;
+        }
+    }
 
-	if ((pNode = cl_mem_alloc(uSize)) == (void*)0)
-		return -1;
-	pHist->uSize += uSize;
-	pHist->uEntries += 1;
-	pNode->uSize = uSize;
-	cl_strcpy(pNode->szText, pszText);
-	cl_dlist_add(&pHist->head, &pNode->list);
-	return 0;
+    if ((pNode = cl_mem_alloc(uSize)) == (void*)0)
+        return -1;
+    pHist->uSize += uSize;
+    pHist->uEntries += 1;
+    pNode->uSize = uSize;
+    cl_strcpy(pNode->szText, pszText);
+    cl_dlist_add(&pHist->head, &pNode->list);
+    return 0;
 }
 
 int cl_history_size()
 {
-	SL_HISTORY *pHist = &hist;
+    SL_HISTORY *pHist = &hist;
 
-	return pHist->uSize;
+    return pHist->uSize;
 }
 
 int cl_history_entries()
 {
-	SL_HISTORY *pHist = &hist;
+    SL_HISTORY *pHist = &hist;
 
-	return pHist->uEntries;
+    return pHist->uEntries;
 }

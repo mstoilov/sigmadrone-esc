@@ -7,12 +7,11 @@
 
 #include "tim.h"
 
-Tim::Tim() {
-	// TODO Auto-generated constructor stub
-
+Tim::Tim()
+{
 }
 
-Tim::~Tim() {
-	// TODO Auto-generated destructor stub
+Tim::~Tim()
+{
 }
 

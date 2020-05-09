@@ -19,35 +19,35 @@
 
 class QuadratureEncoder : public IEncoder {
 public:
-	QuadratureEncoder(uint32_t cpr_max);
-	virtual ~QuadratureEncoder();
-	void Attach(TIM_HandleTypeDef* htim);
-	uint32_t GetMaxCounter();
-	void InvalidateIndexOffset();
-	void SetIndexOffset(int32_t cpr);
-	void CallbackIndex();
+    QuadratureEncoder(uint32_t cpr_max);
+    virtual ~QuadratureEncoder();
+    void Attach(TIM_HandleTypeDef* htim);
+    uint32_t GetMaxCounter();
+    void InvalidateIndexOffset();
+    void SetIndexOffset(int32_t cpr);
+    void CallbackIndex();
 
 public:
-	virtual void Start() override;
-	virtual void Stop() override;
-	virtual uint32_t GetCounter() override;
-	virtual uint32_t GetMaxRotation() override;
-	virtual void ResetPosition() override;
-	virtual uint64_t GetPosition() override;
-	virtual uint32_t GetRevolutions() override;
-	virtual uint32_t GetIndexPosition() override;
-	virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) override;
-	virtual float GetMechanicalPosition(uint64_t position) override;
-	virtual uint32_t GetLastError() override { return 0; }
-	virtual bool Update() override { return true; }
+    virtual void Start() override;
+    virtual void Stop() override;
+    virtual uint32_t GetCounter() override;
+    virtual uint32_t GetMaxRotation() override;
+    virtual void ResetPosition() override;
+    virtual uint64_t GetPosition() override;
+    virtual uint32_t GetRevolutions() override;
+    virtual uint32_t GetIndexPosition() override;
+    virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) override;
+    virtual float GetMechanicalPosition(uint64_t position) override;
+    virtual uint32_t GetLastError() override { return 0; }
+    virtual bool Update() override { return true; }
 
 private:
-	void SetCounter(uint32_t cpr);
+    void SetCounter(uint32_t cpr);
 
 protected:
-	uint32_t cpr_max_;
-	volatile int32_t index_offset_;
-	TIM_HandleTypeDef* htim_;
+    uint32_t cpr_max_;
+    volatile int32_t index_offset_;
+    TIM_HandleTypeDef* htim_;
 };
 
 #endif /* _QUADRATUREENCODER_H_ */

@@ -22,62 +22,62 @@
 
 
 static void __dlist_add(struct DLIST_HEAD *pNew, 
-						struct DLIST_HEAD *pPrev,
-						struct DLIST_HEAD *pNext)
+                        struct DLIST_HEAD *pPrev,
+                        struct DLIST_HEAD *pNext)
 {
-	pNew->pNext = pNext;
-	pNew->pPrev = pPrev;
-	pPrev->pNext = pNew;
-	pNext->pPrev = pNew;
+    pNew->pNext = pNext;
+    pNew->pPrev = pPrev;
+    pPrev->pNext = pNew;
+    pNext->pPrev = pNew;
 }
 
 
 static void __dlist_del_middle(struct DLIST_HEAD *pPrev, struct DLIST_HEAD *pNext)
 {
-	pPrev->pNext = pNext;
-	pNext->pPrev = pPrev;
+    pPrev->pNext = pNext;
+    pNext->pPrev = pPrev;
 }
 
 
 void cl_dlist_add(struct DLIST_HEAD *pHead, struct DLIST_HEAD *pNew)
 {
-	__dlist_add(pNew, pHead, pHead->pNext);
+    __dlist_add(pNew, pHead, pHead->pNext);
 }
 
 
 void cl_dlist_add_tail(struct DLIST_HEAD *pHead, struct DLIST_HEAD *pNew)
 {
-	__dlist_add(pNew, pHead->pPrev, pHead);
+    __dlist_add(pNew, pHead->pPrev, pHead);
 }
 
 
 void cl_dlist_remove(struct DLIST_HEAD *pEntry)
 {
-	__dlist_del_middle(pEntry->pPrev, pEntry->pNext);
-	pEntry->pPrev = (void*) 0;
-	pEntry->pNext = (void*) 0;
+    __dlist_del_middle(pEntry->pPrev, pEntry->pNext);
+    pEntry->pPrev = (void*) 0;
+    pEntry->pNext = (void*) 0;
 }
 
 
 void cl_dlist_replace(struct DLIST_HEAD *pOld, struct DLIST_HEAD *pNew)
 {
-	DLIST_INIT(pNew);
+    DLIST_INIT(pNew);
 
-	if (pOld->pNext != pOld && pOld->pPrev != pOld)
-	{
-		pNew->pNext = pOld->pNext;
-		pOld->pNext->pPrev = pNew;
-		pNew->pPrev = pOld->pPrev;
-		pOld->pPrev->pNext = pNew;
-	}
+    if (pOld->pNext != pOld && pOld->pPrev != pOld)
+    {
+        pNew->pNext = pOld->pNext;
+        pOld->pNext->pPrev = pNew;
+        pNew->pPrev = pOld->pPrev;
+        pOld->pPrev->pNext = pNew;
+    }
 
-	pOld->pPrev = (void*) 0;
-	pOld->pNext = (void*) 0;
+    pOld->pPrev = (void*) 0;
+    pOld->pNext = (void*) 0;
 }
 
 
 int cl_dlist_is_empty(struct DLIST_HEAD *pHead)
 {
-	return (pHead->pNext == pHead);
+    return (pHead->pNext == pHead);
 }
 
