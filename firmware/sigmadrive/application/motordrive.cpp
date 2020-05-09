@@ -624,10 +624,22 @@ float MotorDrive::RunInductanceMeasurement(float seconds, float test_voltage, ui
     return config_.inductance_;
 }
 
+/** Rotate the rotor the using the specified angle, speed, voltage and direction.
+ *
+ * This method creates a task to rotate the rotor. Before the actual rotation starts
+ * the rotor will be armed and reset to against the A phase. The reset is done using
+ * the configuration parameteres reset voltage: config_.reset_voltage_ and the
+ * reset oscilation rate config_.reset_hz_.
+ *
+ * @param angle
+ * @param speed
+ * @param voltage
+ * @param dir
+ */
 void MotorDrive::RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)
 {
     AddTaskArmMotor();
-    AddTaskResetRotorWithParams(voltage, 35, false);
+    AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
     AddTaskRotateMotor(angle, speed, voltage, dir);
     AddTaskDisarmMotor();
     sched_.RunWaitForCompletion();
