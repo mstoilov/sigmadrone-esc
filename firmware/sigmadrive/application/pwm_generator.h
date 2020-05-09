@@ -16,14 +16,17 @@
 #include "stm32f7xx_ll_tim.h"
 #include "ipwmgenerator.h"
 
+/** Controlls the PWM hardware component
+ *
+ */
 class PwmGenerator : public IPwmGenerator {
 public:
     PwmGenerator();
     ~PwmGenerator();
     void Attach(TIM_HandleTypeDef* htim);
-    void EnableOutputs(bool enable)		{ enable ? LL_TIM_EnableAllOutputs(htim_->Instance) : LL_TIM_DisableAllOutputs(htim_->Instance); }
-    bool IsEnalbedOutputs()				{ return LL_TIM_IsEnabledAllOutputs(htim_->Instance) ? true : false; }
-    void EnableCounter(bool enable)		{ enable ? LL_TIM_EnableCounter(htim_->Instance) : LL_TIM_DisableCounter(htim_->Instance); }
+    void EnableOutputs(bool enable)	    { enable ? LL_TIM_EnableAllOutputs(htim_->Instance) : LL_TIM_DisableAllOutputs(htim_->Instance); }
+    bool IsEnalbedOutputs()             { return LL_TIM_IsEnabledAllOutputs(htim_->Instance) ? true : false; }
+    void EnableCounter(bool enable)     { enable ? LL_TIM_EnableCounter(htim_->Instance) : LL_TIM_DisableCounter(htim_->Instance); }
     void LoadSafeTimings();
 
     virtual void Start() override;
