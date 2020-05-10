@@ -182,22 +182,17 @@ public:
     uint32_t ResetErrorCodeE();
     uint32_t ResetErrorCode9();
     uint32_t GetDeviceID();
-    bool reset_single_revolution_data()			{ return ResetErrorCode(MA4_DATA_ID_F); }
-    bool reset_multiple_revolution_data()		{ return ResetErrorCode(MA4_DATA_ID_B); }
-    uint32_t get_error_count() const 			{ return error_count_; }
+    bool reset_single_revolution_data()         { return ResetErrorCode(MA4_DATA_ID_F); }
+    bool reset_multiple_revolution_data()       { return ResetErrorCode(MA4_DATA_ID_B); }
+    uint32_t get_error_count() const            { return error_count_; }
 
 public:
     virtual bool Initialize() override;
-    virtual uint32_t GetCounter();
-    virtual uint32_t GetResolutionBits() override;
     virtual void ResetPosition() override;
-    virtual uint32_t GetPosition() override;
-    virtual uint32_t GetRevolutions() override;
+    virtual uint32_t GetResolutionBits() override;
+    virtual uint32_t GetRevolutionBits() override;
+    virtual uint64_t GetPosition() override;
     virtual uint32_t GetIndexPosition() override;
-    virtual uint64_t GetAbsolutePosition() override;
-    virtual uint64_t GetAbsolutePositionMax() override;
-    virtual float GetElectricPosition(uint64_t position, uint32_t motor_pole_pairs) override;
-    virtual float GetMechanicalPosition(uint64_t position) override;
     virtual uint32_t GetLastError() override;
     virtual bool Update() override;
 
@@ -215,16 +210,14 @@ protected:
 
 public:
     UART_HandleTypeDef* huart_;
-    uint32_t rotation_bits_ = 17;
-    uint32_t offset_ = 0;
-    uint32_t status_ = 0;
-    uint32_t counter_ = 0;
-    uint32_t revolutions_ = 0;
-    uint32_t error_count_ = 0;
-    uint32_t maintenance_ = 0;
-    MA4Almc almc_;
-    MA4Update update_;
-
+    uint32_t cpr_bits_ = 17;            /**< Counts per rotation (encoder resolution) bits */
+    uint32_t status_ = 0;               /**< Encoder status bits, received from the encoder */
+    uint32_t counter_ = 0;              /**< Encoder counter, defines the encoder position within one revolution  */
+    uint32_t revolutions_ = 0;          /**< Number of revolutions */
+    uint32_t error_count_ = 0;          /**< The count of the communication errors, seen so far */
+    uint32_t maintenance_ = 0;          /**< Enter in maintenance mode when this member is not 0 */
+    MA4Almc almc_;                      /**< Holds the alarm bits received from the encoder */
+    MA4Update update_;                  /**< Holds the encoder response */
 
 public:
     volatile uint32_t t1_ = 0;

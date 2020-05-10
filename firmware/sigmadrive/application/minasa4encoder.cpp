@@ -32,7 +32,7 @@ extern "C" void minasa4_rx_complete(UART_HandleTypeDef* huart)
 }
 
 MinasA4Encoder::MinasA4Encoder() :
-        huart_(nullptr), offset_(0), error_count_(0)
+        huart_(nullptr), error_count_(0)
 {
 }
 
@@ -306,23 +306,23 @@ uint8_t MinasA4Encoder::calc_crc_x8_1(uint8_t* data, uint8_t size)
     return (crc & 0x00FF);
 }
 
-uint32_t MinasA4Encoder::GetCounter()
-{
-    return counter_;
-}
-
 uint32_t MinasA4Encoder::GetResolutionBits()
 {
-    return rotation_bits_;
+    return cpr_bits_;
+}
+
+uint32_t MinasA4Encoder::GetRevolutionBits()
+{
+    return 16UL;
 }
 
 bool MinasA4Encoder::Initialize()
 {
     ResetErrorCodeE();
     if (GetDeviceID() == 0xa7) {
-        rotation_bits_ = 23;
+        cpr_bits_ = 23;
     } else if (GetDeviceID() == 0x11) {
-        rotation_bits_ = 17;
+        cpr_bits_ = 17;
     } else {
         return false;
     }
@@ -331,47 +331,17 @@ bool MinasA4Encoder::Initialize()
 
 void MinasA4Encoder::ResetPosition()
 {
-    ResetErrorCodeF();
-    ResetErrorCodeB();
+//    ResetErrorCodeF();
+//    ResetErrorCodeB();
 }
 
-uint32_t MinasA4Encoder::GetPosition()
+uint64_t MinasA4Encoder::GetPosition()
 {
-    return GetCounter();
-}
-
-uint64_t MinasA4Encoder::GetAbsolutePosition()
-{
-    uint64_t ret = ((uint64_t) revolutions_ << rotation_bits_) | (uint64_t) counter_;
+    uint64_t ret = ((uint64_t) revolutions_ << cpr_bits_) | (uint64_t) counter_;
     return ret;
-}
-
-uint64_t MinasA4Encoder::GetAbsolutePositionMax()
-{
-    uint64_t ret = (((uint64_t) 1) << (16 + rotation_bits_));
-    return ret;
-}
-
-uint32_t MinasA4Encoder::GetRevolutions()
-{
-    return revolutions_;
 }
 
 uint32_t MinasA4Encoder::GetIndexPosition()
 {
     return 0;
-}
-
-float MinasA4Encoder::GetElectricPosition(uint64_t position,
-        uint32_t motor_pole_pairs)
-{
-    uint32_t resolution = 1 << rotation_bits_;
-    uint32_t resolution_per_pair = (resolution / motor_pole_pairs);
-    return (2.0f * M_PI / resolution_per_pair) * (position % resolution_per_pair);
-}
-
-float MinasA4Encoder::GetMechanicalPosition(uint64_t position)
-{
-    uint32_t resolution = 1 << rotation_bits_;
-    return (2.0f * M_PI / resolution) * (position % (resolution));
 }

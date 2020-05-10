@@ -74,7 +74,7 @@ void MotorDrive::RegisterRpcMethods()
     rpc_server.add("drive.add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
     rpc_server.add("drive.add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
     rpc_server.add("drive.add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz)"));
-    rpc_server.add("drive.alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAphaPoleSearch, "void RunTaskAphaPoleSearch()"));
+    rpc_server.add("drive.alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAlphaPoleSearch, "void RunTaskAlphaPoleSearch()"));
     rpc_server.add("drive.rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
     rpc_server.add("drive.drv_get_fault1", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
     rpc_server.add("drive.drv_get_fault2", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
@@ -200,6 +200,16 @@ IEncoder* MotorDrive::GetEncoder() const
     return encoder_;
 }
 
+
+/** Get the current encoder position
+ *
+ * @return Encoder Position
+ */
+uint64_t MotorDrive::GetEncoderPosition() const
+{
+    return (encoder_->GetPosition() >> enc_position_shift_);
+}
+
 /** Set the IEncoder interface
  *
  * @param encoder IEncoder interface
@@ -210,6 +220,10 @@ void MotorDrive::SetEncoder(IEncoder *encoder)
         if (!encoder->Initialize())
             throw std::runtime_error("Encoder initialization error.");
         encoder_ = encoder;
+        enc_resolution_bits_ = encoder_->GetResolutionBits() - enc_position_shift_;
+        enc_cpr_ = (1 << enc_resolution_bits_);
+        enc_resolution_mask_ = (1 << enc_resolution_bits_) - 1;
+        enc_revolution_bits_ = encoder_->GetRevolutionBits();
     }
 }
 
@@ -400,15 +414,28 @@ void MotorDrive::UpdateCurrent()
 
 void MotorDrive::UpdateRotor()
 {
-	uint32_t rotor_position = encoder_->GetPosition();
-	float theta_e = GetEncoderDir() * encoder_->GetElectricPosition(rotor_position, GetPolePairs());
-	float theta_m = GetEncoderDir() * encoder_->GetMechanicalPosition(rotor_position);
+	uint64_t rotor_position = GetEncoderPosition();
+	float theta_e = GetEncoderDir() * GetElectricAngle(rotor_position);
+	float theta_m = GetEncoderDir() * GetMechanicalAngle(rotor_position);
 	std::complex<float> r_prev = E_;
 	E_ = std::complex<float>(cosf(theta_e), sinf(theta_e));
 	R_ = std::complex<float>(cosf(theta_m), sinf(theta_m));
 	std::complex<float> r_cur = E_;
 	W_ = sdmath::cross(r_prev, r_cur);
 }
+
+float MotorDrive::GetElectricAngle(uint64_t enc_position) const
+{
+    uint32_t enc_orientation = enc_position & enc_resolution_mask_;
+    uint32_t cpr_per_pair = (enc_cpr_ / GetPolePairs());
+    return (2.0f * M_PI / cpr_per_pair) * (enc_orientation % cpr_per_pair);
+}
+
+float MotorDrive::GetMechanicalAngle(uint64_t enc_position) const
+{
+    return (2.0f * M_PI / enc_cpr_) * (enc_position % (enc_cpr_));
+}
+
 
 std::complex<float> MotorDrive::GetMechRotation()
 {
@@ -592,7 +619,7 @@ void MotorDrive::AddTaskDetectEncoderDir()
 {
 	sched_.AddTask([&](){
 		if (RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, true))
-			config_.encoder_dir_ = (encoder_->GetMechanicalPosition(encoder_->GetPosition()) > M_PI) ? -1 : 1;
+			config_.encoder_dir_ = (GetMechanicalAngle(GetEncoderPosition()) > M_PI) ? -1 : 1;
 	});
 	sched_.AddTask([&](){
 		RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, false);
@@ -612,7 +639,7 @@ void MotorDrive::AddTaskCalibrationSequence(bool reset_rotor)
 	AddTaskDisarmMotor();
 }
 
-void MotorDrive::RunTaskAphaPoleSearch()
+void MotorDrive::RunTaskAlphaPoleSearch()
 {
 	AddTaskArmMotor();
 	if (config_.encoder_dir_ == 0) {
@@ -624,7 +651,7 @@ void MotorDrive::RunTaskAphaPoleSearch()
 		AddTaskRotateMotor((M_PI * 2)/config_.pole_pairs, M_PI, 0.45, true);
 		AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
 		sched_.AddTask([&](void){
-			fprintf(stderr, "Enc: %7lu\n", encoder_->GetPosition());
+			fprintf(stderr, "Enc: %7lu\n", (uint32_t)(GetEncoderPosition() & enc_resolution_bits_));
 			encoder_->ResetPosition();
 		});
 	}

@@ -91,6 +91,7 @@ public:
     IEncoder* GetEncoder() const;
     void SetEncoder(IEncoder *encoder);
     int32_t GetEncoderDir() const;
+    uint64_t GetEncoderPosition() const;
     uint32_t GetUpdateFrequency() const;
     float GetTimeSlice() const;
     float GetEncoderTimeSlice() const;
@@ -108,6 +109,15 @@ public:
     void RegisterRpcMethods();
     rexjson::property GetPropertyMap();
 
+
+    /*
+     * Temporary
+     */
+    float GetMechanicalAngle(uint64_t enc_orientation) const;
+    float GetElectricAngle(uint64_t enc_orientation) const;
+
+
+
     /*
      * UpdateHandlers
      */
@@ -123,7 +133,7 @@ public:
     void AddTaskMeasureResistance(float seconds, float test_voltage);
     void AddTaskMeasureInductance(float seconds, float test_voltage, uint32_t test_hz);
     void AddTaskDetectEncoderDir();
-    void RunTaskAphaPoleSearch();
+    void RunTaskAlphaPoleSearch();
     void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir);
     void RunSimpleTasks();
     void AddTaskCalibrationSequence(bool reset_rotor);
@@ -142,6 +152,11 @@ public:
     std::complex<float> Pb_;
     std::complex<float> Pc_;
 
+    uint32_t enc_cpr_ = 0;
+    uint32_t enc_resolution_bits_ = 0;
+    uint32_t enc_resolution_mask_ = 0;
+    uint32_t enc_position_shift_ = 1;
+    uint32_t enc_revolution_bits_ = 0;
     uint32_t update_hz_;
     float time_slice_;
     float enc_time_slice_;
@@ -154,10 +169,10 @@ public:
 
     uint32_t t2_to_t2_ = 0;
     bool run_simple_tasks_ = false;
-    IEncoder *encoder_ = nullptr;
     IPwmGenerator *pwm_ = nullptr;
     SampledData data_;
     ErrorInfo error_info_;
+    IEncoder *encoder_ = nullptr;
 
     /*
      * Derived Data
@@ -173,7 +188,6 @@ public:
     std::complex<float> E_;
     std::complex<float> R_;
     float W_;
-
 };
 
 #endif /* _MOTOR_DRIVE_H_ */

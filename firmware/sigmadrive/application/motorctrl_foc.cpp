@@ -487,7 +487,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
         lpf_speed_disp_.Reset();
         pid_Vq_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
         pid_Vd_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
-        position_ = drive_->encoder_->GetAbsolutePosition();
+        position_ = drive_->GetEncoderPosition();
 
         drive_->sched_.RunUpdateHandler([&]()->bool {
             std::complex<float> Iab = drive_->GetPhaseCurrent();
@@ -496,12 +496,11 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
             float phase_speed = drive_->GetPhaseSpeedVector();
 
             if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
-                enc_position_ = drive_->encoder_->GetAbsolutePosition();
-                float target_angle = drive_->encoder_->GetMechanicalPosition(position_);
-
+                enc_position_ = drive_->GetEncoderPosition();
+                float target_angle = drive_->GetMechanicalAngle(position_);
                 int64_t Eerr = enc_position_ - position_;
                 float p_velocity = (velocity_ > 0) ? velocity_ : -velocity_;
-                if (std::abs(Eerr) < ( 1 << (drive_->encoder_->GetResolutionBits() - 2))) {
+                if (std::abs(Eerr) < ( 1 << (drive_->enc_resolution_bits_ - 2))) {
                     Rerr_ = sdmath::cross(R_, std::complex<float>(cosf(target_angle), sinf(target_angle)));
                     Werr_ = Rerr_ * p_velocity - phase_speed;
                 } else {
@@ -651,7 +650,7 @@ float MotorCtrlFOC::Velocity(float revpersec)
 
 uint64_t MotorCtrlFOC::MoveToPosition(uint64_t position)
 {
-    if (position >= drive_->encoder_->GetAbsolutePositionMax())
+    if (position >= (1ULL << (drive_->enc_resolution_bits_ + drive_->enc_revolution_bits_)))
         throw std::range_error("Invalid position");
     position_ = position;
     return position_;
@@ -659,8 +658,8 @@ uint64_t MotorCtrlFOC::MoveToPosition(uint64_t position)
 
 uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
 {
-    int64_t newpos = relative + drive_->encoder_->GetAbsolutePosition();
-    if (newpos < 0 || newpos >= (int64_t)drive_->encoder_->GetAbsolutePositionMax())
+    int64_t newpos = relative + drive_->GetEncoderPosition();
+    if (newpos < 0 || newpos >= (int64_t)(1ULL << (drive_->enc_resolution_bits_ + drive_->enc_resolution_bits_)))
         throw std::range_error("Invalid position");
     position_ = newpos;
     return position_;
