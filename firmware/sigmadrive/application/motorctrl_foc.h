@@ -14,15 +14,21 @@ class MotorCtrlFOC
 {
 public:
     struct Config {
-        float pid_current_kp_ = 12;
-        float pid_current_ki_ = 4000;
+        float pid_current_kp_ = 1.5;
+        float pid_current_ki_ = 500;
         float pid_current_decay_ = 0.01;
         float pid_current_maxout_ = 45;
 
-        float pid_w_kp_ = 12;
-        float pid_w_ki_ = 4000;
+//        float pid_w_kp_ = 12;
+//        float pid_w_ki_ = 4000;
+//        float pid_w_decay_ = 0.01;
+//        float pid_w_maxout_ = 3;
+
+        float pid_w_kp_ = 0.0075;
+        float pid_w_ki_ = 3;
         float pid_w_decay_ = 0.01;
-        float pid_w_maxout_ = 1.1;
+        float pid_w_maxout_ = 3.0;
+
 
         float pid_p_kp_ = 2;
         float pid_p_ki_ = 0.0;
@@ -34,8 +40,8 @@ public:
         float vab_advance_factor_ = 12000;
         float vq_bias_ = 0;
         float w_bias_ = 0;
-        float idq_disp_alpha_ = 0.01;
-        float idq_alpha_ = 0.01;
+        float idq_disp_alpha_ = 0.001;
+        float idq_alpha_ = 0.75;
         float speed_disp_alpha_ = 1;
         float i_trip_ = 8.0;
         float spin_voltage_ = 3.5f;
@@ -98,8 +104,9 @@ protected:
     float Werr_ = 0;
     float Ierr_ = 0;
     float Rerr_ = 0;
-    float iq_setpoint_ = 0.08;
+    float iq_setpoint_ = 0.055;
     float velocity_ = 0.007;
+    float velocity_ecs_ = 8;
 };
 
 

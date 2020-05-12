@@ -56,7 +56,8 @@ public:
         float inductance_ = 5.56e-05f;                      /**< Phase inductance */
         float bias_alpha_ = 0.00035f;                       /**< RC filter alpha coefficient */
         float vbus_alpha_ = 0.2f;                           /**< Vbus filter alpha coefficient */
-        float iabc_alpha_ = 0.75;                           /**< phase current filter alpha coefficient */
+        float iabc_alpha_ = 0.95;                           /**< phase current filter alpha coefficient */
+        float wenc_alpha_ = 0.1;                            /**< rotor velocity filter alpha coefficient */
         float trip_i_ = 5.0f;                               /**< Trip current, the max phase allowed current. */
         float trip_v_ = 45.0f;                              /**< Trip voltage, the max allowed voltage */
     };
@@ -97,9 +98,11 @@ public:
     float GetEncoderTimeSlice() const;
     uint32_t GetPolePairs() const;
     float GetBusVoltage() const;
-    std::complex<float> GetElecRotation();
-    std::complex<float> GetMechRotation();
-    float GetPhaseSpeedVector();
+    std::complex<float> GetRotorElecRotation();
+    std::complex<float> GetRotorMechRotation();
+    float GetRotorElecVelocityCrossProd();
+    float GetRotorVelocity();
+    float GetRotorElecVelocity();
 
     std::complex<float> GetPhaseCurrent() const;
     void DefaultIdleTask();
@@ -155,10 +158,11 @@ public:
     uint32_t enc_cpr_ = 0;
     uint32_t enc_resolution_bits_ = 0;
     uint32_t enc_resolution_mask_ = 0;
-    uint32_t enc_position_shift_ = 1;
+    uint32_t enc_position_shift_ = 0;
     uint32_t enc_revolution_bits_ = 0;
     uint32_t update_hz_;
     float time_slice_;
+    uint32_t enc_update_hz_;
     float enc_time_slice_;
     uint32_t t1_begin_ = 0;
     uint32_t t1_span_ = 0;
@@ -177,17 +181,21 @@ public:
     /*
      * Derived Data
      */
-    LowPassFilter<float, float> lpf_bias_a;
-    LowPassFilter<float, float> lpf_bias_b;
-    LowPassFilter<float, float> lpf_bias_c;
-    LowPassFilter<float, float> lpf_vbus_;
-    LowPassFilter<float, float> lpf_Ia_;
-    LowPassFilter<float, float> lpf_Ib_;
-    LowPassFilter<float, float> lpf_Ic_;
-    std::complex<float> Iab_;
-    std::complex<float> E_;
-    std::complex<float> R_;
-    float W_;
+    LowPassFilter<float, float> lpf_bias_a;     /**< Low pass filter for phase A current bias */
+    LowPassFilter<float, float> lpf_bias_b;     /**< Low pass filter for phase B current bias */
+    LowPassFilter<float, float> lpf_bias_c;     /**< Low pass filter for phase C current bias */
+    LowPassFilter<float, float> lpf_vbus_;      /**< Low pass filter for the Vbus voltage */
+    LowPassFilter<float, float> lpf_Ia_;        /**< Low pass filter for phase A current */
+    LowPassFilter<float, float> lpf_Ib_;        /**< Low pass filter for phase B current */
+    LowPassFilter<float, float> lpf_Ic_;        /**< Low pass filter for phase C current */
+    LowPassFilter<float, float> lpf_Wenc_;      /**< Low pass filter for rotor velocity in enc counts per encoder_time_slice */
+    std::complex<float> Iab_;                   /**< Phase current represented as a complex vector, where the real value is alpha current and the imag value is the beta current */
+    std::complex<float> E_;                     /**< Orientation of the rotor in electrical radians converted to complex vector. */
+    std::complex<float> R_;                     /**< Orientation of the rotor in mechanical radians converted to complex vector. */
+    float crossE_;                              /**< Rotor velocity represented as the **magnitude only** of the cross product of two consecutive E_ vectors. */
+    uint64_t Renc_;                             /**< Position of the rotor in enc counts */
+//    int64_t Wenc_;                              /**< Rotor velocity in encoder counts */
+
 };
 
 #endif /* _MOTOR_DRIVE_H_ */

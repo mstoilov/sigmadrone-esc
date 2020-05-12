@@ -27,7 +27,8 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
     , Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
     , update_hz_(update_hz)
     , time_slice_(1.0f / update_hz_)
-    , enc_time_slice_(1.0f / (update_hz / (config_.enc_skip_updates_ + 1)))
+    , enc_update_hz_(update_hz / (config_.enc_skip_updates_ + 1))
+    , enc_time_slice_(1.0f / enc_update_hz_)
     , lpf_bias_a(config_.bias_alpha_)
     , lpf_bias_b(config_.bias_alpha_)
     , lpf_bias_c(config_.bias_alpha_)
@@ -35,6 +36,7 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
     , lpf_Ia_(config_.iabc_alpha_)
     , lpf_Ib_(config_.iabc_alpha_)
     , lpf_Ic_(config_.iabc_alpha_)
+    , lpf_Wenc_(config_.wenc_alpha_)
 {
     lpf_bias_a.Reset(1 << 11);
     lpf_bias_b.Reset(1 << 11);
@@ -106,12 +108,20 @@ rexjson::property MotorDrive::GetPropertyMap()
                 [&](void*)->void {
                     lpf_vbus_.SetAlpha(config_.vbus_alpha_);
                 })},
+        {"wenc_alpha", rexjson::property(
+                &config_.wenc_alpha_,
+                rexjson::property_access::readwrite,
+                [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+                [&](void*)->void {
+                    lpf_Wenc_.SetAlpha(config_.wenc_alpha_);
+                })},
         {"enc_skip_updates", rexjson::property(
                 &config_.enc_skip_updates_,
                 rexjson::property_access::readwrite,
                 [&](const rexjson::value& v){ pwm_->Stop(); },
                 [&](void*)->void {
-                    enc_time_slice_ = (1.0f / (update_hz_ / (config_.enc_skip_updates_ + 1)));
+                    enc_update_hz_ = update_hz_ / (config_.enc_skip_updates_ + 1);
+                    enc_time_slice_ = (1.0f / (update_hz_ / enc_update_hz_));
                     data_.update_counter_ = 0;
                     HAL_Delay(2);
                     pwm_->Start();
@@ -412,18 +422,35 @@ void MotorDrive::UpdateCurrent()
 	Iab_ = Pa_ * lpf_Ia_.Output() + Pb_ * lpf_Ib_.Output() + Pc_ * lpf_Ic_.Output();
 }
 
+/** Update the rotor position and velocity
+ *
+ */
 void MotorDrive::UpdateRotor()
 {
-	uint64_t rotor_position = GetEncoderPosition();
-	float theta_e = GetEncoderDir() * GetElectricAngle(rotor_position);
-	float theta_m = GetEncoderDir() * GetMechanicalAngle(rotor_position);
-	std::complex<float> r_prev = E_;
+    uint64_t Renc_prev = Renc_; 
+    std::complex<float> Eprev = E_;
+    Renc_ = GetEncoderPosition();
+	float theta_e = GetEncoderDir() * GetElectricAngle(Renc_);
+	float theta_m = GetEncoderDir() * GetMechanicalAngle(Renc_);
 	E_ = std::complex<float>(cosf(theta_e), sinf(theta_e));
 	R_ = std::complex<float>(cosf(theta_m), sinf(theta_m));
-	std::complex<float> r_cur = E_;
-	W_ = sdmath::cross(r_prev, r_cur);
+	crossE_ = sdmath::cross(Eprev, E_);
+
+	int32_t Rangle_prev = Renc_prev & enc_resolution_mask_;
+	int32_t Rangle = Renc_ & enc_resolution_mask_;
+	int32_t Wenc = (Rangle + enc_cpr_ - Rangle_prev) % enc_cpr_;
+	if (Wenc > (int32_t)(enc_cpr_ / 2))
+	    Wenc -= enc_cpr_;
+	lpf_Wenc_.DoFilter(Wenc);
 }
 
+
+/** Calculate the angle of the rotor from the
+ * encoder position in electrical radians.
+ *
+ * @param enc_position Encoder position
+ * @return The orientation of the rotor in electrical radians
+ */
 float MotorDrive::GetElectricAngle(uint64_t enc_position) const
 {
     uint32_t enc_orientation = enc_position & enc_resolution_mask_;
@@ -431,26 +458,63 @@ float MotorDrive::GetElectricAngle(uint64_t enc_position) const
     return (2.0f * M_PI / cpr_per_pair) * (enc_orientation % cpr_per_pair);
 }
 
+/** Calculate the angle of the rotor from the encoder position in mechanical radians.
+ *
+ * @param enc_position Encoder position
+ * @return The orientation of the rotor in mechanical radians
+ */
 float MotorDrive::GetMechanicalAngle(uint64_t enc_position) const
 {
-    return (2.0f * M_PI / enc_cpr_) * (enc_position % (enc_cpr_));
+    return (2.0f * M_PI / enc_cpr_) * (enc_position & enc_resolution_mask_);
 }
 
 
-std::complex<float> MotorDrive::GetMechRotation()
+std::complex<float> MotorDrive::GetRotorMechRotation()
 {
 	return R_;
 }
 
-std::complex<float> MotorDrive::GetElecRotation()
+std::complex<float> MotorDrive::GetRotorElecRotation()
 {
 	return E_;
 }
 
-float MotorDrive::GetPhaseSpeedVector()
+/** Get the rotor velocity in encoder counts per second
+ *
+ * @return Mechanical rotor velocity
+ */
+float MotorDrive::GetRotorVelocity()
 {
-	return W_;
+    return lpf_Wenc_.Output();
 }
+
+/** Get the rotor velocity in elec encoder counts per second
+ *
+ * @return Electrical rotor velocity
+ */
+float MotorDrive::GetRotorElecVelocity()
+{
+    return GetRotorVelocity() * config_.pole_pairs;
+}
+
+
+/** Get the velocity of the rotor's electrical rotation.
+ *
+ * This method returns the electrical velocity of the rotor,
+ * calculated as cross product of two consecutive E_ vectors sampled
+ * at the beginning and the end of one time slice. The returned magnitude
+ * is proportional to the sin(Theta), where Theta is the angle of rotation
+ * of the rotor for one time slice.
+ *
+ * @note This is not measured in Rad/Sec.
+ * @return The magnetude of the vector calculated as cross(Eprev, E_)
+ */
+float MotorDrive::GetRotorElecVelocityCrossProd()
+{
+	return crossE_;
+}
+
+
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
 {
