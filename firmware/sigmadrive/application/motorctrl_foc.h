@@ -19,11 +19,6 @@ public:
         float pid_current_decay_ = 0.01;
         float pid_current_maxout_ = 45;
 
-//        float pid_w_kp_ = 12;
-//        float pid_w_ki_ = 4000;
-//        float pid_w_decay_ = 0.01;
-//        float pid_w_maxout_ = 3;
-
         float pid_w_kp_ = 0.0075;
         float pid_w_ki_ = 3;
         float pid_w_decay_ = 0.01;
@@ -37,12 +32,10 @@ public:
 
 
         float control_bandwidth_ = 700; // Rad/Sec
-        float vab_advance_factor_ = 12000;
+        float vab_advance_factor_ = 0;//1.5;
         float vq_bias_ = 0;
         float w_bias_ = 0;
-        float idq_disp_alpha_ = 0.001;
         float idq_alpha_ = 0.75;
-        float speed_disp_alpha_ = 1;
         float i_trip_ = 8.0;
         float spin_voltage_ = 3.5f;
         bool display_ = true;
@@ -59,7 +52,7 @@ public:
     uint64_t MoveToPosition(uint64_t position);
     uint64_t MoveRelative(int64_t position);
     void RunCalibrationSequence(bool reset_rotor);
-    float Velocity(float revpersec);
+    float VelocityRPS(float revpersec);
     rexjson::property GetPropertyMap();
     void RegisterRpcMethods();
 
@@ -87,26 +80,20 @@ protected:
     MotorDrive *drive_;
     LowPassFilter<float, float> lpf_Id_;
     LowPassFilter<float, float> lpf_Iq_;
-    LowPassFilter<float, float> lpf_Id_disp_;
-    LowPassFilter<float, float> lpf_Iq_disp_;
-
 
     PidController<float> pid_Vd_;
     PidController<float> pid_Vq_;
     PidController<float> pid_W_;
     PidController<float> pid_P_;
-    LowPassFilter<float, float> lpf_speed_disp_;
-    std::complex<float> R_;
     uint32_t foc_time_ = 0;
     uint64_t enc_position_ = 0;
-    uint64_t position_ = 0;
+    uint64_t target_ = 0;
 
     float Werr_ = 0;
     float Ierr_ = 0;
     float Rerr_ = 0;
     float iq_setpoint_ = 0.055;
-    float velocity_ = 0.007;
-    float velocity_ecs_ = 8;
+    float velocity_ = 65535;            /**< Movement velocity as encoder counts per second */
 };
 
 

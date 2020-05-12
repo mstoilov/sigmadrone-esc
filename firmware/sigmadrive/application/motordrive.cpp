@@ -428,13 +428,11 @@ void MotorDrive::UpdateCurrent()
 void MotorDrive::UpdateRotor()
 {
     uint64_t Renc_prev = Renc_; 
-    std::complex<float> Eprev = E_;
     Renc_ = GetEncoderPosition();
 	float theta_e = GetEncoderDir() * GetElectricAngle(Renc_);
 	float theta_m = GetEncoderDir() * GetMechanicalAngle(Renc_);
 	E_ = std::complex<float>(cosf(theta_e), sinf(theta_e));
 	R_ = std::complex<float>(cosf(theta_m), sinf(theta_m));
-	crossE_ = sdmath::cross(Eprev, E_);
 
 	int32_t Rangle_prev = Renc_prev & enc_resolution_mask_;
 	int32_t Rangle = Renc_ & enc_resolution_mask_;
@@ -479,7 +477,7 @@ std::complex<float> MotorDrive::GetRotorElecRotation()
 	return E_;
 }
 
-/** Get the rotor velocity in encoder counts per second
+/** Get the rotor velocity in encoder counts per encoder period (enc_time_slice_)
  *
  * @return Mechanical rotor velocity
  */
@@ -488,7 +486,7 @@ float MotorDrive::GetRotorVelocity()
     return lpf_Wenc_.Output();
 }
 
-/** Get the rotor velocity in elec encoder counts per second
+/** Get the rotor velocity in elec encoder counts per encoder period (enc_time_slice_)
  *
  * @return Electrical rotor velocity
  */
@@ -496,25 +494,6 @@ float MotorDrive::GetRotorElecVelocity()
 {
     return GetRotorVelocity() * config_.pole_pairs;
 }
-
-
-/** Get the velocity of the rotor's electrical rotation.
- *
- * This method returns the electrical velocity of the rotor,
- * calculated as cross product of two consecutive E_ vectors sampled
- * at the beginning and the end of one time slice. The returned magnitude
- * is proportional to the sin(Theta), where Theta is the angle of rotation
- * of the rotor for one time slice.
- *
- * @note This is not measured in Rad/Sec.
- * @return The magnetude of the vector calculated as cross(Eprev, E_)
- */
-float MotorDrive::GetRotorElecVelocityCrossProd()
-{
-	return crossE_;
-}
-
-
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
 {
