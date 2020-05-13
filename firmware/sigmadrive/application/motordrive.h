@@ -52,12 +52,12 @@ public:
         float Rsense_ = 0.010f;                             /**< Shunt resistor value */
         float calib_v_ = 12;                                /**< Calibration voltage. This voltage is used for the calibration process */
         float calib_max_i_ = 4;                             /**< Calibration max allowed current. */
-        float resistance_ = 0.05f;                          /**< Phase resistance */
-        float inductance_ = 5.56e-05f;                      /**< Phase inductance */
+        float resistance_ = 3.12f;                          /**< Phase resistance */
+        float inductance_ = 0.0033293f;                     /**< Phase inductance */
         float bias_alpha_ = 0.00035f;                       /**< RC filter alpha coefficient */
         float vbus_alpha_ = 0.2f;                           /**< Vbus filter alpha coefficient */
         float iabc_alpha_ = 0.95;                           /**< phase current filter alpha coefficient */
-        float wenc_alpha_ = 0.1;                            /**< rotor velocity filter alpha coefficient */
+        float wenc_alpha_ = 0.75;                           /**< rotor velocity filter alpha coefficient */
         float trip_i_ = 5.0f;                               /**< Trip current, the max phase allowed current. */
         float trip_v_ = 45.0f;                              /**< Trip voltage, the max allowed voltage */
     };
