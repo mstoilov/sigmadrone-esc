@@ -65,7 +65,7 @@ public:
 
     /** Get compare value set for the specified output channel
      *
-     * @param ch The specified channel
+     * @param channel The specified channel
      * @return the compare value for the channel
      */
     virtual uint32_t GetTiming(uint32_t channel) = 0;
@@ -78,7 +78,7 @@ public:
      * the timer counter the channel output will be flipped and that
      * is how it generate the PWM.
      *
-     * @param ch specified channel
+     * @param channel specified channel
      * @param value Compare value
      */
     virtual void SetTiming(uint32_t channel, uint32_t value) = 0;
