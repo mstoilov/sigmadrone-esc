@@ -176,8 +176,11 @@ void MotorCtrlFOC::RunDebugLoop()
             continue;
         } else if (status & SIGNAL_DEBUG_DUMP_TORQUE) {
             fprintf(stderr,
-                    "Speed: %+9.2f, I_d: %+14.9f, I_q: %+14.9f, PVd: %+14.9f, PVq: %+14.9f, PVqP: %+14.9f, PVqI: %+14.9f, "
-                    "Ierr: %+14.9f, T: %4lu\n",
+                    "Vus: %4.1f "
+                    "Speed: %+6.2f (%+6.2f), I_d: %+6.3f, I_q: %+6.3f, PVd: %+10.6f, PVq: %+10.6f, PVqP: %+10.6f, PVqI: %+10.6f, "
+                    "Ierr: %+6.4f, T: %4lu\n",
+                    drive_->GetBusVoltage(),
+                    drive_->GetRotorVelocity() * drive_->enc_update_hz_ / drive_->enc_cpr_,
                     drive_->GetRotorVelocity(),
                     lpf_Id_.Output(),
                     lpf_Iq_.Output(),
@@ -190,9 +193,12 @@ void MotorCtrlFOC::RunDebugLoop()
             );
         } else if (status & SIGNAL_DEBUG_DUMP_VELOCITY) {
             fprintf(stderr,
-                    "Speed: %+9.2f, I_d: %+6.3f, I_q: %+6.3f, "
-                    "Werr: %+12.9f, PID_W: %+12.9f, PID_WP: %+12.9f, PID_WI: %+12.9f, T: %4lu\n",
+                    "Vus: %4.1f "
+                    "Speed: %+6.2f (%+6.2f), I_d: %+6.3f, I_q: %+6.3f, "
+                    "Werr: %+6.3f, PID_W: %+6.3f, PID_WP: %+6.3f, PID_WI: %+6.3f, T: %4lu\n",
+                    drive_->GetBusVoltage(),
                     drive_->GetRotorVelocity() * drive_->enc_update_hz_ / drive_->enc_cpr_,
+                    drive_->GetRotorVelocity(),
                     lpf_Id_.Output(),
                     lpf_Iq_.Output(),
                     Werr_,
@@ -219,8 +225,9 @@ void MotorCtrlFOC::RunDebugLoop()
             );
         } else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
             fprintf(stderr,
-                    "Speed: %9.2f, I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, Adv1: %+5.3f, EncT: %4lu\n",
+                    "Speed: %9.2f (%9.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, Adv1: %+5.3f, EncT: %4lu\n",
                     drive_->GetRotorVelocity() * drive_->enc_update_hz_ / drive_->enc_cpr_,
+                    drive_->GetRotorVelocity(),
                     lpf_Id_.Output(),
                     lpf_Iq_.Output(),
                     drive_->t1_span_,
@@ -307,19 +314,19 @@ void MotorCtrlFOC::ModeSpin()
             lpf_Iq_.DoFilter(Idq.imag());
 
             /*
+             * Apply advance
+             */
+            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->enc_cpr_ * 2.0f * M_PI;
+            std::complex<float> Eadv = E * std::complex<float>(cosf(advance), sinf(advance));
+
+            /*
              * Inverse Park Transform
              * Va = Vd * cos(R) - Vq * sin(R)
              * Vb = Vd * sin(R) + Vq * cos(R)
              *
              * Vab = std::complex<float>(Va, Vb)
              */
-            std::complex<float> V_ab = std::complex<float>(0, spin_voltage_) * E;
-
-            /*
-             * Apply advance
-             */
-            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->enc_cpr_ * 2.0f * M_PI;
-            V_ab *= std::complex<float>(cosf(advance), sinf(advance));
+            std::complex<float> V_ab = std::complex<float>(0, spin_voltage_) * Eadv;
 
             /*
              * Apply the voltage timings
@@ -351,8 +358,6 @@ void MotorCtrlFOC::ModeClosedLoopTorque()
         pid_W_.Reset();
         lpf_Id_.Reset();
         lpf_Iq_.Reset();
-        pid_Iq_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
-        pid_Id_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
         drive_->sched_.RunUpdateHandler([&]()->bool {
 
             std::complex<float> Iab = drive_->GetPhaseCurrent();
@@ -427,8 +432,6 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
         pid_W_.Reset();
         lpf_Id_.Reset();
         lpf_Iq_.Reset();
-        pid_Iq_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
-        pid_Id_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
         drive_->sched_.RunUpdateHandler([&]()->bool {
             std::complex<float> Iab = drive_->GetPhaseCurrent();
             std::complex<float> E = drive_->GetRotorElecRotation();
@@ -507,8 +510,6 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
         pid_W_.Reset();
         lpf_Id_.Reset();
         lpf_Iq_.Reset();
-        pid_Iq_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
-        pid_Id_.SetMaxIntegralOutput(0.9 * drive_->GetBusVoltage());
         target_ = drive_->GetEncoderPosition();
 
         drive_->sched_.RunUpdateHandler([&]()->bool {

@@ -77,7 +77,6 @@ public:
     float VoltageToDuty(float voltage, float v_bus);
 
     void UpdateRotor();
-    void UpdateVbus();
     void UpdateCurrent();
 
     void SineSVM(float duty, const std::complex<float> &v_theta, float &duty_a, float &duty_b, float &duty_c);

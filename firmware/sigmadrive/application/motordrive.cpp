@@ -87,6 +87,7 @@ rexjson::property MotorDrive::GetPropertyMap()
 {
     rexjson::property props= rexjson::property_map({
         {"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
+        {"Vbus", rexjson::property(&lpf_vbus_.out_, rexjson::property_access::readonly)},
         {"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
         {"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
         {"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
@@ -355,6 +356,8 @@ void MotorDrive::IrqUpdateCallback()
         t1_begin_ = hrtimer.GetCounter();
 
         data_.vbus_ = AdcData::ReadBusVoltage();
+        lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
+
         AdcData::ReadPhaseCurrent(data_.injdata_, 3);
 
         /*
@@ -373,10 +376,13 @@ void MotorDrive::IrqUpdateCallback()
             UpdateRotor();
         }
 
+
+        data_.vbus_ = AdcData::ReadBusVoltage();
+        lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
+
         /*
          * Sample ADC phase current
          */
-        data_.vbus_ = AdcData::ReadBusVoltage();
         AdcData::ReadPhaseCurrent(data_.injdata_, 3);
 
         /*
@@ -407,11 +413,6 @@ void MotorDrive::IrqUpdateCallback()
         t2_end_ = hrtimer.GetCounter();
         t2_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_,t2_end_);
     }
-}
-
-void MotorDrive::UpdateVbus()
-{
-	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
 }
 
 void MotorDrive::UpdateCurrent()
