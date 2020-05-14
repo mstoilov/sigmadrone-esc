@@ -24,7 +24,7 @@ public:
         float pid_w_decay_ = 0.0;               /**< Velocity PID regulator decay rate */
         float pid_w_maxout_ = 25.0;             /**< Velocity PID regulator integral output limit */
 
-        float pid_p_kp_ = 10;                   /**< Position PID regulator proportional gain */
+        float pid_p_kp_ = 1;                    /**< Position PID regulator proportional gain */
         float pid_p_ki_ = 0.0;                  /**< Position PID regulator integral gain */
         float pid_p_decay_ = 0.0;               /**< Position PID regulator decay rate */
         float pid_p_maxout_ = 1;                /**< Position PID regulator integral output limit */
@@ -88,10 +88,10 @@ protected:
     PidController<float> pid_Id_;               /**< PID regulator controlling the d-current (Id) */
     PidController<float> pid_Iq_;               /**< PID regulator controlling the q-current (Iq) */
     PidController<float> pid_W_;                /**< PID regulator controlling the rotor velocity (W) */
-    PidController<float> pid_P_;                /**< PID regulator controlling the target position */
+    PidController<int64_t> pid_P_;              /**< PID regulator controlling the target position */
     float Ierr_ = 0;                            /**< Q-current error. Used as input for the Iq PID regulator */
     float Werr_ = 0;                            /**< Velocity error. Used as input for the velocity PID regulator */
-    float Rerr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */
+    int64_t Eerr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */
 
     uint64_t target_ = 0;                       /**< Target position used in closed loop position mode */
     float velocity_ = 65535;                    /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
