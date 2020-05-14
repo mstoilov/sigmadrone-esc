@@ -193,14 +193,16 @@ void MotorCtrlFOC::RunDebugLoop()
             );
         } else if (status & SIGNAL_DEBUG_DUMP_VELOCITY) {
             fprintf(stderr,
-                    "Vus: %4.1f "
-                    "Speed: %+6.2f (%+6.2f), I_d: %+6.3f, I_q: %+6.3f, "
-                    "Werr: %+6.3f, PID_W: %+6.3f, PID_WP: %+6.3f, PID_WI: %+6.3f, T: %4lu\n",
-                    drive_->GetBusVoltage(),
+                    "Speed: %+6.2f (%+6.2f), I_d: %+6.3f, I_q: %+6.3f, PVd: %+10.6f, PVq: %+10.6f, PVqP: %+10.6f, PVqI: %+10.6f, "
+                    "Werr: %+8.3f, PID_W: %+6.3f, PID_WP: %+6.3f, PID_WI: %+6.3f, T: %4lu\n",
                     drive_->GetRotorVelocity() * drive_->enc_update_hz_ / drive_->enc_cpr_,
                     drive_->GetRotorVelocity(),
                     lpf_Id_.Output(),
                     lpf_Iq_.Output(),
+                    pid_Id_.Output(),
+                    pid_Iq_.Output(),
+                    pid_Iq_.OutputP(),
+                    pid_Iq_.OutputI(),
                     Werr_,
                     pid_W_.Output(),
                     pid_W_.OutputP(),
