@@ -23,7 +23,7 @@ public:
      * @param bias Output bias
      */
     PidController(float kp = 0, float ki = 0, float kd = 0, float decay = 0, const T &output_i_max = 0, const T &bias = 0) :
-            kp_(kp), ki_(ki), kd_(kd), decay_(decay), output_i_max_(output_i_max), bias_(bias), last_input_(0), output_p_(0), output_i_(0), output_d_(0), output_b_(0)
+            kp_(kp), ki_(ki), kd_(kd), decay_(decay), output_i_max_(output_i_max), bias_(bias), last_error_(0), output_p_(0), output_i_(0), output_d_(0), output_b_(0)
     {
     }
 
@@ -40,21 +40,21 @@ public:
      * @param dt Time interval (dT) since the previous input
      * @return The output from the PID controller
      */
-    T Input(const T &input, float dt)
+    T Input(const T &error, float dt)
     {
         output_b_ = bias_;
-        output_p_ = input * kp_;
+        output_p_ = error * kp_;
         if (decay_ > 0) {
             float decay = (1.0f - decay_ * dt);
             output_i_ *= decay;
         }
-        output_i_ += 0.5f * (input + last_input_) * ki_ * dt;
+        output_i_ += 0.5f * (error + last_error_) * ki_ * dt;
         if (output_i_max_ && output_i_ > output_i_max_)
             output_i_ = output_i_max_;
         if (output_i_max_ && output_i_ < -output_i_max_)
             output_i_ = -output_i_max_;
-        output_d_ = (input - last_input_) * kd_ / dt;
-        last_input_ = input;
+        output_d_ = (error - last_error_) * kd_ / dt;
+        last_error_ = error;
         return Output();
     }
 
@@ -209,7 +209,7 @@ public:
      */
     void Reset()
     {
-        last_input_ = 0;
+        last_error_ = 0;
         output_p_ = 0;
         output_i_ = 0;
         output_d_ = 0;
@@ -222,7 +222,7 @@ public:
     float decay_;           /**< Decay rate */
     T output_i_max_;        /**< Integral output limit */
     T bias_;                /**< PID controller bias */
-    T last_input_;          /**< Cached input value from the @ref Input method call */
+    T last_error_;          /**< Cached input value from the @ref Input method call */
     T output_p_;            /**< Proportional output */
     T output_i_;            /**< Integral output */
     T output_d_;            /**< Differential output */
