@@ -14,8 +14,8 @@ class MotorCtrlFOC
 {
 public:
     struct Config {
-        float pid_current_kp_ = 3;    /* 3 */   /**< Current PID regulator proportional gain */
-        float pid_current_ki_ = 90;   /* 3120*/ /**< Current PID regulator integral gain */
+        float pid_current_kp_ = 30;   /* 3 */   /**< Current PID regulator proportional gain */
+        float pid_current_ki_ = 900;  /* 3120*/ /**< Current PID regulator integral gain */
         float pid_current_decay_ = 0.0;         /**< Current PID regulator decay rate */
         float pid_current_maxout_ = 31;         /**< Current PID regulator integral output limit */
 

@@ -48,7 +48,7 @@ public:
             float decay = (1.0f - decay_ * dt);
             output_i_ *= decay;
         }
-        output_i_ += input * ki_ * dt;
+        output_i_ += 0.5f * (input + last_input_) * ki_ * dt;
         if (output_i_max_ && output_i_ > output_i_max_)
             output_i_ = output_i_max_;
         if (output_i_max_ && output_i_ < -output_i_max_)
