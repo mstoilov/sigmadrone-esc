@@ -211,6 +211,18 @@ IEncoder* MotorDrive::GetEncoder() const
     return encoder_;
 }
 
+/** Get the total number of bits used by @ref GetEncoderPosition,
+ * this is encoder revolution bits + encoder resolution bits
+ *
+ * @return Max number of bits used by encoder position value
+ * @note this value might not correspond to the physical encoder
+ * bits if the enc_position_shift_ is more than 0, i.e. the encoder
+ * position is scaled back.
+ */
+uint32_t MotorDrive::GetEncoderPositionBits() const
+{
+    return enc_revolution_bits_ + enc_resolution_bits_;
+}
 
 /** Get the current encoder position
  *
@@ -234,6 +246,8 @@ void MotorDrive::SetEncoder(IEncoder *encoder)
         enc_resolution_bits_ = encoder_->GetResolutionBits() - enc_position_shift_;
         enc_cpr_ = (1 << enc_resolution_bits_);
         enc_resolution_mask_ = (1 << enc_resolution_bits_) - 1;
+        enc_position_size_ = 1 << (enc_resolution_bits_ + enc_revolution_bits_);
+        enc_position_mask_ = enc_position_size_ - 1;
         enc_revolution_bits_ = encoder_->GetRevolutionBits();
     }
 }
@@ -441,6 +455,17 @@ void MotorDrive::UpdateRotor()
 	if (Wenc > (int32_t)(enc_cpr_ / 2))
 	    Wenc -= enc_cpr_;
 	lpf_Wenc_.DoFilter(Wenc);
+}
+
+
+int64_t MotorDrive::GetPositionError(uint64_t position, uint64_t target, uint64_t maxerr)
+{
+    int64_t position_err = (target + enc_position_size_ - position) & enc_position_mask_;
+    if (position_err > (int64_t)(enc_position_size_/2))
+        position_err -= enc_position_size_;
+    position_err = std::min(position_err, (int64_t)maxerr);
+    position_err = std::max(position_err, (int64_t)-maxerr);
+    return position_err;
 }
 
 

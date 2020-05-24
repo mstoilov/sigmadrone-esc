@@ -92,6 +92,7 @@ public:
     void SetEncoder(IEncoder *encoder);
     int32_t GetEncoderDir() const;
     uint64_t GetEncoderPosition() const;
+    uint32_t GetEncoderPositionBits() const;
     uint32_t GetUpdateFrequency() const;
     float GetTimeSlice() const;
     float GetEncoderTimeSlice() const;
@@ -101,6 +102,7 @@ public:
     std::complex<float> GetRotorMechRotation();
     float GetRotorVelocity();
     float GetRotorElecVelocity();
+    int64_t GetPositionError(uint64_t position, uint64_t target, uint64_t maxerr);
 
     std::complex<float> GetPhaseCurrent() const;
     void DefaultIdleTask();
@@ -154,10 +156,12 @@ public:
     std::complex<float> Pc_;
 
     uint32_t enc_cpr_ = 0;
+    uint32_t enc_revolution_bits_ = 0;
     uint32_t enc_resolution_bits_ = 0;
     uint32_t enc_resolution_mask_ = 0;
+    uint64_t enc_position_mask_ = 0;
+    uint64_t enc_position_size_ = 0;
     uint32_t enc_position_shift_ = 0;
-    uint32_t enc_revolution_bits_ = 0;
     uint32_t update_hz_;
     float time_slice_;
     uint32_t enc_update_hz_;
