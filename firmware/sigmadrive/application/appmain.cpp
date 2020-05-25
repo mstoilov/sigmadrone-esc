@@ -201,8 +201,87 @@ void LoadConfig()
     });
 }
 
+static const char * dump = R"desc(
+  1 : aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  2 : bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  3 : cccccccccccccccccccccccccccccccccccccccccccc
+  4 : dddddddddddddddddddddddddddddddddddddddddddd
+  5 : eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+  6 : ffffffffffffffffffffffffffffffffffffffffffff
+  7 : gggggggggggggggggggggggggggggggggggggggggggg
+  8 : hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+  9 : iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+ 10 : jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
+ 11 : aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+ 12 : bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+ 13 : cccccccccccccccccccccccccccccccccccccccccccc
+ 14 : dddddddddddddddddddddddddddddddddddddddddddd
+ 15 : eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+ 16 : ffffffffffffffffffffffffffffffffffffffffffff
+ 17 : gggggggggggggggggggggggggggggggggggggggggggg
+ 18 : hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+ 19 : iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+ 20 : jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
+ 21 : aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+ 22 : bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+ 23 : cccccccccccccccccccccccccccccccccccccccccccc
+ 24 : dddddddddddddddddddddddddddddddddddddddddddd
+ 25 : eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+ 26 : ffffffffffffffffffffffffffffffffffffffffffff
+ 27 : gggggggggggggggggggggggggggggggggggggggggggg
+ 28 : hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+ 29 : iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+ 30 : jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
+ 31 : aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+ 32 : bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+ 33 : cccccccccccccccccccccccccccccccccccccccccccc
+ 34 : dddddddddddddddddddddddddddddddddddddddddddd
+ 35 : eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+ 36 : ffffffffffffffffffffffffffffffffffffffffffff
+ 37 : gggggggggggggggggggggggggggggggggggggggggggg
+ 38 : hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+ 39 : iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+ 40 : jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
+ 41 : aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+ 42 : bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+ 43 : cccccccccccccccccccccccccccccccccccccccccccc
+ 44 : dddddddddddddddddddddddddddddddddddddddddddd
+ 45 : eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+ 46 : ffffffffffffffffffffffffffffffffffffffffffff
+ 47 : gggggggggggggggggggggggggggggggggggggggggggg
+ 48 : hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+ 49 : iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+ 50 : jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj
+
+
+)desc";
+void DumpTextDo()
+{
+    std::ostringstream oss;
+
+    oss << "\r\n\r\n";
+    for (size_t i = 0; i < 50; i++) {
+        oss.width(5);
+        oss << i;
+        oss << " : " << std::string(20, 'a' + i % 10) << "\r\n";
+    }
+
+    HAL_UART_Transmit_DMA(uart1.huart_, (uint8_t*)oss.str().c_str(), strlen(oss.str().c_str()));
+//    HAL_UART_Transmit_DMA(uart1.huart_, (uint8_t*)dump, strlen(dump));
+    osDelay(1000);
+
+//    std::cout << oss.str();
+}
+
+void DumpText()
+{
+    for (size_t i = 0; i < 5; i++)
+        DumpTextDo();
+}
+
 void RegisterRpcMethods()
 {
+    rpc_server.add("dumptext", rexjson::make_rpc_wrapper(DumpText, "void DumpText()"));
     rpc_server.add("LoadConfig", rexjson::make_rpc_wrapper(LoadConfig, "void LoadConfig()"));
     rpc_server.add("SaveConfig", rexjson::make_rpc_wrapper(SaveConfig, "void SaveConfig()"));
     rpc_server.add("drv1.EnableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::EnableVREFDiv, "void Drv8323::EnableVREFDiv()"));
@@ -231,7 +310,7 @@ void StartCommandThread()
     memset(&task_attributes, 0, sizeof(osThreadAttr_t));
     task_attributes.name = "CommandTask";
     task_attributes.priority = (osPriority_t) osPriorityNormal;
-    task_attributes.stack_size = 12000;
+    task_attributes.stack_size = 16000;
     commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 }
 

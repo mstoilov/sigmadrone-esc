@@ -45,8 +45,8 @@ protected:
 private:
     const uint32_t tx_timeout_ = 50; // msec
     USBD_HandleTypeDef* usbd_ = nullptr;
-    Ring<char, 4096> rx_ringbuf_;
-    Ring<char, 1024> tx_ringbuf_;
+    Ring<char, 2048> rx_ringbuf_;
+    Ring<char, 2048> tx_ringbuf_;
     bool rx_initiated_ = true;
     osThreadId_t tx_thread_ = nullptr;
 };
