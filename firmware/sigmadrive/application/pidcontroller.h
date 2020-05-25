@@ -18,17 +18,15 @@ public:
      * @param kp Proportional gain
      * @param ki Integral gain
      * @param kd Differential gain
-     * @param decay Decay rate
      * @param output_i_max Maximum integral output limit
      * @param bias Output bias
      */
-    PidController(float kp = 0, float ki = 0, float kd = 0, float alpha_d = 1.0, float decay = 0, const T &output_i_max = 0, const T &bias = 0)
+    PidController(float kp = 0, float ki = 0, float kd = 0, float alpha_d = 1.0, float output_max = 0, const T &bias = 0)
         : kp_(kp)
         , ki_(ki)
         , kd_(kd)
         , alpha_d_(alpha_d)
-        , decay_(decay)
-        , output_i_max_(output_i_max)
+        , output_max_((output_max < 0) ? -output_max : output_max)
         , bias_(bias)
         , last_error_(0)
         , output_p_(0)
@@ -47,39 +45,54 @@ public:
      * This method is used to recalculate the
      * controller output.
      *
-     * @param setpoint The magnitude of the controlled setpoint
-     * @param measurement The magnitude of the current measurement
+     * @param error The magnitude of the current measurement
      * @param dt Time interval (dT) since the previous input
      * @return The output from the PID controller
      */
-    T Input(const T& setpoint, const T& measurement, float dt)
-    {
-        T error = setpoint - measurement;
-        return InputError(error, measurement, dt);
-    }
-
-    T InputError(const T& error, const T& measurement, float dt)
+    T Input(const T& error, float dt)
     {
         output_b_ = bias_;
-        output_p_ = error * kp_;
-        if (decay_ > 0) {
-            float decay = (1.0f - decay_ * dt);
-            output_i_ *= decay;
-        }
-        output_i_ += 0.5f * (error + last_error_) * ki_ * dt;
-        if (output_i_max_ && output_i_ > output_i_max_)
-            output_i_ = output_i_max_;
-        if (output_i_max_ && output_i_ < -output_i_max_)
-            output_i_ = -output_i_max_;
+
         /*
-         * Calculate the differential output, by differentiating measurement instead of the error:
-         * (measurement - last_measurement_) * kd_ / dt
+         * Proportional output
+         */
+        output_p_ = error * kp_;
+
+        /*
+         * Integral output
+         */
+        output_i_ = output_i_ + 0.5f * ki_ * dt * (error + last_error_);
+
+        /*
+         * Anti-windup dynamic clamping of the integral component
+         */
+        float dynamicLimitMin, dynamicLimitMax;
+        if (output_p_ < output_max_)
+            dynamicLimitMax = output_max_ - output_p_;
+        else
+            dynamicLimitMax = 0.0f;
+
+        if (output_p_ > -output_max_)
+            dynamicLimitMin = -output_max_ - output_p_;
+        else
+            dynamicLimitMin = 0.0f;
+
+        /*
+         * Clamp the integral output
+         */
+        if (output_i_ > dynamicLimitMax)
+            output_i_ = dynamicLimitMax;
+        if (output_i_ < dynamicLimitMin)
+            output_i_ = dynamicLimitMin;
+
+        /*
+         * Calculate the differential output and then run it through low pass filter:
+         * (error - last_error_) * kd_ / dt
          * And then pass it through the low pass filter:
          * filtered = filtered + (input - filtered) * alpha;
          */
-        output_d_ = output_d_ + (((measurement - last_measurement_) * kd_ / dt) - output_d_) * alpha_d_;
+        output_d_ = output_d_ + (((error - last_error_) * kd_ / dt) - output_d_) * alpha_d_;
         last_error_ = error;
-        last_measurement_ = measurement;
         return Output();
     }
 
@@ -95,7 +108,12 @@ public:
      */
     T Output() const
     {
-        return output_b_ + output_p_ + output_i_ + output_d_;
+        T output = output_b_ + output_p_ + output_i_ + output_d_;
+        if (output > output_max_)
+            return output_max_;
+        else if (output < -output_max_)
+            return -output_max_;
+        return output;
     }
 
     /** Return the proportional component of the PID controller output
@@ -138,27 +156,22 @@ public:
         return output_b_;
     }
 
-    /** Set the maximum allow integral component of the output.
+    /** Set the maximum allowed output.
      *
-     * Setting the max integral output is used in cases where
-     * the integral component can wind up over time. PID controller
-     * wind up is a common problem and this is just one of the
-     * possible solutions.
-     *
-     * @param output_max max integral component.
+     * @param output_max max output from the PID controller.
      */
-    void SetMaxIntegralOutput(const T &output_max)
+    void SetMaxOutput(const T &output_max)
     {
-        output_i_max_ = output_max;
+        output_max_ = (output_max < 0) ? -output_max : output_max;
     }
 
-    /** Return the current integral component limit
+    /** Return the output limit
      *
-     * @return Integral component limit
+     * @return Output limit
      */
-    T GetMaxIntegralOutput() const
+    T GetMaxOutput() const
     {
-        return output_i_max_;
+        return output_max_;
     }
 
     /** Set the PID controller output bias.
@@ -180,27 +193,6 @@ public:
     T GetBias() const
     {
         return bias_;
-    }
-
-    /** Set the decay rate of the currently accumulated integral output
-     *
-     * The integral output is adusted using the following formula:
-     * output_i_ *= (1.0f - decay_ * dt);
-     *
-     * @param decay The decay rate
-     */
-    void SetDecayRate(float decay)
-    {
-        decay_ = decay;
-    }
-
-    /** Get the current decay rate for the integral output
-     *
-     * @return Deacay rate
-     */
-    float GetDecayRate() const
-    {
-        return decay_;
     }
 
     /** Get the Low Pass filter coefficient for the differential term
@@ -269,11 +261,9 @@ public:
     float ki_;              /**< Integral gain */
     float kd_;              /**< Differential gain */
     float alpha_d_;         /**< Alpha coefficient for the D-lowpass filter. */
-    float decay_;           /**< Decay rate */
-    T output_i_max_;        /**< Integral output limit */
+    T output_max_;          /**< Output limit */
     T bias_;                /**< PID controller bias */
     T last_error_;          /**< Cached error value from the @ref InputError method call */
-    T last_measurement_;    /**< Cached measurement from the @ref InputError method call */
     T output_p_;            /**< Proportional output */
     T output_i_;            /**< Integral output */
     T output_d_;            /**< Differential output */

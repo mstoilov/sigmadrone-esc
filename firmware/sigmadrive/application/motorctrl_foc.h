@@ -14,20 +14,17 @@ class MotorCtrlFOC
 {
 public:
     struct Config {
-        float pid_current_kp_ = 30;   /* 3 */   /**< Current PID regulator proportional gain */
+        float pid_current_kp_ = 3;    /* 3 */   /**< Current PID regulator proportional gain */
         float pid_current_ki_ = 90;   /* 3120*/ /**< Current PID regulator integral gain */
-        float pid_current_decay_ = 0.0;         /**< Current PID regulator decay rate */
-        float pid_current_maxout_ = 31;         /**< Current PID regulator integral output limit */
+        float pid_current_maxout_ = 45;         /**< Current PID regulator integral output limit */
 
-        float pid_w_kp_ = 0.035;                /**< Velocity PID regulator proportional gain */
+        float pid_w_kp_ = 0.01;                 /**< Velocity PID regulator proportional gain */
         float pid_w_ki_ = 0.7;                  /**< Velocity PID regulator integral gain */
-        float pid_w_decay_ = 0.0;               /**< Velocity PID regulator decay rate */
         float pid_w_maxout_ = 25.0;             /**< Velocity PID regulator integral output limit */
 
         float pid_p_kp_ = 4;                    /**< Position PID regulator proportional gain */
         float pid_p_ki_ = 10;                   /**< Position PID regulator integral gain */
         float pid_p_kd_ = 0.05;                 /**< Position PID regulator differential gain */
-        float pid_p_decay_ = 0.0;               /**< Position PID regulator decay rate */
         float pid_p_maxout_ = 5;                /**< Position PID regulator integral output limit */
 
         float control_bandwidth_ = 700;         /**< Constant used in the calculations of the closed loop PID regulators gains. Rad/Sec */
