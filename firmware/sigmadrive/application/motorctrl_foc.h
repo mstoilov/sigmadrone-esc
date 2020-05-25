@@ -24,11 +24,11 @@ public:
         float pid_w_decay_ = 0.0;               /**< Velocity PID regulator decay rate */
         float pid_w_maxout_ = 25.0;             /**< Velocity PID regulator integral output limit */
 
-        float pid_p_kp_ = 30;                   /**< Position PID regulator proportional gain */
-        float pid_p_ki_ = 90;                   /**< Position PID regulator integral gain */
-        float pid_p_kd_ = 0.25;                 /**< Position PID regulator differential gain */
+        float pid_p_kp_ = 4;                    /**< Position PID regulator proportional gain */
+        float pid_p_ki_ = 10;                   /**< Position PID regulator integral gain */
+        float pid_p_kd_ = 0.05;                 /**< Position PID regulator differential gain */
         float pid_p_decay_ = 0.0;               /**< Position PID regulator decay rate */
-        float pid_p_maxout_ = 4;                /**< Position PID regulator integral output limit */
+        float pid_p_maxout_ = 5;                /**< Position PID regulator integral output limit */
 
         float control_bandwidth_ = 700;         /**< Constant used in the calculations of the closed loop PID regulators gains. Rad/Sec */
         float vab_advance_factor_ = 1.5;        /**< Magnetic field advance factor. The V_ab will be advanced proportional to the rotor variable speed and this constant  */

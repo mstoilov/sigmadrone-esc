@@ -13,10 +13,10 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
     : drive_(drive)
     , lpf_Id_(config_.idq_alpha_)
     , lpf_Iq_(config_.idq_alpha_)
-    , pid_Id_(config_.pid_current_kp_, config_.pid_current_ki_, 0, config_.pid_current_decay_, config_.pid_current_maxout_)
-    , pid_Iq_(config_.pid_current_kp_, config_.pid_current_ki_, 0, config_.pid_current_decay_, config_.pid_current_maxout_)
-    , pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, config_.pid_w_decay_, config_.pid_w_maxout_)
-    , pid_P_(config_.pid_p_kp_, config_.pid_p_ki_, 0, config_.pid_p_decay_, config_.pid_p_maxout_)
+    , pid_Id_(config_.pid_current_kp_, config_.pid_current_ki_, 0, 1, config_.pid_current_decay_, config_.pid_current_maxout_)
+    , pid_Iq_(config_.pid_current_kp_, config_.pid_current_ki_, 0, 1, config_.pid_current_decay_, config_.pid_current_maxout_)
+    , pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, 1, config_.pid_w_decay_, config_.pid_w_maxout_)
+    , pid_P_(config_.pid_p_kp_, config_.pid_p_ki_, 0, 1, config_.pid_p_decay_, config_.pid_p_maxout_)
 {
     StartDebugThread();
     RegisterRpcMethods();
@@ -220,7 +220,7 @@ void MotorCtrlFOC::RunDebugLoop()
         } else if (status & SIGNAL_DEBUG_DUMP_POSITION) {
             fprintf(stderr,
                     "P: %10llu (%10llu) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
-                    "Werr: %+7.3f PID_W: %+6.3f PID_WP: %+6.3f PID_WI: %+6.3f Perr: %+6.2f PID_P: %+6.3f T: %3lu\n",
+                    "Werr: %+7.3f PID_W: %+6.3f PID_WP: %+6.3f PID_WI: %+6.3f Perr: %+6.2f PID_PP: %+6.3f PID_PI: %+6.3f\n",
                     drive_->GetEncoderPosition(),
                     target_,
                     lpf_Id_.Output(),
@@ -234,8 +234,8 @@ void MotorCtrlFOC::RunDebugLoop()
                     pid_W_.OutputP(),
                     pid_W_.OutputI(),
                     Perr_,
-                    pid_P_.Output(),
-                    foc_time_
+                    pid_P_.OutputP(),
+                    pid_P_.OutputI()
             );
 
         } else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
@@ -396,9 +396,9 @@ void MotorCtrlFOC::ModeClosedLoopTorque()
             /*
              * Update D/Q PID Regulators.
              */
-            Ierr_ = q_current_ - lpf_Iq_.Output();
-            pid_Id_.Input(0.0f - lpf_Id_.Output(), update_period);
-            pid_Iq_.Input(Ierr_, update_period);
+            pid_Id_.Input(0.0f, lpf_Id_.Output(), update_period);
+            pid_Iq_.Input(q_current_, lpf_Iq_.Output(), update_period);
+            Ierr_ = pid_Iq_.Error();
 
             /*
              * Inverse Park Transform
@@ -453,8 +453,8 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
             float velocity_ecp = velocity_ * enc_update_period;
 
             if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
-                Werr_ = velocity_ecp - drive_->GetRotorVelocity();
-                pid_W_.Input(Werr_, enc_update_period);
+                pid_W_.Input(velocity_ecp, drive_->GetRotorVelocity(), enc_update_period);
+                Werr_ = pid_W_.Error();
             }
 
             /*
@@ -475,9 +475,9 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
             /*
              * Update D/Q PID Regulators.
              */
-            Ierr_ = pid_W_.Output() - lpf_Iq_.Output();
-            pid_Id_.Input(0.0f - lpf_Id_.Output(), update_period);
-            pid_Iq_.Input(Ierr_, update_period);
+            pid_Id_.Input(0.0f, lpf_Id_.Output(), update_period);
+            pid_Iq_.Input(pid_W_.Output(), lpf_Iq_.Output(), update_period);
+            Ierr_ = pid_Iq_.Error();
 
             /*
              * Inverse Park Transform
@@ -523,6 +523,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
+        pid_P_.Reset();
         lpf_Id_.Reset();
         lpf_Iq_.Reset();
         target_ = drive_->GetEncoderPosition();
@@ -533,12 +534,12 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
 
             if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
                 float velocity_ecp = std::abs(velocity_) * enc_update_period;
-                Perr_ = (int64_t)(target_ - drive_->GetEncoderPosition());
-                float output_ecp = (float) pid_P_.Input((float)Perr_, enc_update_period);
+                float output_ecp = (float) pid_P_.Input(target_, drive_->GetEncoderPosition(), enc_update_period);
+                Perr_ = pid_P_.Error();
                 output_ecp = std::min(output_ecp, velocity_ecp);
                 output_ecp = std::max(output_ecp, -velocity_ecp);
-                Werr_ = output_ecp - drive_->GetRotorVelocity();
-                pid_W_.Input(Werr_, enc_update_period);
+                pid_W_.Input(output_ecp, drive_->GetRotorVelocity(), enc_update_period);
+                Werr_ = pid_W_.Error();
             }
 
             /*
@@ -559,9 +560,9 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
             /*
              * Update D/Q PID Regulators.
              */
-            Ierr_ = pid_W_.Output() - lpf_Iq_.Output();
-            pid_Id_.Input(0.0f - lpf_Id_.Output(), update_period);
-            pid_Iq_.Input(Ierr_, update_period);
+            pid_Id_.Input(0.0f, lpf_Id_.Output(), update_period);
+            pid_Iq_.Input(pid_W_.Output(), lpf_Iq_.Output(), update_period);
+            Ierr_ = pid_Iq_.Error();
 
             /*
              * Inverse Park Transform
@@ -608,6 +609,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition2()
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
+        pid_P_.Reset();
         lpf_Id_.Reset();
         lpf_Iq_.Reset();
         target_ = drive_->GetEncoderPosition();
@@ -620,7 +622,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition2()
             if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
                 uint64_t enc_position = drive_->GetEncoderPosition();
                 Perr_ = drive_->GetPositionError(enc_position, target_, 131072) * rad_per_count;
-                pid_P_.Input(Perr_, enc_update_period);
+                pid_P_.InputError(Perr_, enc_position, enc_update_period);
             }
 
             /*
@@ -641,9 +643,9 @@ void MotorCtrlFOC::ModeClosedLoopPosition2()
             /*
              * Update D/Q PID Regulators.
              */
-            Ierr_ = pid_P_.Output() - lpf_Iq_.Output();
-            pid_Id_.Input(0.0f - lpf_Id_.Output(), update_period);
-            pid_Iq_.Input(Ierr_, update_period);
+            pid_Id_.Input(0.0f, lpf_Id_.Output(), update_period);
+            pid_Iq_.Input(pid_P_.Output(), lpf_Iq_.Output(), update_period);
+            Ierr_ = pid_Iq_.Error();
 
             /*
              * Inverse Park Transform

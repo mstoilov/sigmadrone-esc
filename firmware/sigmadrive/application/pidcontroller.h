@@ -22,8 +22,19 @@ public:
      * @param output_i_max Maximum integral output limit
      * @param bias Output bias
      */
-    PidController(float kp = 0, float ki = 0, float kd = 0, float decay = 0, const T &output_i_max = 0, const T &bias = 0) :
-            kp_(kp), ki_(ki), kd_(kd), decay_(decay), output_i_max_(output_i_max), bias_(bias), last_error_(0), output_p_(0), output_i_(0), output_d_(0), output_b_(0)
+    PidController(float kp = 0, float ki = 0, float kd = 0, float alpha_d = 1.0, float decay = 0, const T &output_i_max = 0, const T &bias = 0)
+        : kp_(kp)
+        , ki_(ki)
+        , kd_(kd)
+        , alpha_d_(alpha_d)
+        , decay_(decay)
+        , output_i_max_(output_i_max)
+        , bias_(bias)
+        , last_error_(0)
+        , output_p_(0)
+        , output_i_(0)
+        , output_d_(0)
+        , output_b_(0)
     {
     }
 
@@ -36,11 +47,18 @@ public:
      * This method is used to recalculate the
      * controller output.
      *
-     * @param input The magnitude of the current input
+     * @param setpoint The magnitude of the controlled setpoint
+     * @param measurement The magnitude of the current measurement
      * @param dt Time interval (dT) since the previous input
      * @return The output from the PID controller
      */
-    T Input(const T &error, float dt)
+    T Input(const T& setpoint, const T& measurement, float dt)
+    {
+        T error = setpoint - measurement;
+        return InputError(error, measurement, dt);
+    }
+
+    T InputError(const T& error, const T& measurement, float dt)
     {
         output_b_ = bias_;
         output_p_ = error * kp_;
@@ -53,9 +71,22 @@ public:
             output_i_ = output_i_max_;
         if (output_i_max_ && output_i_ < -output_i_max_)
             output_i_ = -output_i_max_;
-        output_d_ = (error - last_error_) * kd_ / dt;
+        /*
+         * Calculate the differential output, by differentiating measurement instead of the error:
+         * (measurement - last_measurement_) * kd_ / dt
+         * And then pass it through the low pass filter:
+         * filtered = filtered + (input - filtered) * alpha;
+         */
+        output_d_ = output_d_ + (((measurement - last_measurement_) * kd_ / dt) - output_d_) * alpha_d_;
         last_error_ = error;
+        last_measurement_ = measurement;
         return Output();
+    }
+
+
+    T Error() const
+    {
+        return last_error_;
     }
 
     /** Return the current output calculated during the last @ref Input call
@@ -165,11 +196,20 @@ public:
 
     /** Get the current decay rate for the integral output
      *
-     * @return
+     * @return Deacay rate
      */
     float GetDecayRate() const
     {
         return decay_;
+    }
+
+    /** Get the Low Pass filter coefficient for the differential term
+     *
+     * @return Low Pass filter coefficient for the differential term
+     */
+    float GetAlpahD() const
+    {
+        return alpha_d_;
     }
 
     /** Set the proportional gain of the PID controller
@@ -199,6 +239,15 @@ public:
         kd_ = kd;
     }
 
+    /** Set the low pass filter alpha for the differential term
+     *
+     * @param alpha_d Low Pass filter coefficient
+     */
+    void SetAlphaD(float alpha_d)
+    {
+        alpha_d_ = alpha_d;
+    }
+
     /** Reset the controller output
      *
      * Please note this call doesn't reset the bias.
@@ -219,10 +268,12 @@ public:
     float kp_;              /**< Proportional gain */
     float ki_;              /**< Integral gain */
     float kd_;              /**< Differential gain */
+    float alpha_d_;         /**< Alpha coefficient for the D-lowpass filter. */
     float decay_;           /**< Decay rate */
     T output_i_max_;        /**< Integral output limit */
     T bias_;                /**< PID controller bias */
-    T last_error_;          /**< Cached input value from the @ref Input method call */
+    T last_error_;          /**< Cached error value from the @ref InputError method call */
+    T last_measurement_;    /**< Cached measurement from the @ref InputError method call */
     T output_p_;            /**< Proportional output */
     T output_i_;            /**< Integral output */
     T output_d_;            /**< Differential output */
