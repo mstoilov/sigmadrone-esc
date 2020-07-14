@@ -136,7 +136,7 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
                 [&](void*)->void {
                     pid_P_.SetMaxOutput(config_.pid_p_maxout_);
                 })},
-        {"control_bandwith", &config_.control_bandwidth_},
+        {"tau_ratio", &config_.tau_ratio_},
         {"q_current", &q_current_},
         {"velocity", &velocity_},
         {"target", &target_},
@@ -694,19 +694,16 @@ void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)
 {
     drive_->AddTaskCalibrationSequence(reset_rotor);
     drive_->sched_.AddTask([&](){
-
-#if 0
-        config_.pid_dcurrent_kp_ = config_.control_bandwidth_ * drive_->config_.inductance_;
-        config_.pid_dcurrent_ki_ = config_.control_bandwidth_ * drive_->config_.resistance_;
-        pid_Id_.SetGainP(config_.pid_dcurrent_kp_);
-        pid_Iq_.SetGainP(config_.pid_dcurrent_kp_);
-        pid_Id_.SetGainI(config_.pid_dcurrent_ki_);
-        pid_Iq_.SetGainI(config_.pid_dcurrent_ki_);
-
-        config_.pid_w_kp_ = drive_->config_.inductance_ * config_.control_bandwidth_;
-        config_.pid_w_ki_ = drive_->config_.resistance_ * config_.control_bandwidth_;
-        pid_W_.SetGainP(config_.pid_w_kp_);
-        pid_W_.SetGainI(config_.pid_w_ki_);
+#if 1
+        float tau = drive_->config_.inductance_ / drive_->config_.resistance_;
+        config_.pid_current_kp_ = drive_->config_.resistance_ / config_.tau_ratio_;
+        config_.pid_current_ki_ = config_.pid_current_kp_ / tau;
+        pid_Id_.SetGainP(config_.pid_current_kp_);
+        pid_Id_.SetGainI(config_.pid_current_ki_);
+        pid_Id_.SetGainD(0);
+        pid_Iq_.SetGainP(config_.pid_current_kp_);
+        pid_Iq_.SetGainI(config_.pid_current_ki_);
+        pid_Iq_.SetGainD(0);
 #endif
     });
     drive_->RunWaitForCompletion();
