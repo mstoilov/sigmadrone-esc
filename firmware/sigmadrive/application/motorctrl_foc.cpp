@@ -695,6 +695,34 @@ void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)
     drive_->AddTaskCalibrationSequence(reset_rotor);
     drive_->sched_.AddTask([&](){
 #if 1
+/*
+        R = 4.45
+        L = 0.0128
+        tau = L/R
+        Kp = 1/R
+        Tratio = 3 # Tcl/Tp
+
+        # Open loop system
+        G = cn.tf(Kp, [tau, 1])
+
+        # Pid controller
+        Kc = 1/(Kp*Tratio)
+        Ti = L/R
+        Td = 0
+        Gc = cn.tf([Td*Kc, Kc, Kc/Ti], [1, 0])
+        CL = cn.feedback(Gc*G,1)
+
+        cn.pzmap(G)
+        cn.pzmap(Gc)
+        cn.pzmap(CL)
+
+        plt.figure()
+        t = np.linspace(0, 0.025, 100)
+        x,y=cn.step_response(G,t)
+        plt.plot(x,y)
+        x,y=cn.step_response(CL,t)
+        plt.plot(x,y)
+*/
         float tau = drive_->config_.inductance_ / drive_->config_.resistance_;
         config_.pid_current_kp_ = drive_->config_.resistance_ / config_.tau_ratio_;
         config_.pid_current_ki_ = config_.pid_current_kp_ / tau;

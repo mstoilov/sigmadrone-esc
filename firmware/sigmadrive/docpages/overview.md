@@ -14,7 +14,7 @@ on a rotor inside this cage, its North and South poles will be pulled towards th
 North poles of the rotating field. Maximum torque is achieved when the rotor’s magnetic field 
 is 90 degree apart from the stator field. If the magnet is aligned with the stator field it will
 experience strong outwards pull but no torque or rotation. All other alignmets will produce some
-torque, but to make to motor turn optimally we need to keep the rotor magnet at 90 degrees to 
+torque, but to make the motor turn optimally we need to keep the rotor magnet at 90 degrees to 
 the stator magnetic field. This means we need to know the position of the rotor in real time, 
 then apply voltage on the U V W wires so that the magnetic field produced on the stator 
 is 90 degrees apart.

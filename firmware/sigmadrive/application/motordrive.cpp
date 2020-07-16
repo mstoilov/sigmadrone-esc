@@ -687,8 +687,12 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 void MotorDrive::AddTaskDetectEncoderDir()
 {
 	sched_.AddTask([&](){
-		if (RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, true))
-			config_.encoder_dir_ = (GetMechanicalAngle(GetEncoderPosition()) > M_PI) ? -1 : 1;
+	    uint64_t enc1 = GetEncoderPosition();
+		if (RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, true)) {
+		    uint64_t enc2 = GetEncoderPosition();
+		    config_.encoder_dir_  = (enc2 > enc1) ? 1 : -1;
+//			config_.encoder_dir_ = (GetMechanicalAngle(GetEncoderPosition()) > M_PI) ? -1 : 1;
+		}
 	});
 	sched_.AddTask([&](){
 		RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, false);
