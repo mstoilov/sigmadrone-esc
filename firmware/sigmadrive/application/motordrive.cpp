@@ -239,21 +239,31 @@ uint32_t MotorDrive::GetEncoderPositionBits() const
  */
 uint64_t MotorDrive::GetEncoderPosition() const
 {
-    return (encoder_->GetPosition() >> enc_position_shift_);
+    return ((encoder_->GetPosition() << enc_position_shiftleft_) >> enc_position_shiftright_);
 }
 
 /** Set the IEncoder interface
  *
  * @param encoder IEncoder interface
+ * @param resolution_bits Desired resolution bits. If the encoder hardware uses more bits the
+ * encoder position will be shifted right to match the desired resolution. If the encoder
+ * hardware uses less bits the encoder position value will be shifted left.
  */
-void MotorDrive::SetEncoder(IEncoder *encoder)
+void MotorDrive::SetEncoder(IEncoder *encoder, uint32_t resolution_bits)
 {
     if (encoder) {
         if (!encoder->Initialize())
             throw std::runtime_error("Encoder initialization error.");
         encoder_ = encoder;
         enc_revolution_bits_ = encoder_->GetRevolutionBits();
-        enc_resolution_bits_ = encoder_->GetResolutionBits() - enc_position_shift_;
+        enc_resolution_bits_ = resolution_bits;
+        if (resolution_bits <= encoder_->GetResolutionBits()) {
+            enc_position_shiftright_ = encoder_->GetResolutionBits() - resolution_bits;
+            enc_position_shiftleft_ = 0;
+        } else {
+            enc_position_shiftleft_ = encoder_->GetResolutionBits() - resolution_bits;
+            enc_position_shiftright_ = 0;
+        }
         enc_cpr_ = (1 << enc_resolution_bits_);
         enc_resolution_mask_ = (1 << enc_resolution_bits_) - 1;
         enc_position_size_ = 1LLU << (enc_resolution_bits_ + enc_revolution_bits_);

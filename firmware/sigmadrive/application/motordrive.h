@@ -90,7 +90,7 @@ public:
     bool RunUpdateHandler(const std::function<bool(void)> &update_handler);
     IEncoder* GetEncoder() const;
     uint32_t GetEncoderCPR() const;
-    void SetEncoder(IEncoder *encoder);
+    void SetEncoder(IEncoder *encoder, uint32_t resolution_bits = 16);
     int32_t GetEncoderDir() const;
     uint64_t GetEncoderPosition() const;
     uint32_t GetEncoderPositionBits() const;
@@ -162,7 +162,6 @@ public:
     uint32_t enc_resolution_mask_ = 0;
     uint64_t enc_position_mask_ = 0;
     uint64_t enc_position_size_ = 0;
-    uint32_t enc_position_shift_ = 0;
     uint32_t update_hz_;
     float time_slice_;
     uint32_t enc_update_hz_;
@@ -173,6 +172,8 @@ public:
     uint32_t t2_end_ = 0;
     uint32_t t2_span_ = 0;
     uint32_t delay_trip_check_ = 0;
+    uint32_t enc_position_shiftright_ = 6;      /**< Shift right the encoder position value */
+    uint32_t enc_position_shiftleft_ = 0;       /**< Shift right the encoder position value */
 
     uint32_t t2_to_t2_ = 0;
     bool run_simple_tasks_ = false;

@@ -161,10 +161,11 @@ void SetEncoder()
 {
     try {
         motor_drive.SetEncoder(&ma4_abs_encoder);
-        if (motor_drive.encoder_->GetResolutionBits() == 17)
+        if (motor_drive.encoder_->GetResolutionBits() == 17) {
             motor_drive.config_.pole_pairs = 4;
-        else if (motor_drive.encoder_->GetResolutionBits() == 23)
+        } else if (motor_drive.encoder_->GetResolutionBits() == 23) {
             motor_drive.config_.pole_pairs = 5;
+        }
     } catch (std::exception& e) {
         fprintf(stdout, "Error: %s\n", e.what());
     }
