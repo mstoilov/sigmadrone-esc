@@ -211,6 +211,15 @@ IEncoder* MotorDrive::GetEncoder() const
     return encoder_;
 }
 
+/** Return the encoder Counts Per Revolution  (CPR)
+ *
+ * @return Encoder CPR
+ */
+uint32_t MotorDrive::GetEncoderCPR() const
+{
+    return enc_cpr_;
+}
+
 /** Get the total number of bits used by @ref GetEncoderPosition,
  * this is encoder revolution bits + encoder resolution bits
  *
@@ -243,12 +252,12 @@ void MotorDrive::SetEncoder(IEncoder *encoder)
         if (!encoder->Initialize())
             throw std::runtime_error("Encoder initialization error.");
         encoder_ = encoder;
+        enc_revolution_bits_ = encoder_->GetRevolutionBits();
         enc_resolution_bits_ = encoder_->GetResolutionBits() - enc_position_shift_;
         enc_cpr_ = (1 << enc_resolution_bits_);
         enc_resolution_mask_ = (1 << enc_resolution_bits_) - 1;
-        enc_position_size_ = 1 << (enc_resolution_bits_ + enc_revolution_bits_);
+        enc_position_size_ = 1LLU << (enc_resolution_bits_ + enc_revolution_bits_);
         enc_position_mask_ = enc_position_size_ - 1;
-        enc_revolution_bits_ = encoder_->GetRevolutionBits();
     }
 }
 
@@ -458,6 +467,13 @@ void MotorDrive::UpdateRotor()
 }
 
 
+/** Calculate the position error. Trim the error within [-maxerr, maxerr]
+ *
+ * @param position
+ * @param target
+ * @param maxerr
+ * @return
+ */
 int64_t MotorDrive::GetPositionError(uint64_t position, uint64_t target, uint64_t maxerr)
 {
     int64_t position_err = (target + enc_position_size_ - position) & enc_position_mask_;

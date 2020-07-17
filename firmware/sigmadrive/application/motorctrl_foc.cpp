@@ -164,7 +164,7 @@ void MotorCtrlFOC::RunDebugLoop()
             fprintf(stderr,
                     "Sp: %+6.2f (%+9.2f) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
                     "Ierr: %+7.3f T: %3lu\n",
-                    drive_->GetRotorVelocity() * drive_->enc_update_hz_ / drive_->enc_cpr_,
+                    drive_->GetRotorVelocity() * drive_->enc_update_hz_ / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocity(),
                     lpf_Id_.Output(),
                     lpf_Iq_.Output(),
@@ -179,7 +179,7 @@ void MotorCtrlFOC::RunDebugLoop()
             fprintf(stderr,
                     "Sp: %+6.2f (%+9.2f) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
                     "Ierr: %+7.3f Werr: %+7.3f PID_W: %+6.3f PID_WP: %+6.3f PID_WI: %+6.3f T: %3lu\n",
-                    drive_->GetRotorVelocity() * drive_->enc_update_hz_ / drive_->enc_cpr_,
+                    drive_->GetRotorVelocity() * drive_->enc_update_hz_ / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocity(),
                     lpf_Id_.Output(),
                     lpf_Iq_.Output(),
@@ -218,7 +218,7 @@ void MotorCtrlFOC::RunDebugLoop()
         } else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
             fprintf(stderr,
                     "Speed: %9.2f (%9.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, Adv1: %+5.3f, EncT: %4lu\n",
-                    drive_->GetRotorVelocity() * drive_->enc_update_hz_ / drive_->enc_cpr_,
+                    drive_->GetRotorVelocity() * drive_->enc_update_hz_ / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocity(),
                     lpf_Id_.Output(),
                     lpf_Iq_.Output(),
@@ -226,7 +226,7 @@ void MotorCtrlFOC::RunDebugLoop()
                     drive_->t2_span_,
                     drive_->t2_to_t2_,
                     foc_time_,
-                    config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->enc_cpr_ * 2.0f * M_PI,
+                    config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->GetEncoderCPR() * 2.0f * M_PI,
                     ma4_abs_encoder.update_time_ms_
             );
         }
@@ -308,7 +308,7 @@ void MotorCtrlFOC::ModeSpin()
             /*
              * Apply advance
              */
-            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->enc_cpr_ * 2.0f * M_PI;
+            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->GetEncoderCPR() * 2.0f * M_PI;
             std::complex<float> Eadv = E * std::complex<float>(cosf(advance), sinf(advance));
 
             /*
@@ -389,7 +389,7 @@ void MotorCtrlFOC::ModeClosedLoopTorque()
             /*
              * Apply advance
              */
-            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->enc_cpr_ * 2.0f * M_PI;
+            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->GetEncoderCPR() * 2.0f * M_PI;
             V_ab *= std::complex<float>(cosf(advance), sinf(advance));
 
             /*
@@ -468,7 +468,7 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
             /*
              * Apply advance
              */
-            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->enc_cpr_ * 2.0f * M_PI;
+            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->GetEncoderCPR() * 2.0f * M_PI;
             V_ab *= std::complex<float>(cosf(advance), sinf(advance));
 
             /*
@@ -553,7 +553,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
             /*
              * Apply advance
              */
-            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->enc_cpr_ * 2.0f * M_PI;
+            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->GetEncoderCPR() * 2.0f * M_PI;
             V_ab *= std::complex<float>(cosf(advance), sinf(advance));
 
             /*
@@ -590,7 +590,8 @@ void MotorCtrlFOC::ModeClosedLoopPosition2()
         lpf_Id_.Reset();
         lpf_Iq_.Reset();
         target_ = drive_->GetEncoderPosition();
-        float rad_per_count = M_PI * 2 / drive_->enc_cpr_;
+        uint32_t max_position_err = drive_->GetEncoderCPR() / 4;
+        float rad_per_count = M_PI * 2 / drive_->GetEncoderCPR();
 
         drive_->sched_.RunUpdateHandler([&]()->bool {
             std::complex<float> Iab = drive_->GetPhaseCurrent();
@@ -598,7 +599,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition2()
 
             if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
                 uint64_t enc_position = drive_->GetEncoderPosition();
-                Perr_ = drive_->GetPositionError(enc_position, target_, 131072) * rad_per_count;
+                Perr_ = drive_->GetPositionError(enc_position, target_, max_position_err) * rad_per_count;
                 pid_P_.Input(Perr_, enc_update_period);
             }
 
@@ -636,7 +637,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition2()
             /*
              * Apply advance
              */
-            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->enc_cpr_ * 2.0f * M_PI;
+            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocity()/drive_->GetEncoderCPR() * 2.0f * M_PI;
             V_ab *= std::complex<float>(cosf(advance), sinf(advance));
 
             /*
@@ -664,7 +665,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition2()
  */
 float MotorCtrlFOC::VelocityRPS(float revpersec)
 {
-    velocity_ = revpersec * drive_->enc_cpr_;
+    velocity_ = revpersec * drive_->GetEncoderCPR();
     return velocity_;
 }
 

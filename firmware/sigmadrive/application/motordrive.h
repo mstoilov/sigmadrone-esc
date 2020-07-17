@@ -89,6 +89,7 @@ public:
     bool ApplyPhaseDuty(float duty_a, float duty_b, float duty_c);
     bool RunUpdateHandler(const std::function<bool(void)> &update_handler);
     IEncoder* GetEncoder() const;
+    uint32_t GetEncoderCPR() const;
     void SetEncoder(IEncoder *encoder);
     int32_t GetEncoderDir() const;
     uint64_t GetEncoderPosition() const;
