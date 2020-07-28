@@ -18,13 +18,13 @@ public:
         float pid_current_ki_ = 200;  /* 3120*/ /**< Current PID regulator integral gain */
         float pid_current_maxout_ = 45;         /**< Current PID regulator output limit */
 
-        float pid_w_kp_ = 0.02;                 /**< Velocity PID regulator proportional gain */
-        float pid_w_ki_ = 5;                    /**< Velocity PID regulator integral gain */
+        float pid_w_kp_ = 0.2;                  /**< Velocity PID regulator proportional gain */
+        float pid_w_ki_ = 10;                   /**< Velocity PID regulator integral gain */
         float pid_w_maxout_ = 25.0;             /**< Velocity PID regulator output limit */
 
-        float pid_p_kp_ = 4;                    /**< Position PID regulator proportional gain */
-        float pid_p_ki_ = 4;                    /**< Position PID regulator integral gain */
-        float pid_p_kd_ = 0.075;                /**< Position PID regulator differential gain */
+        float pid_p_kp_ = 40;                   /**< Position PID regulator proportional gain */
+        float pid_p_ki_ = 20 * 0;                   /**< Position PID regulator integral gain */
+        float pid_p_kd_ = 0.075 * 0;                /**< Position PID regulator differential gain */
         float pid_p_maxout_ = 5;                /**< Position PID regulator output limit */
 
         float tau_ratio_ = 7;                   /**< Constant used in the calculations of the closed loop PID regulator gains. Tratio = Tcl/Tp as per https://www.youtube.com/watch?v=3viD5ij60EI */
@@ -34,6 +34,8 @@ public:
         float idq_alpha_ = 0.75;                /**< DQ-current filter alpha coefficient */
         float i_trip_ = 8.0;                    /**< Max allowed current. If the current gets bigger than that it will cause trip violation */
         bool display_ = true;                   /**< Display mode on/off */
+        float pvfactor_ = 50000;                /**< Position PID -> Velocity PID factor */
+        float max_poserr_factor_ = 1.0;         /**< Maximum position error factor. 1 - 0ne full revolution, 0.5 - half revolution, etc. */
     };
 
 
@@ -43,7 +45,7 @@ public:
     void ModeClosedLoopTorque();
     void ModeClosedLoopVelocity();
     void ModeClosedLoopPosition();
-    void ModeClosedLoopPosition2();
+
     void ModeSpin();
     uint64_t MoveToPosition(uint64_t position);
     uint64_t MoveRelative(int64_t position);
@@ -51,6 +53,7 @@ public:
     float VelocityRPS(float revpersec);
     rexjson::property GetPropertyMap();
     void RegisterRpcMethods();
+    std::tuple<float, float> VelocityProfileTrapezoid(float A, float V, float X, float t);
 
 protected:
     void UpdateRotor();

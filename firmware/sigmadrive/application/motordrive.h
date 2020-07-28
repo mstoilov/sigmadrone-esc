@@ -95,6 +95,7 @@ public:
     uint64_t GetEncoderPosition() const;
     uint32_t GetEncoderPositionBits() const;
     uint32_t GetUpdateFrequency() const;
+    uint32_t GetEncoderUpdateFrequency() const;
     float GetTimeSlice() const;
     float GetEncoderTimeSlice() const;
     uint32_t GetPolePairs() const;

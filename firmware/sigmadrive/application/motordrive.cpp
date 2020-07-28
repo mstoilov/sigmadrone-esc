@@ -299,6 +299,15 @@ uint32_t MotorDrive::GetUpdateFrequency() const
     return update_hz_;
 }
 
+/** Return the encoder update rate of the motor drive
+ *
+ * @return Encoder Update rate
+ */
+uint32_t MotorDrive::GetEncoderUpdateFrequency() const
+{
+    return enc_update_hz_;
+}
+
 /** Return the update time period in seconds
  *
  * @return
