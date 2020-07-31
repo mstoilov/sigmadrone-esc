@@ -498,8 +498,10 @@ int64_t MotorDrive::GetPositionError(uint64_t position, uint64_t target, uint64_
     int64_t position_err = (target + enc_position_size_ - position) & enc_position_mask_;
     if (position_err > (int64_t)(enc_position_size_/2))
         position_err -= enc_position_size_;
-    position_err = std::min(position_err, (int64_t)maxerr);
-    position_err = std::max(position_err, (int64_t)-maxerr);
+    if (maxerr) {
+        position_err = std::min(position_err, (int64_t)maxerr);
+        position_err = std::max(position_err, (int64_t)-maxerr);
+    }
     return position_err;
 }
 
@@ -538,11 +540,21 @@ std::complex<float> MotorDrive::GetRotorElecRotation()
 	return E_;
 }
 
+/** Get the rotor velocity in encoder counts per encoder period [counts/s]
+ *
+ * @return Rotor velocity
+ */
+float MotorDrive::GetRotorVelocity()
+{
+    return GetRotorVelocityPEP() * enc_update_hz_;
+}
+
+
 /** Get the rotor velocity in encoder counts per encoder period (enc_time_slice_)
  *
  * @return Mechanical rotor velocity
  */
-float MotorDrive::GetRotorVelocity()
+float MotorDrive::GetRotorVelocityPEP()
 {
     return lpf_Wenc_.Output();
 }
@@ -551,9 +563,9 @@ float MotorDrive::GetRotorVelocity()
  *
  * @return Electrical rotor velocity
  */
-float MotorDrive::GetRotorElecVelocity()
+float MotorDrive::GetRotorElecVelocityPEP()
 {
-    return GetRotorVelocity() * config_.pole_pairs;
+    return GetRotorVelocityPEP() * config_.pole_pairs;
 }
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)

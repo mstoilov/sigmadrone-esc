@@ -229,6 +229,9 @@ vpath %.cpp rexjson
 OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp,%.o,$(notdir $(wildcard rexjsonrpc/*.cpp))))
 vpath %.cpp rexjsonrpc
 
+OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp,%.o,$(notdir $(wildcard velocityprofiler/*.cpp))))
+vpath %.cpp velocityprofiler
+
 OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.c,%.o,$(notdir $(wildcard commandline/*.c))))
 vpath %.c commandline
 

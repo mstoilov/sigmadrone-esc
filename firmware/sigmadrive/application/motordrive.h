@@ -103,7 +103,8 @@ public:
     std::complex<float> GetRotorElecRotation();
     std::complex<float> GetRotorMechRotation();
     float GetRotorVelocity();
-    float GetRotorElecVelocity();
+    float GetRotorVelocityPEP();
+    float GetRotorElecVelocityPEP();
     int64_t GetPositionError(uint64_t position, uint64_t target, uint64_t maxerr);
 
     std::complex<float> GetPhaseCurrent() const;
