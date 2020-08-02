@@ -75,12 +75,17 @@ Vc = np.zeros_like(time)
 Sc = np.zeros_like(time)
 Ac = np.zeros_like(time)
 
-trap = tp.TrapezoidProfile();
-trap.Init(160, 40, 0, 4, 0.5, 0.15)
+Vc1 = np.zeros_like(time)
+Sc1 = np.zeros_like(time)
+Ac1 = np.zeros_like(time)
+
+prof = tp.TrapezoidProfile();
+traj = tp.TrapezoidalTrajectory();
+prof.Init(160, 40, 0, 4, 0.5, 0.15)
+traj.Init(160, 40, 0, 4, 0.5, 0.15)
 for i, t in enumerate(time):
-    data = trap.Step(time[1])
+    data = traj.Step(time[i])
     Sc[i], Vc[i], Ac[i] = data.P, data.Pd, data.Pdd
-    trap.Init(160, data.P, data.Pd, 4, 0.5, 0.15)
 
 # for i, t in enumerate(time):
 #     Sc[i], Vc[i], Ac[i] = trapezoidalProfile(120, 30, 5, 4, 0.5, 0.15, t)

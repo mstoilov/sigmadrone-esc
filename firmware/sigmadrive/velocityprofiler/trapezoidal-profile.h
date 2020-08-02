@@ -31,9 +31,6 @@ public:
     float Dr_ = 0.0f;
     float Vi_ = 0.0f;
     float dX_ = 0.0f;
-    float Da_ = 0.0f;
-    float Dc_ = 0.0f;
-    float Dd_ = 0.0f;
     float Ta_ = 0.0f;
     float Td_ = 0.0f;
     float Tc_ = 0.0f;

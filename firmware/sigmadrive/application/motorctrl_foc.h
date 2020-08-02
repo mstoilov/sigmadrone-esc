@@ -17,13 +17,13 @@ public:
     struct Config {
         float pid_current_kp_ = 0.66;   /* 3 */ /**< Current PID regulator proportional gain */
         float pid_current_ki_ = 200;  /* 3120*/ /**< Current PID regulator integral gain */
-        float pid_current_maxout_ = 45;         /**< Current PID regulator output limit */
+        float pid_current_maxout_ = 30;         /**< Current PID regulator output limit */
 
-        float pid_w_kp_ = 0.1;                  /**< Velocity PID regulator proportional gain */
+        float pid_w_kp_ = 0.05;                 /**< Velocity PID regulator proportional gain */
         float pid_w_ki_ = 10;                   /**< Velocity PID regulator integral gain */
         float pid_w_maxout_ = 25.0;             /**< Velocity PID regulator output limit */
 
-        float pid_p_kp_ = 15;                   /**< Position PID regulator proportional gain */
+        float pid_p_kp_ = 5;                    /**< Position PID regulator proportional gain */
         float pid_p_ki_ = 0;                    /**< Position PID regulator integral gain */
         float pid_p_kd_ = 0;                    /**< Position PID regulator differential gain */
         float pid_p_maxout_ = 240;              /**< Position PID regulator output limit */
@@ -98,9 +98,9 @@ protected:
     float Werr_ = 0;                            /**< Velocity error. Used as input for the velocity PID regulator */
     float Perr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */
     uint64_t target_ = 0;                       /**< Target position used in closed loop position mode */
-    float velocity_ = 500000;                   /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
-    float acceleration_ = 200000;               /**< Movement acceleration [counts/s^2] */
-    float deceleration_ = 50000;                /**< Movement deceleration [counts/s^2] */
+    float velocity_ = 1500000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
+    float acceleration_ = 2000000;              /**< Movement acceleration [counts/s^2] */
+    float deceleration_ = 500000;               /**< Movement deceleration [counts/s^2] */
     float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
     float spin_voltage_ = 3.5f;                 /**< Voltage used for the spin mode */
     uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */

@@ -220,21 +220,24 @@ void MotorCtrlFOC::RunDebugLoop()
 
         } else if (status & SIGNAL_DEBUG_DUMP_TRAJECTORY) {
             fprintf(stderr,
-                    "CV: %+6.1f TP: %10llu CP: %10llu P: %+10.0f Pd: %+10.0f CV: %+10.0f Pdd: %+8.1f  "
-                    "Werr: %+7.1f PID_W: %+6.3f Perr: %+6.2f PID_P: %+6.3f\n",
-                    drive_->GetRotorVelocity() / drive_->GetEncoderCPR(),
-                    target_,
+                    "P: %10llu PR: %10.0f (%10llu) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
+                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f Pd: %+10.0f, V_PEP: %+10.0f\n",
                     drive_->GetEncoderPosition(),
                     profile_target_.P,
-                    profile_target_.Pd,
-                    drive_->GetRotorVelocity(),
-                    profile_target_.Pdd,
+                    target_,
+                    lpf_Id_.Output(),
+                    lpf_Iq_.Output(),
+                    pid_Id_.Output(),
+                    pid_Iq_.Output(),
+                    pid_Iq_.OutputP(),
+                    pid_Iq_.OutputI(),
                     Werr_,
                     pid_W_.Output(),
                     Perr_,
-                    pid_P_.Output()
+                    pid_P_.Output(),
+                    profile_target_.Pd,
+                    drive_->GetRotorVelocity()
             );
-
         } else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
             fprintf(stderr,
                     "Speed: %9.2f (%9.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, Adv1: %+5.3f, EncT: %4lu\n",
@@ -625,14 +628,12 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
                 uint64_t enc_position = drive_->GetEncoderPosition();
 
                 if (profiler_enabled_) {
-                    float t = (drive_->data_.update_counter_ - profiler_counter_) * enc_update_period;
+                    float t = (drive_->data_.update_counter_ - profiler_counter_) * update_period;
                     if (t < trap_profiler_.T_) {
                         profile_target_ = trap_profiler_.Step(t);
                         Perr_ = drive_->GetPositionError(enc_position, profile_target_.P, 0) * enc_update_period;
                         pid_P_.Input(Perr_, enc_update_period);
-
-                        float velocity_ecp = profile_target_.Pd * enc_update_period;
-                        Werr_ = 0.5 * pid_P_.Output()  + 0.5 * (velocity_ecp - drive_->GetRotorVelocityPEP());
+                        Werr_ = pid_P_.Output() + profile_target_.Pd * enc_update_period - drive_->GetRotorVelocityPEP();
                         pid_W_.Input(Werr_, enc_update_period);
                     } else {
                         profiler_enabled_ = false;

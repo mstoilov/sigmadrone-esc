@@ -1,50 +1,63 @@
 
 #include "trapezoidal-profile.h"
-
+#include "trapTraj.h"
 #include <math.h>
+#include "stm32f745xx.h"
 
 #define SQ(x) ((x) * (x))
 
 void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax)
 {
-    s_ = (Xf >= Xi) ? 1.0 : -1.0;
-    Xf_ = Xf;
-    Xi_ = Xi;
-    Vr_ = abs(Vmax);
-    Ar_ = abs(Amax);
-    Dr_ = abs(Dmax);
-    dX_ = abs(Xf - Xi);
-    Vi_ = s_ * Vin;
+    float s = (Xf >= Xi) ? 1.0 : -1.0;
+    float Vr = abs(Vmax);
+    float Ar = abs(Amax);
+    float Dr = abs(Dmax);
+    float dX = abs(Xf - Xi);
+    float Vi = s * Vin;
 
-    if (Vi_ > Vr_)
-        Ar_ = -Ar_;
-    Da_ = 0.5 * (Vr_ + Vi_) * (Vr_ - Vi_) / Ar_;
-    Dd_ = 0.5 * SQ(Vr_) / Dr_;
-    Dc_ = dX_ - (Da_ + Dd_);
+    if (Vi > Vr)
+        Ar = -Ar;
+    float Da = 0.5 * (Vr + Vi) * (Vr - Vi) / Ar;
+    float Dd = 0.5 * SQ(Vr) / Dr;
+    float Dc = dX - (Da + Dd);
 
-    if (Dc_ < 0) {
+    if (Dc < 0) {
         // Find Vr by solving:
         // Da + Dd = dX
         // 0.5 * (Vr + Vi) * (Vr - Vi) / Ar + 0.5 *(Vr * Vr) / Dr = dX
-        float Vr_sq = Dr_ * (2.0 * Ar_ * dX_ + SQ(Vi_))/(Dr_ + Ar_);
-        if (Vr_sq < 0 or Da_ == 0) {
+        float Vr_sq = Dr * (2.0 * Ar * dX + SQ(Vi))/(Dr + Ar);
+        if (Vr_sq < 0 or Da == 0) {
             // The distence to the requested position is too short
             // for the specified decelaration.
             // Calculate the required decelaration to reach the position
-            Vr_ = Vi_;
-            Dr_ = 0.5 * SQ(Vi_) / dX_;
+            Vr = Vi;
+            Dr = 0.5 * SQ(Vi) / dX;
         } else {
-            Vr_ = sqrtf(Vr_sq);
+            Vr = sqrtf(Vr_sq);
         }
-        Dc_ = 0;
-        Da_ = 0.5 * (Vr_ + Vi_) * (Vr_ - Vi_) / Ar_;
-        Dd_ = 0.5 * SQ(Vr_) / Dr_;
+        Dc = 0;
+        Da = 0.5 * (Vr + Vi) * (Vr - Vi) / Ar;
+        Dd = 0.5 * SQ(Vr) / Dr;
     }
 
-    Ta_ = (Vr_ - Vi_) / Ar_;
-    Td_ = Vr_ / Dr_;
-    Tc_ = Dc_ / Vr_;
-    T_ = Ta_ + Tc_ + Td_;
+    float Ta = (Vr - Vi) / Ar;
+    float Td = Vr / Dr;
+    float Tc = Dc / Vr;
+
+    __disable_irq();
+    Xf_ = Xf;
+    Xi_ = Xi;
+    Vr_ = Vr;
+    Ar_ = Ar;
+    Dr_ = Dr;
+    Vi_ = Vi;
+    Ta_ = Ta;
+    Td_ = Td;
+    Tc_ = Tc;
+    T_ = Ta + Tc + Td;
+    s_ = s;
+    __enable_irq();
+
 }
 
 ProfileData TrapezoidalProfile::Step(float t)
@@ -93,6 +106,15 @@ PYBIND11_MODULE(trapezoidprofile, m) {
         .def(py::init<>())
 		.def("Init", &TrapezoidalProfile::Init)
 		.def("Step", &TrapezoidalProfile::Step);
+    py::class_<TrapezoidalTrajectory::Step_t>(m, "Step_t")
+        .def(py::init<float, float, float>())
+        .def_readwrite("P", &TrapezoidalTrajectory::Step_t::Y)
+        .def_readwrite("Pd", &TrapezoidalTrajectory::Step_t::Yd)
+        .def_readwrite("Pdd", &TrapezoidalTrajectory::Step_t::Ydd);
+    py::class_<TrapezoidalTrajectory>(m, "TrapezoidalTrajectory")
+        .def(py::init<>())
+        .def("Init", &TrapezoidalTrajectory::Init)
+        .def("Step", &TrapezoidalTrajectory::Step);
 }
 
 #endif
