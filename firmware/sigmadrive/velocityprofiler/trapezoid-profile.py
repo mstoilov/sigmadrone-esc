@@ -80,11 +80,9 @@ Sc1 = np.zeros_like(time)
 Ac1 = np.zeros_like(time)
 
 prof = tp.TrapezoidProfile();
-traj = tp.TrapezoidalTrajectory();
 prof.Init(160, 40, 0, 4, 0.5, 0.15)
-traj.Init(160, 40, 0, 4, 0.5, 0.15)
 for i, t in enumerate(time):
-    data = traj.Step(time[i])
+    data = prof.Step(time[i])
     Sc[i], Vc[i], Ac[i] = data.P, data.Pd, data.Pdd
 
 # for i, t in enumerate(time):

@@ -1,8 +1,10 @@
 
 #include "trapezoidal-profile.h"
-#include "trapTraj.h"
 #include <math.h>
+
+#ifdef STM32F745xx
 #include "stm32f745xx.h"
+#endif
 
 #define SQ(x) ((x) * (x))
 
@@ -44,7 +46,9 @@ void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float A
     float Td = Vr / Dr;
     float Tc = Dc / Vr;
 
+#ifdef STM32F745xx
     __disable_irq();
+#endif
     Xf_ = Xf;
     Xi_ = Xi;
     Vr_ = Vr;
@@ -56,7 +60,10 @@ void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float A
     Tc_ = Tc;
     T_ = Ta + Tc + Td;
     s_ = s;
+
+#ifdef STM32F745xx
     __enable_irq();
+#endif
 
 }
 
@@ -106,15 +113,6 @@ PYBIND11_MODULE(trapezoidprofile, m) {
         .def(py::init<>())
 		.def("Init", &TrapezoidalProfile::Init)
 		.def("Step", &TrapezoidalProfile::Step);
-    py::class_<TrapezoidalTrajectory::Step_t>(m, "Step_t")
-        .def(py::init<float, float, float>())
-        .def_readwrite("P", &TrapezoidalTrajectory::Step_t::Y)
-        .def_readwrite("Pd", &TrapezoidalTrajectory::Step_t::Yd)
-        .def_readwrite("Pdd", &TrapezoidalTrajectory::Step_t::Ydd);
-    py::class_<TrapezoidalTrajectory>(m, "TrapezoidalTrajectory")
-        .def(py::init<>())
-        .def("Init", &TrapezoidalTrajectory::Init)
-        .def("Step", &TrapezoidalTrajectory::Step);
 }
 
 #endif
