@@ -1,0 +1,24 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# TPS793333-EP-regul-sigmadrive-solo-rescue
+#
+DEF TPS793333-EP-regul-sigmadrive-solo-rescue U 0 10 Y Y 1 F N
+F0 "U" -150 225 50 H V C CNN
+F1 "TPS793333-EP-regul-sigmadrive-solo-rescue" 0 225 50 H V L CNN
+F2 "TO_SOT_Packages_SMD:SOT-23-5" 0 325 50 H I C CIN
+F3 "" 0 50 50 H I C CNN
+$FPLIST
+ SOT?23*
+$ENDFPLIST
+DRAW
+S 200 -200 -200 175 1 1 10 f
+X IN 1 -300 100 100 R 50 50 1 1 W
+X GND 2 0 -300 100 U 50 50 1 1 W
+X EN 3 -300 0 100 R 50 50 1 1 I
+X BP 4 300 0 100 L 50 50 1 1 B
+X OUT 5 300 100 100 L 50 50 1 1 w
+ENDDRAW
+ENDDEF
+#
+#End Library
