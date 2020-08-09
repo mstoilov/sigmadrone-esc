@@ -1638,38 +1638,6 @@ F 5 "DigiKey" V 2600 3400 60  0001 C CNN "Provider"
 	1    2600 3400
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	2250 3550 2250 3650
-Wire Wire Line
-	2250 3150 2250 3250
-$Comp
-L power:+3.3V #PWR020
-U 1 1 5CF217A6
-P 2250 3150
-F 0 "#PWR020" H 2250 3000 50  0001 C CNN
-F 1 "+3.3V" H 2265 3323 50  0000 C CNN
-F 2 "" H 2250 3150 50  0001 C CNN
-F 3 "" H 2250 3150 50  0001 C CNN
-	1    2250 3150
-	1    0    0    -1  
-$EndComp
-$Comp
-L Device:R R?
-U 1 1 5CF2179F
-P 2250 3400
-AR Path="/58BE2779/5CF2179F" Ref="R?"  Part="1" 
-AR Path="/58BF664D/5CF2179F" Ref="R6"  Part="1" 
-F 0 "R6" V 2330 3400 50  0000 C CNN
-F 1 "10k" V 2250 3400 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 2180 3400 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 2250 3400 50  0001 C CNN
-F 4 "311-10.0KHRCT-ND" V 2250 3400 60  0001 C CNN "Part"
-F 5 "DigiKey" V 2250 3400 60  0001 C CNN "Provider"
-	1    2250 3400
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	2250 9450 4300 9450
 $Comp
 L power:PWR_FLAG #FLG?
 U 1 1 5CA0007B
@@ -1711,45 +1679,6 @@ F 3 "" H 6750 13750 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	6750 13250 6750 13550
-$Comp
-L Device:R R?
-U 1 1 5CD745A7
-P 4500 3650
-AR Path="/58BE2779/5CD745A7" Ref="R?"  Part="1" 
-AR Path="/58BF664D/5CD745A7" Ref="R11"  Part="1" 
-F 0 "R11" V 4550 3800 50  0000 C CNN
-F 1 "21" V 4500 3650 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 4430 3650 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 4500 3650 50  0001 C CNN
-F 4 "311-21.0HRCT-ND" V 4500 3650 60  0001 C CNN "Part"
-F 5 "DigiKey" V 4500 3650 60  0001 C CNN "Provider"
-	1    4500 3650
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	4800 3650 4650 3650
-Wire Wire Line
-	1850 3650 2250 3650
-Connection ~ 2250 3650
-Wire Wire Line
-	2250 3650 4350 3650
-$Comp
-L Device:R R?
-U 1 1 5CDB071A
-P 4450 9450
-AR Path="/58BE2779/5CDB071A" Ref="R?"  Part="1" 
-AR Path="/58BF664D/5CDB071A" Ref="R12"  Part="1" 
-F 0 "R12" V 4500 9600 50  0000 C CNN
-F 1 "21" V 4450 9450 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 4380 9450 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 4450 9450 50  0001 C CNN
-F 4 "311-21.0HRCT-ND" V 4450 9450 60  0001 C CNN "Part"
-F 5 "DigiKey" V 4450 9450 60  0001 C CNN "Provider"
-	1    4450 9450
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	4600 9450 4750 9450
 $Comp
 L Device:Net-Tie_2 NT1
 U 1 1 5D4D5931
@@ -3399,4 +3328,8 @@ Wire Wire Line
 Connection ~ 21250 14050
 Wire Wire Line
 	21250 14050 19850 14050
+Wire Wire Line
+	1850 3650 4800 3650
+Wire Wire Line
+	2250 9450 4750 9450
 $EndSCHEMATC
