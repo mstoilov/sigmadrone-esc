@@ -947,7 +947,7 @@ Text HLabel 22300 3650 2    60   Input ~ 0
 M1_IA_FB
 Text HLabel 22300 3750 2    60   Input ~ 0
 M1_IB_FB
-Text HLabel 18100 7250 2    60   Input ~ 0
+Text HLabel 18100 4150 2    60   Input ~ 0
 VBAT_ADC
 Text Label 17800 4450 2    60   ~ 0
 USART1_TX
@@ -1751,15 +1751,15 @@ F 3 "" H 21350 14300 60  0001 C CNN
 	1    21350 14300
 	1    0    0    -1  
 $EndComp
-Text HLabel 17400 6750 2    60   Output ~ 0
+Text HLabel 18050 6750 2    60   Output ~ 0
 DRV_SDI
-Text HLabel 17400 6650 2    60   Input ~ 0
+Text HLabel 18050 7250 2    60   Input ~ 0
 DRV_SDO
-Text HLabel 18100 8350 2    60   Output ~ 0
+Text HLabel 18050 8350 2    60   Output ~ 0
 DRV2_CS
 Text HLabel 3500 6650 0    60   Output ~ 0
 DRV_CAL
-Text HLabel 18100 8450 2    60   Input ~ 0
+Text HLabel 18050 8450 2    60   Input ~ 0
 DRV_FAULT
 Text HLabel 3500 6750 0    60   Output ~ 0
 GATE1_ENABLE
@@ -1877,16 +1877,16 @@ F 3 "" H 3500 14050 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	3800 8350 5900 8350
-Text HLabel 18100 8250 2    60   Output ~ 0
+Text HLabel 18050 8250 2    60   Output ~ 0
 DRV1_CS
 Wire Wire Line
 	3500 6750 5900 6750
 Wire Wire Line
 	3500 6650 5900 6650
 Wire Wire Line
-	16100 6650 17400 6650
+	16100 7250 18050 7250
 Wire Wire Line
-	16100 6750 17400 6750
+	16100 6750 18050 6750
 $Comp
 L Device:LED D6
 U 1 1 5C7F5EF4
@@ -1947,11 +1947,11 @@ $EndComp
 Text Label 3000 15600 1    60   ~ 0
 PWR_ON
 Wire Wire Line
-	16100 8350 18100 8350
+	16100 8350 18050 8350
 Wire Wire Line
-	16100 8250 18100 8250
+	16100 8250 18050 8250
 Wire Wire Line
-	16100 8450 18100 8450
+	16100 8450 18050 8450
 Wire Wire Line
 	16100 4550 17800 4550
 Wire Wire Line
@@ -2256,7 +2256,7 @@ Wire Wire Line
 NoConn ~ 16100 6450
 NoConn ~ 16100 6550
 Wire Wire Line
-	16100 5250 18100 5250
+	16100 6650 18100 6650
 $Comp
 L Device:Varistor RV1
 U 1 1 5E4BF9BF
@@ -2286,7 +2286,7 @@ F 5 "DigiKey" V 1200 5350 60  0001 C CNN "Provider"
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	16100 7250 18100 7250
+	16100 4150 18100 4150
 Wire Wire Line
 	16100 3850 19300 3850
 Wire Wire Line
@@ -2493,33 +2493,29 @@ Wire Wire Line
 	11200 12050 12750 12050
 NoConn ~ 16600 12800
 Wire Wire Line
-	16100 6050 16500 6050
-Wire Wire Line
 	16100 6150 16500 6150
-NoConn ~ 16100 6050
-NoConn ~ 16100 6150
 Wire Wire Line
 	16100 5450 18100 5450
 Text HLabel 18100 5350 2    60   Output ~ 0
 M2_CL
-Text HLabel 18100 5250 2    60   Output ~ 0
+Text HLabel 18100 6650 2    60   Output ~ 0
 M2_BL
-Text HLabel 18100 4250 2    60   Output ~ 0
+Text HLabel 18050 4250 2    60   Output ~ 0
 M2_AL
 Wire Wire Line
-	16100 4250 18100 4250
-Text HLabel 18100 7550 2    60   Output ~ 0
+	16100 4250 18050 4250
+Text HLabel 18050 7550 2    60   Output ~ 0
 M2_AH
-Text HLabel 18100 7650 2    60   Output ~ 0
+Text HLabel 18050 7650 2    60   Output ~ 0
 M2_BH
-Text HLabel 18100 7750 2    60   Output ~ 0
+Text HLabel 18050 7750 2    60   Output ~ 0
 M2_CH
 Wire Wire Line
-	16100 7550 18100 7550
+	16100 7550 18050 7550
 Wire Wire Line
-	16100 7650 18100 7650
+	16100 7650 18050 7650
 Wire Wire Line
-	16100 7750 18100 7750
+	16100 7750 18050 7750
 $Comp
 L Device:R R?
 U 1 1 5FF0B9CE
@@ -3701,12 +3697,8 @@ Wire Wire Line
 	21950 3650 22300 3650
 Text Label 17800 3950 2    60   ~ 0
 ADC1_IN4
-Text Label 17800 4150 2    60   ~ 0
-ADC1_IN6
 Wire Wire Line
 	16100 3950 17800 3950
-Wire Wire Line
-	16100 4150 17800 4150
 $Comp
 L Connector_Generic:Conn_02x05_Odd_Even GPIO1
 U 1 1 636D0091
@@ -3724,12 +3716,8 @@ Wire Wire Line
 	17100 11800 17600 11800
 Text Label 17600 11700 2    60   ~ 0
 ADC1_IN4
-Text Label 17600 11900 2    60   ~ 0
-ADC1_IN6
 Wire Wire Line
 	17100 11700 17600 11700
-Wire Wire Line
-	17100 11900 17600 11900
 Text Label 17600 11600 2    60   ~ 0
 TIM5_CH1
 Wire Wire Line
@@ -3965,7 +3953,6 @@ Text Label 18300 14050 2    60   ~ 0
 UART8_TX
 Text Label 6750 10300 2    60   ~ 0
 M1_QUAD_Z
-NoConn ~ 4800 10200
 $Comp
 L power:PWR_FLAG #FLG0108
 U 1 1 64F0A09F
@@ -3988,7 +3975,6 @@ Wire Wire Line
 Connection ~ 5900 12650
 Wire Wire Line
 	5900 12650 6750 12650
-NoConn ~ 4850 12550
 Wire Wire Line
 	4800 10300 5900 10300
 Wire Wire Line
@@ -3996,4 +3982,70 @@ Wire Wire Line
 Connection ~ 5900 10300
 Wire Wire Line
 	5900 10300 6750 10300
+Text Label 17800 5250 2    60   ~ 0
+M2_TIM_CH3
+Wire Wire Line
+	16100 5250 17800 5250
+Text Label 17800 6050 2    60   ~ 0
+M1_TIM_CH3
+Wire Wire Line
+	16100 6050 17800 6050
+Text Label 6750 10200 2    60   ~ 0
+M1_TIM_CH3
+Wire Wire Line
+	4800 10200 6100 10200
+Text Label 6750 12550 2    60   ~ 0
+M2_TIM_CH3
+Wire Wire Line
+	4850 12550 6100 12550
+$Comp
+L Device:R R57
+U 1 1 5F901D96
+P 6100 12250
+F 0 "R57" V 6180 12250 50  0000 C CNN
+F 1 "10k" V 6100 12250 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6030 12250 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 6100 12250 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 6100 12250 60  0001 C CNN "Part"
+F 5 "DigiKey" V 6100 12250 60  0001 C CNN "Provider"
+	1    6100 12250
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5900 12000 6100 12000
+Wire Wire Line
+	6100 12000 6100 12100
+Connection ~ 5900 12000
+Wire Wire Line
+	6100 12400 6100 12550
+Connection ~ 6100 12550
+Wire Wire Line
+	6100 12550 6750 12550
+$Comp
+L Device:R R56
+U 1 1 5F994D74
+P 6100 9900
+F 0 "R56" V 6180 9900 50  0000 C CNN
+F 1 "10k" V 6100 9900 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6030 9900 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 6100 9900 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 6100 9900 60  0001 C CNN "Part"
+F 5 "DigiKey" V 6100 9900 60  0001 C CNN "Provider"
+	1    6100 9900
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	5900 9650 6100 9650
+Wire Wire Line
+	6100 9650 6100 9750
+Connection ~ 5900 9650
+Wire Wire Line
+	6100 10050 6100 10200
+Connection ~ 6100 10200
+Wire Wire Line
+	6100 10200 6750 10200
+Text Label 17600 11900 2    60   ~ 0
+PB9
+Wire Wire Line
+	17100 11900 17600 11900
 $EndSCHEMATC
