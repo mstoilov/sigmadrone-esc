@@ -58,7 +58,6 @@ public:
         float vbus_alpha_ = 0.2f;                           /**< Vbus filter alpha coefficient */
         float iabc_alpha_ = 1.0;                            /**< phase current filter alpha coefficient */
         float wenc_alpha_ = 0.75;                           /**< rotor velocity filter alpha coefficient */
-        float aenc_alpha_ = 0.75;                           /**< rotor acceleration filter alpha coefficient */
         float trip_i_ = 5.0f;                               /**< Trip current, the max phase allowed current. */
         float trip_v_ = 45.0f;                              /**< Trip voltage, the max allowed voltage */
     };
@@ -103,8 +102,6 @@ public:
     float GetBusVoltage() const;
     std::complex<float> GetRotorElecRotation();
     std::complex<float> GetRotorMechRotation();
-    float GetRotorAcceleration();
-    float GetRotorAccelerationPEP();
     float GetRotorVelocity();
     float GetRotorVelocityPEP();
     float GetRotorElecVelocityPEP();
@@ -198,7 +195,6 @@ public:
     LowPassFilter<float, float> lpf_Ib_;        /**< Low pass filter for phase B current */
     LowPassFilter<float, float> lpf_Ic_;        /**< Low pass filter for phase C current */
     LowPassFilter<float, float> lpf_Wenc_;      /**< Low pass filter for rotor velocity in enc counts per encoder_time_slice */
-    LowPassFilter<float, float> lpf_Aenc_;      /**< Low pass filter for rotor acceleration in enc counts per encoder_time_slice */
     std::complex<float> Iab_;                   /**< Phase current represented as a complex vector, where the real value is alpha current and the imag value is the beta current */
     std::complex<float> E_;                     /**< Orientation of the rotor in electrical radians converted to complex vector. */
     std::complex<float> R_;                     /**< Orientation of the rotor in mechanical radians converted to complex vector. */

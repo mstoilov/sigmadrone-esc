@@ -37,7 +37,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
     , lpf_Ib_(config_.iabc_alpha_)
     , lpf_Ic_(config_.iabc_alpha_)
     , lpf_Wenc_(config_.wenc_alpha_)
-    , lpf_Aenc_(config_.aenc_alpha_)
 {
     lpf_bias_a.Reset(1 << 11);
     lpf_bias_b.Reset(1 << 11);
@@ -121,13 +120,7 @@ rexjson::property MotorDrive::GetPropertyMap()
                 [&](void*)->void {
                     lpf_Wenc_.SetAlpha(config_.wenc_alpha_);
                 })},
-        {"aenc_alpha", rexjson::property(
-                &config_.aenc_alpha_,
-                rexjson::property_access::readwrite,
-                [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-                [&](void*)->void {
-                    lpf_Aenc_.SetAlpha(config_.aenc_alpha_);
-                })},
+
         {"enc_skip_updates", rexjson::property(
                 &config_.enc_skip_updates_,
                 rexjson::property_access::readwrite,
@@ -495,7 +488,6 @@ void MotorDrive::UpdateRotor()
 	if (Wenc > (int32_t)(enc_cpr_ / 2))
 	    Wenc -= enc_cpr_;
 	lpf_Wenc_.DoFilter(Wenc);
-	lpf_Aenc_.DoFilter(Wenc - lpf_Wenc_.Output());
 }
 
 
@@ -551,24 +543,6 @@ std::complex<float> MotorDrive::GetRotorMechRotation()
 std::complex<float> MotorDrive::GetRotorElecRotation()
 {
 	return E_;
-}
-
-/** Get the rotor acceleration in encoder counts per encoder period [counts/s^2]
- *
- * @return Rotor acceleration
- */
-float MotorDrive::GetRotorAcceleration()
-{
-    return GetRotorAccelerationPEP() * update_hz_;
-}
-
-/** Get the rotor acceleration in encoder counts per encoder period (enc_time_slice_)
- *
- * @return
- */
-float MotorDrive::GetRotorAccelerationPEP()
-{
-    return lpf_Aenc_.Output();
 }
 
 /** Get the rotor velocity in encoder counts per encoder period [counts/s]
