@@ -54,6 +54,7 @@ SPI_HandleTypeDef hspi3;
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim5;
+TIM_HandleTypeDef htim12;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -85,6 +86,7 @@ static void MX_ADC2_Init(void);
 static void MX_ADC3_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM5_Init(void);
+static void MX_TIM12_Init(void);
 static void MX_USART2_UART_Init(void);
 void StartDefaultTask(void *argument);
 
@@ -153,6 +155,7 @@ int main(void)
   MX_ADC3_Init();
   MX_USART3_UART_Init();
   MX_TIM5_Init();
+  MX_TIM12_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   /*
@@ -758,6 +761,44 @@ static void MX_TIM5_Init(void)
   /* USER CODE BEGIN TIM5_Init 2 */
 
   /* USER CODE END TIM5_Init 2 */
+
+}
+
+/**
+  * @brief TIM12 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM12_Init(void)
+{
+
+  /* USER CODE BEGIN TIM12_Init 0 */
+
+  /* USER CODE END TIM12_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+
+  /* USER CODE BEGIN TIM12_Init 1 */
+
+  /* USER CODE END TIM12_Init 1 */
+  htim12.Instance = TIM12;
+  htim12.Init.Prescaler = 0;
+  htim12.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim12.Init.Period = 0xFFFF;
+  htim12.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim12.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim12) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim12, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM12_Init 2 */
+
+  /* USER CODE END TIM12_Init 2 */
 
 }
 

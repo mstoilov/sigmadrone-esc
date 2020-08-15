@@ -46,7 +46,6 @@ public:
     void ModeClosedLoopVelocity();
     void ModeClosedLoopPosition();
     void ModeClosedLoopTrajectory();
-    void ModeClosedLoopTrajectory2();
 
     void ModeSpin();
     uint64_t MoveToPosition(uint64_t position);

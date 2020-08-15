@@ -7,9 +7,10 @@
 
 #include "hrtimer.h"
 
-HRTimer::HRTimer(uint32_t clock_hz)
+HRTimer::HRTimer(uint32_t clock_hz, uint32_t counter_mask)
     : htim_(nullptr)
     , clock_hz_(clock_hz)
+    , counter_mask_(counter_mask)
 {
     // TODO Auto-generated constructor stub
 
@@ -44,5 +45,5 @@ uint32_t HRTimer::GetTimeElapsedNanoSec(uint32_t counter1, uint32_t counter2)
 
 uint32_t HRTimer::GetTimeElapsedClockTicks(uint32_t counter1, uint32_t counter2)
 {
-    return (counter2 - counter1);
+    return (counter2 - counter1) & counter_mask_;
 }

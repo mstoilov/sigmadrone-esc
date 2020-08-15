@@ -64,7 +64,7 @@ Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 MotorDrive motor_drive(&dumb_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlFOC foc(&motor_drive);
-HRTimer hrtimer(SYSTEM_CORE_CLOCK/2);
+HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
 
 bool debug_encoder = false;
 
@@ -385,7 +385,7 @@ int application_main()
      * should be fully initialized.
      */
     osDelay(boot_delay);
-    hrtimer.Attach(&htim5);
+    hrtimer.Attach(&htim12);
     ma4_abs_encoder.Attach(&huart3);
     adc1.Attach(&hadc1);
     adc2.Attach(&hadc2);

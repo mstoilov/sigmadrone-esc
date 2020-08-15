@@ -24,7 +24,6 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 
 void MotorCtrlFOC::RegisterRpcMethods()
 {
-    rpc_server.add("foc.modecltr2", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopTrajectory2, "void MotorCtrlFOC::ModeClosedLoopTrajectory2()"));
     rpc_server.add("foc.modecltr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopTrajectory, "void MotorCtrlFOC::ModeClosedLoopTrajectory()"));
     rpc_server.add("foc.modeclp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopPosition, "void MotorCtrlFOC::ModeClosedLoopPosition()"));
     rpc_server.add("foc.modeclv", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopVelocity, "void MotorCtrlFOC::ModeClosedLoopVelocity()"));
@@ -201,11 +200,10 @@ void MotorCtrlFOC::RunDebugLoop()
 
         } else if (status & SIGNAL_DEBUG_DUMP_POSITION) {
             fprintf(stderr,
-                    "P: %10llu (%10llu) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
-                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f V_PEP: %+6.1f\n",
+                    "P: %10llu (%10llu) I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
+                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f V_PEP: %+6.1f, T: %3lu\n",
                     drive_->GetEncoderPosition(),
                     target_,
-                    lpf_Id_.Output(),
                     lpf_Iq_.Output(),
                     pid_Id_.Output(),
                     pid_Iq_.Output(),
@@ -215,17 +213,17 @@ void MotorCtrlFOC::RunDebugLoop()
                     pid_W_.Output(),
                     Perr_,
                     pid_P_.Output(),
-                    drive_->GetRotorVelocityPEP()
+                    drive_->GetRotorVelocityPEP(),
+                    foc_time_
             );
 
         } else if (status & SIGNAL_DEBUG_DUMP_TRAJECTORY) {
             fprintf(stderr,
-                    "P: %10llu PR: %10.0f (%10llu) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
-                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f Pd: %+10.0f, V_PEP: %+10.0f\n",
+                    "P: %10llu PR: %10.0f (%10llu) I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
+                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f Pd: %+10.0f, V_PEP: %+10.0f, T: %3lu\n",
                     drive_->GetEncoderPosition(),
                     profile_target_.P,
                     target_,
-                    lpf_Id_.Output(),
                     lpf_Iq_.Output(),
                     pid_Id_.Output(),
                     pid_Iq_.Output(),
@@ -236,7 +234,8 @@ void MotorCtrlFOC::RunDebugLoop()
                     Perr_,
                     pid_P_.Output(),
                     profile_target_.Pd,
-                    drive_->GetRotorVelocity()
+                    drive_->GetRotorVelocity(),
+                    foc_time_
             );
         } else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
             fprintf(stderr,
@@ -650,95 +649,6 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
                 }
             }
 
-
-            /*
-             *  Park Transform
-             *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
-             *  Iq = Ibeta  * cos(R) - Ialpha * sin(R)
-             *
-             *  Idq = std::complex<float>(Id, Iq);
-             */
-            std::complex<float> Idq = Iab * std::conj(R);
-
-            /*
-             * Apply filters
-             */
-            lpf_Id_.DoFilter(Idq.real());
-            lpf_Iq_.DoFilter(Idq.imag());
-
-            /*
-             * Update D/Q PID Regulators.
-             */
-            Ierr_ = pid_W_.Output() - lpf_Iq_.Output();
-            // Ierr_ = pid_P_.Output() + pid_W_.Output() - lpf_Iq_.Output();
-            pid_Id_.Input(0.0f - lpf_Id_.Output(), update_period);
-            pid_Iq_.Input(Ierr_, update_period);
-
-            /*
-             * Inverse Park Transform
-             * Va = Vd * cos(R) - Vq * sin(R)
-             * Vb = Vd * sin(R) + Vq * cos(R)
-             *
-             * Vab = std::complex<float>(Va, Vb)
-             */
-            std::complex<float> V_ab = std::complex<float>(pid_Id_.Output(), pid_Iq_.Output()) * R;
-
-            /*
-             * Apply advance
-             */
-            float advance = config_.vab_advance_factor_ * drive_->GetRotorElecVelocityPEP()/drive_->GetEncoderCPR() * 2.0f * M_PI;
-            V_ab *= std::complex<float>(cosf(advance), sinf(advance));
-
-            /*
-             * Apply the voltage timings
-             */
-            drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
-
-            foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
-            if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
-                SignalDumpTrajectory();
-            }
-
-            return true;
-        });
-    });
-    drive_->AddTaskDisarmMotor();
-    drive_->Run();
-}
-
-void MotorCtrlFOC::ModeClosedLoopTrajectory2()
-{
-    drive_->AddTaskArmMotor();
-
-    drive_->sched_.AddTask([&](){
-        float update_period = drive_->GetTimeSlice();
-        float enc_update_period = drive_->GetEncoderTimeSlice();
-        uint32_t display_counter = 0;
-        drive_->data_.update_counter_ = 0;
-        pid_Id_.Reset();
-        pid_Iq_.Reset();
-        pid_W_.Reset();
-        pid_P_.Reset();
-        lpf_Id_.Reset();
-        lpf_Iq_.Reset();
-        target_ = drive_->GetEncoderPosition();
-
-        drive_->sched_.RunUpdateHandler([&]()->bool {
-            std::complex<float> Iab = drive_->GetPhaseCurrent();
-            std::complex<float> R = drive_->GetRotorElecRotation();
-
-            if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
-                uint64_t enc_position = drive_->GetEncoderPosition();
-                Perr_ = drive_->GetPositionError(enc_position, target_, 0) * enc_update_period;
-                float des_vel = Perr_ * pid_P_.kp_;
-                if (des_vel > velocity_ * enc_update_period)
-                    des_vel = velocity_ * enc_update_period;
-                if (des_vel < -velocity_ * enc_update_period)
-                    des_vel = -velocity_ * enc_update_period;
-
-                Werr_ = des_vel - drive_->GetRotorVelocity() * enc_update_period;
-                pid_W_.Input(Werr_, enc_update_period);
-            }
 
             /*
              *  Park Transform
