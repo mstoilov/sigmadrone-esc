@@ -391,6 +391,8 @@ void MotorDrive::IrqUpdateCallback()
         if (data_.update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
             encoder_->Update();
             UpdateRotor();
+        } else {
+            EstimateRotor();
         }
 
 
@@ -458,6 +460,14 @@ void MotorDrive::UpdateRotor()
 	lpf_Wenc_.DoFilter(((float)Wenc) / (config_.enc_skip_updates_ + 1));
 }
 
+/** Return the current rotor position in encoder counts
+ *
+ * @return rotor position
+ */
+uint64_t MotorDrive::GetRotorPosition() const
+{
+    return Renc_;
+}
 
 /** Calculate the position error. Trim the error within [-maxerr, maxerr]
  *
@@ -466,7 +476,7 @@ void MotorDrive::UpdateRotor()
  * @param maxerr
  * @return
  */
-int64_t MotorDrive::GetPositionError(uint64_t position, uint64_t target, uint64_t maxerr)
+int64_t MotorDrive::GetRotorPositionError(uint64_t position, uint64_t target, uint64_t maxerr)
 {
     int64_t position_err = (target + enc_position_size_ - position) & enc_position_mask_;
     if (position_err > (int64_t)(enc_position_size_/2))

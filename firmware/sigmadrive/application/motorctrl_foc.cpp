@@ -533,8 +533,8 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
             std::complex<float> Iab = drive_->GetPhaseCurrent();
             std::complex<float> R = drive_->GetRotorElecRotation();
 
-            uint64_t enc_position = drive_->GetEncoderPosition();
-            Perr_ = drive_->GetPositionError(enc_position, target_, 0) * timeslice;
+            uint64_t enc_position = drive_->GetRotorPosition();
+            Perr_ = drive_->GetRotorPositionError(enc_position, target_, 0) * timeslice;
             pid_P_.Input(Perr_, timeslice);
             Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
             pid_W_.Input(Werr_, timeslice);
@@ -615,13 +615,13 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
             std::complex<float> Iab = drive_->GetPhaseCurrent();
             std::complex<float> R = drive_->GetRotorElecRotation();
 
-            uint64_t enc_position = drive_->GetEncoderPosition();
+            uint64_t enc_position = drive_->GetRotorPosition();
 
             if (profiler_enabled_) {
                 float t = (drive_->data_.update_counter_ - profiler_counter_) * timeslice;
                 if (t < trap_profiler_.T_) {
                     profile_target_ = trap_profiler_.Step(t);
-                    Perr_ = drive_->GetPositionError(enc_position, profile_target_.P, 0) * timeslice;
+                    Perr_ = drive_->GetRotorPositionError(enc_position, profile_target_.P, 0) * timeslice;
                     pid_P_.Input(Perr_, timeslice);
                     Werr_ = pid_P_.Output() + profile_target_.Pd * timeslice - drive_->GetRotorVelocityPTS();
                     pid_W_.Input(Werr_, timeslice);
@@ -633,7 +633,7 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
                 }
             }
             if (!profiler_enabled_) {
-                Perr_ = drive_->GetPositionError(enc_position, target_, 0) * timeslice;
+                Perr_ = drive_->GetRotorPositionError(enc_position, target_, 0) * timeslice;
                 pid_P_.Input(Perr_, timeslice);
                 Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
                 pid_W_.Input(Werr_, timeslice);

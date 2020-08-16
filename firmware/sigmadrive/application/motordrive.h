@@ -102,7 +102,8 @@ public:
     float GetRotorVelocity();
     float GetRotorVelocityPTS();
     float GetRotorElecVelocityPTS();
-    int64_t GetPositionError(uint64_t position, uint64_t target, uint64_t maxerr);
+    int64_t GetRotorPositionError(uint64_t position, uint64_t target, uint64_t maxerr);
+    uint64_t GetRotorPosition() const;
 
     std::complex<float> GetPhaseCurrent() const;
     void DefaultIdleTask();

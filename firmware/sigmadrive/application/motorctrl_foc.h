@@ -19,8 +19,8 @@ public:
         float pid_current_ki_ = 1500;  /* 3120*/ /**< Current PID regulator integral gain */
         float pid_current_maxout_ = 30;         /**< Current PID regulator output limit */
 
-        float pid_w_kp_ = 0.005;                /**< Velocity PID regulator proportional gain */
-        float pid_w_ki_ = 10;                   /**< Velocity PID regulator integral gain */
+        float pid_w_kp_ = 0.15;                 /**< Velocity PID regulator proportional gain */
+        float pid_w_ki_ = 20;                   /**< Velocity PID regulator integral gain */
         float pid_w_maxout_ = 25.0;             /**< Velocity PID regulator output limit */
 
         float pid_p_kp_ = 5;                    /**< Position PID regulator proportional gain */
