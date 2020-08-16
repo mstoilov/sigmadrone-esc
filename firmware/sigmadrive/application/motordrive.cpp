@@ -391,8 +391,6 @@ void MotorDrive::IrqUpdateCallback()
         if (data_.update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
             encoder_->Update();
             UpdateRotor();
-        } else {
-            EstimateRotor();
         }
 
 
