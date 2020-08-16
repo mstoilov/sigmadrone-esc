@@ -95,9 +95,7 @@ public:
     uint64_t GetEncoderPosition() const;
     uint32_t GetEncoderPositionBits() const;
     uint32_t GetUpdateFrequency() const;
-    uint32_t GetEncoderUpdateFrequency() const;
     float GetTimeSlice() const;
-    float GetEncoderTimeSlice() const;
     uint32_t GetPolePairs() const;
     float GetBusVoltage() const;
     std::complex<float> GetRotorElecRotation();
@@ -165,8 +163,6 @@ public:
     uint64_t enc_position_size_ = 0;
     uint32_t update_hz_;
     float time_slice_;
-    uint32_t enc_update_hz_;
-    float enc_time_slice_;
     uint32_t t1_begin_ = 0;
     uint32_t t1_span_ = 0;
     uint32_t t2_begin_ = 0;

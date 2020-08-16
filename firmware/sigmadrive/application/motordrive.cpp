@@ -27,8 +27,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
     , Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
     , update_hz_(update_hz)
     , time_slice_(1.0f / update_hz_)
-    , enc_update_hz_(update_hz / (config_.enc_skip_updates_ + 1))
-    , enc_time_slice_(1.0f / enc_update_hz_)
     , lpf_bias_a(config_.bias_alpha_)
     , lpf_bias_b(config_.bias_alpha_)
     , lpf_bias_c(config_.bias_alpha_)
@@ -87,10 +85,7 @@ rexjson::property MotorDrive::GetPropertyMap()
 {
     rexjson::property props= rexjson::property_map({
         {"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
-        {"enc_update_hz", rexjson::property(&enc_update_hz_, rexjson::property_access::readonly)},
-        {"enc_update_hz", rexjson::property(&enc_update_hz_, rexjson::property_access::readonly)},
         {"time_slice_", rexjson::property(&time_slice_, rexjson::property_access::readonly)},
-        {"enc_time_slice", rexjson::property(&enc_time_slice_, rexjson::property_access::readonly)},
         {"Vbus", rexjson::property(&lpf_vbus_.out_, rexjson::property_access::readonly)},
         {"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
         {"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
@@ -126,8 +121,6 @@ rexjson::property MotorDrive::GetPropertyMap()
                 rexjson::property_access::readwrite,
                 [&](const rexjson::value& v){ pwm_->Stop(); },
                 [&](void*)->void {
-                    enc_update_hz_ = update_hz_ / (config_.enc_skip_updates_ + 1);
-                    enc_time_slice_ = (1.0f / (update_hz_ / enc_update_hz_));
                     data_.update_counter_ = 0;
                     HAL_Delay(2);
                     pwm_->Start();
@@ -304,15 +297,6 @@ uint32_t MotorDrive::GetUpdateFrequency() const
     return update_hz_;
 }
 
-/** Return the encoder update rate of the motor drive
- *
- * @return Encoder Update rate
- */
-uint32_t MotorDrive::GetEncoderUpdateFrequency() const
-{
-    return enc_update_hz_;
-}
-
 /** Return the update time period in seconds
  *
  * @return
@@ -320,20 +304,6 @@ uint32_t MotorDrive::GetEncoderUpdateFrequency() const
 float MotorDrive::GetTimeSlice() const
 {
     return time_slice_;
-}
-
-/** Return the encoder update time period in seconds
- *
- * This might be different than the @ref GetTimeSlice,
- * because the update period for the encoder might be
- * slower (meaning it takes longer time for the encoder
- * to update).
- *
- * @return Encoder update time period
- */
-float MotorDrive::GetEncoderTimeSlice() const
-{
-    return enc_time_slice_;
 }
 
 /** Get the motor pole pairs.
@@ -543,7 +513,7 @@ std::complex<float> MotorDrive::GetRotorElecRotation()
  */
 float MotorDrive::GetRotorVelocity()
 {
-    return GetRotorVelocityPEP() * enc_update_hz_;
+    return GetRotorVelocityPEP() * update_hz_ / (config_.enc_skip_updates_ + 1);
 }
 
 

@@ -167,7 +167,7 @@ void MotorCtrlFOC::RunDebugLoop()
             fprintf(stderr,
                     "Sp: %+6.2f (%+9.2f) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
                     "Ierr: %+7.3f T: %3lu\n",
-                    drive_->GetRotorVelocityPEP() * drive_->enc_update_hz_ / drive_->GetEncoderCPR(),
+                    drive_->GetRotorVelocity() / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocityPEP(),
                     lpf_Id_.Output(),
                     lpf_Iq_.Output(),
@@ -182,7 +182,7 @@ void MotorCtrlFOC::RunDebugLoop()
             fprintf(stderr,
                     "CV: %+6.2f (%+9.2f) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
                     "Ierr: %+7.3f Werr: %+7.3f PID_W: %+6.3f PID_WP: %+6.3f PID_WI: %+6.3f T: %3lu\n",
-                    drive_->GetRotorVelocityPEP() * drive_->enc_update_hz_ / drive_->GetEncoderCPR(),
+                    drive_->GetRotorVelocity() / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocityPEP(),
                     lpf_Id_.Output(),
                     lpf_Iq_.Output(),
@@ -240,7 +240,7 @@ void MotorCtrlFOC::RunDebugLoop()
         } else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
             fprintf(stderr,
                     "Speed: %9.2f (%9.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, Adv1: %+5.3f, EncT: %4lu\n",
-                    drive_->GetRotorVelocityPEP() * drive_->enc_update_hz_ / drive_->GetEncoderCPR(),
+                    drive_->GetRotorVelocity() / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocityPEP(),
                     lpf_Id_.Output(),
                     lpf_Iq_.Output(),
@@ -444,7 +444,7 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
 
     drive_->sched_.AddTask([&](){
         float update_period = drive_->GetTimeSlice();
-        float enc_update_period = drive_->GetEncoderTimeSlice();
+        float enc_update_period = (drive_->config_.enc_skip_updates_ + 1) * update_period;
         uint32_t display_counter = 0;
         drive_->data_.update_counter_ = 0;
         pid_Id_.Reset();
@@ -522,7 +522,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
 
     drive_->sched_.AddTask([&](){
         float update_period = drive_->GetTimeSlice();
-        float enc_update_period = drive_->GetEncoderTimeSlice();
+        float enc_update_period = (drive_->config_.enc_skip_updates_ + 1) * update_period;
         uint32_t display_counter = 0;
         drive_->data_.update_counter_ = 0;
         pid_Id_.Reset();
@@ -608,7 +608,7 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
 
     drive_->sched_.AddTask([&](){
         float update_period = drive_->GetTimeSlice();
-        float enc_update_period = drive_->GetEncoderTimeSlice();
+        float enc_update_period = (drive_->config_.enc_skip_updates_ + 1) * update_period;
         uint32_t display_counter = 0;
         drive_->data_.update_counter_ = 0;
         pid_Id_.Reset();
