@@ -507,32 +507,32 @@ std::complex<float> MotorDrive::GetRotorElecRotation()
 	return E_;
 }
 
-/** Get the rotor velocity in encoder counts per encoder period [counts/s]
+/** Get the rotor velocity in encoder counts per second[counts/s]
  *
  * @return Rotor velocity
  */
 float MotorDrive::GetRotorVelocity()
 {
-    return GetRotorVelocityPEP() * update_hz_;
+    return GetRotorVelocityPTS() * update_hz_;
 }
 
 
-/** Get the rotor velocity in encoder counts per encoder period (enc_time_slice_)
+/** Get the rotor velocity in encoder counts per time slice
  *
  * @return Mechanical rotor velocity
  */
-float MotorDrive::GetRotorVelocityPEP()
+float MotorDrive::GetRotorVelocityPTS()
 {
     return lpf_Wenc_.Output();
 }
 
-/** Get the rotor velocity in elec encoder counts per encoder period (enc_time_slice_)
+/** Get the rotor velocity in elec encoder counts per time_slice
  *
  * @return Electrical rotor velocity
  */
-float MotorDrive::GetRotorElecVelocityPEP()
+float MotorDrive::GetRotorElecVelocityPTS()
 {
-    return GetRotorVelocityPEP() * config_.pole_pairs;
+    return GetRotorVelocityPTS() * config_.pole_pairs;
 }
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)

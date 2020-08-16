@@ -100,8 +100,8 @@ public:
     float GetBusVoltage() const;
     std::complex<float> GetRotorElecRotation();
     float GetRotorVelocity();
-    float GetRotorVelocityPEP();
-    float GetRotorElecVelocityPEP();
+    float GetRotorVelocityPTS();
+    float GetRotorElecVelocityPTS();
     int64_t GetPositionError(uint64_t position, uint64_t target, uint64_t maxerr);
 
     std::complex<float> GetPhaseCurrent() const;
