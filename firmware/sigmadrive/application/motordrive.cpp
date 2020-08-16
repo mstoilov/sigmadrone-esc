@@ -455,7 +455,7 @@ void MotorDrive::UpdateRotor()
 	int32_t Wenc = (Rangle + enc_cpr_ - Rangle_prev) % enc_cpr_;
 	if (Wenc > (int32_t)(enc_cpr_ / 2))
 	    Wenc -= enc_cpr_;
-	lpf_Wenc_.DoFilter(Wenc);
+	lpf_Wenc_.DoFilter(((float)Wenc) / (config_.enc_skip_updates_ + 1));
 }
 
 
@@ -513,7 +513,7 @@ std::complex<float> MotorDrive::GetRotorElecRotation()
  */
 float MotorDrive::GetRotorVelocity()
 {
-    return GetRotorVelocityPEP() * update_hz_ / (config_.enc_skip_updates_ + 1);
+    return GetRotorVelocityPEP() * update_hz_;
 }
 
 

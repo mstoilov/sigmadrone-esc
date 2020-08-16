@@ -455,7 +455,7 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
         drive_->sched_.RunUpdateHandler([&]()->bool {
             std::complex<float> Iab = drive_->GetPhaseCurrent();
             std::complex<float> R = drive_->GetRotorElecRotation();
-            float velocity_ecp = velocity_ * enc_update_period;
+            float velocity_ecp = velocity_ * update_period;
 
             if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
                 Werr_ = velocity_ecp - drive_->GetRotorVelocityPEP();
@@ -539,7 +539,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
 
             if (drive_->data_.update_counter_ % (drive_->config_.enc_skip_updates_ + 1) == 0) {
                 uint64_t enc_position = drive_->GetEncoderPosition();
-                Perr_ = drive_->GetPositionError(enc_position, target_, 0) * enc_update_period;
+                Perr_ = drive_->GetPositionError(enc_position, target_, 0) * update_period;
                 pid_P_.Input(Perr_, enc_update_period);
                 Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPEP();
                 pid_W_.Input(Werr_, enc_update_period);
@@ -630,9 +630,9 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
                     float t = (drive_->data_.update_counter_ - profiler_counter_) * update_period;
                     if (t < trap_profiler_.T_) {
                         profile_target_ = trap_profiler_.Step(t);
-                        Perr_ = drive_->GetPositionError(enc_position, profile_target_.P, 0) * enc_update_period;
+                        Perr_ = drive_->GetPositionError(enc_position, profile_target_.P, 0) * update_period;
                         pid_P_.Input(Perr_, enc_update_period);
-                        Werr_ = pid_P_.Output() + profile_target_.Pd * enc_update_period - drive_->GetRotorVelocityPEP();
+                        Werr_ = pid_P_.Output() + profile_target_.Pd * update_period - drive_->GetRotorVelocityPEP();
                         pid_W_.Input(Werr_, enc_update_period);
                     } else {
                         profiler_enabled_ = false;
@@ -642,9 +642,9 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
                     }
                 }
                 if (!profiler_enabled_) {
-                    Perr_ = drive_->GetPositionError(enc_position, target_, 0) * enc_update_period;
+                    Perr_ = drive_->GetPositionError(enc_position, target_, 0) * update_period;
                     pid_P_.Input(Perr_, enc_update_period);
-                    Werr_ = pid_P_.Output() - drive_->GetRotorVelocity() * enc_update_period;
+                    Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPEP();
                     pid_W_.Input(Werr_, enc_update_period);
                 }
             }
