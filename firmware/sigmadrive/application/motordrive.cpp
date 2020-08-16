@@ -31,9 +31,6 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
     , lpf_bias_b(config_.bias_alpha_)
     , lpf_bias_c(config_.bias_alpha_)
     , lpf_vbus_(config_.vbus_alpha_, 12.0f)
-    , lpf_Ia_(config_.iabc_alpha_)
-    , lpf_Ib_(config_.iabc_alpha_)
-    , lpf_Ic_(config_.iabc_alpha_)
     , lpf_Wenc_(config_.wenc_alpha_)
 {
     lpf_bias_a.Reset(1 << 11);
@@ -124,16 +121,6 @@ rexjson::property MotorDrive::GetPropertyMap()
                     data_.update_counter_ = 0;
                     HAL_Delay(2);
                     pwm_->Start();
-                })},
-
-        {"iabc_alpha", rexjson::property(
-                &config_.iabc_alpha_,
-                rexjson::property_access::readwrite,
-                [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-                [&](void*)->void {
-                    lpf_Ia_.SetAlpha(config_.iabc_alpha_);
-                    lpf_Ib_.SetAlpha(config_.iabc_alpha_);
-                    lpf_Ic_.SetAlpha(config_.iabc_alpha_);
                 })},
         {"max_modulation_duty", rexjson::property(
                 &config_.max_modulation_duty_,
@@ -434,10 +421,10 @@ void MotorDrive::IrqUpdateCallback()
 
 void MotorDrive::UpdateCurrent()
 {
-	lpf_Ia_.DoFilter(data_.phase_current_a_);
-	lpf_Ib_.DoFilter(data_.phase_current_b_);
-	lpf_Ic_.DoFilter(-data_.phase_current_a_ -data_.phase_current_b_);
-	Iab_ = Pa_ * lpf_Ia_.Output() + Pb_ * lpf_Ib_.Output() + Pc_ * lpf_Ic_.Output();
+    float Ia = data_.phase_current_a_;
+    float Ib = data_.phase_current_b_;
+    float Ic = -data_.phase_current_a_ -data_.phase_current_b_;
+	Iab_ = Pa_ * Ia + Pb_ * Ib + Pc_ * Ic;
 }
 
 /** Update the rotor position and velocity
@@ -865,7 +852,7 @@ void MotorDrive::DefaultIdleTask()
 {
     fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\n", lpf_vbus_.Output(),
             lpf_bias_a.Output(), lpf_bias_b.Output(), lpf_bias_c.Output(), data_.phase_current_a_, data_.phase_current_b_,
-            data_.phase_current_c_);
+            -data_.phase_current_a_ -data_.phase_current_b_);
 }
 
 bool MotorDrive::CheckPhaseCurrentViolation(float current)
@@ -896,9 +883,9 @@ bool MotorDrive::CheckTripViolations()
         return false;
     }
     ret = ret || CheckPhaseVoltageViolation(lpf_vbus_.Output());
-    ret = ret || CheckPhaseCurrentViolation(lpf_Ia_.Output());
-    ret = ret || CheckPhaseCurrentViolation(lpf_Ib_.Output());
-    ret = ret || CheckPhaseCurrentViolation(lpf_Ic_.Output());
+    ret = ret || CheckPhaseCurrentViolation(data_.phase_current_a_);
+    ret = ret || CheckPhaseCurrentViolation(data_.phase_current_b_);
+    ret = ret || CheckPhaseCurrentViolation(data_.phase_current_c_);
     if (ret)
         delay_trip_check_ = 0;
     return ret;
