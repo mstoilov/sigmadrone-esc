@@ -478,9 +478,7 @@ void MotorDrive::UpdateRotor()
     uint64_t Renc_prev = Renc_; 
     Renc_ = GetEncoderPosition();
 	float theta_e = GetEncoderDir() * GetElectricAngle(Renc_);
-	float theta_m = GetEncoderDir() * GetMechanicalAngle(Renc_);
 	E_ = std::complex<float>(cosf(theta_e), sinf(theta_e));
-	R_ = std::complex<float>(cosf(theta_m), sinf(theta_m));
 
 	int32_t Rangle_prev = Renc_prev & enc_resolution_mask_;
 	int32_t Rangle = Renc_ & enc_resolution_mask_;
@@ -532,12 +530,6 @@ float MotorDrive::GetElectricAngle(uint64_t enc_position) const
 float MotorDrive::GetMechanicalAngle(uint64_t enc_position) const
 {
     return (2.0f * M_PI / enc_cpr_) * (enc_position & enc_resolution_mask_);
-}
-
-
-std::complex<float> MotorDrive::GetRotorMechRotation()
-{
-	return R_;
 }
 
 std::complex<float> MotorDrive::GetRotorElecRotation()

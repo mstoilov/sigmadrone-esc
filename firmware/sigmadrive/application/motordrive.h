@@ -101,7 +101,6 @@ public:
     uint32_t GetPolePairs() const;
     float GetBusVoltage() const;
     std::complex<float> GetRotorElecRotation();
-    std::complex<float> GetRotorMechRotation();
     float GetRotorVelocity();
     float GetRotorVelocityPEP();
     float GetRotorElecVelocityPEP();
@@ -197,7 +196,6 @@ public:
     LowPassFilter<float, float> lpf_Wenc_;      /**< Low pass filter for rotor velocity in enc counts per encoder_time_slice */
     std::complex<float> Iab_;                   /**< Phase current represented as a complex vector, where the real value is alpha current and the imag value is the beta current */
     std::complex<float> E_;                     /**< Orientation of the rotor in electrical radians converted to complex vector. */
-    std::complex<float> R_;                     /**< Orientation of the rotor in mechanical radians converted to complex vector. */
     uint64_t Renc_;                             /**< Position of the rotor in enc counts */
 };
 
