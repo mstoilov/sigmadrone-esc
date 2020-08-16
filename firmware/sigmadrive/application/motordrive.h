@@ -42,7 +42,7 @@ public:
         uint32_t pole_pairs = 7;                            /**< Motor pole pairs */
         uint32_t adc_full_scale = (1 << 12);                /**< ADC converter full scale */
         uint32_t display_div_ = 2999;
-        uint32_t enc_skip_updates_ = 2;                     /**< How many update interrupts to skip, before initiating a new encoder update */
+        uint32_t enc_skip_updates_ = 1;                     /**< How many update interrupts to skip, before initiating a new encoder update */
         uint32_t csa_gain_ = 10;                            /**< Current sensing amplifier gain */
         bool svm_saddle_ = false;                           /**< Use space vector modulation (SVM) saddle form */
         float Vref_ = 3.3;                                  /**< ADC reference voltage */
