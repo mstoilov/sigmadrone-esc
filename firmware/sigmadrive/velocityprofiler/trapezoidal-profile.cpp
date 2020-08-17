@@ -67,32 +67,32 @@ void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float A
 
 }
 
-ProfileData TrapezoidalProfile::Step(float t)
-{
-	ProfileData data(0, 0, 0);
 
-	if (t < 0) {
-        data.Pdd = 0;
+void TrapezoidalProfile::CalcProfileData(float t, ProfileData& data)
+{
+    if (t < 0) {
         data.Pd = Vi_;
         data.P = Xi_;
-	} else if (t < Ta_) {
-        data.Pdd = s_ * Ar_;
+    } else if (t < Ta_) {
         data.Pd = s_ * (Vi_ + Ar_ * t);
         data.P = Xi_ + s_ * (Vi_ * t + 0.5 * Ar_ * SQ(t));
     } else if (t < (Ta_ + Tc_)) {
-        data.Pdd = 0;
         data.Pd = s_ * Vr_;
         data.P   = Xi_ + s_ * (Vi_ * Ta_ + 0.5 * Ar_ * SQ(Ta_) + Vr_ * (t - Ta_));
     } else if (t < T_) {
         float tc = t - (Ta_ + Tc_);
-        data.Pdd = - s_ * Dr_;
         data.Pd = s_ * (Vr_ - Dr_ * tc);
         data.P = Xi_ + s_ * (Vi_ * Ta_ + 0.5 * Ar_ * SQ(Ta_) + Vr_ * Tc_ + Vr_ * tc - 0.5 * Dr_ * SQ(tc));
     } else {
-        data.Pdd = 0;
         data.Pd = 0;
         data.P = Xf_;
     }
+}
+
+ProfileData TrapezoidalProfile::Step(float t)
+{
+	ProfileData data(0, 0);
+	CalcProfileData(t, data);
 
 	return data;
 }

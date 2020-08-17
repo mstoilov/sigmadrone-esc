@@ -32,7 +32,6 @@ public:
         float vab_advance_factor_ = 1.5;        /**< Magnetic field advance factor. The V_ab will be advanced proportional to the rotor variable speed and this constant  */
         float vq_bias_ = 0;                     /**< Bias for the q-voltage (Vq) PID regulator */
         float w_bias_ = 0;                      /**< Bias for the velocity PID (W) regulator */
-        float idq_alpha_ = 0.75;                /**< DQ-current filter alpha coefficient */
         float i_trip_ = 8.0;                    /**< Max allowed current. If the current gets bigger than that it will cause trip violation */
         bool display_ = true;                   /**< Display mode on/off */
         float max_poserr_factor_ = 1.0;         /**< Maximum position error factor. 1 - 0ne full revolution, 0.5 - half revolution, etc. */
@@ -83,8 +82,8 @@ protected:
     /*
      * Filters
      */
-    LowPassFilter<float, float> lpf_Id_;        /**< Low-pass filter for d-current (Id) */
-    LowPassFilter<float, float> lpf_Iq_;        /**< Low-pass filter for q-current (Iq) */
+    float lpf_Id_;                              /**< d-current (Id) */
+    float lpf_Iq_;                              /**< q-current (Iq) */
 
     /*
      * PID regulators

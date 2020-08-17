@@ -5,14 +5,13 @@
 class ProfileData
 {
 public:
-    ProfileData(float Pos = 0, float Vel = 0, float Acc = 0)
-        : P(Pos), Pd(Vel), Pdd(Acc)
+    ProfileData(float Pos = 0, float Vel = 0)
+        : P(Pos), Pd(Vel)
     {
 
     }
     float P;	// Position
     float Pd;	// First derivative - velocity
-    float Pdd;	// Second derivative - accelaration
 };
 
 class TrapezoidalProfile
@@ -20,6 +19,7 @@ class TrapezoidalProfile
 public:
     TrapezoidalProfile() = default;
     void Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax);
+    void CalcProfileData(float t, ProfileData& data);
     ProfileData Step(float t);
 
 
