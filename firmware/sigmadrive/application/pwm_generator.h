@@ -31,6 +31,7 @@ public:
 
     virtual void Start() override;
     virtual void Stop() override;
+    virtual uint32_t GetCounter() override;
     virtual uint32_t GetCounterDirection() override;
     virtual bool IsStarted() override;
     virtual uint32_t GetPeriod() override;
@@ -41,7 +42,7 @@ public:
     virtual void SetTiming(uint32_t channel, uint32_t value) override;
 
 
-protected:
+public:
     TIM_HandleTypeDef* htim_;
 };
 

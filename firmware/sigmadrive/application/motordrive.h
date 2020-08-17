@@ -162,6 +162,10 @@ public:
     uint64_t enc_position_mask_ = 0;
     uint64_t enc_position_size_ = 0;
     uint32_t update_hz_;
+    uint32_t tim1_cnt_;
+    int32_t tim1_tim8_offset_;
+    int32_t tim8_tim1_offset_;
+
     float time_slice_;
     uint32_t t1_begin_ = 0;
     uint32_t t1_span_ = 0;

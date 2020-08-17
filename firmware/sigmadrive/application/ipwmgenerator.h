@@ -24,6 +24,12 @@ public:
      */
     virtual void Stop() = 0;
 
+    /** Get the current value of the counter
+     *
+     * @return counter value
+     */
+    virtual uint32_t GetCounter() = 0;
+
     /** Get the counter direction
      *
      * @return Return 0 if the counter is going up,

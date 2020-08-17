@@ -23,7 +23,7 @@ void PwmGenerator::Attach(TIM_HandleTypeDef* htim)
 {
     htim_ = htim;
     LL_TIM_EnableIT_UPDATE(htim_->Instance);
-    EnableCounter(true);
+//    EnableCounter(true);
 }
 
 /** Get compare value set for the specified output channel
@@ -102,7 +102,6 @@ void PwmGenerator::LoadSafeTimings()
 void PwmGenerator::Start()
 {
     LoadSafeTimings();
-    LL_TIM_GenerateEvent_UPDATE(htim_->Instance);
     LL_TIM_CC_EnableChannel(htim_->Instance,
             LL_TIM_CHANNEL_CH1 | LL_TIM_CHANNEL_CH1N |
             LL_TIM_CHANNEL_CH2 | LL_TIM_CHANNEL_CH2N |
@@ -126,8 +125,17 @@ void PwmGenerator::Stop()
             LL_TIM_CHANNEL_CH3 | LL_TIM_CHANNEL_CH3N |
             LL_TIM_CHANNEL_CH4);
     LoadSafeTimings();
-    LL_TIM_GenerateEvent_UPDATE(htim_->Instance);
 }
+
+/** Get the timer counter
+ *
+ * @return The current value of the counter
+ */
+uint32_t PwmGenerator::GetCounter()
+{
+    return LL_TIM_GetCounter(htim_->Instance);
+}
+
 
 /** Get the timer counter direction
  *

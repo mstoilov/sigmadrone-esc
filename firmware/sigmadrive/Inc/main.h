@@ -45,6 +45,7 @@ extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 extern SPI_HandleTypeDef hspi3;
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim8;
 extern TIM_HandleTypeDef htim4;
 extern TIM_HandleTypeDef htim5;
 extern TIM_HandleTypeDef htim12;
@@ -72,7 +73,7 @@ void Error_Handler(void);
 
 /* Private defines -----------------------------------------------------------*/
 #define TIM1_PERIOD_CLOCKS 6000
-#define TIM1_RCR 0
+#define TIM_RCR 0
 #define SYSTEM_CORE_CLOCK 216000000
 #define LED_WARN_Pin GPIO_PIN_14
 #define LED_WARN_GPIO_Port GPIOD

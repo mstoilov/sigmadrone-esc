@@ -55,6 +55,7 @@ Uart uart1;
 Uart uart2;
 SPIMaster spi3;
 PwmGenerator tim1;
+PwmGenerator tim8;
 CdcIface usb_cdc;
 // QuadratureEncoder tim4(0x2000);
 // Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
@@ -62,7 +63,7 @@ DumbEncoder dumb_encoder;
 MinasA4Encoder ma4_abs_encoder;
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
-MotorDrive motor_drive(&dumb_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+MotorDrive motor_drive(&dumb_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM_RCR + 1)));
 MotorCtrlFOC foc(&motor_drive);
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
 
@@ -122,6 +123,9 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
     }
     if (LL_ADC_IsActiveFlag_EOCS(ADCx) && LL_ADC_IsEnabledIT_EOCS(ADCx)) {
         LL_ADC_ClearFlag_EOCS(ADCx);
+//        if (hadc == &hadc2) {
+//            motor_drive.IrqUpdateCallback();
+//        }
     }
     if (LL_ADC_IsActiveFlag_OVR(ADCx) && LL_ADC_IsEnabledIT_OVR(ADCx)) {
         LL_ADC_ClearFlag_OVR(ADCx);
@@ -393,7 +397,12 @@ int application_main()
     uart1.Attach(&huart1);
     uart2.Attach(&huart2);
     spi3.Attach(&hspi3);
+    LL_TIM_SetCounter(TIM8, 0);
+    LL_TIM_SetCounter(TIM1, 0);
+    tim8.Attach(&htim8);
     tim1.Attach(&htim1);
+//    tim8.EnableCounter(true);
+    tim1.EnableCounter(true);
 //	tim4.Attach(&htim4);
 //	tim4.Start();
 //	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);

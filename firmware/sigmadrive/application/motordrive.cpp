@@ -13,12 +13,15 @@
 #include "uartrpcserver.h"
 #include "sdmath.h"
 #include "adcdata.h"
+#include "pwm_generator.h"
 
 extern UartRpcServer rpc_server;
 extern Adc adc1;
 extern Adc adc2;
 extern Adc adc3;
 extern Drv8323 drv1;
+extern PwmGenerator tim8;
+extern PwmGenerator tim1;
 
 
 MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
@@ -82,6 +85,11 @@ rexjson::property MotorDrive::GetPropertyMap()
 {
     rexjson::property props= rexjson::property_map({
         {"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
+        {"tim1_cnt", rexjson::property(&tim1_cnt_, rexjson::property_access::readonly)},
+        {"tim1_tim8_offset", rexjson::property(&tim1_tim8_offset_, rexjson::property_access::readonly)},
+        {"tim8_tim1_offset", rexjson::property(&tim8_tim1_offset_, rexjson::property_access::readonly)},
+        {"TIM1_CNT", rexjson::property(&TIM1->CNT, rexjson::property_access::readonly)},
+        {"TIM8_CNT", rexjson::property(&TIM8->CNT, rexjson::property_access::readonly)},
         {"time_slice_", rexjson::property(&time_slice_, rexjson::property_access::readonly)},
         {"Vbus", rexjson::property(&lpf_vbus_.out_, rexjson::property_access::readonly)},
         {"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
@@ -372,6 +380,9 @@ void MotorDrive::IrqUpdateCallback()
         lpf_bias_c.DoFilter(data_.injdata_[2]);
         t1_span_ = hrtimer.GetTimeElapsedMicroSec(t1_begin_, hrtimer.GetCounter());
     } else {
+        tim1_cnt_ = TIM1->CNT;
+        tim1_tim8_offset_ = (int32_t)TIM8->CNT - (int32_t)TIM1->CNT;
+        tim8_tim1_offset_ = (int32_t)TIM1->CNT - (int32_t)TIM8->CNT;
         t2_to_t2_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
         t2_begin_ = hrtimer.GetCounter();
         data_.update_counter_++;
