@@ -39,7 +39,7 @@ public:
 
 
 public:
-    MotorCtrlFOC(MotorDrive* drive);
+    MotorCtrlFOC(MotorDrive* drive, std::string axis_id);
     void Stop();
     void ModeClosedLoopTorque();
     void ModeClosedLoopVelocity();
@@ -74,10 +74,10 @@ protected:
         SIGNAL_DEBUG_DUMP_TRAJECTORY = 1u << 5, /**< Signal the debug display thread to run and dump closed loop position mode trajectory info */
     };
 
-
     osThreadId_t debug_thread_;                 /**< Debug display info thread */
     Config config_;                             /**< Structure holding all configuration parameters */
     MotorDrive *drive_;                         /**< Pointer to the MotorDrive structure */
+    std::string axis_id_;                       /**< Axis identifying this motor control */
 
     /*
      * Filters

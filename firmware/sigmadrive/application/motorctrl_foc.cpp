@@ -9,8 +9,9 @@
 extern MinasA4Encoder ma4_abs_encoder;
 extern UartRpcServer rpc_server;
 
-MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
+MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
     : drive_(drive)
+    , axis_id_(axis_id)
     , pid_Id_(config_.pid_current_kp_, config_.pid_current_ki_, 0, 1, config_.pid_current_maxout_, 0)
     , pid_Iq_(config_.pid_current_kp_, config_.pid_current_ki_, 0, 1, config_.pid_current_maxout_, 0)
     , pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, 1, config_.pid_w_maxout_, 0)
@@ -22,22 +23,24 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive)
 
 void MotorCtrlFOC::RegisterRpcMethods()
 {
-    rpc_server.add("foc.modecltr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopTrajectory, "void MotorCtrlFOC::ModeClosedLoopTrajectory()"));
-    rpc_server.add("foc.modeclp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopPosition, "void MotorCtrlFOC::ModeClosedLoopPosition()"));
-    rpc_server.add("foc.modeclv", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopVelocity, "void MotorCtrlFOC::ModeClosedLoopVelocity()"));
-    rpc_server.add("foc.modeclt", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopTorque, "void MotorCtrlFOC::ModeClosedLoopTorque()"));
-    rpc_server.add("foc.modespin", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeSpin, "void MotorCtrlFOC::ModeSpin()"));
-    rpc_server.add("foc.stop", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Stop, "void MotorCtrlFOC::Stop()"));
-    rpc_server.add("foc.calibration", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::RunCalibrationSequence, "void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)"));
-    rpc_server.add("foc.velocity_rps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocityRPS, "void MotorCtrlFOC::VelocityRPS(float revpersec)"));
-    rpc_server.add("foc.mvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveToPosition, "void MotorCtrlFOC::MoveToPosition(uint64_t position)"));
-    rpc_server.add("foc.mvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelative, "void MotorCtrlFOC::MoveRelative(int64_t relative)"));
-
+    std::string prefix = axis_id_ + ".";
+    rpc_server.add(prefix, "modecltr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopTrajectory, "void MotorCtrlFOC::ModeClosedLoopTrajectory()"));
+    rpc_server.add(prefix, "modeclp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopPosition, "void MotorCtrlFOC::ModeClosedLoopPosition()"));
+    rpc_server.add(prefix, "modeclv", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopVelocity, "void MotorCtrlFOC::ModeClosedLoopVelocity()"));
+    rpc_server.add(prefix, "modeclt", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopTorque, "void MotorCtrlFOC::ModeClosedLoopTorque()"));
+    rpc_server.add(prefix, "modespin", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeSpin, "void MotorCtrlFOC::ModeSpin()"));
+    rpc_server.add(prefix, "stop", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Stop, "void MotorCtrlFOC::Stop()"));
+    rpc_server.add(prefix, "calibration", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::RunCalibrationSequence, "void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)"));
+    rpc_server.add(prefix, "velocity_rps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocityRPS, "void MotorCtrlFOC::VelocityRPS(float revpersec)"));
+    rpc_server.add(prefix, "mvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveToPosition, "void MotorCtrlFOC::MoveToPosition(uint64_t position)"));
+    rpc_server.add(prefix, "mvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelative, "void MotorCtrlFOC::MoveRelative(int64_t relative)"));
+    drive_->RegisterRpcMethods(prefix + "drive.");
 }
 
 rexjson::property MotorCtrlFOC::GetPropertyMap()
 {
     rexjson::property props = rexjson::property_map({
+        {"drive", rexjson::property({drive_->GetPropertyMap()})},
         {"pid_current_kp", rexjson::property(
                 &config_.pid_current_kp_,
                 rexjson::property_access::readwrite,

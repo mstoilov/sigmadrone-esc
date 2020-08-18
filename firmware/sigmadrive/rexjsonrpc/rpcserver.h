@@ -376,16 +376,32 @@ public:
 		map_[name] = method;
 	}
 
+    void add(const std::string& prefix, const std::string& name, const rpc_method_type& method)
+    {
+        add(prefix + name, method);
+    }
+
 	template <typename Type>
 	void add(const std::string& name, Type* object, rexjson::value (Type::*func)(rexjson::array& params, rpc_exec_mode mode))
 	{
 		add(name, [=](rexjson::array& params, rpc_exec_mode mode)->rexjson::value{return (object->*func)(params, mode);});
 	}
 
+    template <typename Type>
+    void add(const std::string& prefix, const std::string& name, Type* object, rexjson::value (Type::*func)(rexjson::array& params, rpc_exec_mode mode))
+    {
+        add(prefix + name, object, func);
+    }
+
 	void add(const std::string& name, rexjson::value (T::*func)(rexjson::array& params, rpc_exec_mode mode))
 	{
 		add(name, [=](rexjson::array& params, rpc_exec_mode mode)->rexjson::value{return (static_cast <T*>(this)->*func)(params, mode);});
 	}
+
+    void add(const std::string& prefix, const std::string& name, rexjson::value (T::*func)(rexjson::array& params, rpc_exec_mode mode))
+    {
+        add(prefix + name, func);
+    }
 
 	template <typename Ret, typename ...Args>
 	void add(const std::string& name, const rpc_wrapper<Ret, Args...>& wrap)
@@ -398,6 +414,12 @@ public:
 			return w.call(params, mode);
 		});
 	}
+
+    template <typename Ret, typename ...Args>
+    void add(const std::string& prefix, const std::string& name, const rpc_wrapper<Ret, Args...>& wrap)
+    {
+        add(prefix + name, wrap);
+    }
 
 	rexjson::value call_method_name(const rexjson::value& methodname, rexjson::array& params, rpc_exec_mode mode = execute)
 	{

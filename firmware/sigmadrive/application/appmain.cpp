@@ -63,8 +63,10 @@ DumbEncoder dumb_encoder;
 MinasA4Encoder ma4_abs_encoder;
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
-MotorDrive motor_drive(&dumb_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM_RCR + 1)));
-MotorCtrlFOC foc(&motor_drive);
+MotorDrive motor_drive1(&dumb_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM_RCR + 1)));
+MotorDrive motor_drive2(&dumb_encoder, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM_RCR + 1)));
+MotorCtrlFOC foc1(&motor_drive1, "axis1");
+MotorCtrlFOC foc2(&motor_drive2, "axis2");
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
 
 bool debug_encoder = false;
@@ -74,9 +76,9 @@ void DetectMinasEncoder();
 rexjson::property props =
         rexjson::property_map {
             {"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
-            {"drive", rexjson::property({motor_drive.GetPropertyMap()})},
-            {"foc", rexjson::property({foc.GetPropertyMap()})},
             {"debug_encoder", &debug_encoder},
+            {"axis1", rexjson::property({foc1.GetPropertyMap()})},
+            {"axis2", rexjson::property({foc2.GetPropertyMap()})},
         };
 rexjson::property* g_properties = &props;
 
@@ -118,7 +120,7 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
     if (LL_ADC_IsActiveFlag_JEOS(ADCx) && LL_ADC_IsEnabledIT_JEOS(ADCx)) {
         LL_ADC_ClearFlag_JEOS(ADCx);
         if (hadc == &hadc1) {
-            motor_drive.IrqUpdateCallback();
+            motor_drive1.IrqUpdateCallback();
         }
     }
     if (LL_ADC_IsActiveFlag_EOCS(ADCx) && LL_ADC_IsEnabledIT_EOCS(ADCx)) {
@@ -164,11 +166,11 @@ void SD_DMA1_Stream1_IRQHandler(void)
 void SetEncoder()
 {
     try {
-        motor_drive.SetEncoder(&ma4_abs_encoder);
-        if (motor_drive.encoder_->GetResolutionBits() == 17) {
-            motor_drive.config_.pole_pairs = 4;
-        } else if (motor_drive.encoder_->GetResolutionBits() == 23) {
-            motor_drive.config_.pole_pairs = 5;
+        motor_drive1.SetEncoder(&ma4_abs_encoder);
+        if (motor_drive1.encoder_->GetResolutionBits() == 17) {
+            motor_drive1.config_.pole_pairs = 4;
+        } else if (motor_drive1.encoder_->GetResolutionBits() == 23) {
+            motor_drive1.config_.pole_pairs = 5;
         }
     } catch (std::exception& e) {
         fprintf(stdout, "Error: %s\n", e.what());
@@ -328,16 +330,16 @@ void DisplayEncoderDebugInfo()
 {
     static uint32_t old_counter = 0, new_counter = 0;
 
-    new_counter = motor_drive.GetEncoderPosition() & motor_drive.enc_resolution_mask_;
+    new_counter = motor_drive1.GetEncoderPosition() & motor_drive1.enc_resolution_mask_;
     MA4Almc almc;
     almc.as_byte_ = ma4_abs_encoder.GetLastError();
     if (new_counter != old_counter || ma4_abs_encoder.status_) {
         fprintf(stderr, "Minas(0x%x): %7.2f, Cnt: 0x%llx, Rev: 0x%llx, Pos: 0x%llx, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (UpdT: %5lu, t1_to_t1: %5lu)\n",
                 (int)ma4_abs_encoder.GetDeviceID(),
-                new_counter * 360.0f / motor_drive.enc_cpr_,
-                motor_drive.GetEncoderPosition() & motor_drive.enc_resolution_mask_,
-                motor_drive.GetEncoderPosition() >> motor_drive.enc_resolution_bits_,
-                motor_drive.GetEncoderPosition(),
+                new_counter * 360.0f / motor_drive1.enc_cpr_,
+                motor_drive1.GetEncoderPosition() & motor_drive1.enc_resolution_mask_,
+                motor_drive1.GetEncoderPosition() >> motor_drive1.enc_resolution_bits_,
+                motor_drive1.GetEncoderPosition(),
                 ma4_abs_encoder.status_,
                 almc.overspeed_,
                 almc.full_abs_status_,
@@ -412,7 +414,7 @@ int application_main()
     DisplayDrvRegs();
     DisplayPropertiesInfo();
     SetEncoder();
-    motor_drive.Attach();
+    motor_drive1.Attach();
     RegisterRpcMethods();
 
     /*

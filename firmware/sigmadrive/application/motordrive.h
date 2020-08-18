@@ -109,7 +109,7 @@ public:
     bool CheckPhaseCurrentViolation(float current);
     bool CheckPhaseVoltageViolation(float voltage);
     bool CheckTripViolations();
-    void RegisterRpcMethods();
+    void RegisterRpcMethods(const std::string& prefix);
     rexjson::property GetPropertyMap();
 
 
