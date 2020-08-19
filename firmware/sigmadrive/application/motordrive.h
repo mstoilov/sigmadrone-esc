@@ -9,6 +9,8 @@
 #define _MOTOR_DRIVE_H_
 
 #include <complex>
+#include "adc.h"
+#include "drv8323.h"
 #include "iencoder.h"
 #include "ipwmgenerator.h"
 #include "lowpassfilter.h"
@@ -66,7 +68,7 @@ public:
     void Abort();
     bool IsStarted();
 
-    MotorDrive(IEncoder *encoder, IPwmGenerator *pwm, uint32_t update_hz);
+    MotorDrive(Drv8323* drv, Adc* adc, IEncoder *encoder, IPwmGenerator *pwm, uint32_t update_hz);
     virtual ~MotorDrive();
 
     void Attach();
@@ -163,6 +165,7 @@ public:
     uint64_t enc_position_size_ = 0;
     uint32_t update_hz_;
     uint32_t tim1_cnt_;
+    uint32_t tim8_cnt_;
     int32_t tim1_tim8_offset_;
     int32_t tim8_tim1_offset_;
 
@@ -178,10 +181,12 @@ public:
 
     uint32_t t2_to_t2_ = 0;
     bool run_simple_tasks_ = false;
+    Adc* adc_ = nullptr;
     IPwmGenerator *pwm_ = nullptr;
     SampledData data_;
     ErrorInfo error_info_;
     IEncoder *encoder_ = nullptr;
+    Drv8323 *drv_ = nullptr;
 
     /*
      * Derived Data

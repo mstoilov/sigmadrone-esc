@@ -12,19 +12,12 @@
 #include "motordrive.h"
 #include "uartrpcserver.h"
 #include "sdmath.h"
-#include "adcdata.h"
 #include "pwm_generator.h"
 
 extern UartRpcServer rpc_server;
-extern Adc adc1;
-extern Adc adc2;
-extern Adc adc3;
-extern Drv8323 drv1;
-extern PwmGenerator tim8;
-extern PwmGenerator tim1;
 
 
-MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
+MotorDrive::MotorDrive(Drv8323* drv, Adc* adc, IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
     : Pa_(std::polar<float>(1.0f, 0.0f))
     , Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
     , Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
@@ -39,6 +32,8 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
     lpf_bias_a.Reset(1 << 11);
     lpf_bias_b.Reset(1 << 11);
     lpf_bias_c.Reset(1 << 11);
+    drv_ = drv;
+    adc_ = adc;
     encoder_ = encoder;
     pwm_ = pwm;
 
@@ -49,6 +44,9 @@ MotorDrive::MotorDrive(IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz
     sched_.SetIdleTask([&]() -> void {
 //		DefaultIdleTask();
     });
+
+    sched_.StartDispatcherThread();
+
 }
 
 MotorDrive::~MotorDrive()
@@ -57,8 +55,7 @@ MotorDrive::~MotorDrive()
 
 void MotorDrive::Attach()
 {
-    drv1.SetCSAGainValue(config_.csa_gain_);
-    sched_.StartDispatcherThread();
+    drv_->SetCSAGainValue(config_.csa_gain_);
 }
 
 void MotorDrive::RegisterRpcMethods(const std::string& prefix)
@@ -74,9 +71,9 @@ void MotorDrive::RegisterRpcMethods(const std::string& prefix)
     rpc_server.add(prefix, "add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz)"));
     rpc_server.add(prefix, "alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAlphaPoleSearch, "void RunTaskAlphaPoleSearch()"));
     rpc_server.add(prefix, "rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
-    rpc_server.add(prefix, "drv_get_fault1", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
-    rpc_server.add(prefix, "drv_get_fault2", rexjson::make_rpc_wrapper(&drv1, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
-    rpc_server.add(prefix, "drv_clear_fault", rexjson::make_rpc_wrapper(&drv1, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
+    rpc_server.add(prefix, "drv_get_fault1", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
+    rpc_server.add(prefix, "drv_get_fault2", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
+    rpc_server.add(prefix, "drv_clear_fault", rexjson::make_rpc_wrapper(drv_, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
 }
 
 rexjson::property MotorDrive::GetPropertyMap()
@@ -84,6 +81,7 @@ rexjson::property MotorDrive::GetPropertyMap()
     rexjson::property props= rexjson::property_map({
         {"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
         {"tim1_cnt", rexjson::property(&tim1_cnt_, rexjson::property_access::readonly)},
+        {"tim8_cnt", rexjson::property(&tim8_cnt_, rexjson::property_access::readonly)},
         {"tim1_tim8_offset", rexjson::property(&tim1_tim8_offset_, rexjson::property_access::readonly)},
         {"tim8_tim1_offset", rexjson::property(&tim8_tim1_offset_, rexjson::property_access::readonly)},
         {"TIM1_CNT", rexjson::property(&TIM1->CNT, rexjson::property_access::readonly)},
@@ -137,7 +135,7 @@ rexjson::property MotorDrive::GetPropertyMap()
                 &config_.csa_gain_,
                 rexjson::property_access::readwrite,
                 [](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
-                [&](void*){drv1.SetCSAGainValue(config_.csa_gain_);}
+                [&](void*){drv_->SetCSAGainValue(config_.csa_gain_);}
         )},
         {"run_simple_tasks", rexjson::property(
                 &run_simple_tasks_,
@@ -364,23 +362,23 @@ void MotorDrive::IrqUpdateCallback()
 {
     if (pwm_->GetCounterDirection()) {
         t1_begin_ = hrtimer.GetCounter();
-
-        data_.vbus_ = AdcData::ReadBusVoltage();
-        lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
-
-        AdcData::ReadPhaseCurrent(data_.injdata_, 3);
+        tim1_cnt_ = TIM1->CNT;
+        tim8_cnt_ = TIM8->CNT;
+        tim1_tim8_offset_ = (int32_t)TIM8->CNT - (int32_t)TIM1->CNT;
+        tim8_tim1_offset_ = (int32_t)TIM1->CNT - (int32_t)TIM8->CNT;
 
         /*
          * Sample ADC bias
          */
+        data_.injdata_[0] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
+        data_.injdata_[1] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
+        data_.injdata_[2] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_3);
+
         lpf_bias_a.DoFilter(data_.injdata_[0]);
         lpf_bias_b.DoFilter(data_.injdata_[1]);
         lpf_bias_c.DoFilter(data_.injdata_[2]);
         t1_span_ = hrtimer.GetTimeElapsedMicroSec(t1_begin_, hrtimer.GetCounter());
     } else {
-        tim1_cnt_ = TIM1->CNT;
-        tim1_tim8_offset_ = (int32_t)TIM8->CNT - (int32_t)TIM1->CNT;
-        tim8_tim1_offset_ = (int32_t)TIM1->CNT - (int32_t)TIM8->CNT;
         t2_to_t2_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
         t2_begin_ = hrtimer.GetCounter();
         data_.update_counter_++;
@@ -389,14 +387,18 @@ void MotorDrive::IrqUpdateCallback()
             UpdateRotor();
         }
 
-
-        data_.vbus_ = AdcData::ReadBusVoltage();
+        /*
+         * Sample VBus voltage
+         */
+        data_.vbus_ = adc_->RegReadConversionData(4 - 1);
         lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
 
         /*
          * Sample ADC phase current
          */
-        AdcData::ReadPhaseCurrent(data_.injdata_, 3);
+        data_.injdata_[0] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
+        data_.injdata_[1] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
+        data_.injdata_[2] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_3);
 
         /*
          * Apply the ADC bias to the current data
