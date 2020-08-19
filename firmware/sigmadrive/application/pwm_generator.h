@@ -8,8 +8,6 @@
 #ifndef _PWM_GENERATOR_H_
 #define _PWM_GENERATOR_H_
 
-#define USE_HAL_TIM_REGISTER_CALLBACKS 1
-
 #include "stm32f745xx.h"
 #include "stm32f7xx.h"
 #include "stm32f7xx_hal_tim.h"

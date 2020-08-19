@@ -8,8 +8,6 @@
 #ifndef APPLICATION_ADC_H_
 #define APPLICATION_ADC_H_
 
-#define USE_HAL_ADC_REGISTER_CALLBACKS 1
-
 #include <map>
 #include <functional>
 #include "stm32f745xx.h"
