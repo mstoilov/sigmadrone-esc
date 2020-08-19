@@ -25,6 +25,8 @@ public:
 
     void InjectedSwTrig();
     uint32_t InjReadConversionData(uint32_t rank);
+    uint32_t RegReadConversionData(uint32_t channel);
+
 
 public:
     ADC_HandleTypeDef *hadc_;       /**< Handle to the hardware device structure */

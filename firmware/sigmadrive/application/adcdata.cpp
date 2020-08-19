@@ -30,4 +30,5 @@ void AdcData::ReadPhaseCurrent(int32_t *data, size_t size)
 int32_t AdcData::ReadBusVoltage()
 {
     return (int32_t) adc1.InjReadConversionData(LL_ADC_INJ_RANK_4);
+//    return (int32_t) adc1.RegReadConversionData(13);
 }

@@ -38,7 +38,7 @@ void Adc::Attach(ADC_HandleTypeDef *hadc)
     __HAL_ADC_ENABLE(hadc_);
     if (hadc == &hadc1) {
         __HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
-        if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, 5) != HAL_OK) {
+        if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, 15) != HAL_OK) {
             /* Start Conversation Error */
             printf("Failed to start regular conversions\n");
         }
@@ -69,4 +69,10 @@ void Adc::InjectedSwTrig()
 uint32_t Adc::InjReadConversionData(uint32_t rank)
 {
     return LL_ADC_INJ_ReadConversionData12(hadc_->Instance, rank);
+}
+
+
+uint32_t Adc::RegReadConversionData(uint32_t channel)
+{
+    return regdata_[channel];
 }
