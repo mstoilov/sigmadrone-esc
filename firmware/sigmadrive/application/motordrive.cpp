@@ -25,13 +25,11 @@ MotorDrive::MotorDrive(Drv8323* drv, Adc* adc, IEncoder* encoder, IPwmGenerator 
     , time_slice_(1.0f / update_hz_)
     , lpf_bias_a(config_.bias_alpha_)
     , lpf_bias_b(config_.bias_alpha_)
-    , lpf_bias_c(config_.bias_alpha_)
     , lpf_vbus_(config_.vbus_alpha_, 12.0f)
     , lpf_Wenc_(config_.wenc_alpha_)
 {
     lpf_bias_a.Reset(1 << 11);
     lpf_bias_b.Reset(1 << 11);
-    lpf_bias_c.Reset(1 << 11);
     drv_ = drv;
     adc_ = adc;
     encoder_ = encoder;
@@ -92,7 +90,6 @@ rexjson::property MotorDrive::GetPropertyMap()
         {"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
         {"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
         {"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_access::readonly)},
-        {"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_access::readonly)},
         {"bias_alpha", rexjson::property(
             &config_.bias_alpha_,
             rexjson::property_access::readwrite,
@@ -100,7 +97,6 @@ rexjson::property MotorDrive::GetPropertyMap()
             [&](void*)->void {
                 lpf_bias_a.SetAlpha(config_.bias_alpha_);
                 lpf_bias_b.SetAlpha(config_.bias_alpha_);
-                lpf_bias_c.SetAlpha(config_.bias_alpha_);
             })},
         {"vbus_alpha", rexjson::property(
                 &config_.vbus_alpha_,
@@ -372,11 +368,9 @@ void MotorDrive::IrqUpdateCallback()
          */
         data_.injdata_[0] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
         data_.injdata_[1] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
-        data_.injdata_[2] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_3);
 
         lpf_bias_a.DoFilter(data_.injdata_[0]);
         lpf_bias_b.DoFilter(data_.injdata_[1]);
-        lpf_bias_c.DoFilter(data_.injdata_[2]);
         t1_span_ = hrtimer.GetTimeElapsedMicroSec(t1_begin_, hrtimer.GetCounter());
     } else {
         t2_to_t2_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
@@ -398,14 +392,12 @@ void MotorDrive::IrqUpdateCallback()
          */
         data_.injdata_[0] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
         data_.injdata_[1] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
-        data_.injdata_[2] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_3);
 
         /*
          * Apply the ADC bias to the current data
          */
         data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
         data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
-        data_.phase_current_c_ = CalculatePhaseCurrent(data_.injdata_[2], lpf_bias_c.Output());
 
         /*
          * Update the Iab vector
@@ -861,8 +853,8 @@ void MotorDrive::RunTaskRotateMotor(float angle, float speed, float voltage, boo
 
 void MotorDrive::DefaultIdleTask()
 {
-    fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\n", lpf_vbus_.Output(),
-            lpf_bias_a.Output(), lpf_bias_b.Output(), lpf_bias_c.Output(), data_.phase_current_a_, data_.phase_current_b_,
+    fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\n", lpf_vbus_.Output(),
+            lpf_bias_a.Output(), lpf_bias_b.Output(), data_.phase_current_a_, data_.phase_current_b_,
             -data_.phase_current_a_ -data_.phase_current_b_);
 }
 
@@ -896,7 +888,7 @@ bool MotorDrive::CheckTripViolations()
     ret = ret || CheckPhaseVoltageViolation(lpf_vbus_.Output());
     ret = ret || CheckPhaseCurrentViolation(data_.phase_current_a_);
     ret = ret || CheckPhaseCurrentViolation(data_.phase_current_b_);
-    ret = ret || CheckPhaseCurrentViolation(data_.phase_current_c_);
+    ret = ret || CheckPhaseCurrentViolation(- data_.phase_current_a_ - data_.phase_current_b_);
     if (ret)
         delay_trip_check_ = 0;
     return ret;
