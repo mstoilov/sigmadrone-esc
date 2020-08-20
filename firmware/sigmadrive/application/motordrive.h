@@ -67,7 +67,7 @@ public:
     void Abort();
     bool IsStarted();
 
-    MotorDrive(Drv8323* drv, Adc* adc, IEncoder *encoder, IPwmGenerator *pwm, uint32_t update_hz);
+    MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, IEncoder *encoder, IPwmGenerator *pwm, uint32_t update_hz);
     virtual ~MotorDrive();
 
     void Attach();
@@ -78,6 +78,7 @@ public:
 
     void UpdateRotor();
     void UpdateCurrent();
+    void UpdateBias();
 
     void SineSVM(float duty, const std::complex<float> &v_theta, float &duty_a, float &duty_b, float &duty_c);
     void SaddleSVM(float duty, const std::complex<float> &v_theta, float &duty_a, float &duty_b, float &duty_c);
@@ -147,6 +148,8 @@ public:
     void SchedulerRun();
     void SchedulerAbort();
 
+    bool IsPrimary() { return (axis_idx_ == 1UL) ? true : false; }
+
 public:
     Scheduler sched_;
 
@@ -180,6 +183,7 @@ public:
 
     uint32_t t2_to_t2_ = 0;
     bool run_simple_tasks_ = false;
+    uint32_t axis_idx_ = 0;
     Adc* adc_ = nullptr;
     IPwmGenerator *pwm_ = nullptr;
     SampledData data_;

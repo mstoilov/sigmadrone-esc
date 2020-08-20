@@ -91,7 +91,8 @@ public:
          * And then pass it through the low pass filter:
          * filtered = filtered + (input - filtered) * alpha;
          */
-        output_d_ = output_d_ + (((error - last_error_) * kd_ / dt) - output_d_) * alpha_d_;
+        if (kd_ > 0.0f)
+            output_d_ = output_d_ + (((error - last_error_) * kd_ / dt) - output_d_) * alpha_d_;
         last_error_ = error;
         return Output();
     }

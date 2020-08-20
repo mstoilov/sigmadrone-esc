@@ -563,6 +563,9 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
             std::complex<float> Iab = drive_->GetPhaseCurrent();
             std::complex<float> R = drive_->GetRotorElecRotation();
 
+//            if (drive_->IsPrimary())
+            {
+
             uint64_t enc_position = drive_->GetRotorPosition();
 
             if (profiler_enabled_) {
@@ -585,7 +588,7 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
                 Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
                 pid_W_.Input(Werr_, timeslice);
             }
-
+            }
 
             /*
              *  Park Transform
@@ -620,7 +623,7 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
             drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
 
             foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
-            if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+            if (drive_->IsPrimary() && config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
                 SignalDumpTrajectory();
             }
 

@@ -17,7 +17,7 @@
 extern UartRpcServer rpc_server;
 
 
-MotorDrive::MotorDrive(Drv8323* drv, Adc* adc, IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
+MotorDrive::MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
     : Pa_(std::polar<float>(1.0f, 0.0f))
     , Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
     , Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
@@ -30,6 +30,7 @@ MotorDrive::MotorDrive(Drv8323* drv, Adc* adc, IEncoder* encoder, IPwmGenerator 
 {
     lpf_bias_a.Reset(1 << 11);
     lpf_bias_b.Reset(1 << 11);
+    axis_idx_ = axis_idx;
     drv_ = drv;
     adc_ = adc;
     encoder_ = encoder;
@@ -357,77 +358,84 @@ bool MotorDrive::IsStarted()
 void MotorDrive::IrqUpdateCallback()
 {
     if (pwm_->GetCounterDirection()) {
-        t1_begin_ = hrtimer.GetCounter();
-        tim1_cnt_ = TIM1->CNT;
-        tim8_cnt_ = TIM8->CNT;
-        tim1_tim8_offset_ = (int32_t)TIM8->CNT - (int32_t)TIM1->CNT;
-        tim8_tim1_offset_ = (int32_t)TIM1->CNT - (int32_t)TIM8->CNT;
-
-        /*
-         * Sample ADC bias
-         */
-        data_.injdata_[0] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
-        data_.injdata_[1] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
-
-        lpf_bias_a.DoFilter(data_.injdata_[0]);
-        lpf_bias_b.DoFilter(data_.injdata_[1]);
-        t1_span_ = hrtimer.GetTimeElapsedMicroSec(t1_begin_, hrtimer.GetCounter());
+        UpdateBias();
     } else {
-        t2_to_t2_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
-        t2_begin_ = hrtimer.GetCounter();
-        data_.update_counter_++;
-        if (data_.update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
-            encoder_->Update();
-            UpdateRotor();
-        }
-
-        /*
-         * Sample VBus voltage
-         */
-        data_.vbus_ = adc_->RegReadConversionData(4 - 1);
-        lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
-
-        /*
-         * Sample ADC phase current
-         */
-        data_.injdata_[0] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
-        data_.injdata_[1] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
-
-        /*
-         * Apply the ADC bias to the current data
-         */
-        data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
-        data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
-
-        /*
-         * Update the Iab vector
-         */
         UpdateCurrent();
-
-        /*
-         * Check for abnormal conditions.
-         */
-        CheckTripViolations();
-
-        /*
-         * Run the scheduler tasks
-         */
-        sched_.OnUpdate();
-
-        /*
-         * Record the high resolution time.
-         */
-        t2_end_ = hrtimer.GetCounter();
-        t2_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_,t2_end_);
     }
+}
+
+
+void MotorDrive::UpdateBias()
+{
+    t1_begin_ = hrtimer.GetCounter();
+//    tim1_cnt_ = TIM1->CNT;
+//    tim8_cnt_ = TIM8->CNT;
+//    tim1_tim8_offset_ = (int32_t)TIM8->CNT - (int32_t)TIM1->CNT;
+//    tim8_tim1_offset_ = (int32_t)TIM1->CNT - (int32_t)TIM8->CNT;
+
+    /*
+     * Sample ADC bias
+     */
+    data_.injdata_[0] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
+    data_.injdata_[1] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
+
+    lpf_bias_a.DoFilter(data_.injdata_[0]);
+    lpf_bias_b.DoFilter(data_.injdata_[1]);
+    t1_span_ = hrtimer.GetTimeElapsedMicroSec(t1_begin_, hrtimer.GetCounter());
 }
 
 void MotorDrive::UpdateCurrent()
 {
+    t2_to_t2_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
+    t2_begin_ = hrtimer.GetCounter();
+    data_.update_counter_++;
+    if (data_.update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
+        encoder_->Update();
+        UpdateRotor();
+    }
+
+    /*
+     * Sample VBus voltage
+     */
+    data_.vbus_ = adc_->RegReadConversionData(4 - 1);
+    lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
+
+    /*
+     * Sample ADC phase current
+     */
+    data_.injdata_[0] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
+    data_.injdata_[1] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
+
+    /*
+     * Apply the ADC bias to the current data
+     */
+    data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
+    data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
+
+    /*
+     * Update the Iab vector
+     */
     float Ia = data_.phase_current_a_;
     float Ib = data_.phase_current_b_;
     float Ic = -data_.phase_current_a_ -data_.phase_current_b_;
-	Iab_ = Pa_ * Ia + Pb_ * Ib + Pc_ * Ic;
+    Iab_ = Pa_ * Ia + Pb_ * Ib + Pc_ * Ic;
+
+
+    /*
+     * Check for abnormal conditions.
+     */
+    CheckTripViolations();
+
+    /*
+     * Run the scheduler tasks
+     */
+    sched_.OnUpdate();
+
+    /*
+     * Record the high resolution time.
+     */
+    t2_end_ = hrtimer.GetCounter();
+    t2_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_,t2_end_);
 }
 
 /** Update the rotor position and velocity

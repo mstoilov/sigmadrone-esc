@@ -63,8 +63,8 @@ DumbEncoder dumb_encoder;
 MinasA4Encoder ma4_abs_encoder;
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
-MotorDrive motor_drive1(&drv1, &adc1, &dumb_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
-MotorDrive motor_drive2(&drv2, &adc2, &dumb_encoder, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+MotorDrive motor_drive1(1, &drv1, &adc1, &dumb_encoder, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+MotorDrive motor_drive2(2, &drv2, &adc2, &dumb_encoder, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlFOC foc1(&motor_drive1, "axis1");
 MotorCtrlFOC foc2(&motor_drive2, "axis2");
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
@@ -120,21 +120,14 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
     if (LL_ADC_IsActiveFlag_JEOS(ADCx) && LL_ADC_IsEnabledIT_JEOS(ADCx)) {
         LL_ADC_ClearFlag_JEOS(ADCx);
         if (hadc == &hadc1) {
-            motor_drive1.IrqUpdateCallback();
-            motor_drive2.IrqUpdateCallback();
+            if (tim1.GetCounterDirection()) {
+                motor_drive1.UpdateBias();
+                motor_drive2.UpdateCurrent();
+            } else {
+                motor_drive2.UpdateBias();
+                motor_drive1.UpdateCurrent();
+            }
         }
-    }
-    if (LL_ADC_IsActiveFlag_EOCS(ADCx) && LL_ADC_IsEnabledIT_EOCS(ADCx)) {
-        LL_ADC_ClearFlag_EOCS(ADCx);
-//        if (hadc == &hadc2) {
-//            motor_drive.IrqUpdateCallback();
-//        }
-    }
-    if (LL_ADC_IsActiveFlag_OVR(ADCx) && LL_ADC_IsEnabledIT_OVR(ADCx)) {
-        LL_ADC_ClearFlag_OVR(ADCx);
-    }
-    if (LL_ADC_IsActiveFlag_AWD1(ADCx) && LL_ADC_IsEnabledIT_AWD1(ADCx)) {
-        LL_ADC_ClearFlag_AWD1(ADCx);
     }
 }
 
