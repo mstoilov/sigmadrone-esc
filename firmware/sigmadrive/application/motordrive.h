@@ -27,15 +27,6 @@ extern HRTimer hrtimer;
  */
 class MotorDrive {
 public:
-    struct SampledData {
-        int32_t injdata_[3];
-        float phase_current_a_;
-        float phase_current_b_;
-        int32_t vbus_ = 0;
-        uint32_t update_counter_ = 0;
-        uint32_t bias_counter_ = 0;
-    };
-
     struct Config {
         int32_t encoder_dir_ = 1;				            /**< Encoder direction: (1) - encoder increasing or (-1) encoder decreasing */
         uint32_t reset_hz_ = 35;                            /**< Rotor reset rate. The rotor is oscilated with this rate during the reset process */
@@ -158,6 +149,7 @@ public:
     std::complex<float> Pb_;
     std::complex<float> Pc_;
 
+    uint32_t update_counter_ = 0;
     uint32_t enc_cpr_ = 0;
     uint32_t enc_revolution_bits_ = 0;
     uint32_t enc_resolution_bits_ = 0;
@@ -171,21 +163,15 @@ public:
     int32_t tim8_tim1_offset_;
 
     float time_slice_;
-    uint32_t t1_begin_ = 0;
-    uint32_t t1_span_ = 0;
-    uint32_t t2_begin_ = 0;
-    uint32_t t2_end_ = 0;
-    uint32_t t2_span_ = 0;
+    uint32_t t_begin_ = 0;
     uint32_t delay_trip_check_ = 0;
     uint32_t enc_position_shiftright_ = 6;      /**< Shift right the encoder position value */
     uint32_t enc_position_shiftleft_ = 0;       /**< Shift right the encoder position value */
 
-    uint32_t t2_to_t2_ = 0;
     bool run_simple_tasks_ = false;
     uint32_t axis_idx_ = 0;
     Adc* adc_ = nullptr;
     IPwmGenerator *pwm_ = nullptr;
-    SampledData data_;
     ErrorInfo error_info_;
     IEncoder *encoder_ = nullptr;
     Drv8323 *drv_ = nullptr;
@@ -193,6 +179,8 @@ public:
     /*
      * Derived Data
      */
+    float phase_current_a_;
+    float phase_current_b_;
     LowPassFilter<float, float> lpf_bias_a;     /**< Low pass filter for phase A current bias */
     LowPassFilter<float, float> lpf_bias_b;     /**< Low pass filter for phase B current bias */
     LowPassFilter<float, float> lpf_vbus_;      /**< Low pass filter for the Vbus voltage */

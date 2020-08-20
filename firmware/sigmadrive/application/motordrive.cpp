@@ -119,7 +119,7 @@ rexjson::property MotorDrive::GetPropertyMap()
                 rexjson::property_access::readwrite,
                 [&](const rexjson::value& v){ pwm_->Stop(); },
                 [&](void*)->void {
-                    data_.update_counter_ = 0;
+                    update_counter_ = 0;
                     HAL_Delay(2);
                     pwm_->Start();
                 })},
@@ -367,7 +367,6 @@ void MotorDrive::IrqUpdateCallback()
 
 void MotorDrive::UpdateBias()
 {
-    t1_begin_ = hrtimer.GetCounter();
 //    tim1_cnt_ = TIM1->CNT;
 //    tim8_cnt_ = TIM8->CNT;
 //    tim1_tim8_offset_ = (int32_t)TIM8->CNT - (int32_t)TIM1->CNT;
@@ -376,20 +375,17 @@ void MotorDrive::UpdateBias()
     /*
      * Sample ADC bias
      */
-    data_.injdata_[0] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
-    data_.injdata_[1] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
+    float injdata_a = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
+    float injdata_b = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
 
-    lpf_bias_a.DoFilter(data_.injdata_[0]);
-    lpf_bias_b.DoFilter(data_.injdata_[1]);
-    t1_span_ = hrtimer.GetTimeElapsedMicroSec(t1_begin_, hrtimer.GetCounter());
+    lpf_bias_a.DoFilter(injdata_a);
+    lpf_bias_b.DoFilter(injdata_b);
 }
 
 void MotorDrive::UpdateCurrent()
 {
-    t2_to_t2_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_, hrtimer.GetCounter());
-    t2_begin_ = hrtimer.GetCounter();
-    data_.update_counter_++;
-    if (data_.update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
+    update_counter_++;
+    if (update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
         encoder_->Update();
         UpdateRotor();
     }
@@ -397,27 +393,27 @@ void MotorDrive::UpdateCurrent()
     /*
      * Sample VBus voltage
      */
-    data_.vbus_ = adc_->RegReadConversionData(4 - 1);
-    lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, data_.vbus_, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
+    float vbus = adc_->RegReadConversionData(4 - 1);
+    lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, vbus, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
 
     /*
      * Sample ADC phase current
      */
-    data_.injdata_[0] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
-    data_.injdata_[1] = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
+    float injdata_a = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
+    float injdata_b = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
 
     /*
      * Apply the ADC bias to the current data
      */
-    data_.phase_current_a_ = CalculatePhaseCurrent(data_.injdata_[0], lpf_bias_a.Output());
-    data_.phase_current_b_ = CalculatePhaseCurrent(data_.injdata_[1], lpf_bias_b.Output());
+    phase_current_a_ = CalculatePhaseCurrent(injdata_a, lpf_bias_a.Output());
+    phase_current_b_ = CalculatePhaseCurrent(injdata_b, lpf_bias_b.Output());
 
     /*
      * Update the Iab vector
      */
-    float Ia = data_.phase_current_a_;
-    float Ib = data_.phase_current_b_;
-    float Ic = -data_.phase_current_a_ -data_.phase_current_b_;
+    float Ia = phase_current_a_;
+    float Ib = phase_current_b_;
+    float Ic = - phase_current_a_ - phase_current_b_;
     Iab_ = Pa_ * Ia + Pb_ * Ib + Pc_ * Ic;
 
 
@@ -430,12 +426,6 @@ void MotorDrive::UpdateCurrent()
      * Run the scheduler tasks
      */
     sched_.OnUpdate();
-
-    /*
-     * Record the high resolution time.
-     */
-    t2_end_ = hrtimer.GetCounter();
-    t2_span_ = hrtimer.GetTimeElapsedMicroSec(t2_begin_,t2_end_);
 }
 
 /** Update the rotor position and velocity
@@ -776,7 +766,7 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage)
 #endif
         } while (ret && i++ < test_cycles);
         if (ret)
-            config_.resistance_ = 2.0f / 3.0f * test_voltage / data_.phase_current_a_;
+            config_.resistance_ = 2.0f / 3.0f * test_voltage / phase_current_a_;
         ApplyPhaseVoltage(0, 0);
     }, seconds, test_voltage));
 }
@@ -796,7 +786,7 @@ void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, uin
 
             ret = sched_.RunUpdateHandler([&]()->bool {
 
-                lpf_a.DoFilter(std::abs(data_.phase_current_a_));
+                lpf_a.DoFilter(std::abs(phase_current_a_));
                 V = V * r;
 
                 // Test voltage along phase A
@@ -862,8 +852,8 @@ void MotorDrive::RunTaskRotateMotor(float angle, float speed, float voltage, boo
 void MotorDrive::DefaultIdleTask()
 {
     fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\n", lpf_vbus_.Output(),
-            lpf_bias_a.Output(), lpf_bias_b.Output(), data_.phase_current_a_, data_.phase_current_b_,
-            -data_.phase_current_a_ -data_.phase_current_b_);
+            lpf_bias_a.Output(), lpf_bias_b.Output(), phase_current_a_, phase_current_b_,
+            - phase_current_a_ - phase_current_b_);
 }
 
 bool MotorDrive::CheckPhaseCurrentViolation(float current)
@@ -894,9 +884,9 @@ bool MotorDrive::CheckTripViolations()
         return false;
     }
     ret = ret || CheckPhaseVoltageViolation(lpf_vbus_.Output());
-    ret = ret || CheckPhaseCurrentViolation(data_.phase_current_a_);
-    ret = ret || CheckPhaseCurrentViolation(data_.phase_current_b_);
-    ret = ret || CheckPhaseCurrentViolation(- data_.phase_current_a_ - data_.phase_current_b_);
+    ret = ret || CheckPhaseCurrentViolation(phase_current_a_);
+    ret = ret || CheckPhaseCurrentViolation(phase_current_b_);
+    ret = ret || CheckPhaseCurrentViolation(- phase_current_a_ - phase_current_b_);
     if (ret)
         delay_trip_check_ = 0;
     return ret;

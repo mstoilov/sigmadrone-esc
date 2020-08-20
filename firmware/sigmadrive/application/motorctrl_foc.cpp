@@ -211,14 +211,11 @@ void MotorCtrlFOC::RunDebugLoop()
             );
         } else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
             fprintf(stderr,
-                    "Speed: %9.2f (%9.2f), I_d: %+5.3f, I_q: %+6.3f, t1_span: %4lu, t2_span: %4lu, t2_t2: %4lu, T: %4lu, Adv1: %+5.3f, EncT: %4lu\n",
+                    "Speed: %9.2f (%9.2f), I_d: %+5.3f, I_q: %+6.3f, T: %4lu, Adv1: %+5.3f, EncT: %4lu\n",
                     drive_->GetRotorVelocity() / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocityPTS(),
                     lpf_Id_,
                     lpf_Iq_,
-                    drive_->t1_span_,
-                    drive_->t2_span_,
-                    drive_->t2_to_t2_,
                     foc_time_,
                     config_.vab_advance_factor_ * drive_->GetRotorElecVelocityPTS()/drive_->GetEncoderCPR() * 2.0f * M_PI,
                     ma4_abs_encoder.update_time_ms_
@@ -279,7 +276,7 @@ void MotorCtrlFOC::ModeSpin()
 
     drive_->sched_.AddTask([&](){
         uint32_t display_counter = 0;
-        drive_->data_.update_counter_ = 0;
+        drive_->update_counter_ = 0;
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
@@ -319,8 +316,8 @@ void MotorCtrlFOC::ModeSpin()
              */
             drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
 
-            foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
             if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+                foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t_begin_, hrtimer.GetCounter());
                 SignalDumpSpin();
             }
 
@@ -338,7 +335,7 @@ void MotorCtrlFOC::ModeClosedLoopTorque()
     drive_->sched_.AddTask([&](){
         float timeslice = drive_->GetTimeSlice();
         uint32_t display_counter = 0;
-        drive_->data_.update_counter_ = 0;
+        drive_->update_counter_ = 0;
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
@@ -379,8 +376,8 @@ void MotorCtrlFOC::ModeClosedLoopTorque()
              */
             drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
 
-            foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
             if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+                foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t_begin_, hrtimer.GetCounter());
                 SignalDumpTorque();
             }
 
@@ -399,7 +396,7 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
     drive_->sched_.AddTask([&](){
         float timeslice = drive_->GetTimeSlice();
         uint32_t display_counter = 0;
-        drive_->data_.update_counter_ = 0;
+        drive_->update_counter_ = 0;
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
@@ -443,8 +440,8 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
              */
             drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
 
-            foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
             if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+                foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t_begin_, hrtimer.GetCounter());
                 SignalDumpVelocity();
             }
 
@@ -462,7 +459,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
     drive_->sched_.AddTask([&](){
         float timeslice = drive_->GetTimeSlice();
         uint32_t display_counter = 0;
-        drive_->data_.update_counter_ = 0;
+        drive_->update_counter_ = 0;
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
@@ -511,8 +508,8 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
              */
             drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
 
-            foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
             if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+                foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t_begin_, hrtimer.GetCounter());
                 SignalDumpPosition();
             }
 
@@ -531,7 +528,7 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
     drive_->sched_.AddTask([&](){
         float timeslice = drive_->GetTimeSlice();
         uint32_t display_counter = 0;
-        drive_->data_.update_counter_ = 0;
+        drive_->update_counter_ = 0;
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
@@ -541,14 +538,10 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
         drive_->sched_.RunUpdateHandler([&]()->bool {
             std::complex<float> Iab = drive_->GetPhaseCurrent();
             std::complex<float> R = drive_->GetRotorElecRotation();
-
-//            if (drive_->IsPrimary())
-            {
-
             uint64_t enc_position = drive_->GetRotorPosition();
 
             if (profiler_enabled_) {
-                float t = (drive_->data_.update_counter_ - profiler_counter_) * timeslice;
+                float t = (drive_->update_counter_ - profiler_counter_) * timeslice;
                 if (t < trap_profiler_.T_) {
                     trap_profiler_.CalcProfileData(t, profile_target_);
                     Perr_ = drive_->GetRotorPositionError(enc_position, profile_target_.P, 0) * timeslice;
@@ -566,7 +559,6 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
                 pid_P_.Input(Perr_, timeslice);
                 Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
                 pid_W_.Input(Werr_, timeslice);
-            }
             }
 
             /*
@@ -601,8 +593,8 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
              */
             drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
 
-            foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t2_begin_, hrtimer.GetCounter());
-            if (drive_->IsPrimary() && config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+            if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+                foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t_begin_, hrtimer.GetCounter());
                 SignalDumpTrajectory();
             }
 
@@ -635,7 +627,7 @@ uint64_t MotorCtrlFOC::MoveToPosition(uint64_t target)
         throw std::range_error("Invalid position");
     target_ = target;
     trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_);
-    profiler_counter_ = drive_->data_.update_counter_;
+    profiler_counter_ = drive_->update_counter_;
     profiler_enabled_ = true;
     return target_;
 }
@@ -647,7 +639,7 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
         throw std::range_error("Invalid position");
     target_ = newpos;
     trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_);
-    profiler_counter_ = drive_->data_.update_counter_;
+    profiler_counter_ = drive_->update_counter_;
     profiler_enabled_ = true;
     return target_;
 }
