@@ -21,6 +21,7 @@ public:
     void Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax);
     void CalcProfileData(float t, ProfileData& data);
     ProfileData Step(float t);
+    float CalcVelocity(float t);
 
 
 public:

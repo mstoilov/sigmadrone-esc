@@ -98,6 +98,22 @@ ProfileData TrapezoidalProfile::Step(float t)
 }
 
 
+float TrapezoidalProfile::CalcVelocity(float t)
+{
+    if (t < 0) {
+        return Vi_;
+    } else if (t < Ta_) {
+        return s_ * (Vi_ + Ar_ * t);
+    } else if (t < (Ta_ + Tc_)) {
+        return s_ * Vr_;
+    } else if (t < T_) {
+        float tc = t - (Ta_ + Tc_);
+        return s_ * (Vr_ - Dr_ * tc);
+    }
+    return 0.0f;
+}
+
+
 #ifdef _USE_PYBIND_
 #include <pybind11/pybind11.h>
 
@@ -105,14 +121,14 @@ namespace py = pybind11;
 
 PYBIND11_MODULE(trapezoidprofile, m) {
     py::class_<ProfileData>(m, "ProfileData")
-        .def(py::init<float, float, float>())
+        .def(py::init<float, float>())
 		.def_readwrite("P", &ProfileData::P)
-		.def_readwrite("Pd", &ProfileData::Pd)
-		.def_readwrite("Pdd", &ProfileData::Pdd);
+		.def_readwrite("Pd", &ProfileData::Pd);
     py::class_<TrapezoidalProfile>(m, "TrapezoidProfile")
         .def(py::init<>())
 		.def("Init", &TrapezoidalProfile::Init)
-		.def("Step", &TrapezoidalProfile::Step);
+		.def("Step", &TrapezoidalProfile::Step)
+		.def("CalcVelocity", &TrapezoidalProfile::CalcVelocity);
 }
 
 #endif
