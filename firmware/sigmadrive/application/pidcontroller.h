@@ -11,7 +11,7 @@
  *
  */
 template<typename T>
-class PidController {
+class PIDController {
 public:
     /** Constructor
      *
@@ -21,7 +21,7 @@ public:
      * @param output_i_max Maximum integral output limit
      * @param bias Output bias
      */
-    PidController(float kp = 0, float ki = 0, float kd = 0, float alpha_d = 1.0, float output_max = 0, const T &bias = 0)
+    PIDController(float kp = 0, float ki = 0, float kd = 0, float alpha_d = 1.0, float output_max = 0, const T &bias = 0)
         : kp_(kp)
         , ki_(ki)
         , kd_(kd)
@@ -36,7 +36,7 @@ public:
     {
     }
 
-    ~PidController()
+    ~PIDController()
     {
     }
 
