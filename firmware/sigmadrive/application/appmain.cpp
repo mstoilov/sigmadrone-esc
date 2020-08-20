@@ -411,6 +411,7 @@ int application_main()
     DisplayDrvRegs();
     DisplayPropertiesInfo();
     SetEncoder();
+    motor_drive2.SetEncoder(&dumb_encoder);
     motor_drive1.Attach();
     motor_drive2.Attach();
     RegisterRpcMethods();
