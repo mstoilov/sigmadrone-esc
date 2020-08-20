@@ -16,7 +16,6 @@
 #include "lowpassfilter.h"
 #include "rexjsonrpc/property.h"
 #include "scheduler.h"
-#include "pidcontroller.h"
 #include "errorinfo.h"
 
 #include "hrtimer.h"

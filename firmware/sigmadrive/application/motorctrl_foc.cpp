@@ -12,10 +12,10 @@ extern UartRpcServer rpc_server;
 MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
     : drive_(drive)
     , axis_id_(axis_id)
-    , pid_Id_(config_.pid_current_kp_, config_.pid_current_ki_, 0, 1, config_.pid_current_maxout_, 0)
-    , pid_Iq_(config_.pid_current_kp_, config_.pid_current_ki_, 0, 1, config_.pid_current_maxout_, 0)
+    , pid_Id_(config_.pid_current_kp_, config_.pid_current_ki_, config_.pid_current_maxout_)
+    , pid_Iq_(config_.pid_current_kp_, config_.pid_current_ki_, config_.pid_current_maxout_)
     , pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, 1, config_.pid_w_maxout_, 0)
-    , pid_P_(config_.pid_p_kp_, config_.pid_p_ki_, config_.pid_p_kd_, 1, config_.pid_p_maxout_, 0)
+    , pid_P_(config_.pid_p_kp_, 0, config_.pid_p_maxout_)
 {
     StartDebugThread();
     RegisterRpcMethods();
@@ -65,13 +65,6 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
                     pid_Iq_.SetMaxOutput(config_.pid_current_maxout_);
                     pid_Id_.SetMaxOutput(config_.pid_current_maxout_);
                 })},
-        {"vq_bias", rexjson::property(
-                &config_.vq_bias_,
-                rexjson::property_access::readwrite,
-                [](const rexjson::value& v){},
-                [&](void*)->void {
-                    pid_Iq_.SetBias(config_.vq_bias_);
-                })},
         {"w_bias", rexjson::property(
                 &config_.w_bias_,
                 rexjson::property_access::readwrite,
@@ -107,20 +100,6 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
                 [](const rexjson::value& v){},
                 [&](void*)->void {
                     pid_P_.SetGainP(config_.pid_p_kp_);
-                })},
-        {"pid_p_ki", rexjson::property(
-                &config_.pid_p_ki_,
-                rexjson::property_access::readwrite,
-                [](const rexjson::value& v){},
-                [&](void*)->void {
-                    pid_P_.SetGainI(config_.pid_p_ki_);
-                })},
-        {"pid_p_kd", rexjson::property(
-                &config_.pid_p_kd_,
-                rexjson::property_access::readwrite,
-                [](const rexjson::value& v){},
-                [&](void*)->void {
-                    pid_P_.SetGainD(config_.pid_p_kd_);
                 })},
         {"pid_p_maxout", rexjson::property(
                 &config_.pid_p_maxout_,
@@ -711,10 +690,8 @@ void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)
         config_.pid_current_ki_ = config_.pid_current_kp_ / tau;
         pid_Id_.SetGainP(config_.pid_current_kp_);
         pid_Id_.SetGainI(config_.pid_current_ki_);
-        pid_Id_.SetGainD(0);
         pid_Iq_.SetGainP(config_.pid_current_kp_);
         pid_Iq_.SetGainI(config_.pid_current_ki_);
-        pid_Iq_.SetGainD(0);
 #endif
     });
     drive_->RunWaitForCompletion();

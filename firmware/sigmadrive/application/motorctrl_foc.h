@@ -9,6 +9,8 @@
 #define _MOTORCTRL_FOC_H_
 
 #include "motordrive.h"
+#include "pidcontroller.h"
+#include "picontroller.h"
 #include "velocityprofiler/trapezoidal-profile.h"
 
 class MotorCtrlFOC
@@ -24,8 +26,6 @@ public:
         float pid_w_maxout_ = 25.0;             /**< Velocity PID regulator output limit */
 
         float pid_p_kp_ = 5;                    /**< Position PID regulator proportional gain */
-        float pid_p_ki_ = 0;                    /**< Position PID regulator integral gain */
-        float pid_p_kd_ = 0;                    /**< Position PID regulator differential gain */
         float pid_p_maxout_ = 240;              /**< Position PID regulator output limit */
 
         float tau_ratio_ = 2;                   /**< Constant used in the calculations of the closed loop PID regulator gains. Tratio = Tcl/Tp as per https://www.youtube.com/watch?v=3viD5ij60EI */
@@ -88,10 +88,10 @@ protected:
     /*
      * PID regulators
      */
-    PidController<float> pid_Id_;               /**< PID regulator controlling the d-current (Id) */
-    PidController<float> pid_Iq_;               /**< PID regulator controlling the q-current (Iq) */
+    PIController<float> pid_Id_;                /**< PID regulator controlling the d-current (Id) */
+    PIController<float> pid_Iq_;                /**< PID regulator controlling the q-current (Iq) */
     PidController<float> pid_W_;                /**< PID regulator controlling the rotor velocity (W) */
-    PidController<float> pid_P_;                /**< PID regulator controlling the target position */
+    PIController<float> pid_P_;                 /**< PID regulator controlling the target position */
     float Ierr_ = 0;                            /**< Q-current error. Used as input for the Iq PID regulator */
     float Werr_ = 0;                            /**< Velocity error. Used as input for the velocity PID regulator */
     float Perr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */
