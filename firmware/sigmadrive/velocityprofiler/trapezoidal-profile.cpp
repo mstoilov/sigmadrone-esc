@@ -44,7 +44,7 @@ void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float A
 
     float Ta = (Vr - Vi) / Ar;
     float Td = Vr / Dr;
-    float Tc = Dc / Vr;
+    float Tr = (Vr != 0.0f) ? Dc / Vr : 0.0f;
 
 #ifdef STM32F745xx
     __disable_irq();
@@ -57,9 +57,16 @@ void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float A
     Vi_ = Vi;
     Ta_ = Ta;
     Td_ = Td;
-    Tc_ = Tc;
-    T_ = Ta + Tc + Td;
+    Tr_ = Tr;
+    T_ = Ta + Tr + Td;
     s_ = s;
+
+    Ar_2_ = 0.5f * Ar_;
+    Dr_2_ = 0.5f * Dr_;
+    Tar_ = Ta_ + Tr_;
+    Sa_ = Vi_ * Ta_ + 0.5 * Ar_ * SQ(Ta_);
+    Sar_ = Sa_ + Vr_ * Tr_;
+
 
 #ifdef STM32F745xx
     __enable_irq();
@@ -76,23 +83,46 @@ void TrapezoidalProfile::CalcProfileData(float t, ProfileData& data)
     } else if (t < Ta_) {
         data.Pd = s_ * (Vi_ + Ar_ * t);
         data.P = Xi_ + s_ * (Vi_ * t + 0.5 * Ar_ * SQ(t));
-    } else if (t < (Ta_ + Tc_)) {
+    } else if (t < (Ta_ + Tr_)) {
         data.Pd = s_ * Vr_;
         data.P   = Xi_ + s_ * (Vi_ * Ta_ + 0.5 * Ar_ * SQ(Ta_) + Vr_ * (t - Ta_));
     } else if (t < T_) {
-        float tc = t - (Ta_ + Tc_);
+        float tc = t - (Ta_ + Tr_);
         data.Pd = s_ * (Vr_ - Dr_ * tc);
-        data.P = Xi_ + s_ * (Vi_ * Ta_ + 0.5 * Ar_ * SQ(Ta_) + Vr_ * Tc_ + Vr_ * tc - 0.5 * Dr_ * SQ(tc));
+        data.P = Xi_ + s_ * (Vi_ * Ta_ + 0.5 * Ar_ * SQ(Ta_) + Vr_ * Tr_ + Vr_ * tc - 0.5 * Dr_ * SQ(tc));
     } else {
         data.Pd = 0;
         data.P = Xf_;
     }
 }
 
+
+void TrapezoidalProfile::CalcProfileData2(float t, ProfileData& data)
+{
+    if (t < 0) {
+        data.Pd = Vi_;
+        data.P = Xi_;
+    } else if (t < Ta_) {
+        data.Pd = s_ * (Vi_ + Ar_ * t);
+        data.P = Xi_ + s_ * (Vi_ * t + Ar_2_ * SQ(t));
+    } else if (t < (Ta_ + Tr_)) {
+        data.Pd = s_ * Vr_;
+        data.P   = Xi_ + s_ * (Sa_ + Vr_ * (t - Ta_));
+    } else if (t < T_) {
+        float tc = t - Tar_;
+        data.Pd = s_ * (Vr_ - Dr_ * tc);
+        data.P = Xi_ + s_ * (Sar_ + Vr_ * tc - Dr_2_ * SQ(tc));
+    } else {
+        data.Pd = 0;
+        data.P = Xf_;
+    }
+}
+
+
 ProfileData TrapezoidalProfile::Step(float t)
 {
 	ProfileData data(0, 0);
-	CalcProfileData(t, data);
+	CalcProfileData2(t, data);
 
 	return data;
 }
@@ -104,10 +134,10 @@ float TrapezoidalProfile::CalcVelocity(float t)
         return Vi_;
     } else if (t < Ta_) {
         return s_ * (Vi_ + Ar_ * t);
-    } else if (t < (Ta_ + Tc_)) {
+    } else if (t < (Ta_ + Tr_)) {
         return s_ * Vr_;
     } else if (t < T_) {
-        float tc = t - (Ta_ + Tc_);
+        float tc = t - (Ta_ + Tr_);
         return s_ * (Vr_ - Dr_ * tc);
     }
     return 0.0f;
@@ -128,7 +158,11 @@ PYBIND11_MODULE(trapezoidprofile, m) {
         .def(py::init<>())
 		.def("Init", &TrapezoidalProfile::Init)
 		.def("Step", &TrapezoidalProfile::Step)
-		.def("CalcVelocity", &TrapezoidalProfile::CalcVelocity);
+		.def("CalcVelocity", &TrapezoidalProfile::CalcVelocity)
+		.def_readwrite("T", &TrapezoidalProfile::T_)
+		.def_readwrite("Ta", &TrapezoidalProfile::Ta_)
+		.def_readwrite("Tr", &TrapezoidalProfile::Tr_)
+		.def_readwrite("Td", &TrapezoidalProfile::Td_);
 }
 
 #endif

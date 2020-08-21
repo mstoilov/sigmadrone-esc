@@ -191,16 +191,14 @@ void MotorCtrlFOC::RunDebugLoop()
 
         } else if (status & SIGNAL_DEBUG_DUMP_TRAJECTORY) {
             fprintf(stderr,
-                    "P: %10llu PR: %10.0f (%10llu) I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
+                    "P: %10llu PR: %10.0f (%10llu) [%10.0f] I_q: %+6.3f PVq: %+7.2f "
                     "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f Pd: %+10.0f, V_PEP: %+10.0f, T: %3lu\n",
                     drive_->GetEncoderPosition(),
                     profile_target_.P,
                     target_,
+                    profile_target_.P - drive_->GetEncoderPosition(),
                     lpf_Iq_,
-                    pid_Id_.Output(),
                     pid_Iq_.Output(),
-                    pid_Iq_.OutputP(),
-                    pid_Iq_.OutputI(),
                     Werr_,
                     pid_W_.Output(),
                     Perr_,
@@ -543,7 +541,7 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
             if (profiler_enabled_) {
                 float t = (drive_->update_counter_ - profiler_counter_) * timeslice;
                 if (t < trap_profiler_.T_) {
-                    trap_profiler_.CalcProfileData(t, profile_target_);
+                    trap_profiler_.CalcProfileData2(t, profile_target_);
                     Perr_ = drive_->GetRotorPositionError(enc_position, profile_target_.P, 0) * timeslice;
                     pid_P_.Input(Perr_, timeslice);
                     Werr_ = pid_P_.Output() + profile_target_.Pd * timeslice - drive_->GetRotorVelocityPTS();

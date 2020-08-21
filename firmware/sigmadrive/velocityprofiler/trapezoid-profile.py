@@ -88,13 +88,16 @@ for i, t in enumerate(time):
     Sc[i] = Sc[i - 1] + 0.5 * ((Vc[i] + Vc[i-1]) * (time[i] - time[i - 1])) if (i > 0) else 40
     Ac[i] = ((Vc[i] - Vc[i-1]) / (time[i] - time[i - 1])) if (i > 0) else 0
 
+print("T = ", prof.T)
+print("Ta = ", prof.Ta)
+print("Tr = ", prof.Tr)
+print("Td = ", prof.Td)
 # for i, t in enumerate(time):
 #     Sc[i], Vc[i], Ac[i] = trapezoidalProfile(160, 40, 0, 4, 0.5, 0.15, t)
 
 pp.plot(time, Ac * 40)
 pp.plot(time, Vc * 20)
 pp.plot(time, Sc)
-pp.plot(time, Sc1)
 pp.xlabel('Time')
 pp.ylabel('P,Pd,Pdd')
 pp.show()
