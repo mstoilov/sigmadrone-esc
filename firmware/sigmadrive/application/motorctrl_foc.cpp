@@ -532,27 +532,31 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
         pid_W_.Reset();
         pid_P_.Reset();
         target_ = drive_->GetEncoderPosition();
+        TrapezoidalProfile trap_profiler;
+        uint32_t profiler_counter = drive_->update_counter_;
+        float t = 0.0f;
+        trap_profiler.Init(drive_->GetEncoderPosition(), drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_);
 
         drive_->sched_.RunUpdateHandler([&]()->bool {
             std::complex<float> Iab = drive_->GetPhaseCurrent();
             std::complex<float> R = drive_->GetRotorElecRotation();
             uint64_t enc_position = drive_->GetRotorPosition();
 
-            if (profiler_enabled_) {
-                float t = (drive_->update_counter_ - profiler_counter_) * timeslice;
-                if (t < trap_profiler_.T_) {
-                    trap_profiler_.CalcProfileData2(t, profile_target_);
-                    Perr_ = drive_->GetRotorPositionError(enc_position, profile_target_.P, 0) * timeslice;
-                    pid_P_.Input(Perr_, timeslice);
-                    Werr_ = pid_P_.Output() + profile_target_.Pd * timeslice - drive_->GetRotorVelocityPTS();
-                    pid_W_.Input(Werr_, timeslice);
-                } else {
-                    profiler_enabled_ = false;
-                    profile_target_.P = target_;
-                    profile_target_.Pd = 0;
-                }
+            if (trap_profiler_ptr_) {
+                trap_profiler = *trap_profiler_ptr_;
+                trap_profiler_ptr_ = nullptr;
+                profiler_counter = drive_->update_counter_;
+                t = 0.0f;
             }
-            if (!profiler_enabled_) {
+
+            if (t <= trap_profiler.T_) {
+                trap_profiler.CalcProfileData2(t, profile_target_);
+                Perr_ = drive_->GetRotorPositionError(enc_position, profile_target_.P, 0) * timeslice;
+                pid_P_.Input(Perr_, timeslice);
+                Werr_ = pid_P_.Output() + profile_target_.Pd * timeslice - drive_->GetRotorVelocityPTS();
+                pid_W_.Input(Werr_, timeslice);
+                t = (drive_->update_counter_ - profiler_counter) * timeslice;
+            } else {
                 Perr_ = drive_->GetRotorPositionError(enc_position, target_, 0) * timeslice;
                 pid_P_.Input(Perr_, timeslice);
                 Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
@@ -625,8 +629,7 @@ uint64_t MotorCtrlFOC::MoveToPosition(uint64_t target)
         throw std::range_error("Invalid position");
     target_ = target;
     trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_);
-    profiler_counter_ = drive_->update_counter_;
-    profiler_enabled_ = true;
+    trap_profiler_ptr_ = &trap_profiler_;
     return target_;
 }
 
@@ -637,8 +640,7 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
         throw std::range_error("Invalid position");
     target_ = newpos;
     trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_);
-    profiler_counter_ = drive_->update_counter_;
-    profiler_enabled_ = true;
+    trap_profiler_ptr_ = &trap_profiler_;
     return target_;
 }
 

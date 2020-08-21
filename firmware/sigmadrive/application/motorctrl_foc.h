@@ -103,9 +103,9 @@ protected:
     float spin_voltage_ = 3.5f;                 /**< Voltage used for the spin mode */
     uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
     ProfileData profile_target_;                /**< Target position, velocity, acceleration from the velocity profiler */
-    bool profiler_enabled_ = false;
-    uint32_t profiler_counter_ = 0;
     TrapezoidalProfile trap_profiler_;
+    TrapezoidalProfile *trap_profiler_ptr_ = nullptr;
+
 };
 
 
