@@ -78,7 +78,7 @@ rexjson::property props =
             {"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
             {"debug_encoder", &debug_encoder},
             {"axis1", rexjson::property({foc1.GetPropertyMap()})},
-            {"axis2", rexjson::property({foc2.GetPropertyMap()})},
+//            {"axis2", rexjson::property({foc2.GetPropertyMap()})},
         };
 rexjson::property* g_properties = &props;
 
@@ -399,11 +399,7 @@ int application_main()
     LL_TIM_SetCounter(TIM1, 0);
     tim8.Attach(&htim8);
     tim1.Attach(&htim1);
-//    tim8.EnableCounter(true);
     tim1.EnableCounter(true);
-//	tim4.Attach(&htim4);
-//	tim4.Start();
-//	LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_UPDATE);
     usb_cdc.Attach(&hUsbDeviceFS, true);
     drv1.InitializeDefaults();
     drv2.InitializeDefaults();
