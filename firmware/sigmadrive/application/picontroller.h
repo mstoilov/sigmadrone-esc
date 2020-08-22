@@ -56,6 +56,28 @@ public:
          */
         output_i_ = output_i_ + 0.5f * ki_ * dt * (error + last_error_);
 
+        /*
+         * Anti-windup dynamic clamping of the integral component
+         */
+        float dynamicLimitMin, dynamicLimitMax;
+        if (output_p_ < output_max_)
+            dynamicLimitMax = output_max_ - output_p_;
+        else
+            dynamicLimitMax = 0.0f;
+
+        if (output_p_ > -output_max_)
+            dynamicLimitMin = -output_max_ - output_p_;
+        else
+            dynamicLimitMin = 0.0f;
+
+        /*
+         * Clamp the integral output
+         */
+        if (output_i_ > dynamicLimitMax)
+            output_i_ = dynamicLimitMax;
+        if (output_i_ < dynamicLimitMin)
+            output_i_ = dynamicLimitMin;
+
         last_error_ = error;
         return Output();
     }
