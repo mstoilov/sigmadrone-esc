@@ -535,6 +535,7 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
         TrapezoidalProfile trap_profiler;
         uint32_t profiler_counter = drive_->update_counter_;
         float t = 0.0f;
+        trap_profiler_ptr_ = nullptr;
         trap_profiler.Init(drive_->GetEncoderPosition(), drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_);
 
         drive_->sched_.RunUpdateHandler([&]()->bool {

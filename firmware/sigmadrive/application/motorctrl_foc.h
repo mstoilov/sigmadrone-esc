@@ -22,10 +22,10 @@ public:
         float pid_current_maxout_ = 30;         /**< Current PID regulator output limit */
 
         float pid_w_kp_ = 0.15;                 /**< Velocity PID regulator proportional gain */
-        float pid_w_ki_ = 20;                   /**< Velocity PID regulator integral gain */
+        float pid_w_ki_ = 120;                  /**< Velocity PID regulator integral gain */
         float pid_w_maxout_ = 25.0;             /**< Velocity PID regulator output limit */
 
-        float pid_p_kp_ = 5;                    /**< Position PID regulator proportional gain */
+        float pid_p_kp_ = 20;                   /**< Position PID regulator proportional gain */
         float pid_p_maxout_ = 240;              /**< Position PID regulator output limit */
 
         float tau_ratio_ = 2;                   /**< Constant used in the calculations of the closed loop PID regulator gains. Tratio = Tcl/Tp as per https://www.youtube.com/watch?v=3viD5ij60EI */
