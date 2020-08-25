@@ -19,7 +19,7 @@ public:
     struct Config {
         float pid_current_kp_ = 4.5;    /* 3 */ /**< Current PID regulator proportional gain */
         float pid_current_ki_ = 1500;  /* 3120*/ /**< Current PID regulator integral gain */
-        float pid_current_maxout_ = 30;         /**< Current PID regulator output limit */
+        float pid_current_maxout_ = 45;         /**< Current PID regulator output limit */
 
         float pid_w_kp_ = 0.15;                 /**< Velocity PID regulator proportional gain */
         float pid_w_ki_ = 120;                  /**< Velocity PID regulator integral gain */
@@ -32,7 +32,6 @@ public:
         float vab_advance_factor_ = 1.5;        /**< Magnetic field advance factor. The V_ab will be advanced proportional to the rotor variable speed and this constant  */
         float vq_bias_ = 0;                     /**< Bias for the q-voltage (Vq) PID regulator */
         float w_bias_ = 0;                      /**< Bias for the velocity PID (W) regulator */
-        float i_trip_ = 8.0;                    /**< Max allowed current. If the current gets bigger than that it will cause trip violation */
         bool display_ = true;                   /**< Display mode on/off */
         float max_poserr_factor_ = 1.0;         /**< Maximum position error factor. 1 - 0ne full revolution, 0.5 - half revolution, etc. */
     };

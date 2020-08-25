@@ -114,7 +114,6 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
         {"acceleration", &acceleration_},
         {"deceleration", &deceleration_},
         {"target", &target_},
-        {"i_trip", &config_.i_trip_},
         {"vab_advance_factor", &config_.vab_advance_factor_},
         {"display", &config_.display_},
         {"max_poserr_factor", &config_.max_poserr_factor_},
