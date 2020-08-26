@@ -47,6 +47,11 @@ public:
      * to retrieve the current encoder values.
      */
     virtual bool Update() = 0;
+
+    /** Dump debug internal information
+     *
+     */
+    virtual void DisplayDebugInfo() = 0;
 };
 
 #endif /* _IENCODER_H_ */

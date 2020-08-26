@@ -345,3 +345,30 @@ uint32_t MinasA4Encoder::GetIndexPosition()
 {
     return 0;
 }
+
+void MinasA4Encoder::DisplayDebugInfo()
+{
+    static uint64_t old_counter = 0, new_position = 0;
+
+    new_position = GetPosition();
+    if (new_position != old_counter || status_) {
+        fprintf(stderr, "Minas(0x%x): %7.2f, Cnt: %10lu, Rev: %10lu, Pos: 0x%16llx, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (UpdT: %5lu, t1_to_t1: %5lu)\n",
+                (int)encoder_id_,
+                counter_ * 360.0f / (1 << cpr_bits_),
+                counter_,
+                revolutions_,
+                new_position,
+                status_,
+                almc_.overspeed_,
+                almc_.full_abs_status_,
+                almc_.count_error_,
+                almc_.counter_overflow_,
+                almc_.multiple_revolution_error_,
+                almc_.system_down_,
+                almc_.battery_alarm_,
+                update_time_ms_,
+                t1_to_t1_);
+        old_counter = new_position;
+    }
+}
+

@@ -134,7 +134,7 @@ public:
     void AddTaskCalibrationSequence(bool reset_rotor);
     float RunResistanceMeasurement(float seconds, float test_voltage);
     float RunInductanceMeasurement(float seconds, float test_voltage, uint32_t test_hz);
-
+    void RunEncoderDisplayDebugInfo();
     void SchedulerRun();
     void SchedulerAbort();
 

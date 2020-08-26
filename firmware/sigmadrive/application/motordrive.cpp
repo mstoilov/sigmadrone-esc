@@ -55,6 +55,7 @@ MotorDrive::~MotorDrive()
 void MotorDrive::Attach()
 {
     drv_->SetCSAGainValue(config_.csa_gain_);
+    SetEncoder(encoder_);
 }
 
 void MotorDrive::RegisterRpcMethods(const std::string& prefix)
@@ -70,6 +71,7 @@ void MotorDrive::RegisterRpcMethods(const std::string& prefix)
     rpc_server.add(prefix, "add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz)"));
     rpc_server.add(prefix, "alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAlphaPoleSearch, "void RunTaskAlphaPoleSearch()"));
     rpc_server.add(prefix, "rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
+    rpc_server.add(prefix, "run_encoder_debug", rexjson::make_rpc_wrapper(this, &MotorDrive::RunEncoderDisplayDebugInfo, "void RunEncoderDisplayDebugInfo()"));
     rpc_server.add(prefix, "drv_get_fault1", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
     rpc_server.add(prefix, "drv_get_fault2", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
     rpc_server.add(prefix, "drv_clear_fault", rexjson::make_rpc_wrapper(drv_, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
@@ -693,6 +695,23 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 			encoder_->ResetPosition();
 	}, reset_voltage, reset_hz, reset_encoder));
 }
+
+
+void MotorDrive::RunEncoderDisplayDebugInfo()
+{
+    sched_.AddTask([&](){
+
+        sched_.RunUpdateHandler([&]()->bool {
+            if ((update_counter_ % (update_hz_ / 10)) == 0)
+                encoder_->DisplayDebugInfo();
+            return true;
+        });
+
+    });
+
+    Run();
+}
+
 
 void MotorDrive::AddTaskDetectEncoderDir()
 {

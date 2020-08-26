@@ -16,6 +16,7 @@ public:
     virtual uint32_t GetIndexPosition() override { return 0; }
     virtual uint32_t GetLastError() override { return 0; }
     virtual bool Update() override { return true; }
+    virtual void DisplayDebugInfo() override { }
 };
 
 #endif /* _DUMBENCODER_H_ */

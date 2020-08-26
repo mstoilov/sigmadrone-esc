@@ -195,6 +195,7 @@ public:
     virtual uint32_t GetIndexPosition() override;
     virtual uint32_t GetLastError() override;
     virtual bool Update() override;
+    virtual void DisplayDebugInfo() override;
 
 protected:
     bool ParseReply4(const MA4EncoderReply4& reply4, uint32_t& status, uint32_t& counter, MA4Almc& almc);
@@ -210,6 +211,7 @@ protected:
 
 public:
     UART_HandleTypeDef* huart_;
+    uint32_t encoder_id_ = 0;           /**< Cached encoder id, set by the last call to GetDeviceID() */
     uint32_t cpr_bits_ = 17;            /**< Counts per rotation (encoder resolution) bits */
     uint32_t status_ = 0;               /**< Encoder status bits, received from the encoder */
     uint32_t counter_ = 0;              /**< Encoder counter, defines the encoder position within one revolution  */

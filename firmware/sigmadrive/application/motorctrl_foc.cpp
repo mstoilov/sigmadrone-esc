@@ -6,7 +6,7 @@
 #include "uartrpcserver.h"
 #include "minasa4encoder.h"
 
-extern MinasA4Encoder ma4_abs_encoder;
+extern MinasA4Encoder ma4_abs_encoder1;
 extern UartRpcServer rpc_server;
 
 MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
@@ -215,7 +215,7 @@ void MotorCtrlFOC::RunDebugLoop()
                     lpf_Iq_,
                     foc_time_,
                     config_.vab_advance_factor_ * drive_->GetRotorElecVelocityPTS()/drive_->GetEncoderCPR() * 2.0f * M_PI,
-                    ma4_abs_encoder.update_time_ms_
+                    ma4_abs_encoder1.update_time_ms_
             );
         }
     }
