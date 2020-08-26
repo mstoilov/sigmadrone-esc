@@ -40,13 +40,17 @@ MinasA4Encoder::~MinasA4Encoder()
 {
 }
 
-bool MinasA4Encoder::Attach(UART_HandleTypeDef* huart)
+bool MinasA4Encoder::Attach(UART_HandleTypeDef* huart, DMA_TypeDef* dma, uint32_t rx_stream, uint32_t tx_stream)
 {
     assert(huart);
     assert(huart_->hdmatx);
     assert(huart_->hdmarx);
+    assert(dma);
 
     huart_ = huart;
+    dma_ = dma;
+    rx_stream_ = rx_stream;
+    tx_stream_ = tx_stream;
     assert(handle_map_.find(huart_) == handle_map_.end());
     handle_map_[huart_] = this;
     huart_->RxCpltCallback = ::minasa4_rx_complete;
@@ -192,6 +196,7 @@ uint32_t MinasA4Encoder::GetDeviceID()
         goto error;
 
     error: maintenance_ = 0;
+    encoder_id_  = encoder_id;
     return encoder_id;
 }
 
@@ -221,8 +226,7 @@ bool MinasA4Encoder::UpdateId4()
     if (maintenance_)
         return false;
     update_.reply4_.crc_ = 0;
-    if (!sendrecv_command(MA4_DATA_ID_4, &update_.reply4_,
-            sizeof(update_.reply4_)))
+    if (!sendrecv_command(MA4_DATA_ID_4, &update_.reply4_, sizeof(update_.reply4_)))
         return false;
     return true;
 }
@@ -232,8 +236,7 @@ bool MinasA4Encoder::UpdateId5()
     if (maintenance_)
         return false;
     update_.reply5_.crc_ = 0;
-    if (!sendrecv_command(MA4_DATA_ID_5, &update_.reply5_,
-            sizeof(update_.reply5_)))
+    if (!sendrecv_command(MA4_DATA_ID_5, &update_.reply5_,sizeof(update_.reply5_)))
         return false;
     return true;
 }
@@ -260,12 +263,14 @@ bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply
 {
     if (!huart_)
         return false;
+
+#define USE_LL_USART
 #ifdef USE_LL_USART
-    LL_DMA_ConfigAddresses(DMA1, LL_DMA_STREAM_1, LL_USART_DMA_GetRegAddr(huart_->Instance, LL_USART_DMA_REG_DATA_RECEIVE), (uint32_t)reply, LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_STREAM_1));
-    LL_DMA_SetDataLength(DMA1, LL_DMA_STREAM_1, reply_size);
+    LL_DMA_ConfigAddresses(dma_, rx_stream_, LL_USART_DMA_GetRegAddr(huart_->Instance, LL_USART_DMA_REG_DATA_RECEIVE), (uint32_t)reply, LL_DMA_GetDataTransferDirection(dma_, rx_stream_));
+    LL_DMA_SetDataLength(dma_, rx_stream_, reply_size);
     LL_USART_EnableDMAReq_RX(huart_->Instance);
-    LL_DMA_EnableIT_TC(DMA1, LL_DMA_STREAM_1);
-    LL_DMA_EnableStream(DMA1, LL_DMA_STREAM_1);
+    LL_DMA_EnableIT_TC(dma_, rx_stream_);
+    LL_DMA_EnableStream(dma_, rx_stream_);
 
 #else
     HAL_StatusTypeDef status;

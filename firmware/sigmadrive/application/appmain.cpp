@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <iterator>
 #include <assert.h>
+#include "stm32f745xx.h"
 #include "cmsis_os2.h"
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
@@ -61,10 +62,11 @@ CdcIface usb_cdc;
 // Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 DumbEncoder dumb_encoder;
 MinasA4Encoder ma4_abs_encoder1;
+MinasA4Encoder ma4_abs_encoder2;
 Drv8323 drv1(spi3, GPIOC, GPIO_PIN_13);
 Drv8323 drv2(spi3, GPIOC, GPIO_PIN_14);
 MotorDrive motor_drive1(1, &drv1, &adc1, &ma4_abs_encoder1, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
-MotorDrive motor_drive2(2, &drv2, &adc2, &dumb_encoder, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+MotorDrive motor_drive2(2, &drv2, &adc2, &ma4_abs_encoder2, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlFOC foc1(&motor_drive1, "axis1");
 MotorCtrlFOC foc2(&motor_drive2, "axis2");
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
@@ -74,7 +76,7 @@ rexjson::property props =
         rexjson::property_map {
             {"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
             {"axis1", rexjson::property({foc1.GetPropertyMap()})},
-//            {"axis2", rexjson::property({foc2.GetPropertyMap()})},
+            {"axis2", rexjson::property({foc2.GetPropertyMap()})},
         };
 rexjson::property* g_properties = &props;
 
@@ -152,6 +154,32 @@ void SD_DMA1_Stream1_IRQHandler(void)
     }
     if (LL_DMA_IsActiveFlag_TE1(DMAx)) {
         LL_DMA_ClearFlag_TE1(DMAx);
+    }
+}
+
+
+extern "C"
+void SD_DMA1_Stream5_IRQHandler(void)
+{
+    DMA_TypeDef* DMAx = DMA1;
+    if (LL_DMA_IsActiveFlag_TC5(DMAx)) {
+        LL_DMA_ClearFlag_TC5(DMAx);
+        ma4_abs_encoder2.ReceiveCompleteCallback();
+    }
+    if (LL_DMA_IsActiveFlag_DME5(DMAx)) {
+        LL_DMA_ClearFlag_DME5(DMAx);
+
+    }
+    if (LL_DMA_IsActiveFlag_FE5(DMAx)) {
+        LL_DMA_ClearFlag_FE5(DMAx);
+
+    }
+    if (LL_DMA_IsActiveFlag_HT5(DMAx)) {
+        LL_DMA_ClearFlag_HT5(DMAx);
+
+    }
+    if (LL_DMA_IsActiveFlag_TE5(DMAx)) {
+        LL_DMA_ClearFlag_TE5(DMAx);
     }
 }
 
@@ -340,12 +368,13 @@ int application_main()
      */
     osDelay(boot_delay);
     hrtimer.Attach(&htim12);
-    ma4_abs_encoder1.Attach(&huart3);
+    ma4_abs_encoder1.Attach(&huart3, DMA1, LL_DMA_STREAM_1, LL_DMA_STREAM_3);
+    ma4_abs_encoder2.Attach(&huart2, DMA1, LL_DMA_STREAM_5, LL_DMA_STREAM_6);
     adc1.Attach(&hadc1);
     adc2.Attach(&hadc2);
     adc3.Attach(&hadc3);
     uart1.Attach(&huart1);
-    uart2.Attach(&huart2);
+//    uart2.Attach(&huart2);
     spi3.Attach(&hspi3);
     LL_TIM_SetCounter(TIM8, TIM1_PERIOD_CLOCKS - 1);
     LL_TIM_SetCounter(TIM1, 0);
@@ -390,7 +419,7 @@ int application_main()
     /*
      * Run the RPC thread
      */
-    StartRpcThread();
+//    StartRpcThread();
 
     /*
      * We should never exit from the this method.

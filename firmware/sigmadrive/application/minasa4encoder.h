@@ -173,7 +173,7 @@ public:
 
     MinasA4Encoder();
     ~MinasA4Encoder();
-    bool Attach(UART_HandleTypeDef* usart);
+    bool Attach(UART_HandleTypeDef* usart, DMA_TypeDef* dma, uint32_t rx_stream, uint32_t tx_stream);
     void TransmitCompleteCallback();
     void ReceiveCompleteCallback();
     uint32_t ResetErrorCode(uint8_t data_id);
@@ -211,6 +211,9 @@ protected:
 
 public:
     UART_HandleTypeDef* huart_;
+    DMA_TypeDef* dma_;
+    uint32_t rx_stream_;
+    uint32_t tx_stream_;
     uint32_t encoder_id_ = 0;           /**< Cached encoder id, set by the last call to GetDeviceID() */
     uint32_t cpr_bits_ = 17;            /**< Counts per rotation (encoder resolution) bits */
     uint32_t status_ = 0;               /**< Encoder status bits, received from the encoder */

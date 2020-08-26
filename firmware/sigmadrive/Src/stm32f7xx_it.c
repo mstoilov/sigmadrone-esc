@@ -36,6 +36,7 @@
  void SD_TIM1_IRQHandler();
  void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc);
  void SD_DMA1_Stream1_IRQHandler(void);
+ void SD_DMA1_Stream5_IRQHandler(void);
  void SD_UART_IrqHandler(UART_HandleTypeDef* huart);
 /* USER CODE END PD */
 
@@ -215,7 +216,10 @@ void DMA1_Stream3_IRQHandler(void)
 void DMA1_Stream5_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Stream5_IRQn 0 */
-
+#ifdef USE_LL_USART
+  SD_DMA1_Stream5_IRQHandler();
+  return;
+#endif
   /* USER CODE END DMA1_Stream5_IRQn 0 */
   HAL_DMA_IRQHandler(&hdma_usart2_rx);
   /* USER CODE BEGIN DMA1_Stream5_IRQn 1 */

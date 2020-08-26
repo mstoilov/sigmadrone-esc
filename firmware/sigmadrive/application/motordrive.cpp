@@ -702,7 +702,7 @@ void MotorDrive::RunEncoderDisplayDebugInfo()
     sched_.AddTask([&](){
 
         sched_.RunUpdateHandler([&]()->bool {
-            if ((update_counter_ % (update_hz_ / 10)) == 0)
+            if ((update_counter_ % (update_hz_ >> 2)) == 0)
                 encoder_->DisplayDebugInfo();
             return true;
         });
