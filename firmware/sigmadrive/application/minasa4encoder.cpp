@@ -270,29 +270,14 @@ bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply
 {
     if (!huart_)
         return false;
+    if (!LL_USART_IsActiveFlag_TXE(huart_->Instance))
+        return false;
 
-#define USE_LL_USART
-#ifdef USE_LL_USART
     LL_DMA_ConfigAddresses(dma_, rx_stream_, LL_USART_DMA_GetRegAddr(huart_->Instance, LL_USART_DMA_REG_DATA_RECEIVE), (uint32_t)reply, LL_DMA_GetDataTransferDirection(dma_, rx_stream_));
     LL_DMA_SetDataLength(dma_, rx_stream_, reply_size);
     LL_USART_EnableDMAReq_RX(huart_->Instance);
     LL_DMA_EnableIT_TC(dma_, rx_stream_);
     LL_DMA_EnableStream(dma_, rx_stream_);
-
-#else
-    HAL_StatusTypeDef status;
-    if ((status = HAL_UART_Receive_DMA(huart_, (uint8_t*) reply, reply_size)) != HAL_OK) {
-        fprintf(stderr, "%s: PanasonicMA4Encoder failed to receive reply for command 0x%x, with status %u\n", __FUNCTION__, command,
-                status);
-        HAL_UART_Abort(huart_);
-        return false;
-    }
-#endif
-    if (!LL_USART_IsActiveFlag_TXE(huart_->Instance)) {
-        fprintf(stderr, "%s: PanasonicMA4Encoder failed to send command 0x%x\n", __FUNCTION__, command);
-        HAL_UART_Abort(huart_);
-        return false;
-    }
     LL_USART_TransmitData8(huart_->Instance, command);
     return true;
 }
