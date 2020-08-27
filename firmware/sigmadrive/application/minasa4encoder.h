@@ -206,6 +206,7 @@ protected:
     bool UpdateId4();
     bool UpdateId5();
     bool UpdateEnd();
+    bool VerifyCrc(uint8_t* data, uint8_t size, uint8_t crc);
     bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
     static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
 

@@ -72,12 +72,8 @@ void MinasA4Encoder::ReceiveCompleteCallback()
 bool MinasA4Encoder::ParseReply4(const MA4EncoderReply4& reply4,
         uint32_t& status, uint32_t& counter, MA4Almc& almc)
 {
-    uint8_t crc = calc_crc_x8_1((uint8_t*) &reply4, sizeof(reply4) - 1);
-    if (crc != reply4.crc_) {
-        fprintf(stderr, "WARNING: mismatched crc!\n");
-        ++error_count_;
+    if (!VerifyCrc((uint8_t*) &reply4, sizeof(reply4) - 1, reply4.crc_))
         return false;
-    }
     uint32_t abs_data = ((uint32_t) reply4.absolute_data_[2] << 16)
             + ((uint32_t) reply4.absolute_data_[1] << 8)
             + reply4.absolute_data_[0];
@@ -87,15 +83,10 @@ bool MinasA4Encoder::ParseReply4(const MA4EncoderReply4& reply4,
     return true;
 }
 
-bool MinasA4Encoder::ParseReply9BEF(const MA4EncoderReply4& reply4,
-        MA4Almc& almc)
+bool MinasA4Encoder::ParseReply9BEF(const MA4EncoderReply4& reply4, MA4Almc& almc)
 {
-    uint8_t crc = calc_crc_x8_1((uint8_t*) &reply4, sizeof(reply4) - 1);
-    if (crc != reply4.crc_) {
-        fprintf(stderr, "WARNING: mismatched crc!\n");
-        ++error_count_;
+    if (!VerifyCrc((uint8_t*) &reply4, sizeof(reply4) - 1, reply4.crc_))
         return false;
-    }
     almc = reply4.almc_;
     return true;
 }
@@ -103,12 +94,8 @@ bool MinasA4Encoder::ParseReply9BEF(const MA4EncoderReply4& reply4,
 bool MinasA4Encoder::ParseReply5(const MA4EncoderReply5& reply5,
         uint32_t& status, uint32_t& counter, uint32_t& revolutions)
 {
-    uint8_t crc = calc_crc_x8_1((uint8_t*) &reply5, sizeof(reply5) - 1);
-    if (crc != reply5.crc_) {
-        fprintf(stderr, "WARNING: mismatched crc!\n");
-        ++error_count_;
+    if (!VerifyCrc((uint8_t*) &reply5, sizeof(reply5) - 1, reply5.crc_))
         return false;
-    }
     uint32_t abs_data = ((uint32_t) reply5.absolute_data_[2] << 16)
             + ((uint32_t) reply5.absolute_data_[1] << 8)
             + reply5.absolute_data_[0];
@@ -118,15 +105,10 @@ bool MinasA4Encoder::ParseReply5(const MA4EncoderReply5& reply5,
     return true;
 }
 
-bool MinasA4Encoder::ParseReplyA(const MA4EncoderReplyA& replyA,
-        uint32_t& encoder_id)
+bool MinasA4Encoder::ParseReplyA(const MA4EncoderReplyA& replyA, uint32_t& encoder_id)
 {
-    uint8_t crc = calc_crc_x8_1((uint8_t*) &replyA, sizeof(replyA) - 1);
-    if (crc != replyA.crc_) {
-        fprintf(stderr, "WARNING: mismatched crc!\n");
-        ++error_count_;
+    if (!VerifyCrc((uint8_t*) &replyA, sizeof(replyA) - 1, replyA.crc_))
         return false;
-    }
     encoder_id = replyA.encoder_id_;
     return true;
 }
@@ -287,6 +269,18 @@ bool MinasA4Encoder::sendrecv_command(uint8_t command, void* reply, size_t reply
         return false;
     }
     LL_USART_TransmitData8(huart_->Instance, command);
+    return true;
+}
+
+bool MinasA4Encoder::VerifyCrc(uint8_t* data, uint8_t size, uint8_t crc)
+{
+    uint8_t calc_crc = calc_crc_x8_1(data, size);
+    if (crc != calc_crc) {
+        if (error_count_ % 100 == 0)
+            fprintf(stderr, "WARNING: mismatched crc!\n");
+        ++error_count_;
+        return false;
+    }
     return true;
 }
 
