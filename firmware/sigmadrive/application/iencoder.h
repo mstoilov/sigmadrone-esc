@@ -43,6 +43,12 @@ public:
      */
     virtual uint32_t GetLastError() = 0;
 
+    /** Return encoder status. If this value is
+     * different than 0, the encoder is not working
+     * correctly.
+     */
+    virtual uint32_t GetStatus() = 0;
+
     /** Intended to begin the hardware communication
      * to retrieve the current encoder values.
      */

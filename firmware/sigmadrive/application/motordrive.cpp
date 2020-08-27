@@ -14,6 +14,7 @@
 #include "sdmath.h"
 #include "pwm_generator.h"
 
+
 extern UartRpcServer rpc_server;
 
 
@@ -240,8 +241,9 @@ uint64_t MotorDrive::GetEncoderPosition() const
 void MotorDrive::SetEncoder(IEncoder *encoder, uint32_t resolution_bits)
 {
     if (encoder) {
-        if (!encoder->Initialize())
-            throw std::runtime_error("Encoder initialization error.");
+        if (encoder->GetStatus()) {
+            error_info_.SetError(e_encoder, "Encoder Error");
+        }
         encoder_ = encoder;
         enc_revolution_bits_ = encoder_->GetRevolutionBits();
         enc_resolution_bits_ = resolution_bits;

@@ -72,13 +72,13 @@ MotorCtrlFOC foc2(&motor_drive2, "axis2");
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
 
 
-rexjson::property props =
+rexjson::property g_props =
         rexjson::property_map {
             {"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
             {"axis1", rexjson::property({foc1.GetPropertyMap()})},
             {"axis2", rexjson::property({foc2.GetPropertyMap()})},
         };
-rexjson::property* g_properties = &props;
+rexjson::property* g_properties = &g_props;
 
 
 extern "C"
@@ -303,11 +303,6 @@ void RegisterRpcMethods()
     rpc_server.add("drv1.EnableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::EnableVREFDiv, "void Drv8323::EnableVREFDiv()"));
     rpc_server.add("drv1.DisableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DisableVREFDiv, "void Drv8323::DisableVREFDiv()"));
     rpc_server.add("drv1.DumpRegs", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DumpRegs, "void Drv8323::DumpRegs()"));
-    rpc_server.add("minas.resetF", rexjson::make_rpc_wrapper(&ma4_abs_encoder1, &MinasA4Encoder::ResetErrorCodeF, "uint32_t MinasA4Encoder::ResetErrorCodeF()"));
-    rpc_server.add("minas.resetB", rexjson::make_rpc_wrapper(&ma4_abs_encoder1, &MinasA4Encoder::ResetErrorCodeB, "uint32_t MinasA4Encoder::ResetErrorCodeB()"));
-    rpc_server.add("minas.resetE", rexjson::make_rpc_wrapper(&ma4_abs_encoder1, &MinasA4Encoder::ResetErrorCodeE, "uint32_t MinasA4Encoder::ResetErrorCodeE()"));
-    rpc_server.add("minas.reset9", rexjson::make_rpc_wrapper(&ma4_abs_encoder1, &MinasA4Encoder::ResetErrorCode9, "uint32_t MinasA4Encoder::ResetErrorCode9()"));
-    rpc_server.add("minas.reset_counter", rexjson::make_rpc_wrapper(&ma4_abs_encoder1, &MinasA4Encoder::ResetPosition, "void MinasA4Encoder::ResetPosition()"));
 }
 
 void StartRpcThread()
@@ -370,6 +365,20 @@ int application_main()
     hrtimer.Attach(&htim12);
     ma4_abs_encoder1.Attach(&huart3, DMA1, LL_DMA_STREAM_1, LL_DMA_STREAM_3);
     ma4_abs_encoder2.Attach(&huart2, DMA1, LL_DMA_STREAM_5, LL_DMA_STREAM_6);
+
+    /*
+     * Set up RPC properties/methods for the encoders.
+     */
+    if (ma4_abs_encoder1.GetDeviceId() != 0) {
+        g_props.insert("enc1", ma4_abs_encoder1.GetPropertyMap());
+        ma4_abs_encoder1.RegisterRpcMethods("enc1.");
+    }
+
+    if (ma4_abs_encoder2.GetDeviceId() != 0) {
+        g_props.insert("enc2", ma4_abs_encoder2.GetPropertyMap());
+        ma4_abs_encoder1.RegisterRpcMethods("enc2.");
+    }
+
     adc1.Attach(&hadc1);
     adc2.Attach(&hadc2);
     adc3.Attach(&hadc3);
@@ -380,7 +389,6 @@ int application_main()
     LL_TIM_SetCounter(TIM1, 0);
     tim8.Attach(&htim8);
     tim1.Attach(&htim1);
-    tim1.EnableCounter(true);
     usb_cdc.Attach(&hUsbDeviceFS, true);
     drv1.InitializeDefaults();
     drv2.InitializeDefaults();
@@ -390,6 +398,10 @@ int application_main()
     motor_drive1.Attach();
     motor_drive2.Attach();
 
+    /*
+     * Start the motor timers.
+     */
+    tim1.EnableCounter(true);
 
     /*
      * Reconfigure pole_pairs for panasonic motors

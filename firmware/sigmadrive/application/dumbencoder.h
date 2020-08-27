@@ -15,6 +15,7 @@ public:
     virtual uint64_t GetPosition() override { return 0; }
     virtual uint32_t GetIndexPosition() override { return 0; }
     virtual uint32_t GetLastError() override { return 0; }
+    virtual uint32_t GetStatus() override { return 0; }
     virtual bool Update() override { return true; }
     virtual void DisplayDebugInfo() override { }
 };

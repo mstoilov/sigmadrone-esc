@@ -16,6 +16,7 @@ enum ErrorCode {
     e_none = 0,
     e_trip_voltage = 1,
     e_trip_current = 2,
+    e_encoder = 3,
 };
 
 

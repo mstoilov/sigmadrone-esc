@@ -19,6 +19,7 @@
 #include <map>
 #include "iencoder.h"
 #include "hrtimer.h"
+#include "rexjsonrpc/property.h"
 
 #include "cmsis_os2.h"
 
@@ -181,10 +182,13 @@ public:
     uint32_t ResetErrorCodeB();
     uint32_t ResetErrorCodeE();
     uint32_t ResetErrorCode9();
-    uint32_t GetDeviceID();
+    uint32_t GetDeviceId()                      { return encoder_id_; }
     bool reset_single_revolution_data()         { return ResetErrorCode(MA4_DATA_ID_F); }
     bool reset_multiple_revolution_data()       { return ResetErrorCode(MA4_DATA_ID_B); }
-    uint32_t get_error_count() const            { return error_count_; }
+    uint32_t get_error_count() const            { return crc_error_count_; }
+
+    rexjson::property GetPropertyMap();
+    void RegisterRpcMethods(const std::string& prefix);
 
 public:
     virtual bool Initialize() override;
@@ -194,10 +198,12 @@ public:
     virtual uint64_t GetPosition() override;
     virtual uint32_t GetIndexPosition() override;
     virtual uint32_t GetLastError() override;
+    virtual uint32_t GetStatus() override;
     virtual bool Update() override;
     virtual void DisplayDebugInfo() override;
 
 protected:
+    uint32_t ReadDeviceID();
     bool ParseReply4(const MA4EncoderReply4& reply4, uint32_t& status, uint32_t& counter, MA4Almc& almc);
     bool ParseReply5(const MA4EncoderReply5& reply5, uint32_t& status, uint32_t& counter, uint32_t& revolutions);
     bool ParseReplyA(const MA4EncoderReplyA& replyA, uint32_t& encoder_id);
@@ -220,7 +226,7 @@ public:
     uint32_t status_ = 0;               /**< Encoder status bits, received from the encoder */
     uint32_t counter_ = 0;              /**< Encoder counter, defines the encoder position within one revolution  */
     uint32_t revolutions_ = 0;          /**< Number of revolutions */
-    uint32_t error_count_ = 0;          /**< The count of the communication errors, seen so far */
+    uint32_t crc_error_count_ = 0;      /**< The count of the communication errors, seen so far */
     uint32_t maintenance_ = 0;          /**< Enter in maintenance mode when this member is not 0 */
     MA4Almc almc_;                      /**< Holds the alarm bits received from the encoder */
     MA4Update update_;                  /**< Holds the encoder response */

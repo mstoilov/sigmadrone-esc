@@ -11,8 +11,10 @@
 #include <math.h>
 #include "stm32f7xx_ll_dma.h"
 #include "stm32f7xx_ll_usart.h"
+#include "uartrpcserver.h"
 #include "dcache.h"
 
+extern UartRpcServer rpc_server;
 MinasA4Encoder::handle_map_type MinasA4Encoder::handle_map_;
 
 extern "C" void minasa4_tx_complete(UART_HandleTypeDef* huart)
@@ -32,12 +34,29 @@ extern "C" void minasa4_rx_complete(UART_HandleTypeDef* huart)
 }
 
 MinasA4Encoder::MinasA4Encoder() :
-        huart_(nullptr), error_count_(0)
+        huart_(nullptr), crc_error_count_(0)
 {
 }
 
 MinasA4Encoder::~MinasA4Encoder()
 {
+}
+
+rexjson::property MinasA4Encoder::GetPropertyMap()
+{
+    rexjson::property props = rexjson::property_map({
+        {"crc_errors", rexjson::property(&crc_error_count_, rexjson::property_access::readonly)},
+    });
+    return props;
+}
+
+void MinasA4Encoder::RegisterRpcMethods(const std::string& prefix)
+{
+    rpc_server.add(prefix, "resetF", rexjson::make_rpc_wrapper(this, &MinasA4Encoder::ResetErrorCodeF, "uint32_t MinasA4Encoder::ResetErrorCodeF()"));
+    rpc_server.add(prefix, "resetB", rexjson::make_rpc_wrapper(this, &MinasA4Encoder::ResetErrorCodeB, "uint32_t MinasA4Encoder::ResetErrorCodeB()"));
+    rpc_server.add(prefix, "resetE", rexjson::make_rpc_wrapper(this, &MinasA4Encoder::ResetErrorCodeE, "uint32_t MinasA4Encoder::ResetErrorCodeE()"));
+    rpc_server.add(prefix, "reset9", rexjson::make_rpc_wrapper(this, &MinasA4Encoder::ResetErrorCode9, "uint32_t MinasA4Encoder::ResetErrorCode9()"));
+    rpc_server.add(prefix, "reset_counter", rexjson::make_rpc_wrapper(this, &MinasA4Encoder::ResetPosition, "void MinasA4Encoder::ResetPosition()"));
 }
 
 bool MinasA4Encoder::Attach(UART_HandleTypeDef* huart, DMA_TypeDef* dma, uint32_t rx_stream, uint32_t tx_stream)
@@ -54,6 +73,7 @@ bool MinasA4Encoder::Attach(UART_HandleTypeDef* huart, DMA_TypeDef* dma, uint32_
     assert(handle_map_.find(huart_) == handle_map_.end());
     handle_map_[huart_] = this;
     huart_->RxCpltCallback = ::minasa4_rx_complete;
+    Initialize();
     return true;
 }
 
@@ -164,9 +184,9 @@ uint32_t MinasA4Encoder::ResetErrorCodeE()
     return ResetErrorCode(MA4_DATA_ID_E);
 }
 
-uint32_t MinasA4Encoder::GetDeviceID()
+uint32_t MinasA4Encoder::ReadDeviceID()
 {
-    uint32_t encoder_id = -1;
+    uint32_t encoder_id = 0;
     MA4EncoderReplyA replyA;
     maintenance_ = 1;
     osDelay(2);
@@ -177,9 +197,9 @@ uint32_t MinasA4Encoder::GetDeviceID()
     if (!ParseReplyA(replyA, encoder_id))
         goto error;
 
-    error: maintenance_ = 0;
+error: maintenance_ = 0;
     encoder_id_  = encoder_id;
-    return encoder_id;
+    return encoder_id_;
 }
 
 uint32_t MinasA4Encoder::GetLastError()
@@ -201,6 +221,11 @@ uint32_t MinasA4Encoder::GetLastError()
 
     error: maintenance_ = 0;
     return error;
+}
+
+uint32_t MinasA4Encoder::GetStatus()
+{
+    return (encoder_id_ != 0) ? 0 : 1;
 }
 
 bool MinasA4Encoder::UpdateId4()
@@ -276,9 +301,7 @@ bool MinasA4Encoder::VerifyCrc(uint8_t* data, uint8_t size, uint8_t crc)
 {
     uint8_t calc_crc = calc_crc_x8_1(data, size);
     if (crc != calc_crc) {
-        if (error_count_ % 100 == 0)
-            fprintf(stderr, "WARNING: mismatched crc!\n");
-        ++error_count_;
+        ++crc_error_count_;
         return false;
     }
     return true;
@@ -318,9 +341,10 @@ uint32_t MinasA4Encoder::GetRevolutionBits()
 bool MinasA4Encoder::Initialize()
 {
     ResetErrorCodeE();
-    if (GetDeviceID() == 0xa7) {
+    uint32_t encoder_id = ReadDeviceID();
+    if (encoder_id == 0xa7) {
         cpr_bits_ = 23;
-    } else if (GetDeviceID() == 0x11) {
+    } else if (encoder_id == 0x11) {
         cpr_bits_ = 17;
     } else {
         return false;
@@ -330,8 +354,6 @@ bool MinasA4Encoder::Initialize()
 
 void MinasA4Encoder::ResetPosition()
 {
-//    ResetErrorCodeF();
-//    ResetErrorCodeB();
 }
 
 uint64_t MinasA4Encoder::GetPosition()

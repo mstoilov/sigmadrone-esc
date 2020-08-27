@@ -156,11 +156,11 @@ public:
     uint32_t enc_resolution_mask_ = 0;
     uint64_t enc_position_mask_ = 0;
     uint64_t enc_position_size_ = 0;
-    uint32_t update_hz_;
-    uint32_t tim1_cnt_;
-    uint32_t tim8_cnt_;
-    int32_t tim1_tim8_offset_;
-    int32_t tim8_tim1_offset_;
+    uint32_t update_hz_ = 0;
+    uint32_t tim1_cnt_ = 0;
+    uint32_t tim8_cnt_ = 0;
+    int32_t tim1_tim8_offset_ = 0;
+    int32_t tim8_tim1_offset_ = 0;
 
     float time_slice_;
     uint32_t t_begin_ = 0;
@@ -179,15 +179,15 @@ public:
     /*
      * Derived Data
      */
-    float phase_current_a_;
-    float phase_current_b_;
+    float phase_current_a_ = 0.0f;
+    float phase_current_b_ = 0.0f;
+    uint64_t Renc_ = 0;                         /**< Position of the rotor in enc counts */
     LowPassFilter<float, float> lpf_bias_a;     /**< Low pass filter for phase A current bias */
     LowPassFilter<float, float> lpf_bias_b;     /**< Low pass filter for phase B current bias */
     LowPassFilter<float, float> lpf_vbus_;      /**< Low pass filter for the Vbus voltage */
     LowPassFilter<float, float> lpf_Wenc_;      /**< Low pass filter for rotor velocity in enc counts per encoder_time_slice */
     std::complex<float> Iab_;                   /**< Phase current represented as a complex vector, where the real value is alpha current and the imag value is the beta current */
     std::complex<float> E_;                     /**< Orientation of the rotor in electrical radians converted to complex vector. */
-    uint64_t Renc_;                             /**< Position of the rotor in enc counts */
 };
 
 #endif /* _MOTOR_DRIVE_H_ */
