@@ -46,6 +46,12 @@ property& property::push_back(const property& v)
 	return object_->push_back(v);
 }
 
+property& property::insert(const std::string& name, const property& v)
+{
+    check_object();
+    return object_->insert(name, v);
+}
+
 property& property::operator[](size_t i)
 {
 	return operator[](std::to_string(i));

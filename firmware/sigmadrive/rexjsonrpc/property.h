@@ -30,6 +30,7 @@ public:
 	virtual property& navigate(property &parent, const std::string& path) = 0;
 	virtual property& operator[](const std::string& name) = 0;
 	virtual property& push_back(const property& v) = 0;
+    virtual property& insert(const std::string& name, const property& v) = 0;
 	virtual property_access access() const = 0;
 };
 
@@ -101,6 +102,11 @@ public:
 	virtual property& push_back(const property& v) override
 	{
 		throw std::runtime_error("property_object: Invalid call to push_back()");
+	}
+
+	virtual property& insert(const std::string& name, const property& v) override
+	{
+        throw std::runtime_error("property_object: Invalid call to insert()");
 	}
 
 	virtual property_access access() const override
@@ -227,6 +233,11 @@ public:
 		throw std::runtime_error("property_object: Invalid call to push_back()");
 	}
 
+    virtual property& insert(const std::string& name, const property& v) override
+    {
+        throw std::runtime_error("property_object: Invalid call to method insert()");
+    }
+
 	virtual property_access access() const override
 	{
 		return access_;
@@ -321,6 +332,7 @@ public:
 	property(const property_map& map);
 	property(const property_array& array);
 	property& push_back(const property& v);
+	property& insert(const std::string& name, const property& v);
 	property& operator[](size_t i);
 	property& operator[](const std::string& name);
 	property& operator=(const property& v);
@@ -381,6 +393,12 @@ public:
 		throw std::runtime_error("property_map: Invalid call to push_back()");
 	}
 
+    virtual property& insert(const std::string& name, const property& v) override
+    {
+        auto ret = map_.insert(std::pair<std::string, property>(name, v));
+        return ret.first->second;
+    }
+
 	virtual property_access access() const override
 	{
 		throw std::runtime_error("Invalid call to method access()");
@@ -436,6 +454,11 @@ public:
 		array_.push_back(v);
 		return *array_.rbegin();
 	}
+
+    virtual property& insert(const std::string& name, const property& v) override
+    {
+        throw std::runtime_error("Invalid call to method insert()");
+    }
 
 	virtual property_access access() const override
 	{
