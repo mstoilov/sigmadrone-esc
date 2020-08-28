@@ -162,8 +162,13 @@ static_assert(sizeof(MA4EncoderReplyA) == 9, "MA4EncoderReplyA must be 9 bytes l
 
 struct MA4Update {
     union {
+        MA4EncoderReplyA replyA_;
         MA4EncoderReply4 reply4_;
         MA4EncoderReply5 reply5_;
+        MA4EncoderReply9 reply9_;
+        MA4EncoderReplyB replyB_;
+        MA4EncoderReplyE replyE_;
+        MA4EncoderReplyF replyF_;
     };
 };
 
@@ -204,19 +209,31 @@ public:
 
 protected:
     uint32_t ReadDeviceID();
-    bool ParseReply4(const MA4EncoderReply4& reply4, uint32_t& status, uint32_t& counter, MA4Almc& almc);
-    bool ParseReply5(const MA4EncoderReply5& reply5, uint32_t& status, uint32_t& counter, uint32_t& revolutions);
-    bool ParseReplyA(const MA4EncoderReplyA& replyA, uint32_t& encoder_id);
-    bool ParseReply9BEF(const MA4EncoderReply4& reply4, MA4Almc& almc);
-    bool ResetWithCommand(uint8_t command, void* reply, size_t reply_size);
-    bool UpdateId4();
-    bool UpdateId5();
+    bool ParseReply4();
+    bool ParseReply5();
+    bool ParseReplyA();
+    bool ParseReply9BEF();
+    bool ResetWithCommand(uint8_t command);
+
+    bool CommandId9();
+    bool CommandIdB();
+    bool CommandIdE();
+    bool CommandIdF();
+    bool CommandId4();
+    bool CommandId5();
+    bool CommandIdA();
+
     bool UpdateEnd();
     bool VerifyCrc(uint8_t* data, uint8_t size, uint8_t crc);
     bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
+    bool sendrecv_command_ex(uint8_t command, void* reply, size_t reply_size);
     static uint8_t calc_crc_x8_1(uint8_t* data, uint8_t size);
 
 public:
+    static const uint32_t status_e_not_initialized = (1 << 16);
+    static const uint32_t status_e_not_detected = (1 << 17);
+    static const uint32_t status_mask = (1 << 0);
+
     UART_HandleTypeDef* huart_;
     DMA_TypeDef* dma_;
     uint32_t rx_stream_;
@@ -225,13 +242,13 @@ public:
     uint32_t cpr_bits_ = 17;            /**< Counts per rotation (encoder resolution) bits */
     uint32_t status_ = 0;               /**< Encoder status bits, received from the encoder */
     uint32_t counter_ = 0;              /**< Encoder counter, defines the encoder position within one revolution  */
-    uint32_t revolutions_ = 0;          /**< Number of revolutions */
+    uint32_t revolutions_ = 16;         /**< Number of revolutions */
     uint32_t crc_error_count_ = 0;      /**< The count of the communication errors, seen so far */
-    uint32_t maintenance_ = 0;          /**< Enter in maintenance mode when this member is not 0 */
     MA4Almc almc_;                      /**< Holds the alarm bits received from the encoder */
     MA4Update update_;                  /**< Holds the encoder response */
 
 public:
+    volatile uint32_t in_command_ = 0;
     volatile uint32_t t1_ = 0;
     volatile uint32_t t2_ = 0;
     volatile uint32_t t1_to_t1_ = 0;
