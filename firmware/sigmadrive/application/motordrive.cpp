@@ -259,6 +259,7 @@ void MotorDrive::SetEncoder(IEncoder *encoder, uint32_t resolution_bits)
         enc_cpr_ = (1 << enc_resolution_bits_);
         enc_resolution_mask_ = (1 << enc_resolution_bits_) - 1;
         enc_position_size_ = 1LLU << (enc_resolution_bits_ + enc_revolution_bits_);
+        enc_position_size_half_ = enc_position_size_ / 2;
         enc_position_mask_ = enc_position_size_ - 1;
     }
 }
@@ -470,7 +471,7 @@ uint64_t MotorDrive::GetRotorPosition() const
 int64_t MotorDrive::GetRotorPositionError(uint64_t position, uint64_t target)
 {
     int64_t position_err = (target + enc_position_size_ - position) & enc_position_mask_;
-    if (position_err > (int64_t)(enc_position_size_ >> 1))
+    if (position_err > (int64_t)(enc_position_size_half_))
         position_err -= enc_position_size_;
     return position_err;
 }
