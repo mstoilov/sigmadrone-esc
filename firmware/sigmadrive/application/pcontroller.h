@@ -1,36 +1,29 @@
 
-#ifndef _PICONTROLLER_H_
-#define _PICONTROLLER_H_
+#ifndef _PCONTROLLER_H_
+#define _PCONTROLLER_H_
 
-/** PI controller implementation
+/** P controller implementation
  *
  * This is a straight forward implementation of PI controller
- * functionality. The implementation also supports max integral
- * output to prevent *integral windup*.
+ * functionality.
  *
  */
 template<typename T>
-class PIController {
+class PController {
 public:
     /** Constructor
      *
      * @param kp Proportional gain
-     * @param ki Integral gain
-     * @param kd Differential gain
-     * @param output_i_max Maximum integral output limit
-     * @param bias Output bias
+     * @param output_max Maximum integral output limit
      */
-    PIController(float kp = 0, float ki = 0, float output_max = 0)
+    PController(float kp = 0, float output_max = 0)
         : kp_(kp)
-        , ki_(ki)
         , output_max_((output_max < 0) ? -output_max : output_max)
-        , last_error_(0)
         , output_p_(0)
-        , output_i_(0)
     {
     }
 
-    ~PIController()
+    ~PController()
     {
     }
 
@@ -50,40 +43,7 @@ public:
          */
         output_p_ = error * kp_;
 
-        /*
-         * Integral output
-         */
-        output_i_ = output_i_ + 0.5f * ki_ * dt * (error + last_error_);
-
-        /*
-         * Anti-windup dynamic clamping of the integral component
-         */
-        float dynamicLimitMin, dynamicLimitMax;
-        if (output_p_ < output_max_)
-            dynamicLimitMax = output_max_ - output_p_;
-        else
-            dynamicLimitMax = 0.0f;
-
-        if (output_p_ > -output_max_)
-            dynamicLimitMin = -output_max_ - output_p_;
-        else
-            dynamicLimitMin = 0.0f;
-
-        /*
-         * Clamp the integral output
-         */
-        if (output_i_ > dynamicLimitMax)
-            output_i_ = dynamicLimitMax;
-        if (output_i_ < dynamicLimitMin)
-            output_i_ = dynamicLimitMin;
-
-        last_error_ = error;
         return Output();
-    }
-
-    T Error() const
-    {
-        return last_error_;
     }
 
     /** Return the current output calculated during the last @ref Input call
@@ -92,7 +52,7 @@ public:
      */
     T Output() const
     {
-        T output = output_p_ + output_i_;
+        T output = output_p_;
         if (output > output_max_)
             return output_max_;
         else if (output < -output_max_)
@@ -107,15 +67,6 @@ public:
     T OutputP() const
     {
         return output_p_;
-    }
-
-    /** Return the integral component of the PID controller output
-     *
-     * @return Integral output
-     */
-    T OutputI() const
-    {
-        return output_i_;
     }
 
     /** Set the maximum allowed output.
@@ -145,15 +96,6 @@ public:
         kp_ = kp;
     }
 
-    /** Set the integral gain of the PID controller
-     *
-     * @param ki Integral gain
-     */
-    void SetGainI(float ki)
-    {
-        ki_ = ki;
-    }
-
     /** Reset the controller output
      *
      * Please note this call doesn't reset the bias.
@@ -164,18 +106,13 @@ public:
      */
     void Reset()
     {
-        last_error_ = 0;
         output_p_ = 0;
-        output_i_ = 0;
     }
 
 public:
     float kp_;              /**< Proportional gain */
-    float ki_;              /**< Integral gain */
     T output_max_;          /**< Output limit */
-    T last_error_;          /**< Cached error value from the @ref InputError method call */
     T output_p_;            /**< Proportional output */
-    T output_i_;            /**< Integral output */
 };
 
 #endif /* _PIDCONTROLLER_H_ */

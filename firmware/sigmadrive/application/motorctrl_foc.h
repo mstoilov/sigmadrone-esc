@@ -11,6 +11,7 @@
 #include "motordrive.h"
 #include "pidcontroller.h"
 #include "picontroller.h"
+#include "pcontroller.h"
 #include "velocityprofiler/trapezoidal-profile.h"
 
 class MotorCtrlFOC
@@ -90,7 +91,7 @@ protected:
     PIController<float> pid_Id_;                /**< PID regulator controlling the d-current (Id) */
     PIController<float> pid_Iq_;                /**< PID regulator controlling the q-current (Iq) */
     PIDController<float> pid_W_;                /**< PID regulator controlling the rotor velocity (W) */
-    PIController<float> pid_P_;                 /**< PID regulator controlling the target position */
+    PController<float> pid_P_;                  /**< PID regulator controlling the target position */
     float Ierr_ = 0;                            /**< Q-current error. Used as input for the Iq PID regulator */
     float Werr_ = 0;                            /**< Velocity error. Used as input for the velocity PID regulator */
     float Perr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */

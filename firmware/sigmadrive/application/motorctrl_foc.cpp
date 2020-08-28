@@ -14,7 +14,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
     , pid_Id_(config_.pid_current_kp_, config_.pid_current_ki_, config_.pid_current_maxout_)
     , pid_Iq_(config_.pid_current_kp_, config_.pid_current_ki_, config_.pid_current_maxout_)
     , pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, 1, config_.pid_w_maxout_, 0)
-    , pid_P_(config_.pid_p_kp_, 0, config_.pid_p_maxout_)
+    , pid_P_(config_.pid_p_kp_, config_.pid_p_maxout_)
 {
     StartDebugThread();
     RegisterRpcMethods();
@@ -466,7 +466,7 @@ void MotorCtrlFOC::ModeClosedLoopPosition()
             std::complex<float> R = drive_->GetRotorElecRotation();
 
             uint64_t enc_position = drive_->GetRotorPosition();
-            Perr_ = drive_->GetRotorPositionError(enc_position, target_, 0) * timeslice;
+            Perr_ = drive_->GetRotorPositionError(enc_position, target_) * timeslice;
             pid_P_.Input(Perr_, timeslice);
             Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
             pid_W_.Input(Werr_, timeslice);
@@ -549,13 +549,13 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
 
             if (t <= trap_profiler.T_) {
                 trap_profiler.CalcProfileData2(t, profile_target_);
-                Perr_ = drive_->GetRotorPositionError(enc_position, profile_target_.P, 0) * timeslice;
+                Perr_ = drive_->GetRotorPositionError(enc_position, profile_target_.P) * timeslice;
                 pid_P_.Input(Perr_, timeslice);
                 Werr_ = pid_P_.Output() + profile_target_.Pd * timeslice - drive_->GetRotorVelocityPTS();
                 pid_W_.Input(Werr_, timeslice);
                 t = (drive_->update_counter_ - profiler_counter) * timeslice;
             } else {
-                Perr_ = drive_->GetRotorPositionError(enc_position, target_, 0) * timeslice;
+                Perr_ = drive_->GetRotorPositionError(enc_position, target_) * timeslice;
                 pid_P_.Input(Perr_, timeslice);
                 Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
                 pid_W_.Input(Werr_, timeslice);

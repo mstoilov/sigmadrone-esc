@@ -4,7 +4,9 @@
  *  Created on: Oct 15, 2019
  *      Author: mstoilov
  */
-
+#define ARM_MATH_CM7
+#include "stm32f745xx.h"
+#include "arm_math.h"
 #include "main.h"
 #include "iencoder.h"
 #include "adc.h"
@@ -440,7 +442,7 @@ void MotorDrive::UpdateRotor()
     uint64_t Renc_prev = Renc_; 
     Renc_ = GetEncoderPosition();
 	float theta_e = GetEncoderDir() * GetElectricAngle(Renc_);
-	E_ = std::complex<float>(cosf(theta_e), sinf(theta_e));
+	E_ = std::complex<float>(arm_cos_f32(theta_e), arm_sin_f32(theta_e));
 
 	int32_t Rangle_prev = Renc_prev & enc_resolution_mask_;
 	int32_t Rangle = Renc_ & enc_resolution_mask_;
@@ -463,18 +465,13 @@ uint64_t MotorDrive::GetRotorPosition() const
  *
  * @param position
  * @param target
- * @param maxerr
  * @return
  */
-int64_t MotorDrive::GetRotorPositionError(uint64_t position, uint64_t target, uint64_t maxerr)
+int64_t MotorDrive::GetRotorPositionError(uint64_t position, uint64_t target)
 {
     int64_t position_err = (target + enc_position_size_ - position) & enc_position_mask_;
-    if (position_err > (int64_t)(enc_position_size_/2))
+    if (position_err > (int64_t)(enc_position_size_ >> 1))
         position_err -= enc_position_size_;
-    if (maxerr) {
-        position_err = std::min(position_err, (int64_t)maxerr);
-        position_err = std::max(position_err, (int64_t)-maxerr);
-    }
     return position_err;
 }
 
@@ -574,7 +571,8 @@ void MotorDrive::SaddleSVM(float duty, const std::complex<float>& v_theta, float
 
 bool MotorDrive::ApplyPhaseVoltage(float v_alpha, float v_beta)
 {
-	float v_abs = sqrtf(v_alpha * v_alpha + v_beta * v_beta);
+	float v_abs = 0.0f;
+	arm_sqrt_f32(v_alpha * v_alpha + v_beta * v_beta, &v_abs);
 	return ApplyPhaseModulation(VoltageToDuty(v_abs, GetBusVoltage()), std::complex<float>(v_alpha/v_abs, v_beta/v_abs));
 }
 
