@@ -10,7 +10,7 @@ Ac = np.zeros_like(time)
 
 HZ = 18000
 prof = tp.TrapezoidProfileInt();
-prof.Init(1000000, 0, 0, 65535 * 30, 20000000, 20000000, HZ)
+prof.Init(1000000, 0, 0, 65535 * 30, 40000000, 10000000, HZ)
 for i, t in enumerate(time):
     data = prof.Step(time[i])
     Sc[i], Vc[i] = data.P, data.Pd

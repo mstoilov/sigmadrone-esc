@@ -21,7 +21,7 @@ class TrapezoidalProfile
 {
 public:
     TrapezoidalProfile() = default;
-    void Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax);
+    void Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz);
     void CalcProfileData(float t, ProfileData<float>& data);
     void CalcProfileData2(float t, ProfileData<float>& data);
     ProfileData<float> Step(float t);

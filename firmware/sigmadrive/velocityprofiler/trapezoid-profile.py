@@ -70,25 +70,25 @@ def trapezoidalProfile(Xf, Xi, Vin, Vmax, Amax, Dmax, t):
     return Y, Yd, Ydd
 
 
-time = np.linspace(0, 1, 200)
+time = np.arange(0, 20000)
 Vc = np.zeros_like(time)
 Sc = np.zeros_like(time)
 Ac = np.zeros_like(time)
 
+HZ = 18000
 prof = tp.TrapezoidProfile();
-prof.Init(1000000, 0, 0, 65535 * 30, 20000000, 20000000)
+prof.Init(1000000, 0, 0, 65535 * 30, 40000000, 10000000, HZ)
 for i, t in enumerate(time):
     data = prof.Step(time[i])
-    Sc[i], Vc[i], Ac[i] = data.P, data.Pd, 0
+    Sc[i], Vc[i] = data.P, data.Pd
+
 
 print("T = ", prof.T)
 print("Ta = ", prof.Ta)
 print("Tr = ", prof.Tr)
 print("Td = ", prof.Td)
-# for i, t in enumerate(time):
-#     Sc[i], Vc[i], Ac[i] = trapezoidalProfile(160, 40, 0, 4, 0.5, 0.15, t)
 
-pp.plot(time, Vc)
+pp.plot(time, Vc * HZ)
 pp.plot(time, Sc)
 pp.xlabel('Time')
 pp.ylabel('P,Pd,Pdd')

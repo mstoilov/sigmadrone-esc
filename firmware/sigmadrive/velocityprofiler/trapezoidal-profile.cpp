@@ -9,14 +9,14 @@
 
 #define SQ(x) ((x) * (x))
 
-void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax)
+void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz)
 {
     float s = (Xf >= Xi) ? 1.0 : -1.0;
-    float Vr = abs(Vmax);
-    float Ar = abs(Amax);
-    float Dr = abs(Dmax);
+    float Vr = abs(Vmax) / Hz;
+    float Ar = abs(Amax) / SQ(Hz);
+    float Dr = abs(Dmax) / SQ(Hz);
     float dX = abs(Xf - Xi);
-    float Vi = s * Vin;
+    float Vi = s * Vin  / Hz;
 
     if (Vi > Vr)
         Ar = -Ar;
