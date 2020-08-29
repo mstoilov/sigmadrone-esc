@@ -70,23 +70,16 @@ def trapezoidalProfile(Xf, Xi, Vin, Vmax, Amax, Dmax, t):
     return Y, Yd, Ydd
 
 
-time = np.linspace(0, 70, 200)
+time = np.linspace(0, 1, 200)
 Vc = np.zeros_like(time)
 Sc = np.zeros_like(time)
 Ac = np.zeros_like(time)
 
-Vc1 = np.zeros_like(time)
-Sc1 = np.zeros_like(time)
-Ac1 = np.zeros_like(time)
-
 prof = tp.TrapezoidProfile();
-prof.Init(160, 40, 0, 4, 0.5, 0.15)
+prof.Init(1000000, 0, 0, 65535 * 30, 20000000, 20000000)
 for i, t in enumerate(time):
     data = prof.Step(time[i])
-    Sc1[i], Vc1[i] = data.P, data.Pd
-    Vc[i] = prof.CalcVelocity(time[i])
-    Sc[i] = Sc[i - 1] + 0.5 * ((Vc[i] + Vc[i-1]) * (time[i] - time[i - 1])) if (i > 0) else 40
-    Ac[i] = ((Vc[i] - Vc[i-1]) / (time[i] - time[i - 1])) if (i > 0) else 0
+    Sc[i], Vc[i], Ac[i] = data.P, data.Pd, 0
 
 print("T = ", prof.T)
 print("Ta = ", prof.Ta)
@@ -95,8 +88,7 @@ print("Td = ", prof.Td)
 # for i, t in enumerate(time):
 #     Sc[i], Vc[i], Ac[i] = trapezoidalProfile(160, 40, 0, 4, 0.5, 0.15, t)
 
-pp.plot(time, Ac * 40)
-pp.plot(time, Vc * 20)
+pp.plot(time, Vc)
 pp.plot(time, Sc)
 pp.xlabel('Time')
 pp.ylabel('P,Pd,Pdd')

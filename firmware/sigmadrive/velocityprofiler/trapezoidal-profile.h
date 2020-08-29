@@ -4,16 +4,17 @@
 
 #include <stdint.h>
 
+template<typename T>
 class ProfileData
 {
 public:
-    ProfileData(float Pos = 0, float Vel = 0)
+    ProfileData(T Pos = 0, T Vel = 0)
         : P(Pos), Pd(Vel)
     {
 
     }
-    float P;	// Position
-    float Pd;	// First derivative - velocity
+    T P;	// Position
+    T Pd;	// First derivative - velocity
 };
 
 class TrapezoidalProfile
@@ -21,9 +22,9 @@ class TrapezoidalProfile
 public:
     TrapezoidalProfile() = default;
     void Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax);
-    void CalcProfileData(float t, ProfileData& data);
-    void CalcProfileData2(float t, ProfileData& data);
-    ProfileData Step(float t);
+    void CalcProfileData(float t, ProfileData<float>& data);
+    void CalcProfileData2(float t, ProfileData<float>& data);
+    ProfileData<float> Step(float t);
     float CalcVelocity(float t);
 
 

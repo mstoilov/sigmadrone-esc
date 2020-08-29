@@ -1,5 +1,6 @@
 
 #include "trapezoidal-profile.h"
+#include "trapezoidal-profile-int.h"
 #include <math.h>
 
 #ifdef STM32F745xx
@@ -75,7 +76,7 @@ void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float A
 }
 
 
-void TrapezoidalProfile::CalcProfileData(float t, ProfileData& data)
+void TrapezoidalProfile::CalcProfileData(float t, ProfileData<float>& data)
 {
     if (t < 0) {
         data.Pd = Vi_;
@@ -97,7 +98,7 @@ void TrapezoidalProfile::CalcProfileData(float t, ProfileData& data)
 }
 
 
-void TrapezoidalProfile::CalcProfileData2(float t, ProfileData& data)
+void TrapezoidalProfile::CalcProfileData2(float t, ProfileData<float>& data)
 {
     if (t < 0) {
         data.Pd = Vi_;
@@ -119,9 +120,9 @@ void TrapezoidalProfile::CalcProfileData2(float t, ProfileData& data)
 }
 
 
-ProfileData TrapezoidalProfile::Step(float t)
+ProfileData<float> TrapezoidalProfile::Step(float t)
 {
-	ProfileData data(0, 0);
+	ProfileData<float> data(0, 0);
 	CalcProfileData2(t, data);
 
 	return data;
@@ -150,19 +151,31 @@ float TrapezoidalProfile::CalcVelocity(float t)
 namespace py = pybind11;
 
 PYBIND11_MODULE(trapezoidprofile, m) {
-    py::class_<ProfileData>(m, "ProfileData")
+    py::class_<ProfileData<float>>(m, "ProfileData")
         .def(py::init<float, float>())
-		.def_readwrite("P", &ProfileData::P)
-		.def_readwrite("Pd", &ProfileData::Pd);
+        .def_readwrite("P", &ProfileData<float>::P)
+        .def_readwrite("Pd", &ProfileData<float>::Pd);
+    py::class_<ProfileData<int64_t>>(m, "ProfileDataInt")
+        .def(py::init<int64_t, int64_t>())
+        .def_readwrite("P", &ProfileData<int64_t>::P)
+        .def_readwrite("Pd", &ProfileData<int64_t>::Pd);
     py::class_<TrapezoidalProfile>(m, "TrapezoidProfile")
         .def(py::init<>())
-		.def("Init", &TrapezoidalProfile::Init)
-		.def("Step", &TrapezoidalProfile::Step)
-		.def("CalcVelocity", &TrapezoidalProfile::CalcVelocity)
-		.def_readwrite("T", &TrapezoidalProfile::T_)
-		.def_readwrite("Ta", &TrapezoidalProfile::Ta_)
-		.def_readwrite("Tr", &TrapezoidalProfile::Tr_)
-		.def_readwrite("Td", &TrapezoidalProfile::Td_);
+        .def("Init", &TrapezoidalProfile::Init)
+        .def("Step", &TrapezoidalProfile::Step)
+        .def("CalcVelocity", &TrapezoidalProfile::CalcVelocity)
+        .def_readwrite("T", &TrapezoidalProfile::T_)
+        .def_readwrite("Ta", &TrapezoidalProfile::Ta_)
+        .def_readwrite("Tr", &TrapezoidalProfile::Tr_)
+        .def_readwrite("Td", &TrapezoidalProfile::Td_);
+    py::class_<TrapezoidalProfileInt>(m, "TrapezoidProfileInt")
+        .def(py::init<>())
+        .def("Init", &TrapezoidalProfileInt::Init)
+        .def("Step", &TrapezoidalProfileInt::Step)
+        .def_readwrite("T", &TrapezoidalProfileInt::T_)
+        .def_readwrite("Ta", &TrapezoidalProfileInt::Ta_)
+        .def_readwrite("Tr", &TrapezoidalProfileInt::Tr_)
+        .def_readwrite("Td", &TrapezoidalProfileInt::Td_);
 }
 
 #endif
