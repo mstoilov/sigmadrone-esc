@@ -328,6 +328,7 @@ bool MinasA4Encoder::sendrecv_command_ex(uint8_t command, void* reply, size_t re
 
 bool MinasA4Encoder::VerifyCrc(uint8_t* data, uint8_t size, uint8_t crc)
 {
+    return true;
     uint8_t calc_crc = calc_crc_x8_1(data, size);
     if (crc != calc_crc) {
         ++crc_error_count_;

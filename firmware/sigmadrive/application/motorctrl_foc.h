@@ -102,7 +102,7 @@ protected:
     float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
     float spin_voltage_ = 3.5f;                 /**< Voltage used for the spin mode */
     uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
-    ProfileData profile_target_;                /**< Target position, velocity, acceleration from the velocity profiler */
+    ProfileData<float> profile_target_;         /**< Target position, velocity, acceleration from the velocity profiler */
     TrapezoidalProfile trap_profiler_;
     TrapezoidalProfile *trap_profiler_ptr_ = nullptr;
 
