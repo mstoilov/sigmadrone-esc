@@ -7,24 +7,24 @@
 #endif
 
 #define SQ(x) ((x) * (x))
-#define SF 1048576
+#define SF (1024 * 1024)
 
-void TrapezoidalProfileInt::Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz)
+void TrapezoidalProfileInt::Init(int64_t Xf, int64_t Xi, int64_t Vin, int64_t Vmax, int64_t Amax, int64_t Dmax, int64_t Hz)
 {
-    Xf_ = Xf * SF;
-    Xi_ = Xi * SF;
-    int64_t s = (Xf >= Xi) ? 1.0 : -1.0;
-    int64_t Vr = abs(Vmax) / Hz * SF;
-    int64_t Ar = abs(Amax) / SQ(Hz) * SF;
-    int64_t Dr = abs(Dmax) / SQ(Hz) * SF;
-    int64_t Vi = s * Vin / Hz * SF;
-    int64_t dX = abs(Xf_ - Xi_);
+    Xf_ = Xf * SF;                                  // Final position
+    Xi_ = Xi * SF;                                  // Initial position
+    int64_t s = (Xf >= Xi) ? 1 : -1;
+    int64_t Vr = abs(Vmax) * SF / Hz;               // Roaming velocity
+    int64_t Ar = abs(Amax) * SF / SQ(Hz);           // Acceleration to roaming velocity
+    int64_t Dr = abs(Dmax) * SF / SQ(Hz);           // Deceleration from roaming velocity
+    int64_t Vi = s * Vin * SF / Hz;                 // Initial velocity
+    int64_t dX = abs(Xf_ - Xi_);                    // Distance delta.
 
-    if (Vi > Vr)
+    if (Vi > (int32_t)Vr)
         Ar = -Ar;
-    int64_t Da = (Vr + Vi) * (Vr - Vi) / Ar / 2;
-    int64_t Dd = SQ(Vr) / Dr / 2;
-    int64_t Dc = dX - (Da + Dd);
+    int64_t Da = (Vr + Vi) * (Vr - Vi) / Ar / 2;    // Distance traveled while accelerating
+    int64_t Dd = SQ(Vr) / Dr / 2;                   // Distance traveled while  decelerating
+    int64_t Dc = dX - (Da + Dd);                    // Distance traveled while the velocity is constant
 
     if (Dc < 0) {
         // Find Vr by solving:
@@ -38,16 +38,16 @@ void TrapezoidalProfileInt::Init(float Xf, float Xi, float Vin, float Vmax, floa
             Vr = Vi;
             Dr = SQ(Vi) / dX / 2;
         } else {
-            Vr = sqrtf(Vr_sq);
+            Vr = std::sqrt(Vr_sq);
         }
         Dc = 0;
         Da = (Vr + Vi) * (Vr - Vi) / Ar / 2;
         Dd = SQ(Vr) / Dr / 2;
     }
 
-    int64_t Ta = (Vr - Vi) / Ar;
-    int64_t Td = Vr / Dr;
-    int64_t Tr = (Vr != 0) ? Dc / Vr : 0;
+    uint32_t Ta = (Vr - Vi) / Ar;                    // Time for acceleration
+    uint32_t Td = Vr / Dr;                           // Time for deceleration
+    uint32_t Tr = (Vr != 0) ? Dc / Vr : 0;           // Time for roaming (constant velocity)
 
 #ifdef STM32F745xx
     __disable_irq();
@@ -62,10 +62,10 @@ void TrapezoidalProfileInt::Init(float Xf, float Xi, float Vin, float Vmax, floa
     T_ = Ta + Tr + Td;
     s_ = s;
 
-    Ar_2_ = 0.5f * Ar_;
-    Dr_2_ = 0.5f * Dr_;
+    Ar_2_ = Ar_ / 2;
+    Dr_2_ = Dr_ / 2;
     Tar_ = Ta_ + Tr_;
-    Sa_ = Vi_ * Ta_ + 0.5 * Ar_ * SQ(Ta_);
+    Sa_ = Vi_ * Ta_ + Ar_ * SQ(Ta_) / 2;
     Sar_ = Sa_ + Vr_ * Tr_;
 
 #ifdef STM32F745xx
@@ -87,7 +87,7 @@ void TrapezoidalProfileInt::CalcProfileData(uint32_t t, ProfileData<int64_t>& da
         data.Pd = (s_ * Vr_) / SF;
         data.P   = (Xi_ + s_ * (Vi_ * Ta_ + Ar_ * SQ(Ta_) / 2 + Vr_ * (t - Ta_))) / SF;
     } else if (t < T_) {
-        int64_t tc = t - (Ta_ + Tr_) / SF;
+        int32_t tc = t - (Ta_ + Tr_);
         data.Pd = (s_ * (Vr_ - Dr_ * tc)) / SF;
         data.P = (Xi_ + s_ * (Vi_ * Ta_ + Ar_ * SQ(Ta_) / 2 + Vr_ * Tr_ + Vr_ * tc - Dr_ * SQ(tc) / 2)) / SF;
     } else {
@@ -108,7 +108,7 @@ void TrapezoidalProfileInt::CalcProfileData2(uint32_t t, ProfileData<int64_t>& d
         data.Pd = (s_ * Vr_) / SF;
         data.P   = (Xi_ + s_ * (Sa_ + Vr_ * (t - Ta_))) / SF;
     } else if (t < T_) {
-        float tc = t - Tar_;
+        int32_t tc = t - Tar_;
         data.Pd = (s_ * (Vr_ - Dr_ * tc)) / SF;
         data.P = (Xi_ + s_ * (Sar_ + Vr_ * tc - Dr_2_ * SQ(tc))) / SF;
     } else {
@@ -120,7 +120,7 @@ void TrapezoidalProfileInt::CalcProfileData2(uint32_t t, ProfileData<int64_t>& d
 ProfileData<int64_t> TrapezoidalProfileInt::Step(uint32_t t)
 {
 	ProfileData<int64_t> data(0, 0);
-	CalcProfileData2(t, data);
+	CalcProfileData(t, data);
 
 	return data;
 }

@@ -10,7 +10,7 @@ class TrapezoidalProfileInt
 {
 public:
     TrapezoidalProfileInt() = default;
-    void Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz);
+    void Init(int64_t Xf, int64_t Xi, int64_t Vin, int64_t Vmax, int64_t Amax, int64_t Dmax, int64_t Hz);
     void CalcProfileData(uint32_t t, ProfileData<int64_t>& data);
     void CalcProfileData2(uint32_t t, ProfileData<int64_t>& data);
     ProfileData<int64_t> Step(uint32_t t);
@@ -19,11 +19,11 @@ public:
 public:
     int64_t Xf_ = 0;
     int64_t Xi_ = 0;
+    int64_t dX_ = 0;
     int64_t Vr_ = 0;
     int64_t Ar_ = 0;
     int64_t Dr_ = 0;
     int64_t Vi_ = 0;
-    int64_t dX_ = 0;
     int64_t Ta_ = 0;
     int64_t Td_ = 0;
     int64_t Tr_ = 0;
