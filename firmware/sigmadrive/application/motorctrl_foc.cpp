@@ -190,8 +190,8 @@ void MotorCtrlFOC::RunDebugLoop()
         } else if (status & SIGNAL_DEBUG_DUMP_TRAJECTORY) {
             fprintf(stderr,
                     "P: %10llu PR: %10.0f (%10llu) [%10.0f] I_q: %+6.3f PVq: %+7.2f "
-                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f Pd: %+10.0f, V_PEP: %+10.0f, T: %3lu\n",
-                    drive_->GetEncoderPosition(),
+                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f Pd: %+5.0f, V_PTS: %+8.3f, T: %3lu\n",
+                    drive_->GetRotorPosition(),
                     (float)profile_target_.P,
                     target_,
                     (float)profile_target_.P - drive_->GetEncoderPosition(),
@@ -202,7 +202,7 @@ void MotorCtrlFOC::RunDebugLoop()
                     Perr_,
                     pid_P_.Output(),
                     (float)profile_target_.Pd,
-                    drive_->GetRotorVelocity(),
+                    drive_->GetRotorVelocityPTS(),
                     foc_time_
             );
         } else if (status & SIGNAL_DEBUG_DUMP_SPIN) {

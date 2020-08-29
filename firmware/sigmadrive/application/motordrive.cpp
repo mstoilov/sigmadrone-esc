@@ -156,7 +156,8 @@ rexjson::property MotorDrive::GetPropertyMap()
         {"svm_saddle", &config_.svm_saddle_},
         {"reset_voltage", &config_.reset_voltage_},
         {"reset_hz", &config_.reset_hz_},
-        {"display_div", &config_.display_div_}
+        {"display_div", &config_.display_div_},
+        {"Renc", &Renc_},
     });
     return props;
 }
@@ -395,6 +396,8 @@ void MotorDrive::UpdateCurrent()
     if (update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
         encoder_->Update();
         UpdateRotor();
+    } else {
+        EstimateRotor();
     }
 
     /*
@@ -442,6 +445,7 @@ void MotorDrive::UpdateRotor()
 {
     uint64_t Renc_prev = Renc_; 
     Renc_ = GetEncoderPosition();
+    Rencest_ = Renc_;
 	float theta_e = GetEncoderDir() * GetElectricAngle(Renc_);
 	E_ = std::complex<float>(arm_cos_f32(theta_e), arm_sin_f32(theta_e));
 
@@ -453,13 +457,24 @@ void MotorDrive::UpdateRotor()
 	lpf_Wenc_.DoFilter(((float)Wenc) / (config_.enc_skip_updates_ + 1));
 }
 
+/** Update the rotor position and velocity
+ *
+ */
+void MotorDrive::EstimateRotor()
+{
+    Rencest_ +=  lpf_Wenc_.Output();
+    float theta_e = GetEncoderDir() * GetElectricAngle(Rencest_);
+    E_ = std::complex<float>(arm_cos_f32(theta_e), arm_sin_f32(theta_e));
+}
+
+
 /** Return the current rotor position in encoder counts
  *
  * @return rotor position
  */
 uint64_t MotorDrive::GetRotorPosition() const
 {
-    return Renc_;
+    return Rencest_;
 }
 
 /** Calculate the position error. Trim the error within [-maxerr, maxerr]

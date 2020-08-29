@@ -67,6 +67,7 @@ public:
     float VoltageToDuty(float voltage, float v_bus);
 
     void UpdateRotor();
+    void EstimateRotor();
     void UpdateCurrent();
     void UpdateBias();
 
@@ -183,6 +184,7 @@ public:
     float phase_current_a_ = 0.0f;
     float phase_current_b_ = 0.0f;
     uint64_t Renc_ = 0;                         /**< Position of the rotor in enc counts */
+    uint64_t Rencest_ = 0;                      /**< Estimated position of the rotor in enc counts */
     LowPassFilter<float, float> lpf_bias_a;     /**< Low pass filter for phase A current bias */
     LowPassFilter<float, float> lpf_bias_b;     /**< Low pass filter for phase B current bias */
     LowPassFilter<float, float> lpf_vbus_;      /**< Low pass filter for the Vbus voltage */
