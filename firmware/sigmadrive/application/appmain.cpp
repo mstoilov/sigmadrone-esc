@@ -20,6 +20,7 @@
 #include "FreeRTOSConfig.h"
 #include "task.h"
 #include "stm32f7xx_ll_dma.h"
+#include "stm32f7xx_hal_gpio.h"
 
 #include "main.h"
 #include "appmain.h"
@@ -303,6 +304,9 @@ void RegisterRpcMethods()
     rpc_server.add("drv1.EnableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::EnableVREFDiv, "void Drv8323::EnableVREFDiv()"));
     rpc_server.add("drv1.DisableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DisableVREFDiv, "void Drv8323::DisableVREFDiv()"));
     rpc_server.add("drv1.DumpRegs", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DumpRegs, "void Drv8323::DumpRegs()"));
+    rpc_server.add("drv2.EnableVREFDiv", rexjson::make_rpc_wrapper(&drv2, &Drv8323::EnableVREFDiv, "void Drv8323::EnableVREFDiv()"));
+    rpc_server.add("drv2.DisableVREFDiv", rexjson::make_rpc_wrapper(&drv2, &Drv8323::DisableVREFDiv, "void Drv8323::DisableVREFDiv()"));
+    rpc_server.add("drv2.DumpRegs", rexjson::make_rpc_wrapper(&drv2, &Drv8323::DumpRegs, "void Drv8323::DumpRegs()"));
 }
 
 void StartRpcThread()
@@ -334,6 +338,10 @@ void DisplayDrvRegs()
 {
     fprintf(stdout, "DRV1: \n");
     drv1.DumpRegs();
+
+    fprintf(stdout, "\n\nDRV2: \n");
+    drv2.DumpRegs();
+
 }
 
 void EnterMainLoop()
@@ -362,6 +370,8 @@ int application_main()
      * should be fully initialized.
      */
     osDelay(boot_delay);
+    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
     hrtimer.Attach(&htim12);
     ma4_abs_encoder1.Attach(&huart3, DMA1, LL_DMA_STREAM_1, LL_DMA_STREAM_3);
     ma4_abs_encoder2.Attach(&huart2, DMA1, LL_DMA_STREAM_5, LL_DMA_STREAM_6);
@@ -401,7 +411,7 @@ int application_main()
     /*
      * Start the motor timers.
      */
-    tim1.EnableCounter(true);
+//    tim1.EnableCounter(true);
 
     /*
      * Reconfigure pole_pairs for panasonic motors
