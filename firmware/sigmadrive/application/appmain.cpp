@@ -20,7 +20,6 @@
 #include "FreeRTOSConfig.h"
 #include "task.h"
 #include "stm32f7xx_ll_dma.h"
-#include "stm32f7xx_hal_gpio.h"
 
 #include "main.h"
 #include "appmain.h"
@@ -64,8 +63,8 @@ CdcIface usb_cdc;
 DumbEncoder dumb_encoder;
 MinasA4Encoder ma4_abs_encoder1;
 MinasA4Encoder ma4_abs_encoder2;
-Drv8323 drv1(spi2, GPIOC, GPIO_PIN_13);
-Drv8323 drv2(spi2, GPIOC, GPIO_PIN_14);
+Drv8323 drv1(spi2, GPIOC, GPIO_PIN_13, GPIOE, GPIO_PIN_15);
+Drv8323 drv2(spi2, GPIOC, GPIO_PIN_14, GPIOB, GPIO_PIN_2);
 MotorDrive motor_drive1(1, &drv1, &adc1, &ma4_abs_encoder1, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorDrive motor_drive2(2, &drv2, &adc2, &ma4_abs_encoder2, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlFOC foc1(&motor_drive1, "axis1");
@@ -301,12 +300,26 @@ void RegisterRpcMethods()
     rpc_server.add("dumptext", rexjson::make_rpc_wrapper(DumpText, "void DumpText()"));
     rpc_server.add("LoadConfig", rexjson::make_rpc_wrapper(LoadConfig, "void LoadConfig()"));
     rpc_server.add("SaveConfig", rexjson::make_rpc_wrapper(SaveConfig, "void SaveConfig()"));
+
     rpc_server.add("drv1.EnableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::EnableVREFDiv, "void Drv8323::EnableVREFDiv()"));
     rpc_server.add("drv1.DisableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DisableVREFDiv, "void Drv8323::DisableVREFDiv()"));
     rpc_server.add("drv1.DumpRegs", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DumpRegs, "void Drv8323::DumpRegs()"));
+    rpc_server.add("drv1.WriteReg", rexjson::make_rpc_wrapper(&drv1, &Drv8323::WriteReg, "void Drv8323::WriteReg()"));
+    rpc_server.add("drv1.ReadReg", rexjson::make_rpc_wrapper(&drv1, &Drv8323::ReadReg, "void Drv8323::ReadReg()"));
+    rpc_server.add("drv1.EnableDriver", rexjson::make_rpc_wrapper(&drv1, &Drv8323::EnableDriver, "void Drv8323::EnableDriver()"));
+    rpc_server.add("drv1.DisableDriver", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DisableDriver, "void Drv8323::DisableDriver()"));
+    rpc_server.add("drv1.InitializeDefaults", rexjson::make_rpc_wrapper(&drv1, &Drv8323::InitializeDefaults, "void Drv8323::InitializeDefaults()"));
+
     rpc_server.add("drv2.EnableVREFDiv", rexjson::make_rpc_wrapper(&drv2, &Drv8323::EnableVREFDiv, "void Drv8323::EnableVREFDiv()"));
     rpc_server.add("drv2.DisableVREFDiv", rexjson::make_rpc_wrapper(&drv2, &Drv8323::DisableVREFDiv, "void Drv8323::DisableVREFDiv()"));
     rpc_server.add("drv2.DumpRegs", rexjson::make_rpc_wrapper(&drv2, &Drv8323::DumpRegs, "void Drv8323::DumpRegs()"));
+    rpc_server.add("drv2.WriteReg", rexjson::make_rpc_wrapper(&drv2, &Drv8323::WriteReg, "void Drv8323::WriteReg()"));
+    rpc_server.add("drv2.ReadReg", rexjson::make_rpc_wrapper(&drv2, &Drv8323::ReadReg, "void Drv8323::ReadReg()"));
+    rpc_server.add("drv2.EnableDriver", rexjson::make_rpc_wrapper(&drv2, &Drv8323::EnableDriver, "void Drv8323::EnableDriver()"));
+    rpc_server.add("drv2.DisableDriver", rexjson::make_rpc_wrapper(&drv2, &Drv8323::DisableDriver, "void Drv8323::DisableDriver()"));
+    rpc_server.add("drv2.InitializeDefaults", rexjson::make_rpc_wrapper(&drv2, &Drv8323::InitializeDefaults, "void Drv8323::InitializeDefaults()"));
+
+
 }
 
 void StartRpcThread()
@@ -370,8 +383,6 @@ int application_main()
      * should be fully initialized.
      */
     osDelay(boot_delay);
-    HAL_GPIO_WritePin(GPIOE, GPIO_PIN_15, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_2, GPIO_PIN_SET);
     hrtimer.Attach(&htim12);
     ma4_abs_encoder1.Attach(&huart3, DMA1, LL_DMA_STREAM_1, LL_DMA_STREAM_3);
     ma4_abs_encoder2.Attach(&huart2, DMA1, LL_DMA_STREAM_5, LL_DMA_STREAM_6);
@@ -400,6 +411,9 @@ int application_main()
     tim8.Attach(&htim8);
     tim1.Attach(&htim1);
     usb_cdc.Attach(&hUsbDeviceFS, true);
+    drv1.EnableDriver();
+    drv2.EnableDriver();
+    osDelay(2);
     drv1.InitializeDefaults();
     drv2.InitializeDefaults();
 

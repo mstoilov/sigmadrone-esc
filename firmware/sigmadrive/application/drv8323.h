@@ -137,7 +137,7 @@ public:
     static constexpr uint32_t SEN_LVL_MASK  = 0x3;
 
 
-    Drv8323(SPIMaster& spi, GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin);
+    Drv8323(SPIMaster& spi, GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin, GPIO_TypeDef* EN_GPIOx, uint16_t EN_GPIO_Pin);
     virtual ~Drv8323();
 
     uint32_t GetFaultStatus1() { return ReadReg(0x0); }
@@ -161,6 +161,9 @@ public:
     uint32_t SetCSAGain(uint32_t csa_gain);
     uint32_t SetCSAGainValue(uint32_t csa_gain_value);
     void SetOCPSenseLevel(uint32_t sen_lvl);
+
+    void EnableDriver();
+    void DisableDriver();
 
     void EnableCalibration();
     void DisableCalibration();
@@ -206,6 +209,8 @@ protected:
     SPIMaster& spi_;
     GPIO_TypeDef* NSS_GPIOx_;
     uint16_t NSS_GPIO_Pin_;
+    GPIO_TypeDef* EN_GPIOx_;
+    uint16_t EN_GPIO_Pin_;
 };
 
 #endif /* DRV8323_H_ */

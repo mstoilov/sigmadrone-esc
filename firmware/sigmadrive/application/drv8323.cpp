@@ -7,12 +7,17 @@
 
 #include <stdio.h>
 #include <assert.h>
+
+#include "stm32f745xx.h"
+#include "stm32f7xx.h"
 #include "drv8323.h"
 
-Drv8323::Drv8323(SPIMaster& spi, GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin)
+Drv8323::Drv8323(SPIMaster& spi, GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin, GPIO_TypeDef* EN_GPIOx, uint16_t EN_GPIO_Pin)
     : spi_(spi)
     , NSS_GPIOx_(NSS_GPIOx)
     , NSS_GPIO_Pin_(NSS_GPIO_Pin)
+    , EN_GPIOx_(EN_GPIOx)
+    , EN_GPIO_Pin_(EN_GPIO_Pin)
 {
 
 }
@@ -389,3 +394,15 @@ void Drv8323::DisableCalibration()
 {
     ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, 0);
 }
+
+void Drv8323::EnableDriver()
+{
+    HAL_GPIO_WritePin(EN_GPIOx_, EN_GPIO_Pin_, GPIO_PIN_SET);
+
+}
+
+void Drv8323::DisableDriver()
+{
+    HAL_GPIO_WritePin(EN_GPIOx_, EN_GPIO_Pin_, GPIO_PIN_RESET);
+}
+
