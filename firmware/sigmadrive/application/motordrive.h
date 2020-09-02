@@ -57,7 +57,7 @@ public:
     void Abort();
     bool IsStarted();
 
-    MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, IEncoder *encoder, IPwmGenerator *pwm, uint32_t update_hz);
+    MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, Adc* dma_adc, IEncoder *encoder, IPwmGenerator *pwm, uint32_t update_hz);
     virtual ~MotorDrive();
 
     void Attach();
@@ -173,6 +173,7 @@ public:
     bool run_simple_tasks_ = false;
     uint32_t axis_idx_ = 0;
     Adc* adc_ = nullptr;
+    Adc* dma_adc_ = nullptr;
     IPwmGenerator *pwm_ = nullptr;
     ErrorInfo error_info_;
     IEncoder *encoder_ = nullptr;

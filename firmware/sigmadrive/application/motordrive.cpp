@@ -20,7 +20,7 @@
 extern UartRpcServer rpc_server;
 
 
-MotorDrive::MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
+MotorDrive::MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, Adc* dma_adc, IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
     : Pa_(std::polar<float>(1.0f, 0.0f))
     , Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
     , Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
@@ -36,6 +36,7 @@ MotorDrive::MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, IEncoder* enco
     axis_idx_ = axis_idx;
     drv_ = drv;
     adc_ = adc;
+    dma_adc_ = dma_adc;
     encoder_ = encoder;
     pwm_ = pwm;
 
@@ -403,7 +404,7 @@ void MotorDrive::UpdateCurrent()
     /*
      * Sample VBus voltage
      */
-    float vbus = adc_->RegReadConversionData(4 - 1);
+    float vbus = dma_adc_->RegReadConversionData(4 - 1);
     lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, vbus, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
 
     /*
