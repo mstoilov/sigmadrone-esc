@@ -94,6 +94,11 @@ void Drv8323::WriteReg(uint32_t addr, uint32_t value)
     spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, false);
 }
 
+void Drv8323::ChipSelect(bool select)
+{
+    spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, select);
+}
+
 void Drv8323::ModifyReg(uint32_t addr, uint32_t clear_mask, uint32_t set_mask)
 {
     WriteReg(addr, (ReadReg(addr) & ~clear_mask) | set_mask);

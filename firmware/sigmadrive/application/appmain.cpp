@@ -65,8 +65,8 @@ MinasA4Encoder ma4_abs_encoder1;
 MinasA4Encoder ma4_abs_encoder2;
 Drv8323 drv1(spi2, GPIOC, GPIO_PIN_13, GPIOE, GPIO_PIN_15);
 Drv8323 drv2(spi2, GPIOC, GPIO_PIN_14, GPIOB, GPIO_PIN_2);
-MotorDrive motor_drive1(1, &drv1, &adc1, &ma4_abs_encoder1, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
-MotorDrive motor_drive2(2, &drv2, &adc2, &ma4_abs_encoder2, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+MotorDrive motor_drive1(1, &drv1, &adc1, &adc1, &ma4_abs_encoder2, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+MotorDrive motor_drive2(2, &drv2, &adc2, &adc1, &ma4_abs_encoder1, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlFOC foc1(&motor_drive1, "axis1");
 MotorCtrlFOC foc2(&motor_drive2, "axis2");
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
@@ -138,7 +138,7 @@ void SD_DMA1_Stream1_IRQHandler(void)
     DMA_TypeDef* DMAx = DMA1;
     if (LL_DMA_IsActiveFlag_TC1(DMAx)) {
         LL_DMA_ClearFlag_TC1(DMAx);
-        ma4_abs_encoder1.ReceiveCompleteCallback();
+        ma4_abs_encoder2.ReceiveCompleteCallback();
     }
     if (LL_DMA_IsActiveFlag_DME1(DMAx)) {
         LL_DMA_ClearFlag_DME1(DMAx);
@@ -164,7 +164,7 @@ void SD_DMA1_Stream5_IRQHandler(void)
     DMA_TypeDef* DMAx = DMA1;
     if (LL_DMA_IsActiveFlag_TC5(DMAx)) {
         LL_DMA_ClearFlag_TC5(DMAx);
-        ma4_abs_encoder2.ReceiveCompleteCallback();
+        ma4_abs_encoder1.ReceiveCompleteCallback();
     }
     if (LL_DMA_IsActiveFlag_DME5(DMAx)) {
         LL_DMA_ClearFlag_DME5(DMAx);
@@ -301,6 +301,7 @@ void RegisterRpcMethods()
     rpc_server.add("LoadConfig", rexjson::make_rpc_wrapper(LoadConfig, "void LoadConfig()"));
     rpc_server.add("SaveConfig", rexjson::make_rpc_wrapper(SaveConfig, "void SaveConfig()"));
 
+    rpc_server.add("drv1.ChipSelect", rexjson::make_rpc_wrapper(&drv1, &Drv8323::ChipSelect, "void Drv8323::ChipSelect()"));
     rpc_server.add("drv1.EnableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::EnableVREFDiv, "void Drv8323::EnableVREFDiv()"));
     rpc_server.add("drv1.DisableVREFDiv", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DisableVREFDiv, "void Drv8323::DisableVREFDiv()"));
     rpc_server.add("drv1.DumpRegs", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DumpRegs, "void Drv8323::DumpRegs()"));
@@ -310,6 +311,7 @@ void RegisterRpcMethods()
     rpc_server.add("drv1.DisableDriver", rexjson::make_rpc_wrapper(&drv1, &Drv8323::DisableDriver, "void Drv8323::DisableDriver()"));
     rpc_server.add("drv1.InitializeDefaults", rexjson::make_rpc_wrapper(&drv1, &Drv8323::InitializeDefaults, "void Drv8323::InitializeDefaults()"));
 
+    rpc_server.add("drv2.ChipSelect", rexjson::make_rpc_wrapper(&drv2, &Drv8323::ChipSelect, "void Drv8323::ChipSelect()"));
     rpc_server.add("drv2.EnableVREFDiv", rexjson::make_rpc_wrapper(&drv2, &Drv8323::EnableVREFDiv, "void Drv8323::EnableVREFDiv()"));
     rpc_server.add("drv2.DisableVREFDiv", rexjson::make_rpc_wrapper(&drv2, &Drv8323::DisableVREFDiv, "void Drv8323::DisableVREFDiv()"));
     rpc_server.add("drv2.DumpRegs", rexjson::make_rpc_wrapper(&drv2, &Drv8323::DumpRegs, "void Drv8323::DumpRegs()"));
@@ -384,8 +386,8 @@ int application_main()
      */
     osDelay(boot_delay);
     hrtimer.Attach(&htim12);
-    ma4_abs_encoder1.Attach(&huart3, DMA1, LL_DMA_STREAM_1, LL_DMA_STREAM_3);
-    ma4_abs_encoder2.Attach(&huart2, DMA1, LL_DMA_STREAM_5, LL_DMA_STREAM_6);
+    ma4_abs_encoder1.Attach(&huart2, DMA1, LL_DMA_STREAM_5, LL_DMA_STREAM_6);
+    ma4_abs_encoder2.Attach(&huart3, DMA1, LL_DMA_STREAM_1, LL_DMA_STREAM_3);
 
     /*
      * Set up RPC properties/methods for the encoders.
@@ -404,7 +406,6 @@ int application_main()
     adc2.Attach(&hadc2);
     adc3.Attach(&hadc3);
     uart1.Attach(&huart1);
-//    uart2.Attach(&huart2);
     spi2.Attach(&hspi2);
     LL_TIM_SetCounter(TIM8, TIM1_PERIOD_CLOCKS - 1);
     LL_TIM_SetCounter(TIM1, 0);
@@ -425,7 +426,7 @@ int application_main()
     /*
      * Start the motor timers.
      */
-//    tim1.EnableCounter(true);
+    tim1.EnableCounter(true);
 
     /*
      * Reconfigure pole_pairs for panasonic motors

@@ -204,6 +204,7 @@ public:
     void WriteReg(uint32_t addr, uint32_t value);
     void ModifyReg(uint32_t addr, uint32_t clear_mask, uint32_t set_mask);
     void DumpRegs();
+    void ChipSelect(bool select);
 
 protected:
     SPIMaster& spi_;
