@@ -389,7 +389,7 @@ static void MX_ADC1_Init(void)
   */
   sConfigInjected.InjectedChannel = ADC_CHANNEL_1;
   sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
-  sConfigInjected.InjectedNbrOfConversion = 2;
+  sConfigInjected.InjectedNbrOfConversion = 3;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_15CYCLES;
   sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONVEDGE_RISINGFALLING;
   sConfigInjected.ExternalTrigInjecConv = ADC_EXTERNALTRIGINJECCONV_T1_TRGO2;
@@ -404,6 +404,14 @@ static void MX_ADC1_Init(void)
   */
   sConfigInjected.InjectedChannel = ADC_CHANNEL_2;
   sConfigInjected.InjectedRank = ADC_INJECTED_RANK_2;
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time
+  */
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_4;
+  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_3;
   if (HAL_ADCEx_InjectedConfigChannel(&hadc1, &sConfigInjected) != HAL_OK)
   {
     Error_Handler();
@@ -479,7 +487,7 @@ static void MX_ADC2_Init(void)
   */
   sConfigInjected.InjectedChannel = ADC_CHANNEL_10;
   sConfigInjected.InjectedRank = ADC_INJECTED_RANK_1;
-  sConfigInjected.InjectedNbrOfConversion = 2;
+  sConfigInjected.InjectedNbrOfConversion = 3;
   sConfigInjected.InjectedSamplingTime = ADC_SAMPLETIME_15CYCLES;
   sConfigInjected.ExternalTrigInjecConvEdge = ADC_EXTERNALTRIGINJECCONVEDGE_RISINGFALLING;
   sConfigInjected.ExternalTrigInjecConv = ADC_EXTERNALTRIGINJECCONV_T8_TRGO2;
@@ -494,6 +502,14 @@ static void MX_ADC2_Init(void)
   */
   sConfigInjected.InjectedChannel = ADC_CHANNEL_11;
   sConfigInjected.InjectedRank = ADC_INJECTED_RANK_2;
+  if (HAL_ADCEx_InjectedConfigChannel(&hadc2, &sConfigInjected) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configures for the selected ADC injected channel its corresponding rank in the sequencer and its sample time
+  */
+  sConfigInjected.InjectedChannel = ADC_CHANNEL_13;
+  sConfigInjected.InjectedRank = ADC_INJECTED_RANK_3;
   if (HAL_ADCEx_InjectedConfigChannel(&hadc2, &sConfigInjected) != HAL_OK)
   {
     Error_Handler();

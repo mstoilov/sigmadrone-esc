@@ -402,9 +402,9 @@ int application_main()
         ma4_abs_encoder1.RegisterRpcMethods("enc2.");
     }
 
-    adc1.Attach(&hadc1);
-    adc2.Attach(&hadc2);
-    adc3.Attach(&hadc3);
+    adc1.Attach(&hadc1, 6, true);
+    adc2.Attach(&hadc2, 3, false);
+//    adc3.Attach(&hadc3, 1, false);
     uart1.Attach(&huart1);
     spi2.Attach(&hspi2);
     LL_TIM_SetCounter(TIM8, TIM1_PERIOD_CLOCKS - 1);

@@ -207,7 +207,8 @@ void MotorCtrlFOC::RunDebugLoop()
             );
         } else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
             fprintf(stderr,
-                    "Speed: %9.2f (%9.2f), I_d: %+5.3f, I_q: %+6.3f, T: %4lu, Adv1: %+5.3f\n",
+                    "VBus: %5.2f Speed: %9.2f (%9.2f), I_d: %+5.3f, I_q: %+6.3f, T: %4lu, Adv1: %+5.3f\n",
+                    drive_->GetBusVoltage(),
                     drive_->GetRotorVelocity() / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocityPTS(),
                     lpf_Id_,

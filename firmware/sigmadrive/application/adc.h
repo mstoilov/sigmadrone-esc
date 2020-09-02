@@ -19,7 +19,7 @@ class Adc {
 public:
     Adc();
     virtual ~Adc();
-    void Attach(ADC_HandleTypeDef *hadc);
+    void Attach(ADC_HandleTypeDef *hadc, uint32_t n_regranks, bool enable_irq);
 
     void InjectedSwTrig();
     uint32_t InjReadConversionData(uint32_t rank);

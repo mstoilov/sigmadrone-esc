@@ -184,10 +184,12 @@ public:
      */
     float phase_current_a_ = 0.0f;
     float phase_current_b_ = 0.0f;
+    float phase_current_c_ = 0.0f;
     uint64_t Renc_ = 0;                         /**< Position of the rotor in enc counts */
     uint64_t Rencest_ = 0;                      /**< Estimated position of the rotor in enc counts */
     LowPassFilter<float, float> lpf_bias_a;     /**< Low pass filter for phase A current bias */
     LowPassFilter<float, float> lpf_bias_b;     /**< Low pass filter for phase B current bias */
+    LowPassFilter<float, float> lpf_bias_c;     /**< Low pass filter for phase C current bias */
     LowPassFilter<float, float> lpf_vbus_;      /**< Low pass filter for the Vbus voltage */
     LowPassFilter<float, float> lpf_Wenc_;      /**< Low pass filter for rotor velocity in enc counts per encoder_time_slice */
     std::complex<float> Iab_;                   /**< Phase current represented as a complex vector, where the real value is alpha current and the imag value is the beta current */

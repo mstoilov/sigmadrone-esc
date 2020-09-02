@@ -28,11 +28,13 @@ MotorDrive::MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, Adc* dma_adc, 
     , time_slice_(1.0f / update_hz_)
     , lpf_bias_a(config_.bias_alpha_)
     , lpf_bias_b(config_.bias_alpha_)
+    , lpf_bias_c(config_.bias_alpha_)
     , lpf_vbus_(config_.vbus_alpha_, 12.0f)
     , lpf_Wenc_(config_.wenc_alpha_)
 {
     lpf_bias_a.Reset(1 << 11);
     lpf_bias_b.Reset(1 << 11);
+    lpf_bias_c.Reset(1 << 11);
     axis_idx_ = axis_idx;
     drv_ = drv;
     adc_ = adc;
@@ -97,6 +99,7 @@ rexjson::property MotorDrive::GetPropertyMap()
         {"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
         {"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
         {"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_access::readonly)},
+        {"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_access::readonly)},
         {"bias_alpha", rexjson::property(
             &config_.bias_alpha_,
             rexjson::property_access::readwrite,
@@ -104,6 +107,7 @@ rexjson::property MotorDrive::GetPropertyMap()
             [&](void*)->void {
                 lpf_bias_a.SetAlpha(config_.bias_alpha_);
                 lpf_bias_b.SetAlpha(config_.bias_alpha_);
+                lpf_bias_c.SetAlpha(config_.bias_alpha_);
             })},
         {"vbus_alpha", rexjson::property(
                 &config_.vbus_alpha_,
@@ -386,9 +390,11 @@ void MotorDrive::UpdateBias()
      */
     float injdata_a = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
     float injdata_b = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
+    float injdata_c = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_3);
 
     lpf_bias_a.DoFilter(injdata_a);
     lpf_bias_b.DoFilter(injdata_b);
+    lpf_bias_c.DoFilter(injdata_c);
 }
 
 void MotorDrive::UpdateCurrent()
@@ -404,20 +410,29 @@ void MotorDrive::UpdateCurrent()
     /*
      * Sample VBus voltage
      */
+#if 1
     float vbus = dma_adc_->RegReadConversionData(4 - 1);
     lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, vbus, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
+#else
+
+    float injdata_vbus = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_4);
+    lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, injdata_vbus, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
+
+#endif
 
     /*
      * Sample ADC phase current
      */
     float injdata_a = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
     float injdata_b = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
+    float injdata_c = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_3);
 
     /*
      * Apply the ADC bias to the current data
      */
     phase_current_a_ = CalculatePhaseCurrent(injdata_a, lpf_bias_a.Output());
     phase_current_b_ = CalculatePhaseCurrent(injdata_b, lpf_bias_b.Output());
+    phase_current_c_ = CalculatePhaseCurrent(injdata_c, lpf_bias_c.Output());
 
     /*
      * Update the Iab vector
@@ -922,7 +937,7 @@ bool MotorDrive::CheckTripViolations()
     ret = ret || CheckPhaseVoltageViolation(lpf_vbus_.Output());
     ret = ret || CheckPhaseCurrentViolation(phase_current_a_);
     ret = ret || CheckPhaseCurrentViolation(phase_current_b_);
-    ret = ret || CheckPhaseCurrentViolation(- phase_current_a_ - phase_current_b_);
+    ret = ret || CheckPhaseCurrentViolation(phase_current_c_);
     if (ret)
         delay_trip_check_ = 0;
     return ret;

@@ -32,25 +32,16 @@ Adc::~Adc()
  *
  * @param hadc handle to the hardware level device
  */
-void Adc::Attach(ADC_HandleTypeDef *hadc)
+void Adc::Attach(ADC_HandleTypeDef *hadc, uint32_t n_regranks, bool enable_irq)
 {
     hadc_ = hadc;
     __HAL_ADC_ENABLE(hadc_);
-    if (hadc == &hadc1) {
+    if (enable_irq)
         __HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
-        if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, 15) != HAL_OK) {
-            /* Start Conversation Error */
-            printf("Failed to start regular conversions for ADC1\n");
-        }
+    if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, n_regranks) != HAL_OK) {
+        /* Start Conversation Error */
+        printf("Failed to start regular conversions for ADC\n");
     }
-
-    if (hadc == &hadc2) {
-        if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, 15) != HAL_OK) {
-            /* Start Conversation Error */
-            printf("Failed to start regular conversions for ADC2\n");
-        }
-    }
-
 }
 
 /** Trigger the injected channels conversion
