@@ -404,7 +404,7 @@ void MotorDrive::UpdateCurrent()
         encoder_->Update();
         UpdateRotor();
     } else {
-        EstimateRotor();
+//        EstimateRotor();
     }
 
     /*
