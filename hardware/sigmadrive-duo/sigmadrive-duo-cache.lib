@@ -1,6 +1,27 @@
 EESchema-LIBRARY Version 2.4
 #encoding utf-8
 #
+# Connector_Generic_Conn_01x03
+#
+DEF Connector_Generic_Conn_01x03 J 0 40 Y N 1 F N
+F0 "J" 0 200 50 H V C CNN
+F1 "Connector_Generic_Conn_01x03" 0 -200 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_1x??_*
+$ENDFPLIST
+DRAW
+S -50 -95 0 -105 1 1 6 N
+S -50 5 0 -5 1 1 6 N
+S -50 105 0 95 1 1 6 N
+S -50 150 50 -150 1 1 10 f
+X Pin_1 1 -200 100 150 R 50 50 1 1 P
+X Pin_2 2 -200 0 150 R 50 50 1 1 P
+X Pin_3 3 -200 -100 150 R 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
 # Connector_Generic_Conn_01x04
 #
 DEF Connector_Generic_Conn_01x04 J 0 40 Y N 1 F N
@@ -582,21 +603,6 @@ X +3.3VA 1 0 0 0 U 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
-# power_+3.3VP
-#
-DEF power_+3.3VP #PWR 0 0 Y Y 1 F P
-F0 "#PWR" 150 -50 50 H I C CNN
-F1 "power_+3.3VP" 0 100 50 H V C CNN
-F2 "" 0 0 50 H I C CNN
-F3 "" 0 0 50 H I C CNN
-DRAW
-P 2 0 1 0 -30 50 0 100 N
-P 2 0 1 0 0 0 0 100 N
-P 2 0 1 0 0 100 30 50 N
-X +3.3VP 1 0 0 0 U 50 50 0 0 W N
-ENDDRAW
-ENDDEF
-#
 # power_+3V3
 #
 DEF power_+3V3 #PWR 0 0 Y Y 1 F P
@@ -726,7 +732,7 @@ X SOA 25 -800 -1100 200 R 50 50 1 1 O
 X VREF 26 -800 -800 200 R 50 50 1 1 I
 X DGND 27 800 -1900 200 L 50 50 1 1 W
 X ~FAULT 28 -800 -700 200 R 50 50 1 1 C
-X SDO 29 -800 -200 200 R 50 50 1 1 O
+X SDO 29 -800 -200 200 R 50 50 1 1 B
 X CPL 3 -800 1000 200 R 50 50 1 1 P
 X SDI 30 -800 -300 200 R 50 50 1 1 I
 X SCLK 31 -800 -400 200 R 50 50 1 1 I

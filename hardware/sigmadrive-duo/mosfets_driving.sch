@@ -4,9 +4,9 @@ EELAYER END
 $Descr A2 23386 16535
 encoding utf-8
 Sheet 3 3
-Title "Servo Driver 48V"
+Title "Servo Driver 60V"
 Date "2018-09-03"
-Rev "1.0"
+Rev "3.6"
 Comp "Sigmadrone"
 Comment1 ""
 Comment2 ""
@@ -269,46 +269,46 @@ Connection ~ 7450 4750
 $Comp
 L Device:R R?
 U 1 1 5C70F366
-P 9050 4750
+P 9550 4750
 AR Path="/58BF599E/5C70F366" Ref="R?"  Part="1" 
 AR Path="/58BE27E6/5C70F366" Ref="R?"  Part="1" 
 AR Path="/58BF664D/5C70F366" Ref="R18"  Part="1" 
-F 0 "R18" V 9130 4750 50  0000 C CNN
-F 1 "20k" V 9050 4750 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 8980 4750 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9050 4750 50  0001 C CNN
-F 4 "311-20.0KHRTR-ND" V 9050 4750 60  0001 C CNN "Part"
-F 5 "DigiKey" V 9050 4750 60  0001 C CNN "Provider"
-	1    9050 4750
+F 0 "R18" V 9630 4750 50  0000 C CNN
+F 1 "20k" V 9550 4750 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9480 4750 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9550 4750 50  0001 C CNN
+F 4 "311-20.0KHRTR-ND" V 9550 4750 60  0001 C CNN "Part"
+F 5 "DigiKey" V 9550 4750 60  0001 C CNN "Provider"
+	1    9550 4750
 	-1   0    0    1   
 $EndComp
 $Comp
 L Device:R R?
 U 1 1 5C70F372
-P 9050 5300
+P 9550 5300
 AR Path="/58BF599E/5C70F372" Ref="R?"  Part="1" 
 AR Path="/58BE27E6/5C70F372" Ref="R?"  Part="1" 
 AR Path="/58BF664D/5C70F372" Ref="R22"  Part="1" 
-F 0 "R22" V 9130 5300 50  0000 C CNN
-F 1 "3.3k" V 9050 5300 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 8980 5300 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9050 5300 50  0001 C CNN
-F 4 "311-3.30KHRCT-ND" V 9050 5300 60  0001 C CNN "Part"
-F 5 "DigiKey" V 9050 5300 60  0001 C CNN "Provider"
-	1    9050 5300
+F 0 "R22" V 9630 5300 50  0000 C CNN
+F 1 "3.3k" V 9550 5300 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9480 5300 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9550 5300 50  0001 C CNN
+F 4 "311-3.30KHRCT-ND" V 9550 5300 60  0001 C CNN "Part"
+F 5 "DigiKey" V 9550 5300 60  0001 C CNN "Provider"
+	1    9550 5300
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	9050 5750 9050 5450
+	9550 5750 9550 5450
 $Comp
 L power:GND #PWR055
 U 1 1 5C74C07F
-P 9050 5750
-F 0 "#PWR055" H 9050 5500 50  0001 C CNN
-F 1 "GND" H 9050 5600 50  0000 C CNN
-F 2 "" H 9050 5750 50  0001 C CNN
-F 3 "" H 9050 5750 50  0001 C CNN
-	1    9050 5750
+P 9550 5750
+F 0 "#PWR055" H 9550 5500 50  0001 C CNN
+F 1 "GND" H 9550 5600 50  0000 C CNN
+F 2 "" H 9550 5750 50  0001 C CNN
+F 3 "" H 9550 5750 50  0001 C CNN
+	1    9550 5750
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -351,15 +351,15 @@ Connection ~ 7450 4550
 Wire Wire Line
 	7900 4550 8000 4550
 Wire Wire Line
-	9050 4550 9050 4600
+	9550 4550 9550 4600
 Connection ~ 8000 4550
 Wire Wire Line
-	9050 4900 9050 4950
+	9550 4900 9550 4950
 Wire Wire Line
-	6400 4950 9050 4950
-Connection ~ 9050 4950
+	6400 4950 9550 4950
+Connection ~ 9550 4950
 Wire Wire Line
-	9050 4950 9050 5150
+	9550 4950 9550 5150
 $Comp
 L power:+5V #PWR?
 U 1 1 5C8517F8
@@ -1184,46 +1184,46 @@ Connection ~ 7400 10550
 $Comp
 L Device:R R?
 U 1 1 5CA944C8
-P 9050 11100
+P 9550 11100
 AR Path="/58BF599E/5CA944C8" Ref="R?"  Part="1" 
 AR Path="/58BE27E6/5CA944C8" Ref="R?"  Part="1" 
 AR Path="/58BF664D/5CA944C8" Ref="R16"  Part="1" 
-F 0 "R16" V 9130 11100 50  0000 C CNN
-F 1 "8.45k" V 9050 11100 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 8980 11100 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9050 11100 50  0001 C CNN
-F 4 "311-8.45KHRCT-ND" V 9050 11100 60  0001 C CNN "Part"
-F 5 "DigiKey" V 9050 11100 60  0001 C CNN "Provider"
-	1    9050 11100
+F 0 "R16" V 9630 11100 50  0000 C CNN
+F 1 "8.45k" V 9550 11100 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9480 11100 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9550 11100 50  0001 C CNN
+F 4 "311-8.45KHRCT-ND" V 9550 11100 60  0001 C CNN "Part"
+F 5 "DigiKey" V 9550 11100 60  0001 C CNN "Provider"
+	1    9550 11100
 	-1   0    0    1   
 $EndComp
 $Comp
 L Device:R R?
 U 1 1 5CA944D1
-P 9050 10550
+P 9550 10550
 AR Path="/58BF599E/5CA944D1" Ref="R?"  Part="1" 
 AR Path="/58BE27E6/5CA944D1" Ref="R?"  Part="1" 
 AR Path="/58BF664D/5CA944D1" Ref="R13"  Part="1" 
-F 0 "R13" V 9130 10550 50  0000 C CNN
-F 1 "28k" V 9050 10550 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 8980 10550 50  0001 C CNN
-F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9050 10550 50  0001 C CNN
-F 4 "311-28.0KHRCT-ND" V 9050 10550 60  0001 C CNN "Part"
-F 5 "DigiKey" V 9050 10550 60  0001 C CNN "Provider"
-	1    9050 10550
+F 0 "R13" V 9630 10550 50  0000 C CNN
+F 1 "28k" V 9550 10550 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 9480 10550 50  0001 C CNN
+F 3 "http://www.yageo.com/documents/recent/PYu-RT_1-to-0.01_RoHS_L_7.pdf" H 9550 10550 50  0001 C CNN
+F 4 "311-28.0KHRCT-ND" V 9550 10550 60  0001 C CNN "Part"
+F 5 "DigiKey" V 9550 10550 60  0001 C CNN "Provider"
+	1    9550 10550
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	9050 11550 9050 11250
+	9550 11550 9550 11250
 $Comp
 L power:GND #PWR032
 U 1 1 5CA944D9
-P 9050 11550
-F 0 "#PWR032" H 9050 11300 50  0001 C CNN
-F 1 "GND" H 9050 11400 50  0000 C CNN
-F 2 "" H 9050 11550 50  0001 C CNN
-F 3 "" H 9050 11550 50  0001 C CNN
-	1    9050 11550
+P 9550 11550
+F 0 "#PWR032" H 9550 11300 50  0001 C CNN
+F 1 "GND" H 9550 11400 50  0000 C CNN
+F 2 "" H 9550 11550 50  0001 C CNN
+F 3 "" H 9550 11550 50  0001 C CNN
+	1    9550 11550
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -1268,17 +1268,17 @@ Wire Wire Line
 Wire Wire Line
 	7950 10350 8500 10350
 Wire Wire Line
-	9050 10350 9050 10400
+	9550 10350 9550 10400
 Connection ~ 7950 10350
 Wire Wire Line
-	9050 10700 9050 10750
+	9550 10700 9550 10750
 Wire Wire Line
-	6350 10750 9050 10750
-Connection ~ 9050 10750
+	6350 10750 9550 10750
+Connection ~ 9550 10750
 Wire Wire Line
-	9050 10750 9050 10950
+	9550 10750 9550 10950
 Wire Wire Line
-	9050 10350 9050 10150
+	9550 10350 9550 10150
 $Comp
 L Device:C C?
 U 1 1 5CA94516
@@ -2011,7 +2011,7 @@ AR Path="/58BE27E6/5CD72A14" Ref="C?"  Part="1"
 AR Path="/58BF664D/5CD72A14" Ref="C47"  Part="1" 
 F 0 "C47" H 8550 5400 50  0000 L CNN
 F 1 "10uF 35V" V 8400 5050 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 8588 5150 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 8588 5150 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 8550 5300 50  0001 C CNN
 F 4 "445-14419-6-ND" H 8550 5300 60  0001 C CNN "Part"
 F 5 "DigiKey" H 8550 5300 60  0001 C CNN "Provider"
@@ -2041,7 +2041,7 @@ AR Path="/58BE27E6/5CD12541" Ref="C?"  Part="1"
 AR Path="/58BF664D/5CD12541" Ref="C26"  Part="1" 
 F 0 "C26" H 8000 5400 50  0000 L CNN
 F 1 "10uF 35V" V 7850 5050 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 8038 5150 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 8038 5150 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 8000 5300 50  0001 C CNN
 F 4 "445-14419-6-ND" H 8000 5300 60  0001 C CNN "Part"
 F 5 "DigiKey" H 8000 5300 60  0001 C CNN "Provider"
@@ -2071,7 +2071,7 @@ AR Path="/58BE27E6/5CDCE4C0" Ref="C?"  Part="1"
 AR Path="/58BF664D/5CDCE4C0" Ref="C48"  Part="1" 
 F 0 "C48" H 8500 11200 50  0000 L CNN
 F 1 "10uF 35V" V 8350 10850 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 8538 10950 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 8538 10950 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 8500 11100 50  0001 C CNN
 F 4 "445-14419-6-ND" H 8500 11100 60  0001 C CNN "Part"
 F 5 "DigiKey" H 8500 11100 60  0001 C CNN "Provider"
@@ -2101,7 +2101,7 @@ AR Path="/58BE27E6/5CDCE4D0" Ref="C?"  Part="1"
 AR Path="/58BF664D/5CDCE4D0" Ref="C35"  Part="1" 
 F 0 "C35" H 7950 11200 50  0000 L CNN
 F 1 "10uF 35V" V 7800 10850 50  0000 L CNN
-F 2 "Capacitor_SMD:C_1206_3216Metric" H 7988 10950 50  0001 C CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 7988 10950 50  0001 C CNN
 F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 7950 11100 50  0001 C CNN
 F 4 "445-14419-6-ND" H 7950 11100 60  0001 C CNN "Part"
 F 5 "DigiKey" H 7950 11100 60  0001 C CNN "Provider"
@@ -2128,7 +2128,7 @@ Wire Wire Line
 	8500 10350 9050 10350
 Connection ~ 8550 4550
 Wire Wire Line
-	8550 4550 9050 4550
+	8550 4550 9100 4550
 $Comp
 L sigmadrive-duo-rescue:TPS793333-EP-regul-sigmadrive-solo-rescue U?
 U 1 1 5D28A04E
@@ -2269,16 +2269,16 @@ F 3 "" H 4300 4800 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	4300 4800 4300 4950
-Connection ~ 9050 10350
+Connection ~ 9550 10350
 $Comp
 L power:+3.3V #PWR029
 U 1 1 5CAAD5F2
-P 9050 10150
-F 0 "#PWR029" H 9050 10000 50  0001 C CNN
-F 1 "+3.3V" H 9065 10323 50  0000 C CNN
-F 2 "" H 9050 10150 50  0001 C CNN
-F 3 "" H 9050 10150 50  0001 C CNN
-	1    9050 10150
+P 9550 10150
+F 0 "#PWR029" H 9550 10000 50  0001 C CNN
+F 1 "+3.3V" H 9565 10323 50  0000 C CNN
+F 2 "" H 9550 10150 50  0001 C CNN
+F 3 "" H 9550 10150 50  0001 C CNN
+	1    9550 10150
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
@@ -3132,19 +3132,6 @@ F 3 "" H 4050 10600 50  0001 C CNN
 $EndComp
 Wire Wire Line
 	4050 10750 4050 10600
-Wire Wire Line
-	21400 13200 19700 13200
-$Comp
-L sigmadrone:PGND #PWR0129
-U 1 1 5FBE4D57
-P 19700 13200
-F 0 "#PWR0129" H 19700 12950 50  0001 C CNN
-F 1 "PGND" V 19700 12950 50  0000 C CNN
-F 2 "" H 19700 13200 50  0001 C CNN
-F 3 "" H 19700 13200 50  0001 C CNN
-	1    19700 13200
-	0    1    -1   0   
-$EndComp
 Text Label 19750 13500 0    60   ~ 0
 M2_A
 Text Label 19750 13400 0    60   ~ 0
@@ -3157,19 +3144,6 @@ Wire Wire Line
 	19750 13500 21400 13500
 Wire Wire Line
 	19750 13300 21400 13300
-Wire Wire Line
-	21400 12700 19700 12700
-$Comp
-L sigmadrone:PGND #PWR0133
-U 1 1 5FC35CD7
-P 19700 12700
-F 0 "#PWR0133" H 19700 12450 50  0001 C CNN
-F 1 "PGND" V 19700 12450 50  0000 C CNN
-F 2 "" H 19700 12700 50  0001 C CNN
-F 3 "" H 19700 12700 50  0001 C CNN
-	1    19700 12700
-	0    1    -1   0   
-$EndComp
 Text Label 19750 13000 0    60   ~ 0
 M1_A
 Text Label 19750 12900 0    60   ~ 0
@@ -3183,25 +3157,14 @@ Wire Wire Line
 Wire Wire Line
 	19750 12800 21400 12800
 $Comp
-L Connector_Generic:Conn_01x04 M1
+L Connector_Generic:Conn_01x03 M1
 U 1 1 5FC99996
-P 21600 12800
-F 0 "M1" H 21680 12792 50  0000 L CNN
-F 1 "Conn_01x04" H 21680 12701 50  0000 L CNN
-F 2 "Connector_Molex:Molex_Micro-Fit_3.0_43650-0400_1x04_P3.00mm_Horizontal" H 21600 12800 50  0001 C CNN
-F 3 "https://www.molex.com/pdm_docs/sd/436500400_sd.pdf" H 21600 12800 50  0001 C CNN
-	1    21600 12800
-	1    0    0    -1  
-$EndComp
-$Comp
-L Connector_Generic:Conn_01x04 M2
-U 1 1 5FCEEC20
-P 21600 13300
-F 0 "M2" H 21680 13292 50  0000 L CNN
-F 1 "Conn_01x04" H 21680 13201 50  0000 L CNN
-F 2 "Connector_Molex:Molex_Micro-Fit_3.0_43650-0400_1x04_P3.00mm_Horizontal" H 21600 13300 50  0001 C CNN
-F 3 "https://www.molex.com/pdm_docs/sd/436500400_sd.pdf" H 21600 13300 50  0001 C CNN
-	1    21600 13300
+P 21600 12900
+F 0 "M1" H 21680 12892 50  0000 L CNN
+F 1 "Conn_01x03" H 21680 12801 50  0000 L CNN
+F 2 "Connector_Molex:Molex_Micro-Fit_3.0_43650-0300_1x03_P3.00mm_Horizontal" H 21600 12900 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/436500400_sd.pdf" H 21600 12900 50  0001 C CNN
+	1    21600 12900
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -3215,8 +3178,6 @@ F 3 "https://www.molex.com/pdm_docs/sd/436500400_sd.pdf" H 21600 13850 50  0001 
 	1    21600 13850
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	1850 3650 4200 3650
 Wire Wire Line
 	19850 13850 21300 13850
 Wire Wire Line
@@ -3235,42 +3196,6 @@ Wire Wire Line
 Connection ~ 21300 13950
 Wire Wire Line
 	21300 13950 21400 13950
-$Comp
-L Device:R R?
-U 1 1 63F9A5F3
-P 4350 9450
-AR Path="/58BE2779/63F9A5F3" Ref="R?"  Part="1" 
-AR Path="/58BF664D/63F9A5F3" Ref="R51"  Part="1" 
-F 0 "R51" V 4400 9600 50  0000 C CNN
-F 1 "21" V 4350 9450 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 4280 9450 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 4350 9450 50  0001 C CNN
-F 4 "311-21.0HRCT-ND" V 4350 9450 60  0001 C CNN "Part"
-F 5 "DigiKey" V 4350 9450 60  0001 C CNN "Provider"
-	1    4350 9450
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	4500 9450 4750 9450
-Wire Wire Line
-	4200 9450 2250 9450
-$Comp
-L Device:R R?
-U 1 1 64019D46
-P 4350 3650
-AR Path="/58BE2779/64019D46" Ref="R?"  Part="1" 
-AR Path="/58BF664D/64019D46" Ref="R37"  Part="1" 
-F 0 "R37" V 4400 3800 50  0000 C CNN
-F 1 "21" V 4350 3650 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 4280 3650 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 4350 3650 50  0001 C CNN
-F 4 "311-21.0HRCT-ND" V 4350 3650 60  0001 C CNN "Part"
-F 5 "DigiKey" V 4350 3650 60  0001 C CNN "Provider"
-	1    4350 3650
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	4500 3650 4800 3650
 $Comp
 L power:+3.3VA #PWR0156
 U 1 1 64064717
@@ -3400,7 +3325,7 @@ P 9800 13000
 AR Path="/58BE2779/64802E0B" Ref="R?"  Part="1" 
 AR Path="/58BF664D/64802E0B" Ref="R52"  Part="1" 
 F 0 "R52" V 9850 12800 50  0000 C CNN
-F 1 "0" V 9800 13000 50  0000 C CNN
+F 1 "N/A" V 9800 13000 50  0000 C CNN
 F 2 "Resistor_SMD:R_0603_1608Metric" V 9730 13000 50  0001 C CNN
 F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 9800 13000 50  0001 C CNN
 F 4 "311-0.0GRTR-ND" V 9800 13000 60  0001 C CNN "Part"
@@ -3432,4 +3357,85 @@ Wire Wire Line
 Connection ~ 10150 13000
 Wire Wire Line
 	10150 13000 10150 13050
+Wire Wire Line
+	1850 3650 4800 3650
+Wire Wire Line
+	2250 9450 4750 9450
+$Comp
+L Connector_Generic:Conn_01x03 M2
+U 1 1 5F8E9048
+P 21600 13400
+F 0 "M2" H 21680 13392 50  0000 L CNN
+F 1 "Conn_01x03" H 21680 13301 50  0000 L CNN
+F 2 "Connector_Molex:Molex_Micro-Fit_3.0_43650-0300_1x03_P3.00mm_Horizontal" H 21600 13400 50  0001 C CNN
+F 3 "https://www.molex.com/pdm_docs/sd/436500400_sd.pdf" H 21600 13400 50  0001 C CNN
+	1    21600 13400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C?
+U 1 1 5F9C7F75
+P 9050 11100
+AR Path="/58BE27E6/5F9C7F75" Ref="C?"  Part="1" 
+AR Path="/58BF664D/5F9C7F75" Ref="C46"  Part="1" 
+F 0 "C46" H 9050 11200 50  0000 L CNN
+F 1 "10uF 35V" V 8900 10850 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 9088 10950 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 9050 11100 50  0001 C CNN
+F 4 "445-14419-6-ND" H 9050 11100 60  0001 C CNN "Part"
+F 5 "DigiKey" H 9050 11100 60  0001 C CNN "Provider"
+	1    9050 11100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9050 10350 9050 10950
+Wire Wire Line
+	9050 11550 9050 11250
+$Comp
+L power:GND #PWR037
+U 1 1 5F9C7F81
+P 9050 11550
+F 0 "#PWR037" H 9050 11300 50  0001 C CNN
+F 1 "GND" H 9050 11400 50  0000 C CNN
+F 2 "" H 9050 11550 50  0001 C CNN
+F 3 "" H 9050 11550 50  0001 C CNN
+	1    9050 11550
+	1    0    0    -1  
+$EndComp
+Connection ~ 9050 10350
+Wire Wire Line
+	9050 10350 9550 10350
+$Comp
+L Device:C C?
+U 1 1 5FA35A31
+P 9100 5300
+AR Path="/58BE27E6/5FA35A31" Ref="C?"  Part="1" 
+AR Path="/58BF664D/5FA35A31" Ref="C67"  Part="1" 
+F 0 "C67" H 9100 5400 50  0000 L CNN
+F 1 "10uF 35V" V 8950 5050 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 9138 5150 50  0001 C CNN
+F 3 "http://www.samsungsem.com/kr/support/product-search/mlcc/CL21A475KACLRNC.jsp" H 9100 5300 50  0001 C CNN
+F 4 "445-14419-6-ND" H 9100 5300 60  0001 C CNN "Part"
+F 5 "DigiKey" H 9100 5300 60  0001 C CNN "Provider"
+	1    9100 5300
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9100 4550 9100 5150
+Wire Wire Line
+	9100 5750 9100 5450
+$Comp
+L power:GND #PWR057
+U 1 1 5FA35A3D
+P 9100 5750
+F 0 "#PWR057" H 9100 5500 50  0001 C CNN
+F 1 "GND" H 9100 5600 50  0000 C CNN
+F 2 "" H 9100 5750 50  0001 C CNN
+F 3 "" H 9100 5750 50  0001 C CNN
+	1    9100 5750
+	1    0    0    -1  
+$EndComp
+Connection ~ 9100 4550
+Wire Wire Line
+	9100 4550 9550 4550
 $EndSCHEMATC
