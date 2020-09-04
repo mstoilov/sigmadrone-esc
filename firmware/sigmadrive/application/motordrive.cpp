@@ -162,7 +162,7 @@ rexjson::property MotorDrive::GetPropertyMap()
         {"reset_voltage", &config_.reset_voltage_},
         {"reset_hz", &config_.reset_hz_},
         {"display_div", &config_.display_div_},
-        {"Renc", &Renc_},
+        {"Rencest", &Rencest_},
     });
     return props;
 }
@@ -404,7 +404,7 @@ void MotorDrive::UpdateCurrent()
         encoder_->Update();
         UpdateRotor();
     } else {
-//        EstimateRotor();
+        EstimateRotor();
     }
 
     /*
