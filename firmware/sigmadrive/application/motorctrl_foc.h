@@ -33,7 +33,7 @@ public:
         float vab_advance_factor_ = 1.5;        /**< Magnetic field advance factor. The V_ab will be advanced proportional to the rotor variable speed and this constant  */
         float vq_bias_ = 0;                     /**< Bias for the q-voltage (Vq) PID regulator */
         float w_bias_ = 0;                      /**< Bias for the velocity PID (W) regulator */
-        bool display_ = true;                   /**< Display mode on/off */
+        bool display_ = false;                  /**< Display mode on/off */
         float max_poserr_factor_ = 1.0;         /**< Maximum position error factor. 1 - 0ne full revolution, 0.5 - half revolution, etc. */
     };
 
@@ -97,8 +97,8 @@ protected:
     float Perr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */
     uint64_t target_ = 0;                       /**< Target position used in closed loop position mode */
     float velocity_ = 1500000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
-    float acceleration_ = 20000000;             /**< Movement acceleration [counts/s^2] */
-    float deceleration_ = 20000000;             /**< Movement deceleration [counts/s^2] */
+    float acceleration_ = 1000000;              /**< Movement acceleration [counts/s^2] */
+    float deceleration_ = 500000;               /**< Movement deceleration [counts/s^2] */
     float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
     float spin_voltage_ = 3.0f;                 /**< Voltage used for the spin mode */
     uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */

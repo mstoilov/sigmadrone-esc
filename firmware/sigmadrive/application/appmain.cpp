@@ -295,6 +295,39 @@ void DumpText()
         DumpTextDo();
 }
 
+
+void AllMoveToPosition(uint64_t pos_a1, uint64_t pos_a2)
+{
+    foc1.MoveToPosition(pos_a1);
+    foc2.MoveToPosition(pos_a2);
+}
+
+void AllMoveRelative(int64_t offset_a1, int64_t offset_a2)
+{
+    foc1.MoveRelative(offset_a1);
+    foc2.MoveRelative(offset_a2);
+}
+
+void AllModeCltr()
+{
+    foc1.ModeClosedLoopTrajectory();
+    foc2.ModeClosedLoopTrajectory();
+}
+
+void AllModeClv()
+{
+    foc1.ModeClosedLoopVelocity();
+    foc2.ModeClosedLoopVelocity();
+}
+
+void AllModeStop()
+{
+    foc1.Stop();
+    foc2.Stop();
+}
+
+
+
 void RegisterRpcMethods()
 {
     rpc_server.add("dumptext", rexjson::make_rpc_wrapper(DumpText, "void DumpText()"));
@@ -321,7 +354,11 @@ void RegisterRpcMethods()
     rpc_server.add("drv2.DisableDriver", rexjson::make_rpc_wrapper(&drv2, &Drv8323::DisableDriver, "void Drv8323::DisableDriver()"));
     rpc_server.add("drv2.InitializeDefaults", rexjson::make_rpc_wrapper(&drv2, &Drv8323::InitializeDefaults, "void Drv8323::InitializeDefaults()"));
 
-
+    rpc_server.add("all.mvp", rexjson::make_rpc_wrapper(AllMoveToPosition, "AllMoveToPosition(uint64_t pos_a1, uint64_t pos_a2)"));
+    rpc_server.add("all.mvr", rexjson::make_rpc_wrapper(AllMoveRelative, "void AllMoveRelative(int64_t offset_a1, int64_t offset_a2)"));
+    rpc_server.add("all.modecltr", rexjson::make_rpc_wrapper(AllModeCltr, "void AllModeCltr()"));
+    rpc_server.add("all.modeclv", rexjson::make_rpc_wrapper(AllModeClv, "void AllModeClv()"));
+    rpc_server.add("all.stop", rexjson::make_rpc_wrapper(AllModeStop, "void AllModeStop()"));
 }
 
 void StartRpcThread()

@@ -1,6 +1,7 @@
 import trapezoidprofile as tp
 import matplotlib.pyplot as pp
 import numpy as np
+import sys
 
 def sign_hard(x):
     return 1.0 if (x >= 0) else -1.0
@@ -70,14 +71,33 @@ def trapezoidalProfile(Xf, Xi, Vin, Vmax, Amax, Dmax, t):
     return Y, Yd, Ydd
 
 
-time = np.arange(0, 20000)
+Pf = 1000000
+Pi = 0
+Vi = 0
+Vmax = 65535 * 30
+Acc = 40000000
+Dec = 5000000
+HZ = 18000
+
+nargs = len(sys.argv)
+
+Pf = int(sys.argv[1]) if nargs > 1 else Pf
+Pi = int(sys.argv[2]) if nargs > 2 else Pi
+Vi = int(sys.argv[3]) if nargs > 3 else Vi
+Vmax = int(sys.argv[4]) if nargs > 4 else Vmax
+Acc = int(sys.argv[5]) if nargs > 5 else Acc
+Dec = int(sys.argv[6]) if nargs > 6 else Dec
+HZ = int(sys.argv[7]) if nargs > 7 else HZ
+
+prof = tp.TrapezoidProfile();
+prof.Init(Pf, Pi, Vi, Vmax, Acc, Dec, HZ)
+
+time = np.arange(0, prof.T + HZ/10)
 Vc = np.zeros_like(time)
 Sc = np.zeros_like(time)
 Ac = np.zeros_like(time)
 
-HZ = 18000
-prof = tp.TrapezoidProfile();
-prof.Init(1000000, 0, 0, 65535 * 30, 40000000, 10000000, HZ)
+
 for i, t in enumerate(time):
     data = prof.Step(time[i])
     Sc[i], Vc[i] = data.P, data.Pd
