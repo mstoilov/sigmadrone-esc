@@ -34,10 +34,10 @@ void Drv8323::InitializeDefaults()
     WriteReg(5, 0x0);
     WriteReg(6, 0x0);
 
-    SetIDriveP_HS(Drv8323::IDRIVEP_370mA);
-    SetIDriveN_HS(Drv8323::IDRIVEN_1360mA);
-    SetIDriveP_LS(Drv8323::IDRIVEP_370mA);
-    SetIDriveN_LS(Drv8323::IDRIVEN_1360mA);
+    SetIDriveP_HS(Drv8323::IDRIVEP_120mA);
+    SetIDriveN_HS(Drv8323::IDRIVEN_240mA);
+    SetIDriveP_LS(Drv8323::IDRIVEP_120mA);
+    SetIDriveN_LS(Drv8323::IDRIVEN_240mA);
     SetTDrive(Drv8323::TDRIVE_4000ns);
     EnableCBC();
     DisableCPUV();
@@ -47,8 +47,8 @@ void Drv8323::InitializeDefaults()
     EnableOTW();
     DisableOTW();
     SetPWMMode(Drv8323::PWM_MODE_6X);
-    SetDeadTime(Drv8323::DEADTIME_100ns);
-    SetOCPMode(Drv8323::OCP_RETRY_FAULT);
+    SetDeadTime(Drv8323::DEADTIME_50ns);
+    SetOCPMode(Drv8323::OCP_LATCHED_FAULT);
     SetOCPDeglitch(Drv8323::OCP_DEG_4us);
     SetVDSLevel(Drv8323::VDS_LVL_060V);
     EnableVREFDiv();

@@ -97,8 +97,8 @@ protected:
     float Perr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */
     uint64_t target_ = 0;                       /**< Target position used in closed loop position mode */
     float velocity_ = 1500000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
-    float acceleration_ = 1000000;              /**< Movement acceleration [counts/s^2] */
-    float deceleration_ = 500000;               /**< Movement deceleration [counts/s^2] */
+    float acceleration_ = 3000000;              /**< Movement acceleration [counts/s^2] */
+    float deceleration_ = 2000000;              /**< Movement deceleration [counts/s^2] */
     float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
     float spin_voltage_ = 3.0f;                 /**< Voltage used for the spin mode */
     uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
