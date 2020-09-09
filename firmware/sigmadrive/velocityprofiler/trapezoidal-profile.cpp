@@ -1,6 +1,7 @@
 
 #include "trapezoidal-profile.h"
 #include "trapezoidal-profile-int.h"
+
 #include <math.h>
 
 #ifdef STM32F745xx
@@ -8,6 +9,56 @@
 #endif
 
 #define SQ(x) ((x) * (x))
+
+
+void TrapezoidalProfile::CalcTrapezoidPoints(float S, float Vin, float Vmax, float Amax, float Dmax, float Hz, StreamPoint& pt1, StreamPoint& pt2, StreamPoint& pt3)
+{
+    float s = (S >= 0.0f) ? 1.0f : -1.0f;
+    float Vr = abs(Vmax) / Hz;
+    float Ar = abs(Amax) / SQ(Hz);
+    float Dr = abs(Dmax) / SQ(Hz);
+    float dX = abs(S);
+    float Vi = s * Vin  / Hz;
+
+
+    if (Vi > Vr)
+        Ar = -Ar;
+    float Da = 0.5 * (Vr + Vi) * (Vr - Vi) / Ar;
+    float Dd = 0.5 * SQ(Vr) / Dr;
+    float Dc = dX - (Da + Dd);
+
+    if (Dc < 0) {
+        // Find Vr by solving:
+        // Da + Dd = dX
+        // 0.5 * (Vr + Vi) * (Vr - Vi) / Ar + 0.5 *(Vr * Vr) / Dr = dX
+        float Vr_sq = Dr * (2.0 * Ar * dX + SQ(Vi))/(Dr + Ar);
+        if (Vr_sq < 0 or Da == 0) {
+            // The distance to the requested position is too short
+            // for the specified decelaration.
+            // Calculate the required decelaration to reach the position
+            Vr = Vi;
+            Dr = 0.5 * SQ(Vi) / dX;
+        } else {
+            Vr = sqrtf(Vr_sq);
+        }
+        Dc = 0;
+        Da = 0.5 * (Vr + Vi) * (Vr - Vi) / Ar;
+        Dd = 0.5 * SQ(Vr) / Dr;
+    }
+
+    float Ta = (Vr - Vi) / Ar;
+    float Tr = (Vr != 0.0f) ? Dc / Vr : 0.0f;
+    float Td = Vr / Dr;
+
+    pt1.time_ = Ta;
+    pt1.velocity_ = s * Vr;
+
+    pt2.time_ = Tr;
+    pt2.velocity_ = s * Vr;
+
+    pt3.time_ = Td;
+    pt3.velocity_ = 0;
+}
 
 void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz)
 {
@@ -30,7 +81,7 @@ void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float A
         // 0.5 * (Vr + Vi) * (Vr - Vi) / Ar + 0.5 *(Vr * Vr) / Dr = dX
         float Vr_sq = Dr * (2.0 * Ar * dX + SQ(Vi))/(Dr + Ar);
         if (Vr_sq < 0 or Da == 0) {
-            // The distence to the requested position is too short
+            // The distance to the requested position is too short
             // for the specified decelaration.
             // Calculate the required decelaration to reach the position
             Vr = Vi;
@@ -129,6 +180,20 @@ ProfileData<float> TrapezoidalProfile::Step(float t)
 }
 
 
+std::vector<StreamPoint> TrapezoidalProfile::CalcTrapPoints(float S, float Vin, float Vmax, float Amax, float Dmax, float Hz)
+{
+    std::vector<StreamPoint> ret;
+    StreamPoint pt1;
+    StreamPoint pt2;
+    StreamPoint pt3;
+
+    CalcTrapezoidPoints(S, Vin, Vmax, Amax, Dmax, Hz, pt1, pt2, pt3);
+    ret.push_back(pt1);
+    ret.push_back(pt2);
+    ret.push_back(pt3);
+    return ret;
+}
+
 float TrapezoidalProfile::CalcVelocity(float t)
 {
     if (t < 0) {
@@ -147,6 +212,7 @@ float TrapezoidalProfile::CalcVelocity(float t)
 
 #ifdef _USE_PYBIND_
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 
@@ -155,6 +221,12 @@ PYBIND11_MODULE(trapezoidprofile, m) {
         .def(py::init<float, float>())
         .def_readwrite("P", &ProfileData<float>::P)
         .def_readwrite("Pd", &ProfileData<float>::Pd);
+
+    py::class_<StreamPoint>(m, "StreamPoint")
+        .def(py::init<uint32_t, float>())
+        .def_readwrite("time", &StreamPoint::time_)
+        .def_readwrite("velocity", &StreamPoint::velocity_);
+
     py::class_<ProfileData<int64_t>>(m, "ProfileDataInt")
         .def(py::init<int64_t, int64_t>())
         .def_readwrite("P", &ProfileData<int64_t>::P)
@@ -163,6 +235,7 @@ PYBIND11_MODULE(trapezoidprofile, m) {
         .def(py::init<>())
         .def("Init", &TrapezoidalProfile::Init)
         .def("Step", &TrapezoidalProfile::Step)
+        .def("CalcTrapPoints", &TrapezoidalProfile::CalcTrapPoints)
         .def("CalcVelocity", &TrapezoidalProfile::CalcVelocity)
         .def_readwrite("T", &TrapezoidalProfile::T_)
         .def_readwrite("Ta", &TrapezoidalProfile::Ta_)

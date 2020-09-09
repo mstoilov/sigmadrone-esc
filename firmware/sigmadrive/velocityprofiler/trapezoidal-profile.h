@@ -2,6 +2,7 @@
 #ifndef _TRAPEZOID_PROFILE_H_
 #define _TRAPEZOID_PROFILE_H_
 
+#include <vector>
 #include <stdint.h>
 
 template<typename T>
@@ -17,6 +18,14 @@ public:
     T Pd;	// First derivative - velocity
 };
 
+struct StreamPoint {
+    StreamPoint(uint32_t t = 0, float v = 0.0f) : time_(t), velocity_(v) {}
+    uint32_t time_;
+    float velocity_;
+};
+
+
+
 class TrapezoidalProfile
 {
 public:
@@ -24,6 +33,8 @@ public:
     void Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz);
     void CalcProfileData(float t, ProfileData<float>& data);
     void CalcProfileData2(float t, ProfileData<float>& data);
+    void CalcTrapezoidPoints(float S, float Vin, float Vmax, float Amax, float Dmax, float Hz, StreamPoint& pt1, StreamPoint& pt2, StreamPoint& pt3);
+    std::vector<StreamPoint> CalcTrapPoints(float S, float Vin, float Vmax, float Amax, float Dmax, float Hz);
     ProfileData<float> Step(float t);
     float CalcVelocity(float t);
 

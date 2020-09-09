@@ -119,12 +119,12 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
         LL_ADC_ClearFlag_JEOS(ADCx);
         if (hadc == &hadc1) {
             if (tim1.GetCounterDirection()) {
-                motor_drive2.t_begin_ = hrtimer.GetCounter();
+//                motor_drive2.t_begin_ = hrtimer.GetCounter();
                 motor_drive1.UpdateBias();
-                motor_drive2.UpdateCurrent();
+//                motor_drive2.UpdateCurrent();
             } else {
                 motor_drive1.t_begin_ = hrtimer.GetCounter();
-                motor_drive2.UpdateBias();
+//                motor_drive2.UpdateBias();
                 motor_drive1.UpdateCurrent();
             }
         }

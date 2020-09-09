@@ -23,6 +23,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
 void MotorCtrlFOC::RegisterRpcMethods()
 {
     std::string prefix = axis_id_ + ".";
+    rpc_server.add(prefix, "modecls", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopStream, "void MotorCtrlFOC::ModeClosedLoopStream()"));
     rpc_server.add(prefix, "modecltr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopTrajectory, "void MotorCtrlFOC::ModeClosedLoopTrajectory()"));
     rpc_server.add(prefix, "modeclp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopPosition, "void MotorCtrlFOC::ModeClosedLoopPosition()"));
     rpc_server.add(prefix, "modeclv", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopVelocity, "void MotorCtrlFOC::ModeClosedLoopVelocity()"));
@@ -33,6 +34,10 @@ void MotorCtrlFOC::RegisterRpcMethods()
     rpc_server.add(prefix, "velocity_rps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocityRPS, "void MotorCtrlFOC::VelocityRPS(float revpersec)"));
     rpc_server.add(prefix, "mvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveToPosition, "void MotorCtrlFOC::MoveToPosition(uint64_t position)"));
     rpc_server.add(prefix, "mvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelative, "void MotorCtrlFOC::MoveRelative(int64_t relative)"));
+
+    rpc_server.add(prefix, "push", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPoint, "void PushStreamPoint(uint32_t time, float velocity)"));
+    rpc_server.add(prefix, "go", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Go, "void Go()"));
+
     drive_->RegisterRpcMethods(prefix + "drive.");
 }
 
@@ -607,6 +612,134 @@ void MotorCtrlFOC::ModeClosedLoopTrajectory()
     drive_->Run();
 }
 
+void MotorCtrlFOC::ModeClosedLoopStream()
+{
+    drive_->AddTaskArmMotor();
+
+    drive_->sched_.AddTask([&](){
+        float timeslice = drive_->GetTimeSlice();
+        uint32_t display_counter = 0;
+        drive_->update_counter_ = 0;
+        pid_Id_.Reset();
+        pid_Iq_.Reset();
+        pid_W_.Reset();
+        pid_P_.Reset();
+        StreamPoint* prof_ptr = nullptr;
+        float V1 = 0.0f;
+        float V2 = 0.0f;
+        float V = 0.0f;
+        float S1 = 0.0f;
+        float S = 0.0f;
+        uint32_t T1 = 0;
+        uint32_t T2 = 0;
+        uint64_t target = target_ = drive_->GetEncoderPosition();
+
+        drive_->sched_.RunUpdateHandler([&]()->bool {
+            std::complex<float> Iab = drive_->GetPhaseCurrent();
+            std::complex<float> R = drive_->GetRotorElecRotation();
+            uint64_t enc_position = drive_->GetRotorPosition();
+
+            if (go_) {
+                if (!velocity_stream_.empty()) {
+                    prof_ptr = velocity_stream_.get_read_ptr();
+                    V1 = 0.0f;
+                    V2 = prof_ptr->velocity_;
+                    S = S1 = target;
+                    T1 = drive_->update_counter_;
+                    T2 = drive_->update_counter_ + prof_ptr->time_;
+                }
+                target = target_;
+                go_ = false;
+            }
+
+            if (prof_ptr) {
+                uint32_t T = (drive_->update_counter_ - T1);
+                V = V1  + (V2 - V1) * T / (T2 - T1);
+                S = S1 + (V1 + V) * T / 2;
+                Perr_ = drive_->GetRotorPositionError(enc_position, S) * timeslice;
+                pid_P_.Input(Perr_, timeslice);
+                Werr_ = pid_P_.Output() + V - drive_->GetRotorVelocityPTS();
+                pid_W_.Input(Werr_, timeslice);
+
+again:
+                if (drive_->update_counter_ == T2) {
+                    velocity_stream_.pop();
+                    if (!velocity_stream_.empty()) {
+                        prof_ptr = velocity_stream_.get_read_ptr();
+                        if (!prof_ptr->time_)
+                            goto again;
+                        V1 = V2;
+                        V2 = prof_ptr->velocity_;
+                        S1 = S;
+                        T1 = drive_->update_counter_;
+                        T2 = drive_->update_counter_ + prof_ptr->time_;
+                    } else {
+                        prof_ptr = nullptr;
+                    }
+                }
+            } else {
+                Perr_ = drive_->GetRotorPositionError(enc_position, target) * timeslice;
+                pid_P_.Input(Perr_, timeslice);
+                Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
+                pid_W_.Input(Werr_, timeslice);
+            }
+
+            /*
+             *  Park Transform
+             *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
+             *  Iq = Ibeta  * cos(R) - Ialpha * sin(R)
+             *
+             *  Idq = std::complex<float>(Id, Iq);
+             */
+            std::complex<float> Idq = Iab * std::conj(R);
+            lpf_Id_ = Idq.real();
+            lpf_Iq_ = Idq.imag();
+
+            /*
+             * Update D/Q PID Regulators.
+             */
+            Ierr_ = pid_W_.Output() - lpf_Iq_;
+            pid_Id_.Input(0.0f - lpf_Id_, timeslice);
+            pid_Iq_.Input(Ierr_, timeslice);
+
+            /*
+             * Inverse Park Transform
+             * Va = Vd * cos(R) - Vq * sin(R)
+             * Vb = Vd * sin(R) + Vq * cos(R)
+             *
+             * Vab = std::complex<float>(Va, Vb)
+             */
+            std::complex<float> V_ab = std::complex<float>(pid_Id_.Output(), pid_Iq_.Output()) * R;
+
+            /*
+             * Apply the voltage timings
+             */
+            drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
+
+            if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+                foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t_begin_, hrtimer.GetCounter());
+                SignalDumpTrajectory();
+            }
+
+            return true;
+        });
+    });
+    drive_->AddTaskDisarmMotor();
+    drive_->Run();
+}
+
+void MotorCtrlFOC::PushStreamPoint(uint32_t time, float velocity)
+{
+    StreamPoint pt(time, velocity);
+    velocity_stream_.push(pt);
+}
+
+void MotorCtrlFOC::Go()
+{
+    go_ = true;
+}
+
+
 /** Set movement velocity.
  *
  * @param revpersec movement velocity as revolutions per seconds
@@ -630,6 +763,7 @@ uint64_t MotorCtrlFOC::MoveToPosition(uint64_t target)
     target_ = target;
     trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->update_hz_);
     trap_profiler_ptr_ = &trap_profiler_;
+
     return target_;
 }
 
@@ -641,6 +775,13 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
     target_ = newpos;
     trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->update_hz_);
     trap_profiler_ptr_ = &trap_profiler_;
+
+    StreamPoint pt1, pt2, pt3;
+    trap_profiler_.CalcTrapezoidPoints(relative, drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->update_hz_, pt1, pt2, pt3);
+    velocity_stream_.push(pt1);
+    velocity_stream_.push(pt2);
+    velocity_stream_.push(pt3);
+    Go();
     return target_;
 }
 

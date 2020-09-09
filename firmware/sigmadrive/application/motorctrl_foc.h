@@ -13,6 +13,8 @@
 #include "picontroller.h"
 #include "pcontroller.h"
 #include "velocityprofiler/trapezoidal-profile.h"
+#include "ring.h"
+
 
 class MotorCtrlFOC
 {
@@ -45,6 +47,7 @@ public:
     void ModeClosedLoopVelocity();
     void ModeClosedLoopPosition();
     void ModeClosedLoopTrajectory();
+    void ModeClosedLoopStream();
 
     void ModeSpin();
     uint64_t MoveToPosition(uint64_t position);
@@ -53,6 +56,8 @@ public:
     float VelocityRPS(float revpersec);
     rexjson::property GetPropertyMap();
     void RegisterRpcMethods();
+    void PushStreamPoint(uint32_t time, float velocity);
+    void Go();
 
 protected:
     void UpdateRotor();
@@ -64,6 +69,7 @@ protected:
     void SignalDumpTrajectory();
     void SignalDumpSpin();
     static void RunDebugLoopWrapper(void *ctx);
+
 
 protected:
     enum Signals {
@@ -105,7 +111,8 @@ protected:
     ProfileData<float> profile_target_;         /**< Target position, velocity, acceleration from the velocity profiler */
     TrapezoidalProfile trap_profiler_;
     TrapezoidalProfile *trap_profiler_ptr_ = nullptr;
-
+    Ring<StreamPoint, 32> velocity_stream_;
+    bool go_  = false;
 };
 
 
