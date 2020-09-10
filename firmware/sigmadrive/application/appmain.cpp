@@ -110,6 +110,8 @@ void SD_TIM1_IRQHandler(TIM_HandleTypeDef* htim)
     }
 }
 
+//#define NO_AXIS2_UPDATE
+
 extern "C"
 void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 {
@@ -119,12 +121,18 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
         LL_ADC_ClearFlag_JEOS(ADCx);
         if (hadc == &hadc1) {
             if (tim1.GetCounterDirection()) {
-//                motor_drive2.t_begin_ = hrtimer.GetCounter();
+#ifndef NO_AXIS2_UPDATE
+                motor_drive2.t_begin_ = hrtimer.GetCounter();
+#endif
                 motor_drive1.UpdateBias();
-//                motor_drive2.UpdateCurrent();
+#ifndef NO_AXIS2_UPDATE
+                motor_drive2.UpdateCurrent();
+#endif
             } else {
                 motor_drive1.t_begin_ = hrtimer.GetCounter();
-//                motor_drive2.UpdateBias();
+#ifndef NO_AXIS2_UPDATE
+                motor_drive2.UpdateBias();
+#endif
                 motor_drive1.UpdateCurrent();
             }
         }

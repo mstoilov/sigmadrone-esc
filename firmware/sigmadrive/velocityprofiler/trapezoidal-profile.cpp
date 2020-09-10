@@ -11,13 +11,13 @@
 #define SQ(x) ((x) * (x))
 
 
-void TrapezoidalProfile::CalcTrapezoidPoints(float S, float Vin, float Vmax, float Amax, float Dmax, float Hz, StreamPoint& pt1, StreamPoint& pt2, StreamPoint& pt3)
+void TrapezoidalProfile::CalcTrapezoidPoints(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz, TrajectoryPoint& pt1, TrajectoryPoint& pt2, TrajectoryPoint& pt3)
 {
-    float s = (S >= 0.0f) ? 1.0f : -1.0f;
+    float s = (Xf >= Xi) ? 1.0f : -1.0f;
     float Vr = abs(Vmax) / Hz;
     float Ar = abs(Amax) / SQ(Hz);
     float Dr = abs(Dmax) / SQ(Hz);
-    float dX = abs(S);
+    float dX = abs(Xf - Xi);
     float Vi = s * Vin  / Hz;
 
 
@@ -52,12 +52,15 @@ void TrapezoidalProfile::CalcTrapezoidPoints(float S, float Vin, float Vmax, flo
 
     pt1.time_ = Ta;
     pt1.velocity_ = s * Vr;
+    pt1.position_ = Xi + (Vi + pt1.velocity_) * Ta * 0.5;
 
-    pt2.time_ = Tr;
+    pt2.time_ = pt1.time_ + Tr;
     pt2.velocity_ = s * Vr;
+    pt2.position_ = pt1.position_ + (pt1.velocity_ + pt2.velocity_) * Tr * 0.5;
 
-    pt3.time_ = Td;
+    pt3.time_ = pt2.time_ + Td;
     pt3.velocity_ = 0;
+    pt3.position_ = pt2.position_ + (pt2.velocity_ + pt3.velocity_) * Td * 0.5;
 }
 
 void TrapezoidalProfile::Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz)
@@ -180,14 +183,14 @@ ProfileData<float> TrapezoidalProfile::Step(float t)
 }
 
 
-std::vector<StreamPoint> TrapezoidalProfile::CalcTrapPoints(float S, float Vin, float Vmax, float Amax, float Dmax, float Hz)
+std::vector<TrajectoryPoint> TrapezoidalProfile::CalcTrapPoints(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz)
 {
-    std::vector<StreamPoint> ret;
-    StreamPoint pt1;
-    StreamPoint pt2;
-    StreamPoint pt3;
+    std::vector<TrajectoryPoint> ret;
+    TrajectoryPoint pt1;
+    TrajectoryPoint pt2;
+    TrajectoryPoint pt3;
 
-    CalcTrapezoidPoints(S, Vin, Vmax, Amax, Dmax, Hz, pt1, pt2, pt3);
+    CalcTrapezoidPoints(Xf, Xi, Vin, Vmax, Amax, Dmax, Hz, pt1, pt2, pt3);
     ret.push_back(pt1);
     ret.push_back(pt2);
     ret.push_back(pt3);
@@ -222,10 +225,11 @@ PYBIND11_MODULE(trapezoidprofile, m) {
         .def_readwrite("P", &ProfileData<float>::P)
         .def_readwrite("Pd", &ProfileData<float>::Pd);
 
-    py::class_<StreamPoint>(m, "StreamPoint")
+    py::class_<TrajectoryPoint>(m, "TrajectoryPoint")
         .def(py::init<uint32_t, float>())
-        .def_readwrite("time", &StreamPoint::time_)
-        .def_readwrite("velocity", &StreamPoint::velocity_);
+        .def_readwrite("time", &TrajectoryPoint::time_)
+        .def_readwrite("velocity", &TrajectoryPoint::velocity_)
+        .def_readwrite("position", &TrajectoryPoint::position_);
 
     py::class_<ProfileData<int64_t>>(m, "ProfileDataInt")
         .def(py::init<int64_t, int64_t>())

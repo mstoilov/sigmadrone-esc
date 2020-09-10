@@ -18,10 +18,11 @@ public:
     T Pd;	// First derivative - velocity
 };
 
-struct StreamPoint {
-    StreamPoint(uint32_t t = 0, float v = 0.0f) : time_(t), velocity_(v) {}
+struct TrajectoryPoint {
+    TrajectoryPoint(uint32_t t = 0, float v = 0.0f, float p = 0.0f) : time_(t), velocity_(v), position_(p) {}
     uint32_t time_;
     float velocity_;
+    float position_;
 };
 
 
@@ -33,8 +34,8 @@ public:
     void Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz);
     void CalcProfileData(float t, ProfileData<float>& data);
     void CalcProfileData2(float t, ProfileData<float>& data);
-    void CalcTrapezoidPoints(float S, float Vin, float Vmax, float Amax, float Dmax, float Hz, StreamPoint& pt1, StreamPoint& pt2, StreamPoint& pt3);
-    std::vector<StreamPoint> CalcTrapPoints(float S, float Vin, float Vmax, float Amax, float Dmax, float Hz);
+    void CalcTrapezoidPoints(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz, TrajectoryPoint& pt1, TrajectoryPoint& pt2, TrajectoryPoint& pt3);
+    std::vector<TrajectoryPoint> CalcTrapPoints(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz);
     ProfileData<float> Step(float t);
     float CalcVelocity(float t);
 

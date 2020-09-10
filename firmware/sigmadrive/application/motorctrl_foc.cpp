@@ -624,15 +624,16 @@ void MotorCtrlFOC::ModeClosedLoopStream()
         pid_Iq_.Reset();
         pid_W_.Reset();
         pid_P_.Reset();
-        StreamPoint* prof_ptr = nullptr;
+        target_ = drive_->GetEncoderPosition();
+        TrajectoryPoint* prof_ptr = nullptr;
         float V1 = 0.0f;
         float V2 = 0.0f;
         float V = 0.0f;
-        float S1 = 0.0f;
+        float S2 = 0.0f;
         float S = 0.0f;
+        uint32_t Tgo = 0;
         uint32_t T1 = 0;
         uint32_t T2 = 0;
-        uint64_t target = target_ = drive_->GetEncoderPosition();
 
         drive_->sched_.RunUpdateHandler([&]()->bool {
             std::complex<float> Iab = drive_->GetPhaseCurrent();
@@ -644,41 +645,42 @@ void MotorCtrlFOC::ModeClosedLoopStream()
                     prof_ptr = velocity_stream_.get_read_ptr();
                     V1 = 0.0f;
                     V2 = prof_ptr->velocity_;
-                    S = S1 = target;
-                    T1 = drive_->update_counter_;
-                    T2 = drive_->update_counter_ + prof_ptr->time_;
+                    S2 = prof_ptr->position_;
+                    Tgo = drive_->update_counter_;
+                    T1 = Tgo;
+                    T2 = Tgo + prof_ptr->time_;
                 }
-                target = target_;
                 go_ = false;
             }
 
             if (prof_ptr) {
                 uint32_t T = (drive_->update_counter_ - T1);
                 V = V1  + (V2 - V1) * T / (T2 - T1);
-                S = S1 + (V1 + V) * T / 2;
+                S = S2 - (V + V2) * (T2 - drive_->update_counter_) / 2;
+                target_ = S2;
                 Perr_ = drive_->GetRotorPositionError(enc_position, S) * timeslice;
                 pid_P_.Input(Perr_, timeslice);
                 Werr_ = pid_P_.Output() + V - drive_->GetRotorVelocityPTS();
                 pid_W_.Input(Werr_, timeslice);
 
-again:
                 if (drive_->update_counter_ == T2) {
+again:
                     velocity_stream_.pop();
                     if (!velocity_stream_.empty()) {
                         prof_ptr = velocity_stream_.get_read_ptr();
-                        if (!prof_ptr->time_)
+                        T2 = Tgo + prof_ptr->time_;
+                        if (drive_->update_counter_ == T2)
                             goto again;
                         V1 = V2;
                         V2 = prof_ptr->velocity_;
-                        S1 = S;
+                        S2 = prof_ptr->position_;
                         T1 = drive_->update_counter_;
-                        T2 = drive_->update_counter_ + prof_ptr->time_;
                     } else {
                         prof_ptr = nullptr;
                     }
                 }
             } else {
-                Perr_ = drive_->GetRotorPositionError(enc_position, target) * timeslice;
+                Perr_ = drive_->GetRotorPositionError(enc_position, target_) * timeslice;
                 pid_P_.Input(Perr_, timeslice);
                 Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
                 pid_W_.Input(Werr_, timeslice);
@@ -730,7 +732,7 @@ again:
 
 void MotorCtrlFOC::PushStreamPoint(uint32_t time, float velocity)
 {
-    StreamPoint pt(time, velocity);
+    TrajectoryPoint pt(time, velocity);
     velocity_stream_.push(pt);
 }
 
@@ -764,6 +766,12 @@ uint64_t MotorCtrlFOC::MoveToPosition(uint64_t target)
     trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->update_hz_);
     trap_profiler_ptr_ = &trap_profiler_;
 
+    TrajectoryPoint pt1, pt2, pt3;
+    trap_profiler_.CalcTrapezoidPoints(target_, drive_->GetEncoderPosition(), 0, velocity_, acceleration_, deceleration_, drive_->update_hz_, pt1, pt2, pt3);
+    velocity_stream_.push(pt1);
+    velocity_stream_.push(pt2);
+    velocity_stream_.push(pt3);
+    Go();
     return target_;
 }
 
@@ -776,8 +784,8 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
     trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->update_hz_);
     trap_profiler_ptr_ = &trap_profiler_;
 
-    StreamPoint pt1, pt2, pt3;
-    trap_profiler_.CalcTrapezoidPoints(relative, drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->update_hz_, pt1, pt2, pt3);
+    TrajectoryPoint pt1, pt2, pt3;
+    trap_profiler_.CalcTrapezoidPoints(target_, drive_->GetEncoderPosition(), 0, velocity_, acceleration_, deceleration_, drive_->update_hz_, pt1, pt2, pt3);
     velocity_stream_.push(pt1);
     velocity_stream_.push(pt2);
     velocity_stream_.push(pt3);
