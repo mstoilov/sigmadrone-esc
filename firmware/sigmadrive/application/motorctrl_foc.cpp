@@ -624,13 +624,13 @@ void MotorCtrlFOC::ModeClosedLoopStream()
         pid_Iq_.Reset();
         pid_W_.Reset();
         pid_P_.Reset();
-        target_ = drive_->GetEncoderPosition();
         TrajectoryPoint* prof_ptr = nullptr;
         float V1 = 0.0f;
         float V2 = 0.0f;
         float V = 0.0f;
-        float S2 = 0.0f;
+        float S2 = target_ = drive_->GetEncoderPosition();
         float S = 0.0f;
+        float A = 0.0f;
         uint32_t Tgo = 0;
         uint32_t T1 = 0;
         uint32_t T2 = 0;
@@ -649,15 +649,15 @@ void MotorCtrlFOC::ModeClosedLoopStream()
                     Tgo = drive_->update_counter_;
                     T1 = Tgo;
                     T2 = Tgo + prof_ptr->time_;
+                    A = (V2 - V1) / (T2 - T1);
                 }
                 go_ = false;
             }
 
             if (prof_ptr) {
                 uint32_t T = (drive_->update_counter_ - T1);
-                V = V1  + (V2 - V1) * T / (T2 - T1);
+                V = V1  + A * T;
                 S = S2 - (V + V2) * (T2 - drive_->update_counter_) / 2;
-                target_ = S2;
                 Perr_ = drive_->GetRotorPositionError(enc_position, S) * timeslice;
                 pid_P_.Input(Perr_, timeslice);
                 Werr_ = pid_P_.Output() + V - drive_->GetRotorVelocityPTS();
@@ -668,19 +668,20 @@ again:
                     velocity_stream_.pop();
                     if (!velocity_stream_.empty()) {
                         prof_ptr = velocity_stream_.get_read_ptr();
+                        T1 = drive_->update_counter_;
                         T2 = Tgo + prof_ptr->time_;
-                        if (drive_->update_counter_ == T2)
+                        if (T1 == T2)
                             goto again;
                         V1 = V2;
                         V2 = prof_ptr->velocity_;
+                        A = (V2 - V1) / (T2 - T1);
                         S2 = prof_ptr->position_;
-                        T1 = drive_->update_counter_;
                     } else {
                         prof_ptr = nullptr;
                     }
                 }
             } else {
-                Perr_ = drive_->GetRotorPositionError(enc_position, target_) * timeslice;
+                Perr_ = drive_->GetRotorPositionError(enc_position, S2) * timeslice;
                 pid_P_.Input(Perr_, timeslice);
                 Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
                 pid_W_.Input(Werr_, timeslice);

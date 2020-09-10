@@ -328,12 +328,18 @@ void AllModeClv()
     foc2.ModeClosedLoopVelocity();
 }
 
+void AllModeStream()
+{
+    foc1.ModeClosedLoopStream();
+    foc2.ModeClosedLoopStream();
+}
+
+
 void AllModeStop()
 {
     foc1.Stop();
     foc2.Stop();
 }
-
 
 
 void RegisterRpcMethods()
@@ -366,8 +372,10 @@ void RegisterRpcMethods()
     rpc_server.add("all.mvr", rexjson::make_rpc_wrapper(AllMoveRelative, "void AllMoveRelative(int64_t offset_a1, int64_t offset_a2)"));
     rpc_server.add("all.modecltr", rexjson::make_rpc_wrapper(AllModeCltr, "void AllModeCltr()"));
     rpc_server.add("all.modeclv", rexjson::make_rpc_wrapper(AllModeClv, "void AllModeClv()"));
+    rpc_server.add("all.modecls", rexjson::make_rpc_wrapper(AllModeStream, "void AllModeStream()"));
     rpc_server.add("all.stop", rexjson::make_rpc_wrapper(AllModeStop, "void AllModeStop()"));
 }
+
 
 void StartRpcThread()
 {
@@ -378,6 +386,7 @@ void StartRpcThread()
     task_attributes.stack_size = 12000;
     commandTaskHandle = osThreadNew(RunRpcTask, NULL, &task_attributes);
 }
+
 
 void StartCommandThread()
 {
