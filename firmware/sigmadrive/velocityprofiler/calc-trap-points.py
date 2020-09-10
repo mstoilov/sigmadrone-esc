@@ -4,11 +4,12 @@ import numpy as np
 import sys
 
 
-S = 1000000
+Pf = 1000000
+Pi = 0
 Vi = 0
 Vmax = 65535 * 30
-Acc = 40000000
-Dec = 5000000
+Acc = 30000000
+Dec = 20000000
 HZ = 18000
 
 nargs = len(sys.argv)
@@ -24,29 +25,41 @@ HZ = int(sys.argv[7]) if nargs > 7 else HZ
 prof = tp.TrapezoidProfile();
 points = prof.CalcTrapPoints(Pf, Pi, Vi, Vmax, Acc, Dec, HZ)
 
-time = np.arange(0, 4)
-V = np.zeros_like(time)
-S = np.zeros_like(time)
-T = np.zeros_like(time)
-
-
-for i, t in enumerate(time):
-    if (t == 0):
-        V[t] = Vi/HZ
-        S[t] = Pi
-        T[t] = 0
-    else:
-        T[t], V[t], S[t] = points[t-1].time, points[t-1].velocity, points[t-1].position
-
-
 for i in range(0, 3):
     print("point ", i, " : ", points[i].time, ", ", points[i].velocity, ", ", points[i].position)
 
+totalTime = 0
+for i in range(0, 3):
+    totalTime += points[i].time
+
+time = np.arange(0, totalTime)
+V = np.zeros_like(time, dtype=float)
+S = np.zeros_like(time, dtype=float)
+T = np.zeros_like(time, dtype=float)
+
+V2 = Vi
+offset = 0
+
+for k in range(0, 3):
+    point = points[k]
+    V1 = V2
+    V2 = point.velocity
+    S2 = point.position
+    T1 = 0
+    T2 = point.time
+    if (T2 > T1):
+        A = (V2 - V1) / (T2 - T1)
+        for i in range(0, point.time) :
+            v = V[i + offset] = V1  + A * i;
+            S[i + offset] = S2 - (v + V2) * (T2 - i) / 2;    
+    offset += point.time
+    
+
 pp.figure()
 pp.subplot(2,1,1)
-pp.plot(T, V)
+pp.plot(time, V)
 pp.subplot(2,1,2)
-pp.plot(T, S, color="orange")
+pp.plot(time, S, color="orange")
 pp.xlabel('Time')
 pp.ylabel('Position')
 pp.show()

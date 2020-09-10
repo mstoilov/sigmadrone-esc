@@ -54,11 +54,11 @@ void TrapezoidalProfile::CalcTrapezoidPoints(float Xf, float Xi, float Vin, floa
     pt1.velocity_ = s * Vr;
     pt1.position_ = Xi + (Vi + pt1.velocity_) * Ta * 0.5;
 
-    pt2.time_ = pt1.time_ + Tr;
+    pt2.time_ = Tr;
     pt2.velocity_ = s * Vr;
     pt2.position_ = pt1.position_ + (pt1.velocity_ + pt2.velocity_) * Tr * 0.5;
 
-    pt3.time_ = pt2.time_ + Td;
+    pt3.time_ = Td;
     pt3.velocity_ = 0;
     pt3.position_ = pt2.position_ + (pt2.velocity_ + pt3.velocity_) * Td * 0.5;
 }

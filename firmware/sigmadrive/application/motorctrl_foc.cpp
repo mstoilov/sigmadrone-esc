@@ -631,7 +631,6 @@ void MotorCtrlFOC::ModeClosedLoopStream()
         float S2 = target_ = drive_->GetEncoderPosition();
         float S = 0.0f;
         float A = 0.0f;
-        uint32_t Tgo = 0;
         uint32_t T1 = 0;
         uint32_t T2 = 0;
 
@@ -643,12 +642,11 @@ void MotorCtrlFOC::ModeClosedLoopStream()
             if (go_) {
                 if (!velocity_stream_.empty()) {
                     prof_ptr = velocity_stream_.get_read_ptr();
-                    V1 = 0.0f;
+                    V1 = drive_->GetRotorVelocityPTS();
                     V2 = prof_ptr->velocity_;
                     S2 = prof_ptr->position_;
-                    Tgo = drive_->update_counter_;
-                    T1 = Tgo;
-                    T2 = Tgo + prof_ptr->time_;
+                    T1 = drive_->update_counter_;
+                    T2 = T1 + prof_ptr->time_;
                     A = (V2 - V1) / (T2 - T1);
                 }
                 go_ = false;
@@ -669,10 +667,10 @@ again:
                     if (!velocity_stream_.empty()) {
                         prof_ptr = velocity_stream_.get_read_ptr();
                         T1 = drive_->update_counter_;
-                        T2 = Tgo + prof_ptr->time_;
+                        T2 = T1 + prof_ptr->time_;
                         if (T1 == T2)
                             goto again;
-                        V1 = V2;
+                        V1 = drive_->GetRotorVelocityPTS();
                         V2 = prof_ptr->velocity_;
                         A = (V2 - V1) / (T2 - T1);
                         S2 = prof_ptr->position_;
