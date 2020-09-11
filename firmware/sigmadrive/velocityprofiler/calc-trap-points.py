@@ -25,11 +25,11 @@ HZ = int(sys.argv[7]) if nargs > 7 else HZ
 prof = tp.TrapezoidProfile();
 points = prof.CalcTrapPoints(Pf, Pi, Vi, Vmax, Acc, Dec, HZ)
 
-for i in range(0, 3):
+for i in range(0, 4):
     print("point ", i, " : ", points[i].time, ", ", points[i].velocity, ", ", points[i].position)
 
 totalTime = 0
-for i in range(0, 3):
+for i in range(0, 4):
     totalTime += points[i].time
 
 time = np.arange(0, totalTime)
@@ -37,10 +37,10 @@ V = np.zeros_like(time, dtype=float)
 S = np.zeros_like(time, dtype=float)
 T = np.zeros_like(time, dtype=float)
 
-V2 = Vi
+V2 = 0
 offset = 0
 
-for k in range(0, 3):
+for k in range(0, 4):
     point = points[k]
     V1 = V2
     V2 = point.velocity

@@ -45,9 +45,8 @@ public:
     void Stop();
     void ModeClosedLoopTorque();
     void ModeClosedLoopVelocity();
-    void ModeClosedLoopPosition();
-    void ModeClosedLoopTrajectory();
-    void ModeClosedLoopStream();
+    void ModeClosedLoopPositionSimple();
+    void ModeClosedLoopPositionTrajectory();
 
     void ModeSpin();
     uint64_t MoveToPosition(uint64_t position);

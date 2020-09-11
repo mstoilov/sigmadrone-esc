@@ -34,7 +34,7 @@ public:
     void Init(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz);
     void CalcProfileData(float t, ProfileData<float>& data);
     void CalcProfileData2(float t, ProfileData<float>& data);
-    void CalcTrapezoidPoints(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz, TrajectoryPoint& pt1, TrajectoryPoint& pt2, TrajectoryPoint& pt3);
+    void CalcTrapezoidPoints(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz, TrajectoryPoint& pt0, TrajectoryPoint& pt1, TrajectoryPoint& pt2, TrajectoryPoint& pt3);
     std::vector<TrajectoryPoint> CalcTrapPoints(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz);
     ProfileData<float> Step(float t);
     float CalcVelocity(float t);

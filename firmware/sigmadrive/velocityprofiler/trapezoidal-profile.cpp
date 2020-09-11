@@ -11,7 +11,7 @@
 #define SQ(x) ((x) * (x))
 
 
-void TrapezoidalProfile::CalcTrapezoidPoints(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz, TrajectoryPoint& pt1, TrajectoryPoint& pt2, TrajectoryPoint& pt3)
+void TrapezoidalProfile::CalcTrapezoidPoints(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz, TrajectoryPoint& pt0, TrajectoryPoint& pt1, TrajectoryPoint& pt2, TrajectoryPoint& pt3)
 {
     float s = (Xf >= Xi) ? 1.0f : -1.0f;
     float Vr = abs(Vmax) / Hz;
@@ -49,6 +49,10 @@ void TrapezoidalProfile::CalcTrapezoidPoints(float Xf, float Xi, float Vin, floa
     float Ta = (Vr - Vi) / Ar;
     float Tr = (Vr != 0.0f) ? Dc / Vr : 0.0f;
     float Td = Vr / Dr;
+
+    pt0.time_ = 0;
+    pt0.velocity_ = Vi;
+    pt0.position_ = Xi;
 
     pt1.time_ = Ta;
     pt1.velocity_ = s * Vr;
@@ -186,11 +190,13 @@ ProfileData<float> TrapezoidalProfile::Step(float t)
 std::vector<TrajectoryPoint> TrapezoidalProfile::CalcTrapPoints(float Xf, float Xi, float Vin, float Vmax, float Amax, float Dmax, float Hz)
 {
     std::vector<TrajectoryPoint> ret;
+    TrajectoryPoint pt0;
     TrajectoryPoint pt1;
     TrajectoryPoint pt2;
     TrajectoryPoint pt3;
 
-    CalcTrapezoidPoints(Xf, Xi, Vin, Vmax, Amax, Dmax, Hz, pt1, pt2, pt3);
+    CalcTrapezoidPoints(Xf, Xi, Vin, Vmax, Amax, Dmax, Hz, pt0, pt1, pt2, pt3);
+    ret.push_back(pt0);
     ret.push_back(pt1);
     ret.push_back(pt2);
     ret.push_back(pt3);

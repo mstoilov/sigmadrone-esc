@@ -316,10 +316,10 @@ void AllMoveRelative(int64_t offset_a1, int64_t offset_a2)
     foc2.MoveRelative(offset_a2);
 }
 
-void AllModeCltr()
+void AllModeClp()
 {
-    foc1.ModeClosedLoopTrajectory();
-    foc2.ModeClosedLoopTrajectory();
+    foc1.ModeClosedLoopPositionTrajectory();
+    foc2.ModeClosedLoopPositionTrajectory();
 }
 
 void AllModeClv()
@@ -327,13 +327,6 @@ void AllModeClv()
     foc1.ModeClosedLoopVelocity();
     foc2.ModeClosedLoopVelocity();
 }
-
-void AllModeStream()
-{
-    foc1.ModeClosedLoopStream();
-    foc2.ModeClosedLoopStream();
-}
-
 
 void AllModeStop()
 {
@@ -370,9 +363,8 @@ void RegisterRpcMethods()
 
     rpc_server.add("all.mvp", rexjson::make_rpc_wrapper(AllMoveToPosition, "AllMoveToPosition(uint64_t pos_a1, uint64_t pos_a2)"));
     rpc_server.add("all.mvr", rexjson::make_rpc_wrapper(AllMoveRelative, "void AllMoveRelative(int64_t offset_a1, int64_t offset_a2)"));
-    rpc_server.add("all.modecltr", rexjson::make_rpc_wrapper(AllModeCltr, "void AllModeCltr()"));
     rpc_server.add("all.modeclv", rexjson::make_rpc_wrapper(AllModeClv, "void AllModeClv()"));
-    rpc_server.add("all.modecls", rexjson::make_rpc_wrapper(AllModeStream, "void AllModeStream()"));
+    rpc_server.add("all.modeclp", rexjson::make_rpc_wrapper(AllModeClp, "void AllModeClp()"));
     rpc_server.add("all.stop", rexjson::make_rpc_wrapper(AllModeStop, "void AllModeStop()"));
 }
 
