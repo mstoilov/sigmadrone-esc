@@ -5,8 +5,8 @@ $Descr A2 23386 16535
 encoding utf-8
 Sheet 2 3
 Title "Servo Driver 48V"
-Date "2018-09-03"
-Rev "1.0"
+Date "2020-09-15"
+Rev "3.8"
 Comp "Sigmadrone"
 Comment1 ""
 Comment2 ""
@@ -753,40 +753,6 @@ Text Label 2600 14150 2    60   ~ 0
 USB_DM
 Text Label 2600 14250 2    60   ~ 0
 USB_DP
-Wire Wire Line
-	1550 14150 1750 14150
-Wire Wire Line
-	1550 14250 1750 14250
-$Comp
-L Device:R R47
-U 1 1 5BF37336
-P 1900 14150
-F 0 "R47" V 1950 14300 50  0000 C CNN
-F 1 "21" V 1900 14150 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 1830 14150 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 1900 14150 50  0001 C CNN
-F 4 "311-21.0HRCT-ND" V 1900 14150 60  0001 C CNN "Part"
-F 5 "DigiKey" V 1900 14150 60  0001 C CNN "Provider"
-	1    1900 14150
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	2050 14150 2600 14150
-$Comp
-L Device:R R50
-U 1 1 5BF374B9
-P 1900 14250
-F 0 "R50" V 1950 14400 50  0000 C CNN
-F 1 "21" V 1900 14250 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 1830 14250 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 1900 14250 50  0001 C CNN
-F 4 "311-21.0HRCT-ND" V 1900 14250 60  0001 C CNN "Part"
-F 5 "DigiKey" V 1900 14250 60  0001 C CNN "Provider"
-	1    1900 14250
-	0    -1   -1   0   
-$EndComp
-Wire Wire Line
-	2050 14250 2600 14250
 Text Label 17800 4650 2    60   ~ 0
 USB_DM
 Text Label 17800 4750 2    60   ~ 0
@@ -1483,60 +1449,6 @@ Wire Wire Line
 Wire Wire Line
 	3800 7550 5900 7550
 $Comp
-L Device:R R92
-U 1 1 5CC5ED43
-P 5500 12250
-F 0 "R92" V 5580 12250 50  0000 C CNN
-F 1 "10k" V 5500 12250 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 5430 12250 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5500 12250 50  0001 C CNN
-F 4 "311-10.0KHRCT-ND" V 5500 12250 60  0001 C CNN "Part"
-F 5 "DigiKey" V 5500 12250 60  0001 C CNN "Provider"
-	1    5500 12250
-	-1   0    0    -1  
-$EndComp
-$Comp
-L Device:R R91
-U 1 1 5CC5F3D7
-P 5700 12250
-F 0 "R91" V 5780 12250 50  0000 C CNN
-F 1 "10k" V 5700 12250 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 5630 12250 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5700 12250 50  0001 C CNN
-F 4 "311-10.0KHRCT-ND" V 5700 12250 60  0001 C CNN "Part"
-F 5 "DigiKey" V 5700 12250 60  0001 C CNN "Provider"
-	1    5700 12250
-	-1   0    0    -1  
-$EndComp
-$Comp
-L Device:R R90
-U 1 1 5CC5F477
-P 5900 12250
-F 0 "R90" V 5980 12250 50  0000 C CNN
-F 1 "10k" V 5900 12250 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 5830 12250 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5900 12250 50  0001 C CNN
-F 4 "311-10.0KHRCT-ND" V 5900 12250 60  0001 C CNN "Part"
-F 5 "DigiKey" V 5900 12250 60  0001 C CNN "Provider"
-	1    5900 12250
-	-1   0    0    -1  
-$EndComp
-Wire Wire Line
-	5500 12400 5500 12850
-Wire Wire Line
-	5900 12100 5900 12000
-Wire Wire Line
-	5900 12000 5700 12000
-Wire Wire Line
-	5500 12000 5500 12100
-Wire Wire Line
-	5700 12100 5700 12000
-Connection ~ 5700 12000
-Wire Wire Line
-	5700 12000 5500 12000
-Wire Wire Line
-	5700 12000 5700 11850
-$Comp
 L Device:R R5
 U 1 1 5AB437C6
 P 5400 2200
@@ -1818,20 +1730,6 @@ F 2 "" H 10700 900 50  0001 C CNN
 F 3 "" H 10700 900 50  0001 C CNN
 	1    10700 900 
 	1    0    0    -1  
-$EndComp
-$Comp
-L power:+3V3 #PWR?
-U 1 1 5CA42A19
-P 5700 11850
-AR Path="/58BE27E6/5CA42A19" Ref="#PWR?"  Part="1" 
-AR Path="/58BF664D/5CA42A19" Ref="#PWR?"  Part="1" 
-AR Path="/58BE2779/5CA42A19" Ref="#PWR0107"  Part="1" 
-F 0 "#PWR0107" H 5700 11700 50  0001 C CNN
-F 1 "+3V3" H 5715 12023 50  0000 C CNN
-F 2 "" H 5700 11850 50  0001 C CNN
-F 3 "" H 5700 11850 50  0001 C CNN
-	1    5700 11850
-	-1   0    0    -1  
 $EndComp
 $Comp
 L power:+3V3 #PWR?
@@ -2703,22 +2601,7 @@ Wire Wire Line
 	2200 12650 2300 12650
 Wire Wire Line
 	3100 12450 3750 12450
-$Comp
-L Connector_Generic:Conn_02x05_Odd_Even ENC1
-U 1 1 5F682416
-P 4550 12650
-F 0 "ENC1" H 4600 12950 50  0000 C CNN
-F 1 "Conn_02x05_Odd_Even" H 4550 13050 50  0000 C CNN
-F 2 "Connector_PinHeader_2.00mm:PinHeader_2x05_P2.00mm_Horizontal" H 4550 12650 50  0001 C CNN
-F 3 "~" H 4550 12650 50  0001 C CNN
-	1    4550 12650
-	1    0    0    1   
-$EndComp
-NoConn ~ 4850 12450
 NoConn ~ 5900 8250
-NoConn ~ 4350 12750
-Wire Wire Line
-	5700 12400 5700 12750
 Text Label 17800 7550 2    60   ~ 0
 TIM8_CH1
 Text Label 17800 7650 2    60   ~ 0
@@ -2866,60 +2749,6 @@ ENCODER_RO_M2
 Text Label 700  10300 0    60   ~ 0
 ENCODER_DE_M2
 $Comp
-L Device:R R25
-U 1 1 5F53942B
-P 5500 9900
-F 0 "R25" V 5580 9900 50  0000 C CNN
-F 1 "10k" V 5500 9900 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 5430 9900 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5500 9900 50  0001 C CNN
-F 4 "311-10.0KHRCT-ND" V 5500 9900 60  0001 C CNN "Part"
-F 5 "DigiKey" V 5500 9900 60  0001 C CNN "Provider"
-	1    5500 9900
-	-1   0    0    -1  
-$EndComp
-$Comp
-L Device:R R33
-U 1 1 5F539437
-P 5700 9900
-F 0 "R33" V 5780 9900 50  0000 C CNN
-F 1 "10k" V 5700 9900 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 5630 9900 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5700 9900 50  0001 C CNN
-F 4 "311-10.0KHRCT-ND" V 5700 9900 60  0001 C CNN "Part"
-F 5 "DigiKey" V 5700 9900 60  0001 C CNN "Provider"
-	1    5700 9900
-	-1   0    0    -1  
-$EndComp
-$Comp
-L Device:R R48
-U 1 1 5F539443
-P 5900 9900
-F 0 "R48" V 5980 9900 50  0000 C CNN
-F 1 "10k" V 5900 9900 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 5830 9900 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5900 9900 50  0001 C CNN
-F 4 "311-10.0KHRCT-ND" V 5900 9900 60  0001 C CNN "Part"
-F 5 "DigiKey" V 5900 9900 60  0001 C CNN "Provider"
-	1    5900 9900
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	5500 10050 5500 10500
-Wire Wire Line
-	5900 9750 5900 9650
-Wire Wire Line
-	5900 9650 5700 9650
-Wire Wire Line
-	5500 9650 5500 9750
-Wire Wire Line
-	5700 9750 5700 9650
-Connection ~ 5700 9650
-Wire Wire Line
-	5700 9650 5500 9650
-Wire Wire Line
-	5700 9650 5700 9500
-$Comp
 L power:GND #PWR0118
 U 1 1 5F539459
 P 3900 10900
@@ -2963,20 +2792,6 @@ Wire Wire Line
 	3100 10400 3750 10400
 $Comp
 L power:+3V3 #PWR?
-U 1 1 5F539476
-P 5700 9500
-AR Path="/58BE27E6/5F539476" Ref="#PWR?"  Part="1" 
-AR Path="/58BF664D/5F539476" Ref="#PWR?"  Part="1" 
-AR Path="/58BE2779/5F539476" Ref="#PWR0137"  Part="1" 
-F 0 "#PWR0137" H 5700 9350 50  0001 C CNN
-F 1 "+3V3" H 5715 9673 50  0000 C CNN
-F 2 "" H 5700 9500 50  0001 C CNN
-F 3 "" H 5700 9500 50  0001 C CNN
-	1    5700 9500
-	-1   0    0    -1  
-$EndComp
-$Comp
-L power:+3V3 #PWR?
 U 1 1 5F539480
 P 2700 9200
 AR Path="/58BE27E6/5F539480" Ref="#PWR?"  Part="1" 
@@ -3008,13 +2823,11 @@ F 0 "ENC2" H 4550 10600 50  0000 C CNN
 F 1 "Conn_02x05_Odd_Even" H 4550 10000 50  0000 C CNN
 F 2 "Connector_PinHeader_2.00mm:PinHeader_2x05_P2.00mm_Horizontal" H 4500 10300 50  0001 C CNN
 F 3 "~" H 4500 10300 50  0001 C CNN
+F 4 "H10247-ND" H 4500 10300 50  0001 C CNN "Part"
+F 5 "DigiKey" H 4500 10300 50  0001 C CNN "Provider"
 	1    4500 10300
 	1    0    0    1   
 $EndComp
-NoConn ~ 4800 10100
-NoConn ~ 4300 10400
-Wire Wire Line
-	5700 10050 5700 10400
 Wire Wire Line
 	16100 6250 17850 6250
 Text HLabel 17850 6250 2    60   Output ~ 0
@@ -3331,7 +3144,7 @@ F 0 "M2_SW2" H 6700 14800 50  0000 C CNN
 F 1 "CONN_02X02" H 6650 14500 50  0000 C CNN
 F 2 "Connector_PinHeader_2.00mm:PinHeader_2x02_P2.00mm_Horizontal" H 6650 13500 50  0001 C CNN
 F 3 "http://katalog.we-online.de/em/datasheet/6220xx21121.pdf" H 6650 13500 50  0001 C CNN
-F 4 "732-5374-ND" H 6650 14700 60  0001 C CNN "Part"
+F 4 "H10244-ND" H 6650 14700 60  0001 C CNN "Part"
 F 5 "DigiKey" H 6650 14700 60  0001 C CNN "Provider"
 	1    6650 14700
 	1    0    0    -1  
@@ -3375,7 +3188,7 @@ F 0 "M2_SW1" H 4950 14800 50  0000 C CNN
 F 1 "CONN_02X02" H 4900 14500 50  0000 C CNN
 F 2 "Connector_PinHeader_2.00mm:PinHeader_2x02_P2.00mm_Horizontal" H 4900 13500 50  0001 C CNN
 F 3 "http://katalog.we-online.de/em/datasheet/6220xx21121.pdf" H 4900 13500 50  0001 C CNN
-F 4 "732-5374-ND" H 4900 14700 60  0001 C CNN "Part"
+F 4 "H10244-ND" H 4900 14700 60  0001 C CNN "Part"
 F 5 "DigiKey" H 4900 14700 60  0001 C CNN "Provider"
 	1    4900 14700
 	1    0    0    -1  
@@ -3419,7 +3232,7 @@ F 0 "M1_SW1" H 8800 14800 50  0000 C CNN
 F 1 "CONN_02X02" H 8750 14500 50  0000 C CNN
 F 2 "Connector_PinHeader_2.00mm:PinHeader_2x02_P2.00mm_Horizontal" H 8750 13500 50  0001 C CNN
 F 3 "http://katalog.we-online.de/em/datasheet/6220xx21121.pdf" H 8750 13500 50  0001 C CNN
-F 4 "732-5374-ND" H 8750 14700 60  0001 C CNN "Part"
+F 4 "H10244-ND" H 8750 14700 60  0001 C CNN "Part"
 F 5 "DigiKey" H 8750 14700 60  0001 C CNN "Provider"
 	1    8750 14700
 	1    0    0    -1  
@@ -3463,7 +3276,7 @@ F 0 "M1_SW2" H 10650 14800 50  0000 C CNN
 F 1 "CONN_02X02" H 10600 14500 50  0000 C CNN
 F 2 "Connector_PinHeader_2.00mm:PinHeader_2x02_P2.00mm_Horizontal" H 10600 13500 50  0001 C CNN
 F 3 "http://katalog.we-online.de/em/datasheet/6220xx21121.pdf" H 10600 13500 50  0001 C CNN
-F 4 "732-5374-ND" H 10600 14700 60  0001 C CNN "Part"
+F 4 "H10244-ND" H 10600 14700 60  0001 C CNN "Part"
 F 5 "DigiKey" H 10600 14700 60  0001 C CNN "Provider"
 	1    10600 14700
 	1    0    0    -1  
@@ -3623,6 +3436,8 @@ F 0 "J3" H 13300 13100 50  0000 C CNN
 F 1 "Conn_02x03_Odd_Even" H 13300 12500 50  0000 C CNN
 F 2 "Connector_PinHeader_2.00mm:PinHeader_2x03_P2.00mm_Horizontal" H 13250 12800 50  0001 C CNN
 F 3 "~" H 13250 12800 50  0001 C CNN
+F 4 "H2866-ND" H 13250 12800 50  0001 C CNN "Part"
+F 5 "DigiKey" H 13250 12800 50  0001 C CNN "Provier"
 	1    13250 12800
 	0    -1   1    0   
 $EndComp
@@ -3640,17 +3455,6 @@ Wire Wire Line
 Connection ~ 13350 11750
 Wire Wire Line
 	13350 11750 14100 11750
-$Comp
-L Connector_Generic:Conn_02x03_Odd_Even J5
-U 1 1 63DCF0E8
-P 14000 12800
-F 0 "J5" H 14050 13100 50  0000 C CNN
-F 1 "Conn_02x03_Odd_Even" H 14050 12500 50  0000 C CNN
-F 2 "Connector_PinHeader_2.00mm:PinHeader_2x03_P2.00mm_Horizontal" H 14000 12800 50  0001 C CNN
-F 3 "~" H 14000 12800 50  0001 C CNN
-	1    14000 12800
-	0    -1   1    0   
-$EndComp
 Text Label 13350 13650 1    60   ~ 0
 SYNC_STAT
 Text Label 13250 13650 1    60   ~ 0
@@ -3817,15 +3621,11 @@ Wire Wire Line
 	10900 2400 11200 2400
 Wire Wire Line
 	4850 12650 5900 12650
-Wire Wire Line
-	5900 12400 5900 12650
 Connection ~ 5900 12650
 Wire Wire Line
 	5900 12650 6750 12650
 Wire Wire Line
 	4800 10300 5900 10300
-Wire Wire Line
-	5900 10050 5900 10300
 Connection ~ 5900 10300
 Wire Wire Line
 	5900 10300 6750 10300
@@ -3845,49 +3645,9 @@ Text Label 6750 12550 2    60   ~ 0
 TIM_CH3_M1
 Wire Wire Line
 	4850 12550 6100 12550
-$Comp
-L Device:R R57
-U 1 1 5F901D96
-P 6100 12250
-F 0 "R57" V 6180 12250 50  0000 C CNN
-F 1 "10k" V 6100 12250 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6030 12250 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 6100 12250 50  0001 C CNN
-F 4 "311-10.0KHRCT-ND" V 6100 12250 60  0001 C CNN "Part"
-F 5 "DigiKey" V 6100 12250 60  0001 C CNN "Provider"
-	1    6100 12250
-	-1   0    0    -1  
-$EndComp
-Wire Wire Line
-	5900 12000 6100 12000
-Wire Wire Line
-	6100 12000 6100 12100
-Connection ~ 5900 12000
-Wire Wire Line
-	6100 12400 6100 12550
 Connection ~ 6100 12550
 Wire Wire Line
 	6100 12550 6750 12550
-$Comp
-L Device:R R56
-U 1 1 5F994D74
-P 6100 9900
-F 0 "R56" V 6180 9900 50  0000 C CNN
-F 1 "10k" V 6100 9900 50  0000 C CNN
-F 2 "Resistor_SMD:R_0603_1608Metric" V 6030 9900 50  0001 C CNN
-F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 6100 9900 50  0001 C CNN
-F 4 "311-10.0KHRCT-ND" V 6100 9900 60  0001 C CNN "Part"
-F 5 "DigiKey" V 6100 9900 60  0001 C CNN "Provider"
-	1    6100 9900
-	-1   0    0    1   
-$EndComp
-Wire Wire Line
-	5900 9650 6100 9650
-Wire Wire Line
-	6100 9650 6100 9750
-Connection ~ 5900 9650
-Wire Wire Line
-	6100 10050 6100 10200
 Connection ~ 6100 10200
 Wire Wire Line
 	6100 10200 6750 10200
@@ -4033,17 +3793,361 @@ Wire Wire Line
 Wire Wire Line
 	19900 7850 20050 7850
 $Comp
+L Device:Battery_Cell BT1
+U 1 1 5F67938F
+P 7800 9850
+F 0 "BT1" H 7918 9946 50  0000 L CNN
+F 1 "Battery_Cell" H 7918 9855 50  0000 L CNN
+F 2 "Battery:Battery_Panasonic_CR1220-VCN_Vertical_CircularHoles" V 7800 9910 50  0001 C CNN
+F 3 "~" V 7800 9910 50  0001 C CNN
+F 4 "VL-1220/VCN" H 7800 9850 50  0001 C CNN "Part"
+F 5 "PANASONIC" H 7800 9850 50  0001 C CNN "Provider"
+	1    7800 9850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6100 12400 6100 12550
+Connection ~ 5900 12000
+Wire Wire Line
+	6100 12000 6100 12100
+Wire Wire Line
+	5900 12000 6100 12000
+$Comp
+L Device:R R57
+U 1 1 5F901D96
+P 6100 12250
+F 0 "R57" V 6180 12250 50  0000 C CNN
+F 1 "10k" V 6100 12250 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6030 12250 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 6100 12250 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 6100 12250 60  0001 C CNN "Part"
+F 5 "DigiKey" V 6100 12250 60  0001 C CNN "Provider"
+	1    6100 12250
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5900 12400 5900 12650
+Wire Wire Line
+	5700 12400 5700 12750
+$Comp
 L power:+3V3 #PWR?
-U 1 1 5F88795A
+U 1 1 5CA42A19
+P 5700 11850
+AR Path="/58BE27E6/5CA42A19" Ref="#PWR?"  Part="1" 
+AR Path="/58BF664D/5CA42A19" Ref="#PWR?"  Part="1" 
+AR Path="/58BE2779/5CA42A19" Ref="#PWR0107"  Part="1" 
+F 0 "#PWR0107" H 5700 11700 50  0001 C CNN
+F 1 "+3V3" H 5715 12023 50  0000 C CNN
+F 2 "" H 5700 11850 50  0001 C CNN
+F 3 "" H 5700 11850 50  0001 C CNN
+	1    5700 11850
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5700 12000 5700 11850
+Wire Wire Line
+	5700 12000 5500 12000
+Connection ~ 5700 12000
+Wire Wire Line
+	5700 12100 5700 12000
+Wire Wire Line
+	5500 12000 5500 12100
+Wire Wire Line
+	5900 12000 5700 12000
+Wire Wire Line
+	5900 12100 5900 12000
+Wire Wire Line
+	5500 12400 5500 12850
+$Comp
+L Device:R R90
+U 1 1 5CC5F477
+P 5900 12250
+F 0 "R90" V 5980 12250 50  0000 C CNN
+F 1 "10k" V 5900 12250 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 5830 12250 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5900 12250 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 5900 12250 60  0001 C CNN "Part"
+F 5 "DigiKey" V 5900 12250 60  0001 C CNN "Provider"
+	1    5900 12250
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Device:R R91
+U 1 1 5CC5F3D7
+P 5700 12250
+F 0 "R91" V 5780 12250 50  0000 C CNN
+F 1 "10k" V 5700 12250 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 5630 12250 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5700 12250 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 5700 12250 60  0001 C CNN "Part"
+F 5 "DigiKey" V 5700 12250 60  0001 C CNN "Provider"
+	1    5700 12250
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Device:R R92
+U 1 1 5CC5ED43
+P 5500 12250
+F 0 "R92" V 5580 12250 50  0000 C CNN
+F 1 "10k" V 5500 12250 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 5430 12250 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5500 12250 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 5500 12250 60  0001 C CNN "Part"
+F 5 "DigiKey" V 5500 12250 60  0001 C CNN "Provider"
+	1    5500 12250
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	6100 10050 6100 10200
+Connection ~ 5900 9650
+Wire Wire Line
+	6100 9650 6100 9750
+Wire Wire Line
+	5900 9650 6100 9650
+$Comp
+L Device:R R56
+U 1 1 5F994D74
+P 6100 9900
+F 0 "R56" V 6180 9900 50  0000 C CNN
+F 1 "10k" V 6100 9900 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 6030 9900 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 6100 9900 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 6100 9900 60  0001 C CNN "Part"
+F 5 "DigiKey" V 6100 9900 60  0001 C CNN "Provider"
+	1    6100 9900
+	-1   0    0    1   
+$EndComp
+Wire Wire Line
+	5900 10050 5900 10300
+Wire Wire Line
+	5700 10050 5700 10400
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5F539476
+P 5700 9500
+AR Path="/58BE27E6/5F539476" Ref="#PWR?"  Part="1" 
+AR Path="/58BF664D/5F539476" Ref="#PWR?"  Part="1" 
+AR Path="/58BE2779/5F539476" Ref="#PWR0137"  Part="1" 
+F 0 "#PWR0137" H 5700 9350 50  0001 C CNN
+F 1 "+3V3" H 5715 9673 50  0000 C CNN
+F 2 "" H 5700 9500 50  0001 C CNN
+F 3 "" H 5700 9500 50  0001 C CNN
+	1    5700 9500
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	5700 9650 5700 9500
+Wire Wire Line
+	5700 9650 5500 9650
+Connection ~ 5700 9650
+Wire Wire Line
+	5700 9750 5700 9650
+Wire Wire Line
+	5500 9650 5500 9750
+Wire Wire Line
+	5900 9650 5700 9650
+Wire Wire Line
+	5900 9750 5900 9650
+Wire Wire Line
+	5500 10050 5500 10500
+$Comp
+L Device:R R48
+U 1 1 5F539443
+P 5900 9900
+F 0 "R48" V 5980 9900 50  0000 C CNN
+F 1 "10k" V 5900 9900 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 5830 9900 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5900 9900 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 5900 9900 60  0001 C CNN "Part"
+F 5 "DigiKey" V 5900 9900 60  0001 C CNN "Provider"
+	1    5900 9900
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R33
+U 1 1 5F539437
+P 5700 9900
+F 0 "R33" V 5780 9900 50  0000 C CNN
+F 1 "10k" V 5700 9900 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 5630 9900 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5700 9900 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 5700 9900 60  0001 C CNN "Part"
+F 5 "DigiKey" V 5700 9900 60  0001 C CNN "Provider"
+	1    5700 9900
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Device:R R25
+U 1 1 5F53942B
+P 5500 9900
+F 0 "R25" V 5580 9900 50  0000 C CNN
+F 1 "10k" V 5500 9900 50  0000 C CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 5430 9900 50  0001 C CNN
+F 3 "http://www.yageo.com.tw/exep/pages/download/literatures/PYu-R_INT-thick_7.pdf" H 5500 9900 50  0001 C CNN
+F 4 "311-10.0KHRCT-ND" V 5500 9900 60  0001 C CNN "Part"
+F 5 "DigiKey" V 5500 9900 60  0001 C CNN "Provider"
+	1    5500 9900
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0129
+U 1 1 5F7A61B9
+P 7800 10150
+F 0 "#PWR0129" H 7800 9900 50  0001 C CNN
+F 1 "GND" H 7800 10000 50  0000 C CNN
+F 2 "" H 7800 10150 50  0001 C CNN
+F 3 "" H 7800 10150 50  0001 C CNN
+	1    7800 10150
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+BATT #PWR0133
+U 1 1 5F7A7387
+P 7800 9500
+F 0 "#PWR0133" H 7800 9350 50  0001 C CNN
+F 1 "+BATT" H 7815 9673 50  0000 C CNN
+F 2 "" H 7800 9500 50  0001 C CNN
+F 3 "" H 7800 9500 50  0001 C CNN
+	1    7800 9500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7800 9500 7800 9600
+Wire Wire Line
+	7800 9950 7800 10150
+$Comp
+L power:+BATT #PWR0162
+U 1 1 5F83A0A6
+P 5200 9500
+F 0 "#PWR0162" H 5200 9350 50  0001 C CNN
+F 1 "+BATT" H 5215 9673 50  0000 C CNN
+F 2 "" H 5200 9500 50  0001 C CNN
+F 3 "" H 5200 9500 50  0001 C CNN
+	1    5200 9500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5200 9500 5200 10100
+Wire Wire Line
+	5200 10100 4800 10100
+$Comp
+L power:+BATT #PWR0163
+U 1 1 5F884944
+P 5200 11850
+F 0 "#PWR0163" H 5200 11700 50  0001 C CNN
+F 1 "+BATT" H 5215 12023 50  0000 C CNN
+F 2 "" H 5200 11850 50  0001 C CNN
+F 3 "" H 5200 11850 50  0001 C CNN
+	1    5200 11850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5200 11850 5200 12450
+Wire Wire Line
+	5200 12450 4850 12450
+Wire Wire Line
+	4350 12750 3900 12750
+Wire Wire Line
+	3900 12750 3900 12850
+Connection ~ 3900 12850
+Wire Wire Line
+	4300 10400 3900 10400
+Wire Wire Line
+	3900 10400 3900 10500
+Connection ~ 3900 10500
+$Comp
+L Connector_Generic:Conn_02x03_Odd_Even J5
+U 1 1 5F977F36
+P 14000 12800
+F 0 "J5" H 14050 13100 50  0000 C CNN
+F 1 "Conn_02x03_Odd_Even" H 14050 12500 50  0000 C CNN
+F 2 "Connector_PinHeader_2.00mm:PinHeader_2x03_P2.00mm_Horizontal" H 14000 12800 50  0001 C CNN
+F 3 "~" H 14000 12800 50  0001 C CNN
+F 4 "H2866-ND" H 14000 12800 50  0001 C CNN "Part"
+F 5 "DigiKey" H 14000 12800 50  0001 C CNN "Provier"
+	1    14000 12800
+	0    -1   1    0   
+$EndComp
+$Comp
+L Connector_Generic:Conn_02x05_Odd_Even ENC1
+U 1 1 5F984EC7
+P 4550 12650
+F 0 "ENC1" H 4600 12950 50  0000 C CNN
+F 1 "Conn_02x05_Odd_Even" H 4600 12350 50  0000 C CNN
+F 2 "Connector_PinHeader_2.00mm:PinHeader_2x05_P2.00mm_Horizontal" H 4550 12650 50  0001 C CNN
+F 3 "~" H 4550 12650 50  0001 C CNN
+F 4 "H10247-ND" H 4550 12650 50  0001 C CNN "Part"
+F 5 "DigiKey" H 4550 12650 50  0001 C CNN "Provider"
+	1    4550 12650
+	1    0    0    1   
+$EndComp
+$Comp
+L Device:D_Shockley D?
+U 1 1 5FADC859
+P 7400 9600
+AR Path="/58BF664D/5FADC859" Ref="D?"  Part="1" 
+AR Path="/58BE27E6/5FADC859" Ref="D?"  Part="1" 
+AR Path="/58BE2779/5FADC859" Ref="D5"  Part="1" 
+F 0 "D5" H 7400 9700 50  0000 C CNN
+F 1 "STPS0560Z" H 7400 9500 50  0000 C CNN
+F 2 "Diode_SMD:D_SOD-123" H 7400 9600 50  0001 C CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/datasheet/group1/0f/03/9b/7c/50/58/48/d7/CD00001852/files/CD00001852.pdf/jcr:content/translations/en.CD00001852.pdf" H 7400 9600 50  0001 C CNN
+F 4 "497-3787-1-ND" H 7400 9600 60  0001 C CNN "Part"
+F 5 "DigiKey" H 7400 9600 60  0001 C CNN "Provider"
+	1    7400 9600
+	-1   0    0    1   
+$EndComp
+$Comp
+L power:+3V3 #PWR?
+U 1 1 5FB27CE9
+P 6950 9500
+AR Path="/58BE27E6/5FB27CE9" Ref="#PWR?"  Part="1" 
+AR Path="/58BF664D/5FB27CE9" Ref="#PWR?"  Part="1" 
+AR Path="/58BE2779/5FB27CE9" Ref="#PWR0164"  Part="1" 
+F 0 "#PWR0164" H 6950 9350 50  0001 C CNN
+F 1 "+3V3" H 6965 9673 50  0000 C CNN
+F 2 "" H 6950 9500 50  0001 C CNN
+F 3 "" H 6950 9500 50  0001 C CNN
+	1    6950 9500
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	6950 9500 6950 9600
+Wire Wire Line
+	6950 9600 7250 9600
+Wire Wire Line
+	7550 9600 7800 9600
+Connection ~ 7800 9600
+Wire Wire Line
+	7800 9600 7800 9650
+$Comp
+L power:PWR_FLAG #FLG01
+U 1 1 5FBCF26B
+P 8200 9500
+F 0 "#FLG01" H 8200 9575 50  0001 C CNN
+F 1 "PWR_FLAG" H 8200 9674 50  0000 C CNN
+F 2 "" H 8200 9500 50  0001 C CNN
+F 3 "" H 8200 9500 50  0001 C CNN
+	1    8200 9500
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7800 9600 8200 9600
+Wire Wire Line
+	8200 9600 8200 9500
+$Comp
+L power:+BATT #PWR0117
+U 1 1 5FC4AF04
 P 3100 2900
-AR Path="/58BE27E6/5F88795A" Ref="#PWR?"  Part="1" 
-AR Path="/58BF664D/5F88795A" Ref="#PWR?"  Part="1" 
-AR Path="/58BE2779/5F88795A" Ref="#PWR0117"  Part="1" 
 F 0 "#PWR0117" H 3100 2750 50  0001 C CNN
-F 1 "+3V3" H 3115 3073 50  0000 C CNN
+F 1 "+BATT" H 3115 3073 50  0000 C CNN
 F 2 "" H 3100 2900 50  0001 C CNN
 F 3 "" H 3100 2900 50  0001 C CNN
 	1    3100 2900
 	1    0    0    -1  
 $EndComp
+Wire Wire Line
+	1550 14150 2600 14150
+Wire Wire Line
+	1550 14250 2600 14250
 $EndSCHEMATC
