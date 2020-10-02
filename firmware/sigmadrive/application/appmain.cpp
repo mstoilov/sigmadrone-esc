@@ -53,7 +53,7 @@ Adc adc1;
 Adc adc2;
 Adc adc3;
 Uart uart1;
-Uart uart2;
+Uart uart4;
 SPIMaster spi2;
 PwmGenerator tim1;
 PwmGenerator tim8;
@@ -84,15 +84,24 @@ rexjson::property* g_properties = &g_props;
 extern "C"
 void RunRpcTask(void *argument)
 {
+    char buf[64];
     for (;;) {
         try {
-            std::string req = uart2.GetLine();
-            rexjson::value res = rpc_server.call(req);
-            std::string response = res.write(false, false, 0, 9);
-            response += "\n";
-            uart2.Transmit(response);
+//            std::string req = uart4.GetLine();
+//            rexjson::value res = rpc_server.call(req);
+//            std::string response = res.write(false, false, 0, 9);
+//            response += "\n";
+//            uart4.Transmit(response);
 //			usb_cdc.Transmit(req);
 //			usb_cdc.Transmit(response);
+
+//            size_t ret = uart4.ReceiveOnce(buf, sizeof(buf));
+//            if (ret > 0) {
+//                usb_cdc.Transmit(buf, ret);
+//            }
+            osDelay(10);
+
+
         } catch (std::exception& e) {
 
         }
@@ -279,7 +288,7 @@ static const char * dump = R"desc(
 )desc";
 
 
-void DumpTextDo()
+std::string DumpTextDo()
 {
     std::ostringstream oss;
 
@@ -290,17 +299,22 @@ void DumpTextDo()
         oss << " : " << std::string(20, 'a' + i % 10) << "\r\n";
     }
 
-    HAL_UART_Transmit_DMA(uart1.huart_, (uint8_t*)oss.str().c_str(), strlen(oss.str().c_str()));
+    HAL_UART_Transmit_DMA(&huart4, (uint8_t*)oss.str().c_str(), strlen(oss.str().c_str()));
 //    HAL_UART_Transmit_DMA(uart1.huart_, (uint8_t*)dump, strlen(dump));
-    osDelay(1000);
 
+    osDelay(200);
+
+    std::stringstream stream;
+    stream << std::hex << huart4.Instance->ISR;
+    std::string result( stream.str() );
+    return result;
 //    std::cout << oss.str();
 }
 
-void DumpText()
+std::string DumpText()
 {
-    for (size_t i = 0; i < 5; i++)
-        DumpTextDo();
+//    for (size_t i = 0; i < 5; i++)
+        return DumpTextDo();
 }
 
 
@@ -452,6 +466,7 @@ int application_main()
     adc2.Attach(&hadc2, 3, false);
 //    adc3.Attach(&hadc3, 1, false);
     uart1.Attach(&huart1);
+    uart4.Attach(&huart4, false);
     spi2.Attach(&hspi2);
     LL_TIM_SetCounter(TIM8, TIM1_PERIOD_CLOCKS - 1);
     LL_TIM_SetCounter(TIM1, 0);
@@ -502,7 +517,7 @@ int application_main()
     /*
      * Run the RPC thread
      */
-//    StartRpcThread();
+    StartRpcThread();
 
     /*
      * We should never exit from the this method.
