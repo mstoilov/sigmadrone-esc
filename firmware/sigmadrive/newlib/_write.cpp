@@ -14,7 +14,6 @@
  * uart1 is defined in appmain.cpp file.
  */
 extern Uart uart1;
-extern Uart uart2;
 extern CdcIface usb_cdc;
 
 Uart *sio = &uart1;
@@ -44,7 +43,6 @@ int _write(int fd,
 		return ret;
 	} else if (fd == 2) {
 		return usb_cdc.Transmit(buf, nbyte);
-//		return uart2.Transmit(buf, nbyte);
 	}
 
 	errno = ENOSYS;
