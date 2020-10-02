@@ -63,7 +63,8 @@ Uart::~Uart()
     Detach();
 }
 
-void Uart::Attach(UART_HandleTypeDef* huart)
+
+void Uart::Attach(UART_HandleTypeDef* huart, bool enable_idle_irq)
 {
     huart_ = huart;
     assert(huart_);
@@ -77,7 +78,8 @@ void Uart::Attach(UART_HandleTypeDef* huart)
     huart_->ErrorCallback = ::error_callback;
 
     if (huart_->Init.Mode & UART_MODE_RX) {
-        __HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
+        if (enable_idle_irq)
+            __HAL_UART_ENABLE_IT(huart, UART_IT_IDLE);
         /*
          * The DMA must be initialized in DMA_CIRCULAR mode.
          */

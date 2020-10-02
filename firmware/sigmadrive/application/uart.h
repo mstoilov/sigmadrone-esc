@@ -24,7 +24,7 @@ public:
     using handle_map_type = std::map<UART_HandleTypeDef*, Uart*>;
     Uart(size_t poll_delay = 5);
     virtual ~Uart();
-    void Attach(UART_HandleTypeDef* huart);
+    void Attach(UART_HandleTypeDef* huart, bool enable_idle_irq = true);
     void Detach();
     size_t TransmitOnce(const char* buffer, size_t nsize);
     size_t Transmit(const char* buffer, size_t nsize);
@@ -40,7 +40,7 @@ public:
 
     static const uint32_t EVENT_FLAG_DATA = (1u << 9);
 
-protected:
+public:
     size_t ReceiveOnce(char* buffer, size_t nsize);
 
 public:
