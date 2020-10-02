@@ -83,6 +83,7 @@ ADC1.EOCSelection=ADC_EOC_SINGLE_CONV
 ADC2.ScanConvMode=ADC_SCAN_ENABLE
 RCC.PLLSAIQCLKFreq_Value=192000000
 Dma.ADC1.2.Mode=DMA_CIRCULAR
+NVIC.UART4_IRQn=true\:0\:0\:false\:false\:true\:false\:true\:true
 SH.S_TIM8_CH3.0=TIM8_CH3,PWM Generation3 CH3 CH3N
 PE12.Mode=PWM Generation3 CH3 CH3N
 Mcu.Pin80=VP_TIM8_VS_ClockSourceITR
