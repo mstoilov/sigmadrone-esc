@@ -110,7 +110,7 @@ protected:
     ProfileData<float> profile_target_;         /**< Target position, velocity, acceleration from the velocity profiler */
     TrapezoidalProfile trap_profiler_;
     TrapezoidalProfile *trap_profiler_ptr_ = nullptr;
-    Ring<TrajectoryPoint, 32> velocity_stream_;
+    Ring<TrajectoryPoint, 128> velocity_stream_;
     bool go_  = false;
 };
 

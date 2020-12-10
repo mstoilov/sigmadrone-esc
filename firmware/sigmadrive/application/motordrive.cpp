@@ -22,8 +22,8 @@ extern UartRpcServer rpc_server;
 
 MotorDrive::MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, Adc* dma_adc, IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
     : Pa_(std::polar<float>(1.0f, 0.0f))
-    , Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0 ))
-    , Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0))
+    , Pb_(std::polar<float>(1.0f, M_PI / 3.0 * 4.0 ))
+    , Pc_(std::polar<float>(1.0f, M_PI / 3.0 * 2.0))
     , update_hz_(update_hz)
     , time_slice_(1.0f / update_hz_)
     , lpf_bias_a(config_.bias_alpha_)

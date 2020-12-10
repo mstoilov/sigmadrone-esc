@@ -53,6 +53,7 @@ Adc adc1;
 Adc adc2;
 Adc adc3;
 Uart uart1;
+Uart uart8;
 Uart uart4;
 SPIMaster spi2;
 PwmGenerator tim1;
@@ -87,19 +88,23 @@ void RunRpcTask(void *argument)
     char buf[64];
     for (;;) {
         try {
-//            std::string req = uart4.GetLine();
-//            rexjson::value res = rpc_server.call(req);
-//            std::string response = res.write(false, false, 0, 9);
-//            response += "\n";
-//            uart4.Transmit(response);
-//			usb_cdc.Transmit(req);
-//			usb_cdc.Transmit(response);
+            std::string req = uart4.GetLine();
+            rexjson::value res = rpc_server.call(req);
+            std::string response = res.write(false, false, 0, 9);
+            response += "\n";
+            uart4.Transmit(response);
+			usb_cdc.Transmit(req);
+			usb_cdc.Transmit(response);
 
 //            size_t ret = uart4.ReceiveOnce(buf, sizeof(buf));
 //            if (ret > 0) {
 //                usb_cdc.Transmit(buf, ret);
 //            }
-            osDelay(10);
+//            osDelay(10);
+
+//            std::string req = uart4.GetLine();
+//            usb_cdc.Transmit(req);
+
 
 
         } catch (std::exception& e) {
@@ -466,7 +471,8 @@ int application_main()
     adc2.Attach(&hadc2, 3, false);
 //    adc3.Attach(&hadc3, 1, false);
     uart1.Attach(&huart1);
-    uart4.Attach(&huart4, false);
+    uart8.Attach(&huart8);
+    uart4.Attach(&huart4);
     spi2.Attach(&hspi2);
     LL_TIM_SetCounter(TIM8, TIM1_PERIOD_CLOCKS - 1);
     LL_TIM_SetCounter(TIM1, 0);

@@ -683,6 +683,10 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
     int64_t newpos = relative + target_;
     if (newpos < 0 || newpos >= (int64_t)(1ULL << (drive_->enc_resolution_bits_ + drive_->enc_resolution_bits_)))
         throw std::range_error("Invalid position");
+    if (velocity_stream_.write_size() < 4) {
+        throw std::range_error("Velocity profiler queue is full.");
+    }
+
     target_ = newpos;
     trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->update_hz_);
     trap_profiler_ptr_ = &trap_profiler_;

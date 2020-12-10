@@ -216,6 +216,7 @@ again:
     return recv;
 }
 
+#include "main.h"
 void Uart::ReceiveCompleteCallback()
 {
     osEventFlagsSet(event_, EVENT_FLAG_DATA);

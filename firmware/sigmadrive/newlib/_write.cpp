@@ -14,6 +14,7 @@
  * uart1 is defined in appmain.cpp file.
  */
 extern Uart uart1;
+extern Uart uart8;
 extern CdcIface usb_cdc;
 
 Uart *sio = &uart1;
