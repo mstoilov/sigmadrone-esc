@@ -55,6 +55,7 @@ Adc adc3;
 Uart uart1;
 Uart uart8;
 Uart uart4;
+Uart& rpc_uart = uart8;
 SPIMaster spi2;
 PwmGenerator tim1;
 PwmGenerator tim8;
@@ -85,14 +86,18 @@ rexjson::property* g_properties = &g_props;
 extern "C"
 void RunRpcTask(void *argument)
 {
-    char buf[64];
+//    char buf[64];
     for (;;) {
         try {
-            std::string req = uart4.GetLine();
+            std::string req = rpc_uart.GetLine();
             rexjson::value res = rpc_server.call(req);
             std::string response = res.write(false, false, 0, 9);
             response += "\n";
-            uart4.Transmit(response);
+            rpc_uart.Transmit(response);
+
+            /*
+             * Log the Request/Response
+             */
 			usb_cdc.Transmit(req);
 			usb_cdc.Transmit(response);
 
