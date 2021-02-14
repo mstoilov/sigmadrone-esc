@@ -154,8 +154,9 @@ void MotorCtrlFOC::RunDebugLoop()
             );
         } else if (status & SIGNAL_DEBUG_DUMP_VELOCITY) {
             fprintf(stderr,
-                    "CV: %+6.2f (%+9.2f) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
+                    "PR: %10llu CV: %+6.2f (%+9.2f) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
                     "Ierr: %+7.3f Werr: %+7.3f PID_W: %+6.3f PID_WP: %+6.3f PID_WI: %+6.3f T: %3lu\n",
+                    drive_->GetRotorPosition(),
                     drive_->GetRotorVelocity() / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocityPTS(),
                     lpf_Id_,

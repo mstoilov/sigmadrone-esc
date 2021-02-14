@@ -6,7 +6,7 @@
 #include "stm32f7xx_hal_tim.h"
 #include "stm32f7xx_ll_tim.h"
 
-void DisableAllMotors()
+inline static void DisableAllMotors()
 {
     LL_TIM_DisableAllOutputs(TIM1);
     LL_TIM_DisableAllOutputs(TIM8);
