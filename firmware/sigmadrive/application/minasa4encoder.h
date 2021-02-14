@@ -19,7 +19,7 @@
 #include <map>
 #include "iencoder.h"
 #include "hrtimer.h"
-#include "rexjsonrpc/property.h"
+#include "rexjson/rexjsonproperty.h"
 
 #include "cmsis_os2.h"
 

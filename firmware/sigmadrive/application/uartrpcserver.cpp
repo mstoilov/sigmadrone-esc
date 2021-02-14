@@ -27,7 +27,7 @@
 #include "drv8323.h"
 #include "motordrive.h"
 #include "motordrive.h"
-#include "rexjsonrpc/property.h"
+#include "rexjson/rexjsonproperty.h"
 
 extern rexjson::property *g_properties;
 extern CdcIface usb_cdc;
@@ -105,7 +105,7 @@ Arguments:
         return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
     }
     verify_parameters(params, types, ARRAYSIZE(types));
-    if (params[0].type() == rexjson::int_type) {
+    if (params[0].get_type() == rexjson::int_type) {
         drv1.SetCSAGain(params[0].get_int());
     }
     return drv1.GetCSAGain();

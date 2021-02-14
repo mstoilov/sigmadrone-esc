@@ -14,7 +14,7 @@
 #include "iencoder.h"
 #include "ipwmgenerator.h"
 #include "lowpassfilter.h"
-#include "rexjsonrpc/property.h"
+#include "rexjson/rexjsonproperty.h"
 #include "scheduler.h"
 #include "errorinfo.h"
 

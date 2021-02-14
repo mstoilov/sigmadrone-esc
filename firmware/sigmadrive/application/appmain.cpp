@@ -36,7 +36,7 @@
 #include "cdc_iface.h"
 #include "motordrive.h"
 #include "motorctrl_foc.h"
-#include "rexjsonrpc/property.h"
+#include "rexjson/rexjsonproperty.h"
 #include "minasa4encoder.h"
 #include "dumbencoder.h"
 #include "hrtimer.h"

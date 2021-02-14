@@ -23,7 +23,7 @@
 #define UARTRPCSERVER_H_
 
 #include "uart.h"
-#include "rexjsonrpc/rpcserver.h"
+#include "rexjson/rexjsonrpc.h"
 
 class UartRpcServer : public rexjson::rpc_server<UartRpcServer>
 {

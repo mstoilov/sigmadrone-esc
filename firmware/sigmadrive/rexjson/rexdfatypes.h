@@ -41,10 +41,10 @@ typedef REX_CHAR_TYPE rexchar_t;
  * Define DFA sub-state.
  */
 typedef struct rexdfss_s {
-    rexuint_t type;					/**< This is the original NFA state type(substate of a DFA state). */
-    rexuint_t uid;					/**< Unique ID of the NFA state(substate of a DFA state). */
-    rexuserdata_t userdata;			/**< If this is an accepting sub-state, this parameter has the value specified in the @ref rex_db_addexpression call.
-                                         This parameter is used to track which regular expression is matching, when the DFA gets to accepting state. */
+	rexuint_t type;					/**< This is the original NFA state type(substate of a DFA state). */
+	rexuint_t uid;					/**< Unique ID of the NFA state(substate of a DFA state). */
+	rexuserdata_t userdata;			/**< If this is an accepting sub-state, this parameter has the value specified in the @ref rex_db_addexpression call.
+									 	 This parameter is used to track which regular expression is matching, when the DFA gets to accepting state. */
 } rexdfss_t;
 
 
@@ -52,9 +52,9 @@ typedef struct rexdfss_s {
  * Define DFA transition.
  */
 typedef struct rexdft_s {
-    rexchar_t lowin;				/**< Low input boundary */
-    rexchar_t highin;				/**< High input boundary */
-    rexuint_t state;				/**< New state to go to if the input is within the boundary */
+	rexchar_t lowin;				/**< Low input boundary */
+	rexchar_t highin;				/**< High input boundary */
+	rexuint_t state;				/**< New state to go to if the input is within the boundary */
 } rexdft_t;
 
 
@@ -62,13 +62,13 @@ typedef struct rexdft_s {
  * State definition
  */
 typedef struct rexdfs_s {
-    rexuint_t type;					/**< Type of DFA state. */
-    rexuint_t trans;				/**< The offset of the first transition for this state in the dfa->trans array. */
-    rexuint_t ntrans;				/**< Total number of transitions. */
-    rexuint_t accsubstates;			/**< The offset of the first accepting sub-state for this state in the dfa->accsubstates array. */
-    rexuint_t naccsubstates;		/**< Total number of accepting sub-states. */
-    rexuint_t substates;			/**< The offset of the first sub-state for this state in the dfa->substates array. */
-    rexuint_t nsubstates;			/**< Total number of sub-states. */
+	rexuint_t type;					/**< Type of DFA state. */
+	rexuint_t trans;				/**< The offset of the first transition for this state in the dfa->trans array. */
+	rexuint_t ntrans;				/**< Total number of transitions. */
+	rexuint_t accsubstates;			/**< The offset of the first accepting sub-state for this state in the dfa->accsubstates array. */
+	rexuint_t naccsubstates;		/**< Total number of accepting sub-states. */
+	rexuint_t substates;			/**< The offset of the first sub-state for this state in the dfa->substates array. */
+	rexuint_t nsubstates;			/**< Total number of sub-states. */
 } rexdfs_t;
 
 
@@ -76,19 +76,19 @@ typedef struct rexdfs_s {
  * Define DFA.
  */
 typedef struct rexdfa_s {
-    rexuint_t nstates;				/**< Total number of states. */
-    rexdfs_t *states;				/**< Array of states */
-    rexuint_t ntrans;				/**< Total number of transitions */
-    rexdft_t *trans;				/**< Array of transitions, all states transitions are recorded here. Each state keeps the offset of its first transition it this array */
-    rexuint_t naccsubstates;		/**< Total number of accepting substates */
-    rexdfss_t *accsubstates;		/**< Array of accepting sub-states, all states accepting sub-states are recorded here. */
-    rexuint_t nsubstates;			/**< Total number of substates */
-    rexdfss_t *substates;			/**< Array of sub-states, all states sub-states are recorded here. */
-    unsigned int hbytes;
-    unsigned int hbits;
-    unsigned int hsize;
-    unsigned char *bits;
-    rexuword_t reserved[64];
+	rexuint_t nstates;				/**< Total number of states. */
+	rexdfs_t *states;				/**< Array of states */
+	rexuint_t ntrans;				/**< Total number of transitions */
+	rexdft_t *trans;				/**< Array of transitions, all states transitions are recorded here. Each state keeps the offset of its first transition it this array */
+	rexuint_t naccsubstates;		/**< Total number of accepting substates */
+	rexdfss_t *accsubstates;		/**< Array of accepting sub-states, all states accepting sub-states are recorded here. */
+	rexuint_t nsubstates;			/**< Total number of substates */
+	rexdfss_t *substates;			/**< Array of sub-states, all states sub-states are recorded here. */
+	unsigned int hbytes;
+	unsigned int hbits;
+	unsigned int hsize;
+	unsigned char *bits;
+	rexuword_t reserved[64];
 } rexdfa_t;
 
 
@@ -96,10 +96,10 @@ typedef struct rexdfa_s {
  * Definition of state types.
  */
 typedef enum {
-    REX_STATETYPE_NONE = 0,			/**< There is nothing interesting about this state */
-    REX_STATETYPE_START = 1,		/**< This state is marked as starting point for the automaton */
-    REX_STATETYPE_ACCEPT = 2,		/**< This type indicates that one or more regular expressions compiled in the automaton matched. */
-    REX_STATETYPE_DEAD = 3,			/**< The automaton is in the dead state(all transitions lead back to the same state) */
+	REX_STATETYPE_NONE = 0,			/**< There is nothing interesting about this state */
+	REX_STATETYPE_START = 1,		/**< This state is marked as starting point for the automaton */
+	REX_STATETYPE_ACCEPT = 2,		/**< This type indicates that one or more regular expressions compiled in the automaton matched. */
+	REX_STATETYPE_DEAD = 3,			/**< The automaton is in the dead state(all transitions lead back to the same state) */
 } rex_statetype_t;
 
 
@@ -171,21 +171,21 @@ typedef enum {
  * @return The next state of the DFA for the specified input is written in __nextptr__
  */
 #define REX_DFA_NEXT(__dfa__, __nstate__, __input__, __nextptr__) \
-        do { \
-            rexdft_t *t; \
-            rexuint_t mid, min = 0, max = REX_DFA_STATE(__dfa__, __nstate__)->ntrans; \
-            while (max > min) { \
-                mid = (min + max)/2; \
-                t = REX_DFA_TRANSITION(__dfa__, __nstate__, mid); \
-                if (((rexchar_t)(__input__)) >= t->lowin) { \
-                    min = mid + 1; \
-                } else { \
-                    max = mid; \
-                } \
-            } \
-            t = REX_DFA_TRANSITION(__dfa__, __nstate__, min-1); \
-            *(__nextptr__) = t->state; \
-        } while (0)
+		do { \
+			rexdft_t *t; \
+			rexuint_t mid, min = 0, max = REX_DFA_STATE(__dfa__, __nstate__)->ntrans; \
+			while (max > min) { \
+				mid = (min + max)/2; \
+				t = REX_DFA_TRANSITION(__dfa__, __nstate__, mid); \
+				if (((rexchar_t)(__input__)) >= t->lowin) { \
+					min = mid + 1; \
+				} else { \
+					max = mid; \
+				} \
+			} \
+			t = REX_DFA_TRANSITION(__dfa__, __nstate__, min-1); \
+			*(__nextptr__) = t->state; \
+		} while (0)
 
 #ifdef __cplusplus
 }
