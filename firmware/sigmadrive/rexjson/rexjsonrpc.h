@@ -118,7 +118,6 @@ protected:
     template<std::size_t... is>
     std::tuple<Args...> params_to_tuple(const rexjson::array& params, std::index_sequence<is...>)
     {
-
         return std::make_tuple(Args{params[is].get_value<Args>()}...);
     }
 

@@ -74,7 +74,7 @@ void MotorDrive::RegisterRpcMethods(const std::string& prefix)
     rpc_server.add(prefix, "add_task_arm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
     rpc_server.add(prefix, "add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
     rpc_server.add(prefix, "add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
-    rpc_server.add(prefix, "add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz)"));
+    rpc_server.add(prefix, "add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder)"));
     rpc_server.add(prefix, "alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAlphaPoleSearch, "void RunTaskAlphaPoleSearch()"));
     rpc_server.add(prefix, "rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
     rpc_server.add(prefix, "run_encoder_debug", rexjson::make_rpc_wrapper(this, &MotorDrive::RunEncoderDisplayDebugInfo, "void RunEncoderDisplayDebugInfo()"));

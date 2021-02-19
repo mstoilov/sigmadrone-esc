@@ -39,9 +39,6 @@ extern TorqueLoop tql;
 UartRpcServer::UartRpcServer()
     : rexjson::rpc_server<UartRpcServer>()
 {
-    add("adc_injswstart", &UartRpcServer::rpc_adc_injswstart);
-    add("drv_calibration", &UartRpcServer::rpc_drv_calibration);
-    add("drv_csagain", &UartRpcServer::rpc_drv_csagain);
     add("get", &UartRpcServer::rpc_get_property);
     add("set", &UartRpcServer::rpc_set_property);
 }
@@ -51,65 +48,6 @@ UartRpcServer::~UartRpcServer()
 
 }
 
-rexjson::value UartRpcServer::rpc_adc_injswstart(rexjson::array& params, rexjson::rpc_exec_mode mode)
-{
-    static unsigned int types[] = {rexjson::rpc_null_type};
-    static const char *help_msg = R"desc(
-adc_injswstart
-Start ADC injected conversion.
-
-Arguments:
-)desc";
-
-    if (mode != rexjson::execute) {
-        return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-    }
-    verify_parameters(params, types, ARRAYSIZE(types));
-
-    adc1.InjectedSwTrig();
-    return true;
-}
-
-rexjson::value UartRpcServer::rpc_drv_calibration(rexjson::array& params, rexjson::rpc_exec_mode mode)
-{
-    static unsigned int types[] = {rexjson::rpc_bool_type};
-    static const char *help_msg = R"desc(
-drv_calibration
-Driver calibration enable/disable.
-
-Arguments:
-1. enable		(bool) true/false
-)desc";
-
-    if (mode != rexjson::execute) {
-        return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-    }
-    verify_parameters(params, types, ARRAYSIZE(types));
-
-    params[0].get_bool() ? drv1.EnableCalibration() : drv1.DisableCalibration();
-    return params[0].get_bool();
-}
-
-rexjson::value UartRpcServer::rpc_drv_csagain(rexjson::array& params, rexjson::rpc_exec_mode mode)
-{
-    static unsigned int types[] = {rexjson::rpc_int_type|rexjson::rpc_null_type};
-    static const char *help_msg = R"desc(
-drv_csagain
-Get/Set Driver CSA gain.
-
-Arguments:
-1. gain		(int)  0, 1, 2, 3, 4  (x5VV, x10VV, x20VV, x40VV)
-)desc";
-
-    if (mode != rexjson::execute) {
-        return noexec(params, mode, types, ARRAYSIZE(types), help_msg);
-    }
-    verify_parameters(params, types, ARRAYSIZE(types));
-    if (params[0].get_type() == rexjson::int_type) {
-        drv1.SetCSAGain(params[0].get_int());
-    }
-    return drv1.GetCSAGain();
-}
 
 rexjson::value UartRpcServer::rpc_get_property(rexjson::array& params, rexjson::rpc_exec_mode mode)
 {
