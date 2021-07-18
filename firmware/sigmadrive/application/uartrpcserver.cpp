@@ -22,7 +22,6 @@
 #include "uartrpcserver.h"
 #include "cdc_iface.h"
 #include "pwm_generator.h"
-#include "torque_loop.h"
 #include "adc.h"
 #include "drv8323.h"
 #include "motordrive.h"
@@ -34,7 +33,6 @@ extern CdcIface usb_cdc;
 extern std::vector<MotorDrive*> g_motors;
 extern Adc adc1;
 extern Drv8323 drv1;
-extern TorqueLoop tql;
 
 UartRpcServer::UartRpcServer()
     : rexjson::rpc_server<UartRpcServer>()
