@@ -4,7 +4,7 @@
 
 /** P controller implementation
  *
- * This is a straight forward implementation of PI controller
+ * This is a straight forward implementation of P controller
  * functionality.
  *
  */
