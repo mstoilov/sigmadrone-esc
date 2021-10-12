@@ -22,26 +22,14 @@ Uart *sio = &uart1;
 #ifdef __cplusplus
 extern "C"
 #endif
+
 int _write(int fd,
 		const char* buf,
 		size_t nbyte)
 {
-	static const char cr = '\r';
-	size_t ret = 0;
-
 	// STDOUT and STDERR are routed to the trace device
-	if (fd == 1) {
-		int* last_char = &_impure_ptr->_unspecified_locale_info;
-		for (ret = 0; ret < nbyte; ret++) {
-			if (buf[ret] != '\n' || *last_char == cr) {
-				sio->Transmit(&buf[ret], 1);
-			} else {
-				sio->Transmit(&cr, 1);
-				sio->Transmit(&buf[ret], 1);
-				*last_char = buf[ret];
-			}
-		}
-		return ret;
+    if (fd == 1) {
+        return sio->Transmit(buf, nbyte);
 	} else if (fd == 2) {
 		return usb_cdc.Transmit(buf, nbyte);
 	}
