@@ -104,6 +104,7 @@ public:
     bool CheckTripViolations();
     void RegisterRpcMethods(const std::string& prefix);
     rexjson::property GetPropertyMap();
+    rexjson::property GetConfigPropertyMap();
 
 
     /*
@@ -158,6 +159,7 @@ public:
     uint64_t enc_position_mask_ = 0;
     uint64_t enc_position_size_ = 0;
     uint64_t enc_position_size_half_ = 0;
+
     uint32_t update_hz_ = 0;
     uint32_t tim1_cnt_ = 0;
     uint32_t tim8_cnt_ = 0;

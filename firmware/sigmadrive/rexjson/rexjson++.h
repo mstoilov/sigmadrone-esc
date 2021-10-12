@@ -211,7 +211,7 @@ template<> inline void value::get<std::string>(std::string& ret) const  { ret = 
 
 class output {
 public:
-    output(bool pretty = false, bool nullprop = true, size_t tabsize = 4, size_t precision = 3, const std::string& crlf = "\n");
+    output(bool pretty = false, bool nullprop = true, size_t tabsize = 4, size_t precision = 3, const std::string& crlf = "\r\n");
     void write(const value& v, std::ostream& os);
     std::string write(const value& v);
 

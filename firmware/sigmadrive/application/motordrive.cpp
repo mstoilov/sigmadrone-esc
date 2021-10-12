@@ -86,6 +86,7 @@ void MotorDrive::RegisterRpcMethods(const std::string& prefix)
 rexjson::property MotorDrive::GetPropertyMap()
 {
     rexjson::property props= rexjson::property_map({
+        {"Rencest", &Rencest_},
         {"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
         {"tim1_cnt", rexjson::property(&tim1_cnt_, rexjson::property_access::readonly)},
         {"tim8_cnt", rexjson::property(&tim8_cnt_, rexjson::property_access::readonly)},
@@ -100,6 +101,14 @@ rexjson::property MotorDrive::GetPropertyMap()
         {"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
         {"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_access::readonly)},
         {"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_access::readonly)},
+    });
+    return props;
+}
+
+
+rexjson::property MotorDrive::GetConfigPropertyMap()
+{
+    rexjson::property props= rexjson::property_map({
         {"bias_alpha", rexjson::property(
             &config_.bias_alpha_,
             rexjson::property_access::readwrite,
@@ -162,10 +171,10 @@ rexjson::property MotorDrive::GetPropertyMap()
         {"reset_voltage", &config_.reset_voltage_},
         {"reset_hz", &config_.reset_hz_},
         {"display_div", &config_.display_div_},
-        {"Rencest", &Rencest_},
     });
     return props;
 }
+
 
 /** Clear any outstanding error and put the
  * scheduler in run mode.
@@ -785,7 +794,7 @@ void MotorDrive::RunTaskAlphaPoleSearch()
 		AddTaskRotateMotor((M_PI * 2)/config_.pole_pairs, M_PI, 0.45, true);
 		AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
 		sched_.AddTask([&](void){
-			fprintf(stderr, "Enc: %7lu\n", (uint32_t)(GetEncoderPosition() & enc_resolution_bits_));
+			fprintf(stderr, "Enc: %7lu\r\n", (uint32_t)(GetEncoderPosition() & enc_resolution_bits_));
 			encoder_->ResetPosition();
 		});
 	}
@@ -810,7 +819,7 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage)
 
 #if 0
             if ((data_.update_counter_ % 13) == 0) {
-                fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\n",
+                fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\r\n",
                         lpf_vbus_.Output(), data_.phase_current_a_, data_.phase_current_b_, data_.phase_current_c_,
                         data_.phase_current_a_ + data_.phase_current_b_ + data_.phase_current_c_);
             }
@@ -846,7 +855,7 @@ void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, uin
             });
 #if 0
             if ((i % 13) == 0) {
-                fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\n",
+                fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\r\n",
                         lpf_vbus_.Output(), lpf_a.Output());
             }
 #endif
@@ -902,7 +911,7 @@ void MotorDrive::RunTaskRotateMotor(float angle, float speed, float voltage, boo
 
 void MotorDrive::DefaultIdleTask()
 {
-    fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\n", lpf_vbus_.Output(),
+    fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\r\n", lpf_vbus_.Output(),
             lpf_bias_a.Output(), lpf_bias_b.Output(), phase_current_a_, phase_current_b_,
             - phase_current_a_ - phase_current_b_);
 }
@@ -948,7 +957,7 @@ void MotorDrive::RunSimpleTasks()
     sched_.AddTask([&](){
         uint32_t t0 = xTaskGetTickCount();
         if (sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT, 2000) == Scheduler::THREAD_FLAG_ABORT) {
-            fprintf(stderr, "Task1 Aborting...\n\n\n");
+            fprintf(stderr, "Task1 Aborting...\r\n\r\n\r\n");
             return;
         }
         fprintf(stderr, "Task1 finished %lu\n", xTaskGetTickCount() - t0);
@@ -956,18 +965,18 @@ void MotorDrive::RunSimpleTasks()
     sched_.AddTask([&](){
         uint32_t t0 = xTaskGetTickCount();
         if (sched_.WaitSignalAbort(2000)) {
-            fprintf(stderr, "Task2 Aborting...\n\n\n");
+            fprintf(stderr, "Task2 Aborting...\r\n\r\n\r\n");
             return;
         }
-        fprintf(stderr, "Task2 finished %lu\n", xTaskGetTickCount() - t0);
+        fprintf(stderr, "Task2 finished %lu\r\n", xTaskGetTickCount() - t0);
     });
     sched_.AddTask([&](){
         uint32_t t0 = xTaskGetTickCount();
         if (sched_.WaitSignalAbort(2000)) {
-            fprintf(stderr, "Task3 Aborting...\n\n\n");
+            fprintf(stderr, "Task3 Aborting...\r\n\r\n\r\n");
             return;
         }
-        fprintf(stderr, "Task3 finished %lu\n\n\n", xTaskGetTickCount() - t0);
+        fprintf(stderr, "Task3 finished %lu\r\n\r\n\r\n", xTaskGetTickCount() - t0);
     });
     sched_.Run();
 

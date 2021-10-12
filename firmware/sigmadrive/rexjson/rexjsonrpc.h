@@ -213,12 +213,12 @@ public:
             if (mode == helpspec)
                 return create_json_helpspec(types, ARRAYSIZE(types));
             return
-                    "spec <\"name\">\n"
-                    "\nGet the spec for the specified rpc name.\n"
-                    "\nArguments:\n"
-                    "1. \"name\"     (string, required) The name of of the rpc method to get the spec on\n"
-                    "\nResult:\n"
-                    "\"json\"     (string) The rpc call spec in json\n";
+                    "spec <\"name\">\r\n"
+                    "\r\nGet the spec for the specified rpc name.\r\n"
+                    "\r\nArguments:\r\n"
+                    "1. \"name\"     (string, required) The name of of the rpc method to get the spec on\r\n"
+                    "\r\nResult:\r\n"
+                    "\"json\"     (string) The rpc call spec in json\r\n";
         }
 
         verify_parameters(params, types, ARRAYSIZE(types));
@@ -235,12 +235,12 @@ public:
             if (mode == helpspec)
                 return create_json_helpspec(types, ARRAYSIZE(types));
             return
-                    "helpspec <\"name\">\n"
-                    "\nGet the helpspec for the specified rpc name.\n"
-                    "\nArguments:\n"
-                    "1. \"name\"     (string, required) The name of of the rpc method to get the spec on\n"
-                    "\nResult:\n"
-                    "\"json\"     (string) The rpc call helpspec\n";
+                    "helpspec <\"name\">\r\n"
+                    "\r\nGet the helpspec for the specified rpc name.\r\n"
+                    "\r\nArguments:\r\n"
+                    "1. \"name\"     (string, required) The name of of the rpc method to get the spec on\r\n"
+                    "\r\nResult:\r\n"
+                    "\"json\"     (string) The rpc call helpspec\r\n";
         }
 
         verify_parameters(params, types, ARRAYSIZE(types));
@@ -258,24 +258,24 @@ public:
             if (mode == helpspec)
                 return create_json_helpspec(types, ARRAYSIZE(types));
             return
-                    "help [\"command\"]\n"
-                    "\nList all commands, or get help for a specified command.\n"
-                    "\nArguments:\n"
-                    "1. \"command\"     (string, optional) The command to get help on\n"
-                    "\nResult:\n"
-                    "\"text\"     (string) The help text\n";
+                    "help [\"command\"]\r\n"
+                    "\r\nList all commands, or get help for a specified command.\r\n"
+                    "\r\nArguments:\r\n"
+                    "1. \"command\"     (string, optional) The command to get help on\r\n"
+                    "\r\nResult:\r\n"
+                    "\"text\"     (string) The help text\r\n";
         }
 
         verify_parameters(params, types, ARRAYSIZE(types));
         if (params[0].get_type() == rexjson::null_type) {
             std::string result;
             for (typename method_map_type::const_iterator it = map_.begin(); it != map_.end(); it++) {
-                result += it->first + "\n";
+                result += it->first + "\r\n";
 
 //              rexjson::array ignored;
 //              std::string ret = call_method_name(rexjson::value(it->first), ignored, help).get_str();
-//              ret = ret.substr(ret.find('\n') + 1);
-//              result += ret.substr(0, ret.find('\n')) + "\n";
+//              ret = ret.substr(ret.find('\r\n') + 1);
+//              result += ret.substr(0, ret.find('\r\n')) + "\r\n";
             }
             return result;
         }

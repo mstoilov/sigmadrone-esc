@@ -35,6 +35,10 @@ protected:
     rexjson::value rpc_get_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
     rexjson::value rpc_set_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
 
+    rexjson::value rpc_get_config_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+    rexjson::value rpc_set_config_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+
+
 protected:
     float kp_ = 0.0;
 };

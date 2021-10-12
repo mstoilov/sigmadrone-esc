@@ -83,6 +83,13 @@ rexjson::property g_props =
 rexjson::property* g_properties = &g_props;
 
 
+rexjson::property g_configprops =
+        rexjson::property_map {
+            {"axis1", rexjson::property({foc1.GetConfigPropertyMap()})},
+            {"axis2", rexjson::property({foc2.GetConfigPropertyMap()})},
+        };
+rexjson::property* g_config_properties = &g_configprops;
+
 extern "C"
 void RunRpcTask(void *argument)
 {
@@ -92,7 +99,7 @@ void RunRpcTask(void *argument)
             std::string req = rpc_uart.GetLine();
             rexjson::value res = rpc_server.call(req);
             std::string response = res.write(false, false, 0, 9);
-            response += "\n";
+            response += "\r\n";
             rpc_uart.Transmit(response);
 
             /*
@@ -214,7 +221,7 @@ void SD_DMA1_Stream5_IRQHandler(void)
 void SaveConfig()
 {
     std::string ret;
-    rexjson::value props = g_properties->to_json();
+    rexjson::value props = g_config_properties->to_json();
     ret = props.write(true, true, 4, 9);
     std::cout << ret << std::endl;
     flash_config.erase();
@@ -227,7 +234,7 @@ void LoadConfig()
 {
     std::string configuration(flashregion);
     rexjson::value props = rexjson::read(configuration);
-    g_properties->enumerate_children("", [&](const std::string& path, rexjson::property& prop)->void {
+    g_config_properties->enumerate_children("", [&](const std::string& path, rexjson::property& prop)->void {
 
         if (prop.access() & rexjson::property_access::writeonly) {
             rexjson::object::const_iterator it = props.get_obj().find(path);
@@ -235,7 +242,7 @@ void LoadConfig()
                 try {
                     prop.set_prop(it->second);
                 } catch (std::exception& e) {
-                    std::cout << e.what() << ", Failed to set " << path << " : " << it->second.to_string() << std::endl;
+                    std::cout << e.what() << ", Failed to set " << path << " : " << it->second.to_string() << "\r\n";
                 }
             }
         }
@@ -416,15 +423,15 @@ void StartCommandThread()
 
 void DisplayPropertiesInfo()
 {
-    g_properties->enumerate_children("", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << std::endl;});
+    g_properties->enumerate_children("", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << "\r\n";});
 }
 
 void DisplayDrvRegs()
 {
-    fprintf(stdout, "DRV1: \n");
+    fprintf(stdout, "DRV1: \r\n");
     drv1.DumpRegs();
 
-    fprintf(stdout, "\n\nDRV2: \n");
+    fprintf(stdout, "\r\n\r\nDRV2: \r\n");
     drv2.DumpRegs();
 
 }

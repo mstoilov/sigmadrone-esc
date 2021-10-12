@@ -410,7 +410,7 @@ void MinasA4Encoder::DisplayDebugInfo()
 
     new_position = GetPosition();
     if (new_position != old_counter || status_) {
-        fprintf(stderr, "Minas(0x%x): %7.2f, Cnt: %10lu, Rev: %10lu, Pos: 0x%16llx, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (UpdT: %5lu, t1_to_t1: %5lu)\n",
+        fprintf(stderr, "Minas(0x%x): %7.2f, Cnt: %10lu, Rev: %10lu, Pos: 0x%16llx, Status: %2lu (OS: %2u, FS: %2u, CE: %2u, OF: %2u, ME: %2u, SYD: %2u, BA: %2u ) (UpdT: %5lu, t1_to_t1: %5lu)\r\n",
                 (int)encoder_id_,
                 counter_ * 360.0f / (1 << cpr_bits_),
                 counter_,

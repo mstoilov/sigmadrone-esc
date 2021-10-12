@@ -48,6 +48,34 @@ std::string CommandToJson(std::string str)
     return json;
 }
 
+
+extern "C"
+void RunCommandTask_experimental(void *argument)
+{
+    *_impure_ptr = *_impure_data_ptr;
+
+    cl_mem_init(cl_heap, sizeof(cl_heap), 100);
+    cl_history_init();
+    char szBuffer[2048];
+    int elret;
+
+    while (1) {
+        elret = cl_editline("sigmadrive # ", szBuffer, sizeof(szBuffer), 15);
+        std::cout << "\r\n";
+
+        if (elret > 0) {
+            assert(elret == (int)strlen(szBuffer));
+            try {
+                std::cout << "You entered: " << szBuffer << "\r\n";
+
+            } catch (std::runtime_error& e) {
+                std::cout << e.what() << "\r\n";
+            }
+        }
+    }
+}
+
+
 extern "C"
 void RunCommandTask(void *argument)
 {
@@ -68,15 +96,15 @@ void RunCommandTask(void *argument)
                 std::string str(szBuffer, 0, elret);
                 rexjson::value ret = rpc_server.call(CommandToJson(str));
                 if (ret["error"].get_type() != rexjson::null_type) {
-                    std::cout << "ERROR: " << ret["error"]["message"].to_string() << std::endl;
+                    std::cout << "ERROR: " << ret["error"]["message"].to_string() << "\r\n";
                 } else {
                     if (ret["result"].get_type() == rexjson::obj_type || ret["result"].get_type() == rexjson::array_type)
-                        std::cout << ret["result"].write(false, true, 4, 4) << std::endl;
+                        std::cout << ret["result"].write(false, true, 4, 4) << "\r\n";
                     else
-                        std::cout << ret["result"].to_string() << std::endl;
+                        std::cout << ret["result"].to_string() << "\r\n";
                 }
             } catch (std::runtime_error& e) {
-                std::cout << e.what() << std::endl;
+                std::cout << e.what() << "\r\n";
             }
         }
         printf("\r\n");

@@ -44,6 +44,21 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
 {
     rexjson::property props = rexjson::property_map({
         {"drive", rexjson::property({drive_->GetPropertyMap()})},
+        {"q_current", &q_current_},
+        {"velocity", &velocity_},
+        {"acceleration", &acceleration_},
+        {"deceleration", &deceleration_},
+        {"target", &target_},
+        {"spin_voltage", &spin_voltage_},
+    });
+    return props;
+}
+
+
+rexjson::property MotorCtrlFOC::GetConfigPropertyMap()
+{
+    rexjson::property props = rexjson::property_map({
+        {"drive", rexjson::property({drive_->GetConfigPropertyMap()})},
         {"pid_current_kp", rexjson::property(
                 &config_.pid_current_kp_,
                 rexjson::property_access::readwrite,
@@ -112,15 +127,9 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
                     pid_P_.SetMaxOutput(config_.pid_p_maxout_);
                 })},
         {"tau_ratio", &config_.tau_ratio_},
-        {"q_current", &q_current_},
-        {"velocity", &velocity_},
-        {"acceleration", &acceleration_},
-        {"deceleration", &deceleration_},
-        {"target", &target_},
         {"vab_advance_factor", &config_.vab_advance_factor_},
         {"display", &config_.display_},
         {"max_poserr_factor", &config_.max_poserr_factor_},
-        {"spin_voltage", &spin_voltage_},
     });
     return props;
 }
@@ -140,7 +149,7 @@ void MotorCtrlFOC::RunDebugLoop()
         } else if (status & SIGNAL_DEBUG_DUMP_TORQUE) {
             fprintf(stderr,
                     "Sp: %+6.2f (%+9.2f) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
-                    "Ierr: %+7.3f T: %3lu\n",
+                    "Ierr: %+7.3f T: %3lu\r\n",
                     drive_->GetRotorVelocity() / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocityPTS(),
                     lpf_Id_,
@@ -155,7 +164,7 @@ void MotorCtrlFOC::RunDebugLoop()
         } else if (status & SIGNAL_DEBUG_DUMP_VELOCITY) {
             fprintf(stderr,
                     "PR: %10llu CV: %+6.2f (%+9.2f) I_d: %+6.3f I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
-                    "Ierr: %+7.3f Werr: %+7.3f PID_W: %+6.3f PID_WP: %+6.3f PID_WI: %+6.3f T: %3lu\n",
+                    "Ierr: %+7.3f Werr: %+7.3f PID_W: %+6.3f PID_WP: %+6.3f PID_WI: %+6.3f T: %3lu\r\n",
                     drive_->GetRotorPosition(),
                     drive_->GetRotorVelocity() / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocityPTS(),
@@ -176,7 +185,7 @@ void MotorCtrlFOC::RunDebugLoop()
         } else if (status & SIGNAL_DEBUG_DUMP_POSITION) {
             fprintf(stderr,
                     "P: %10llu (%10llu) I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
-                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f V_PEP: %+6.1f, T: %3lu\n",
+                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f V_PEP: %+6.1f, T: %3lu\r\n",
                     drive_->GetEncoderPosition(),
                     target_,
                     lpf_Iq_,
@@ -195,7 +204,7 @@ void MotorCtrlFOC::RunDebugLoop()
         } else if (status & SIGNAL_DEBUG_DUMP_TRAJECTORY) {
             fprintf(stderr,
                     "%s: %10llu PR: %10.0f (%10llu) [%10.0f] I_q: %+6.3f PVq: %+7.2f "
-                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f Pd: %+5.0f, V_PTS: %+8.3f, T: %3lu\n",
+                    "Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f Pd: %+5.0f, V_PTS: %+8.3f, T: %3lu\r\n",
                     axis_id_.c_str(),
                     drive_->GetRotorPosition(),
                     (float)profile_target_.P,
@@ -213,7 +222,7 @@ void MotorCtrlFOC::RunDebugLoop()
             );
         } else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
             fprintf(stderr,
-                    "VBus: %5.2f Speed: %9.2f (%9.2f), I_d: %+5.3f, I_q: %+6.3f, T: %4lu, Adv1: %+5.3f\n",
+                    "VBus: %5.2f Speed: %9.2f (%9.2f), I_d: %+5.3f, I_q: %+6.3f, T: %4lu, Adv1: %+5.3f\r\n",
                     drive_->GetBusVoltage(),
                     drive_->GetRotorVelocity() / drive_->GetEncoderCPR(),
                     drive_->GetRotorVelocityPTS(),
