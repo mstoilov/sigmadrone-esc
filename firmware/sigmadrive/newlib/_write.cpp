@@ -8,6 +8,7 @@
 /*
  * Set up the remote terminal like this:
  * # stty -F /dev/ttyUSB0 115200 -echo igncr
+ * # stty -F /dev/ttyACM0 115200 -echo igncr
  */
 
 /*
