@@ -287,7 +287,7 @@ void MotorCtrlFOC::ModeSpin()
 
     drive_->sched_.AddTask([&](){
         uint32_t display_counter = 0;
-        drive_->update_counter_ = 0;
+        drive_->ResetUpdateCounter();
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
@@ -346,7 +346,7 @@ void MotorCtrlFOC::ModeClosedLoopTorque()
     drive_->sched_.AddTask([&](){
         float timeslice = drive_->GetTimeSlice();
         uint32_t display_counter = 0;
-        drive_->update_counter_ = 0;
+        drive_->ResetUpdateCounter();
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
@@ -407,7 +407,7 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
     drive_->sched_.AddTask([&](){
         float timeslice = drive_->GetTimeSlice();
         uint32_t display_counter = 0;
-        drive_->update_counter_ = 0;
+        drive_->ResetUpdateCounter();
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
@@ -470,7 +470,7 @@ void MotorCtrlFOC::ModeClosedLoopPositionSimple()
     drive_->sched_.AddTask([&](){
         float timeslice = drive_->GetTimeSlice();
         uint32_t display_counter = 0;
-        drive_->update_counter_ = 0;
+        drive_->ResetUpdateCounter();
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
@@ -539,7 +539,7 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
     drive_->sched_.AddTask([&](){
         float timeslice = drive_->GetTimeSlice();
         uint32_t display_counter = 0;
-        drive_->update_counter_ = 0;
+        drive_->ResetUpdateCounter();
         pid_Id_.Reset();
         pid_Iq_.Reset();
         pid_W_.Reset();
@@ -562,7 +562,7 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 again:
             if (!prof_ptr && !velocity_stream_.empty()) {
                 prof_ptr = velocity_stream_.get_read_ptr();
-                T1 = drive_->update_counter_;
+                T1 = drive_->GetUpdateCounter();
                 T2 = T1 + prof_ptr->time_;
                 V1 = V2;
                 V2 = prof_ptr->velocity_;
@@ -576,14 +576,14 @@ again:
             }
 
             if (prof_ptr) {
-                uint32_t T = (drive_->update_counter_ - T1);
+                uint32_t T = (drive_->GetUpdateCounter() - T1);
                 V = V1  + A * T;
-                S = S2 - (V + V2) * (T2 - drive_->update_counter_) / 2;
+                S = S2 - (V + V2) * (T2 - drive_->GetUpdateCounter()) / 2;
                 Perr_ = drive_->GetRotorPositionError(enc_position, S) * timeslice;
                 pid_P_.Input(Perr_, timeslice);
                 Werr_ = pid_P_.Output() + V - drive_->GetRotorVelocityPTS();
                 pid_W_.Input(Werr_, timeslice);
-                if (drive_->update_counter_ == T2) {
+                if (drive_->GetUpdateCounter() == T2) {
                     velocity_stream_.pop();
                     prof_ptr = nullptr;
                 }
@@ -668,15 +668,15 @@ float MotorCtrlFOC::VelocityRPS(float revpersec)
  */
 uint64_t MotorCtrlFOC::MoveToPosition(uint64_t target)
 {
-    if (target >= (1ULL << (drive_->enc_resolution_bits_ + drive_->enc_revolution_bits_)))
+    if (target >= drive_->GetEncoderMaxPosition())
         throw std::range_error("Invalid position");
     int64_t oldpos = target_;
     target_ = target;
-    trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->update_hz_);
+    trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency());
     trap_profiler_ptr_ = &trap_profiler_;
 
     TrajectoryPoint pt0, pt1, pt2, pt3;
-    trap_profiler_.CalcTrapezoidPoints(target_, oldpos, 0, velocity_, acceleration_, deceleration_, drive_->update_hz_, pt0, pt1, pt2, pt3);
+    trap_profiler_.CalcTrapezoidPoints(target_, oldpos, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency(), pt0, pt1, pt2, pt3);
     __disable_irq();
     velocity_stream_.push(pt0);
     velocity_stream_.push(pt1);
@@ -691,18 +691,18 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
 {
     int64_t oldpos = target_;
     int64_t newpos = relative + target_;
-    if (newpos < 0 || newpos >= (int64_t)(1ULL << (drive_->enc_resolution_bits_ + drive_->enc_resolution_bits_)))
+    if (newpos < 0 || newpos >= (int64_t)drive_->GetEncoderMaxPosition())
         throw std::range_error("Invalid position");
     if (velocity_stream_.write_size() < 4) {
         throw std::range_error("Velocity profiler queue is full.");
     }
 
     target_ = newpos;
-    trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->update_hz_);
+    trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency());
     trap_profiler_ptr_ = &trap_profiler_;
 
     TrajectoryPoint pt0, pt1, pt2, pt3;
-    trap_profiler_.CalcTrapezoidPoints(target_, oldpos, 0, velocity_, acceleration_, deceleration_, drive_->update_hz_, pt0, pt1, pt2, pt3);
+    trap_profiler_.CalcTrapezoidPoints(target_, oldpos, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency(), pt0, pt1, pt2, pt3);
     __disable_irq();
     velocity_stream_.push(pt0);
     velocity_stream_.push(pt1);

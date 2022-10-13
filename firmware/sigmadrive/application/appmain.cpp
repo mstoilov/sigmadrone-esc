@@ -510,18 +510,18 @@ int application_main()
     /*
      * Reconfigure pole_pairs for panasonic motors
      */
-    if (motor_drive1.encoder_->GetResolutionBits() == 17) {
+    if (motor_drive1.GetEncoder()->GetResolutionBits() == 17) {
         motor_drive1.config_.pole_pairs = 4;
-    } else if (motor_drive1.encoder_->GetResolutionBits() == 23) {
+    } else if (motor_drive1.GetEncoder()->GetResolutionBits() == 23) {
         motor_drive1.config_.pole_pairs = 5;
     }
 
     /*
      * Reconfigure pole_pairs for panasonic motors
      */
-    if (motor_drive2.encoder_->GetResolutionBits() == 17) {
+    if (motor_drive2.GetEncoder()->GetResolutionBits() == 17) {
         motor_drive2.config_.pole_pairs = 4;
-    } else if (motor_drive2.encoder_->GetResolutionBits() == 23) {
+    } else if (motor_drive2.GetEncoder()->GetResolutionBits() == 23) {
         motor_drive2.config_.pole_pairs = 5;
     }
 

@@ -52,6 +52,7 @@ public:
         float trip_v_ = 60.0f;                              /**< Trip voltage, the max allowed voltage */
     };
 
+public:
     void Run();
     void RunWaitForCompletion();
     void Abort();
@@ -85,6 +86,7 @@ public:
     void SetEncoder(IEncoder *encoder, uint32_t resolution_bits = 16);
     int32_t GetEncoderDir() const;
     uint64_t GetEncoderPosition() const;
+    uint64_t GetEncoderMaxPosition() const;
     uint32_t GetEncoderPositionBits() const;
     uint32_t GetUpdateFrequency() const;
     float GetTimeSlice() const;
@@ -96,6 +98,8 @@ public:
     float GetRotorElecVelocityPTS();
     int64_t GetRotorPositionError(uint64_t position, uint64_t target);
     uint64_t GetRotorPosition() const;
+    uint32_t GetUpdateCounter() const                                   { return update_counter_; }
+    void ResetUpdateCounter()                                           { update_counter_ = 0; }
 
     std::complex<float> GetPhaseCurrent() const;
     void DefaultIdleTask();
@@ -144,13 +148,10 @@ public:
 
 public:
     Scheduler sched_;
-
-public:
     Config config_;
-    std::complex<float> Pa_;
-    std::complex<float> Pb_;
-    std::complex<float> Pc_;
+    uint32_t t_begin_ = 0;
 
+protected:
     uint32_t update_counter_ = 0;
     uint32_t enc_cpr_ = 0;
     uint32_t enc_revolution_bits_ = 0;
@@ -167,7 +168,6 @@ public:
     int32_t tim8_tim1_offset_ = 0;
 
     float time_slice_;
-    uint32_t t_begin_ = 0;
     uint32_t delay_trip_check_ = 0;
     uint32_t enc_position_shiftright_ = 6;      /**< Shift right the encoder position value */
     uint32_t enc_position_shiftleft_ = 0;       /**< Shift right the encoder position value */
@@ -196,6 +196,9 @@ public:
     LowPassFilter<float, float> lpf_Wenc_;      /**< Low pass filter for rotor velocity in enc counts per encoder_time_slice */
     std::complex<float> Iab_;                   /**< Phase current represented as a complex vector, where the real value is alpha current and the imag value is the beta current */
     std::complex<float> E_;                     /**< Orientation of the rotor in electrical radians converted to complex vector. */
+    std::complex<float> Pa_ = std::polar<float>(1.0f, 0.0f);
+    std::complex<float> Pb_ = std::polar<float>(1.0f, M_PI / 3.0 * 4.0);
+    std::complex<float> Pc_ = std::polar<float>(1.0f, M_PI / 3.0 * 2.0);
 };
 
 #endif /* _MOTOR_DRIVE_H_ */

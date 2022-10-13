@@ -11,6 +11,7 @@
 #include <array>
 #include <map>
 #include <functional>
+#include <string>
 #include "cmsis_os2.h"
 #include "stm32f745xx.h"
 #include "stm32f7xx.h"

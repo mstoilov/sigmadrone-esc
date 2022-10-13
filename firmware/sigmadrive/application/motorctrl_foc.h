@@ -18,7 +18,7 @@
 
 class MotorCtrlFOC
 {
-public:
+protected:
     struct Config {
         float pid_current_kp_ = 4.5;    /* 3 */ /**< Current PID regulator proportional gain */
         float pid_current_ki_ = 1500;  /* 3120*/ /**< Current PID regulator integral gain */

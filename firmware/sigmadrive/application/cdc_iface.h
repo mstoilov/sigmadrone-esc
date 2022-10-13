@@ -8,6 +8,7 @@
 #ifndef _CDC_IFACE_H_
 #define _CDC_IFACE_H_
 
+#include <string>
 #include <map>
 #include "cmsis_os2.h"
 #include "ring.h"
