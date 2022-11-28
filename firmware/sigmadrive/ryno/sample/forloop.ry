@@ -1,0 +1,18 @@
+/*
+ * This is a for loop test
+ */
+
+printl("--------- Starting while for test --------\n");
+
+for (a = 0; a < 10; a++) { 
+	if (a > 4) {
+		c = 1 + a;
+		break;
+	} 
+	else 
+		b = a;
+}
+
+printl("a = ", a);
+printl("b = ", b);
+printl("c = ", c);

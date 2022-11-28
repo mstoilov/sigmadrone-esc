@@ -1,0 +1,15 @@
+printl("--------- Starting while loop test --------\n");
+
+a = 0;
+while (a < 10) { 
+	a = a + 1;
+	if (a > 4) {
+		1 + a; 
+		break;
+	} 
+	else 
+		b = a;
+}
+
+printl("a = ", a);
+printl("b = ", b);

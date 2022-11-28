@@ -151,7 +151,8 @@ C_DEFS =  \
 
 C_DEFS += \
 -DUSE_LL_USART \
--DUSE_FULL_LL_DRIVER
+-DUSE_FULL_LL_DRIVER \
+-DCMEMO_CACHE_BITS=9
 
 # AS includes
 AS_INCLUDES = 
@@ -230,11 +231,15 @@ vpath %.cpp rexjsonrpc
 OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp,%.o,$(notdir $(wildcard velocityprofiler/*.cpp))))
 vpath %.cpp velocityprofiler
 
+OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp,%.o,$(notdir $(wildcard ryno/*.cpp))))
+vpath %.cpp ryno
+
+
 OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.c,%.o,$(notdir $(wildcard commandline/*.c))))
 vpath %.c commandline
 
 $(BUILD_DIR)/%.o: %.cpp Makefile | $(BUILD_DIR) 
-	$(CPP) -std=gnu++14 -c $(CFLAGS) -fexceptions -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
+	$(CPP) -std=gnu++17 -c $(CFLAGS) -fexceptions -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
@@ -243,7 +248,7 @@ $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
-	$(CPP) -std=gnu++14 $(OBJECTS) $(LDFLAGS) -o $@
+	$(CPP) -std=gnu++17 $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
 
 $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)

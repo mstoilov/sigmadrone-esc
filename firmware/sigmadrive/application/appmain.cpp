@@ -74,21 +74,22 @@ MotorCtrlFOC foc2(&motor_drive2, "axis2");
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
 
 
-rexjson::property g_props =
-        rexjson::property_map {
-            {"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
-            {"axis1", rexjson::property({foc1.GetPropertyMap()})},
-            {"axis2", rexjson::property({foc2.GetPropertyMap()})},
-        };
-rexjson::property* g_properties = &g_props;
+//rexjson::property g_props =
+//        rexjson::property_map {
+//            {"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
+//            {"axis1", rexjson::property({foc1.GetPropertyMap()})},
+//            {"axis2", rexjson::property({foc2.GetPropertyMap()})},
+//        };
+//
+//rexjson::property g_configprops =
+//        rexjson::property_map {
+//            {"axis1", rexjson::property({foc1.GetConfigPropertyMap()})},
+//            {"axis2", rexjson::property({foc2.GetConfigPropertyMap()})},
+//        };
+//
+//rexjson::property* g_config_properties = &g_configprops;
+//rexjson::property* g_properties = &g_props;
 
-
-rexjson::property g_configprops =
-        rexjson::property_map {
-            {"axis1", rexjson::property({foc1.GetConfigPropertyMap()})},
-            {"axis2", rexjson::property({foc2.GetConfigPropertyMap()})},
-        };
-rexjson::property* g_config_properties = &g_configprops;
 
 extern "C"
 void RunRpcTask(void *argument)
@@ -220,33 +221,33 @@ void SD_DMA1_Stream5_IRQHandler(void)
 
 void SaveConfig()
 {
-    std::string ret;
-    rexjson::value props = g_config_properties->to_json();
-    ret = props.write(true, true, 4, 9);
-    std::cout << ret << std::endl;
-    flash_config.erase();
-    flash_config.program(ret.c_str(), ret.size() + 1);
-    if (ret != flashregion)
-        throw std::runtime_error("Failed to save configuration!");
+//    std::string ret;
+//    rexjson::value props = g_config_properties->to_json();
+//    ret = props.write(true, true, 4, 9);
+//    std::cout << ret << std::endl;
+//    flash_config.erase();
+//    flash_config.program(ret.c_str(), ret.size() + 1);
+//    if (ret != flashregion)
+//        throw std::runtime_error("Failed to save configuration!");
 }
 
 void LoadConfig()
 {
     std::string configuration(flashregion);
     rexjson::value props = rexjson::read(configuration);
-    g_config_properties->enumerate_children("", [&](const std::string& path, rexjson::property& prop)->void {
-
-        if (prop.access() & rexjson::property_access::writeonly) {
-            rexjson::object::const_iterator it = props.get_obj().find(path);
-            if (it != props.get_obj().end()) {
-                try {
-                    prop.set_prop(it->second);
-                } catch (std::exception& e) {
-                    std::cout << e.what() << ", Failed to set " << path << " : " << it->second.to_string() << "\r\n";
-                }
-            }
-        }
-    });
+//    g_config_properties->enumerate_children("", [&](const std::string& path, rexjson::property& prop)->void {
+//
+//        if (prop.access() & rexjson::property_access::writeonly) {
+//            rexjson::object::const_iterator it = props.get_obj().find(path);
+//            if (it != props.get_obj().end()) {
+//                try {
+//                    prop.set_prop(it->second);
+//                } catch (std::exception& e) {
+//                    std::cout << e.what() << ", Failed to set " << path << " : " << it->second.to_string() << "\r\n";
+//                }
+//            }
+//        }
+//    });
 }
 
 static const char * dump = R"desc(
@@ -417,13 +418,13 @@ void StartCommandThread()
     memset(&task_attributes, 0, sizeof(osThreadAttr_t));
     task_attributes.name = "CommandTask";
     task_attributes.priority = (osPriority_t) osPriorityNormal;
-    task_attributes.stack_size = 16000;
-    commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
+    task_attributes.stack_size = 32000;
+    commandTaskHandle = osThreadNew(RunCommandRynoTask, NULL, &task_attributes);
 }
 
 void DisplayPropertiesInfo()
 {
-    g_properties->enumerate_children("", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << "\r\n";});
+//    g_properties->enumerate_children("", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << "\r\n";});
 }
 
 void DisplayDrvRegs()
@@ -449,6 +450,40 @@ void EnterMainLoop()
     }
 }
 
+
+extern "C"
+int application_maine()
+{
+    *_impure_ptr = *_impure_data_ptr;
+
+//  Exti exti_usr_button(USER_BTN_Pin, []()->void{HAL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);});
+
+    /*
+     * Attach the HAL handles to the
+     * C++ wrapper objects. At this point the HAL handles
+     * should be fully initialized.
+     */
+    osDelay(boot_delay);
+
+    uart1.Attach(&huart1);
+    uart8.Attach(&huart8);
+    uart4.Attach(&huart4);
+
+
+    /*
+     * Start Helper Tasks
+     */
+    StartCommandThread();
+
+    /*
+     * We should never exit from the this method.
+     */
+    EnterMainLoop();
+
+    return 0;
+
+}
+
 extern "C"
 int application_main()
 {
@@ -469,15 +504,15 @@ int application_main()
     /*
      * Set up RPC properties/methods for the encoders.
      */
-    if (ma4_abs_encoder1.GetDeviceId() != 0) {
-        g_props.insert("enc1", ma4_abs_encoder1.GetPropertyMap());
-        ma4_abs_encoder1.RegisterRpcMethods("enc1.");
-    }
-
-    if (ma4_abs_encoder2.GetDeviceId() != 0) {
-        g_props.insert("enc2", ma4_abs_encoder2.GetPropertyMap());
-        ma4_abs_encoder1.RegisterRpcMethods("enc2.");
-    }
+//    if (ma4_abs_encoder1.GetDeviceId() != 0) {
+//        g_props.insert("enc1", ma4_abs_encoder1.GetPropertyMap());
+//        ma4_abs_encoder1.RegisterRpcMethods("enc1.");
+//    }
+//
+//    if (ma4_abs_encoder2.GetDeviceId() != 0) {
+//        g_props.insert("enc2", ma4_abs_encoder2.GetPropertyMap());
+//        ma4_abs_encoder1.RegisterRpcMethods("enc2.");
+//    }
 
     adc1.Attach(&hadc1, 6, true);
     adc2.Attach(&hadc2, 3, false);
@@ -498,7 +533,7 @@ int application_main()
     drv2.InitializeDefaults();
 
     DisplayDrvRegs();
-    DisplayPropertiesInfo();
+//    DisplayPropertiesInfo();
     motor_drive1.Attach();
     motor_drive2.Attach();
 
@@ -525,7 +560,7 @@ int application_main()
         motor_drive2.config_.pole_pairs = 5;
     }
 
-    RegisterRpcMethods();
+//    RegisterRpcMethods();
 
     /*
      * Start Helper Tasks
@@ -535,7 +570,7 @@ int application_main()
     /*
      * Run the RPC thread
      */
-    StartRpcThread();
+//    StartRpcThread();
 
     /*
      * We should never exit from the this method.

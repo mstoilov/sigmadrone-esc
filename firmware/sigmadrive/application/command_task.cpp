@@ -9,6 +9,7 @@
 #include "commandline/ClEditLine.h"
 #include "commandline/ClHistory.h"
 #include "commandline/ClPort.h"
+#include "ryno/runtime.h"
 #include "rexjson/rexjson++.h"
 #include "uartrpcserver.h"
 #include "cmsis_os2.h"
@@ -111,3 +112,38 @@ void RunCommandTask(void *argument)
     }
 
 }
+
+extern "C"
+void RunCommandRynoTask(void *argument)
+{
+    *_impure_ptr = *_impure_data_ptr;
+
+    cl_mem_init(cl_heap, sizeof(cl_heap), 100);
+    cl_history_init();
+    char szBuffer[2048];
+    int elret;
+    ryno::RunTime rt;
+
+    /*
+     * wait for input from the terminal.
+     */
+    std::cout << "\r\n";
+    while (1) {
+        if ((elret = cl_editline("sigmadrive # ", szBuffer, sizeof(szBuffer), 15)) > 0) {
+            printf("\r\n");
+            assert(elret == (int)strlen(szBuffer));
+            try {
+                std::string str(szBuffer, 0, elret);
+                str += ";";
+                ryno::varreg_t ret = rt.Exec(str, false);
+                if (std::holds_alternative<ryno::RyPointer>(ret))
+                    std::cout << std::get<ryno::RyPointer>(ret)->ToStr();
+
+            } catch (std::runtime_error& e) {
+                std::cout << e.what() << "\r\n";
+            }
+        }
+        printf("\r\n");
+    }
+}
+
