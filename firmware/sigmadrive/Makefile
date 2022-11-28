@@ -169,7 +169,8 @@ C_INCLUDES =  \
 -IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
 -IMiddlewares/Third_Party/FreeRTOS/Source/include \
 -IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1 \
--IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
+-IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
+-Iryno
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -192,8 +193,8 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32F745VGTx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys -larm_cortexM7lfdp_math
-LIBDIR = -LDrivers/CMSIS/Lib/GCC
+LIBS = -lc -lm -lnosys -larm_cortexM7lfdp_math -lryno
+LIBDIR = -LDrivers/CMSIS/Lib/GCC -Lryno/build/arm/bin
 LDFLAGS = $(MCU) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
