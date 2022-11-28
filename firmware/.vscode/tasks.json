@@ -1,0 +1,47 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build sigmadrive",
+			"type": "shell",
+			"command": "make",
+			"options": {
+				"cwd": "${workspaceFolder}/sigmadrive"
+			},
+			"problemMatcher": {
+                "base": "$gcc", 
+                "fileLocation": ["relative", "${workspaceFolder}/sigmadrive/build"]
+            },
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            }
+		},
+		{
+			"label": "Clean sigmadrive",
+			"type": "shell",
+			"command": "make clean",
+			"options": {
+				"cwd": "${workspaceFolder}/sigmadrive"
+			},
+			"problemMatcher": {
+                "base": "$gcc", 
+                "fileLocation": ["relative", "${workspaceFolder}/sigmadrive/build"]
+            },
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}
