@@ -5,6 +5,19 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "M1 sigmadrive",
+			"cwd": "${workspaceFolder}/sigmadrive",
+			"executable": "./build/sigmadrive.elf",
+			"request": "launch",
+			"type": "cortex-debug",
+			"runToEntryPoint": "main",
+			"servertype": "jlink",
+			"serverpath": "/usr/local/bin/JLinkGDBServer",
+			"armToolchainPath": "/Users/mstoilov/Downloads/gcc-arm-none-eabi-10.3-2021.10/bin",
+			"device": "STM32F745VG",
+			"interface": "swd"
+		},
+		{
 			"name": "Cortex Debug",
 			"cwd": "${workspaceFolder}/sigmadrive",
 			"executable": "./build/sigmadrive.elf",
