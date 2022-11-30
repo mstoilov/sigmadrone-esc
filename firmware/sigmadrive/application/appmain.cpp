@@ -421,6 +421,16 @@ void StartCommandThread()
     commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 }
 
+void StartRynoCommandThread()
+{
+    osThreadAttr_t task_attributes;
+    memset(&task_attributes, 0, sizeof(osThreadAttr_t));
+    task_attributes.name = "RynoCommandTask";
+    task_attributes.priority = (osPriority_t) osPriorityNormal;
+    task_attributes.stack_size = 16000;
+    commandTaskHandle = osThreadNew(RunRynoCommandTask, NULL, &task_attributes);
+}
+
 void DisplayPropertiesInfo()
 {
     g_properties->enumerate_children("", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << "\r\n";});
@@ -525,17 +535,17 @@ int application_main()
         motor_drive2.config_.pole_pairs = 5;
     }
 
-    RegisterRpcMethods();
+    // RegisterRpcMethods();
 
     /*
      * Start Helper Tasks
      */
-    StartCommandThread();
+    StartRynoCommandThread();
 
     /*
      * Run the RPC thread
      */
-    StartRpcThread();
+    // StartRpcThread();
 
     /*
      * We should never exit from the this method.

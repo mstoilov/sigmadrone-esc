@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 void RunCommandTask(void *argument);
+void RunRynoCommandTask(void *argument);
 
 #ifdef __cplusplus
 }
