@@ -17,18 +17,18 @@
 
 class Adc {
 public:
-    Adc();
-    virtual ~Adc();
-    void Attach(ADC_HandleTypeDef *hadc, uint32_t n_regranks, bool enable_irq);
+	Adc();
+	virtual ~Adc();
+	void Attach(ADC_HandleTypeDef *hadc, uint32_t n_regranks, bool enable_irq);
 
-    void InjectedSwTrig();
-    uint32_t InjReadConversionData(uint32_t rank);
-    uint32_t RegReadConversionData(uint32_t rank_index);
+	void InjectedSwTrig();
+	uint32_t InjReadConversionData(uint32_t rank);
+	uint32_t RegReadConversionData(uint32_t rank_index);
 
 
 public:
-    ADC_HandleTypeDef *hadc_;       /**< Handle to the hardware device structure */
-    int32_t regdata_[16];           /**< Buffer for storing the DMA transfered data for the regular channels */
+	ADC_HandleTypeDef *hadc_;       /**< Handle to the hardware device structure */
+	int32_t regdata_[16];           /**< Buffer for storing the DMA transfered data for the regular channels */
 };
 
 #endif /* APPLICATION_ADC_H_ */

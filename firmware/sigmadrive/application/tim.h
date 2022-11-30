@@ -17,9 +17,9 @@
 
 class Tim {
 public:
-    Tim();
-    virtual ~Tim();
-    void attach();
+	Tim();
+	virtual ~Tim();
+	void attach();
 
 };
 

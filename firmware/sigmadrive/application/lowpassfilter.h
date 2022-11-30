@@ -26,43 +26,43 @@ template <typename DataType, typename CoeffType>
 class LowPassFilter
 {
 public:
-    LowPassFilter(const CoeffType& alpha = 0, const DataType& val = 0) : alpha_(alpha) { Reset(val); }
-    ~LowPassFilter() = default;
+	LowPassFilter(const CoeffType& alpha = 0, const DataType& val = 0) : alpha_(alpha) { Reset(val); }
+	~LowPassFilter() = default;
 
-    void Reset(const DataType& out = 0)
-    {
-        out_ = out;
-    }
+	void Reset(const DataType& out = 0)
+	{
+		out_ = out;
+	}
 
-    const DataType& DoFilter(const DataType& in)
-    {
-        out_ = out_ + (in - out_) * alpha_;
-        return out_;
-    }
+	const DataType& DoFilter(const DataType& in)
+	{
+		out_ = out_ + (in - out_) * alpha_;
+		return out_;
+	}
 
-    const DataType& Output() const
-    {
-        return out_;
-    }
+	const DataType& Output() const
+	{
+		return out_;
+	}
 
-    void SetAlpha(const CoeffType& alpha)
-    {
-        alpha_ = alpha;
-    }
+	void SetAlpha(const CoeffType& alpha)
+	{
+		alpha_ = alpha;
+	}
 
-    void SetAlpha(const CoeffType& T, const CoeffType& RC)
-    {
-        alpha_ = T / (T + RC);
-    }
+	void SetAlpha(const CoeffType& T, const CoeffType& RC)
+	{
+		alpha_ = T / (T + RC);
+	}
 
-    CoeffType Alpha()
-    {
-        return alpha_;
-    }
+	CoeffType Alpha()
+	{
+		return alpha_;
+	}
 
 public:
-    DataType out_;
-    CoeffType alpha_;
+	DataType out_;
+	CoeffType alpha_;
 };
 
 #endif

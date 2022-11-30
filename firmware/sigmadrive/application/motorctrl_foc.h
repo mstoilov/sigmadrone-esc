@@ -53,9 +53,6 @@ public:
     uint64_t MoveRelative(int64_t position);
     void RunCalibrationSequence(bool reset_rotor);
     float VelocityRPS(float revpersec);
-    rexjson::property GetPropertyMap();
-    rexjson::property GetConfigPropertyMap();
-    void RegisterRpcMethods();
     void PushStreamPoint(uint32_t time, float velocity);
     void Go();
 

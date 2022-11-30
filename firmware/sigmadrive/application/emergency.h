@@ -8,16 +8,16 @@
 
 inline static void DisableAllMotors()
 {
-    LL_TIM_DisableAllOutputs(TIM1);
-    LL_TIM_DisableAllOutputs(TIM8);
+	LL_TIM_DisableAllOutputs(TIM1);
+	LL_TIM_DisableAllOutputs(TIM8);
 
-    LL_TIM_OC_SetCompareCH1(TIM1, 0);
-    LL_TIM_OC_SetCompareCH2(TIM1, 0);
-    LL_TIM_OC_SetCompareCH3(TIM1, 0);
+	LL_TIM_OC_SetCompareCH1(TIM1, 0);
+	LL_TIM_OC_SetCompareCH2(TIM1, 0);
+	LL_TIM_OC_SetCompareCH3(TIM1, 0);
 
-    LL_TIM_OC_SetCompareCH1(TIM8, 0);
-    LL_TIM_OC_SetCompareCH2(TIM8, 0);
-    LL_TIM_OC_SetCompareCH3(TIM8, 0);
+	LL_TIM_OC_SetCompareCH1(TIM8, 0);
+	LL_TIM_OC_SetCompareCH2(TIM8, 0);
+	LL_TIM_OC_SetCompareCH3(TIM8, 0);
 }
 
 
