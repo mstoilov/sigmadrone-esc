@@ -1,9 +1,12 @@
 {
 	"terminal.integrated.fontSize": 18,
 	"editor.fontSize": 18,
-    "editor.renderWhitespace": "all",
-    "files.associations": {
-        "main.h": "c",
-        "stm32f7xx_hal.h": "c"
-    }
+	"editor.renderWhitespace": "all",
+	"editor.insertSpaces": false,
+	"editor.detectIndentation": false,
+	"files.associations": {
+		"main.h": "c",
+		"stm32f7xx_hal.h": "c",
+		"regex": "cpp"
+	}
 }
