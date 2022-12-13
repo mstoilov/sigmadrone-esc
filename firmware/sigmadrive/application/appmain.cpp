@@ -34,12 +34,13 @@
 #include "ring.h"
 #include "cdc_iface.h"
 #include "motordrive.h"
-#include "motorctrl_foc.h"
+#include "motorctrlobject.h"
 #include "minasa4encoder.h"
 #include "dumbencoder.h"
 #include "hrtimer.h"
 #include "flashmemory.h"
 #include "blinkled.h"
+
 
 __attribute__((__section__(".flash_config"))) char flashregion[128 * 1024];
 
@@ -66,8 +67,10 @@ Drv8323 drv1(spi2, GPIOC, GPIO_PIN_13, GPIOE, GPIO_PIN_15);
 Drv8323 drv2(spi2, GPIOC, GPIO_PIN_14, GPIOB, GPIO_PIN_2);
 MotorDrive motor_drive1(1, &drv1, &adc1, &adc1, &ma4_abs_encoder1, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorDrive motor_drive2(2, &drv2, &adc2, &adc1, &ma4_abs_encoder2, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
-MotorCtrlFOC foc1(&motor_drive1, "axis1");
-MotorCtrlFOC foc2(&motor_drive2, "axis2");
+// MotorCtrlFOC foc1(&motor_drive1, "axis1");
+// MotorCtrlFOC foc2(&motor_drive2, "axis2");
+ryno::RyPointer foc1(new ryno::MotorctrlObject(&motor_drive1, "axis1"));
+ryno::RyPointer foc2(new ryno::MotorctrlObject(&motor_drive1, "axis2"));
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
 
 
@@ -263,7 +266,7 @@ std::string DumpText()
 		return DumpTextDo();
 }
 
-
+#if 0
 void AllMoveToPosition(uint64_t pos_a1, uint64_t pos_a2)
 {
 	foc1.MoveToPosition(pos_a1);
@@ -293,6 +296,7 @@ void AllModeStop()
 	foc1.Stop();
 	foc2.Stop();
 }
+#endif
 
 void StartRynoCommandThread()
 {
@@ -325,6 +329,18 @@ void EnterMainLoop()
 		warnblinker.Blink();
 
 	}
+}
+
+
+void InitializeRyno()
+{
+		rt.AddSWI("DisplayDrvRegs", [](ryno::rycpu_t* cpu, const ryno::asmins_t *ins) {
+			DisplayDrvRegs();
+			rycpu_param_return(cpu, ryno::GetNilObject());
+		});
+		rt.SetVar("axis1", foc1);
+		rt.SetVar("axis2", foc2);
+
 }
 
 extern "C"
@@ -389,7 +405,10 @@ int application_main()
 		motor_drive2.config_.pole_pairs = 5;
 	}
 
-	// RegisterRpcMethods();
+	/*
+	* Initialize Ryno environment
+	*/
+	InitializeRyno();
 
 	/*
 	 * Start Helper Tasks

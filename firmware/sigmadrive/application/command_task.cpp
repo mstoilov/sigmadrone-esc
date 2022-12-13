@@ -9,12 +9,11 @@
 #include "commandline/ClEditLine.h"
 #include "commandline/ClHistory.h"
 #include "commandline/ClPort.h"
-#include "ryno/runtime.h"
 #include "cmsis_os2.h"
-#include "ryno/rycpu.h"
-#include "ryno/stdfunc.h"
+#include "ryno/runtime.h"
 
 char cl_heap[4096];
+ryno::RunTime rt;
 
 
 extern "C"
@@ -54,7 +53,6 @@ void RunRynoCommandTask(void *argument)
 	cl_history_init();
 	char szBuffer[2048];
 	int elret;
-	ryno::RunTime rt;
 
 	ryno::Initialize(rt);
 

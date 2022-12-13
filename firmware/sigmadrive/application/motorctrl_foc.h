@@ -42,6 +42,7 @@ protected:
 
 public:
     MotorCtrlFOC(MotorDrive* drive, std::string axis_id);
+	std::string GetAxisId() const { return axis_id_; }
     void Stop();
     void ModeClosedLoopTorque();
     void ModeClosedLoopVelocity();
