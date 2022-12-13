@@ -3,8 +3,12 @@
 namespace ryno
 {
 
-static const char* g_tp_name = "motorctrlobject";
+static const char* g_tp_name = "motorctrl";
 
+const char* MotorctrlObject::GetTypeName()
+{
+	return g_tp_name;
+}
 
 static RyPointer GetMembers()
 {
@@ -15,38 +19,38 @@ static RyPointer GetMembers()
 	members->AssignAt(
 		RyPointer(new StringObject("stop")), 
 		RyPointer(new SwiObject([](rycpu_t *cpu, const asmins_t *ins){
-			MotorctrlObject* This = static_cast<MotorctrlObject*>(cpu->register_get(TH).get());
-			This->value_.Stop();
+			MotorCtrlFOC& value = RyObject_GetMotorctrl(cpu->register_get(TH).get());
+			value.Stop();
 			rycpu_param_return(cpu, GetNilObject() );
 		})));
 	members->AssignAt(
 		RyPointer(new StringObject("modeclps")), 
 		RyPointer(new SwiObject([](rycpu_t *cpu, const asmins_t *ins){
-			MotorctrlObject* This = static_cast<MotorctrlObject*>(cpu->register_get(TH).get());
-			This->value_.ModeClosedLoopPositionSimple();
+			MotorCtrlFOC& value = RyObject_GetMotorctrl(cpu->register_get(TH).get());
+			value.ModeClosedLoopPositionSimple();
 			rycpu_param_return(cpu, GetNilObject() );
 		})));
 	members->AssignAt(
 		RyPointer(new StringObject("modeclpt")), 
 		RyPointer(new SwiObject([](rycpu_t *cpu, const asmins_t *ins){
-			MotorctrlObject* This = static_cast<MotorctrlObject*>(cpu->register_get(TH).get());
-			This->value_.ModeClosedLoopPositionTrajectory();
+			MotorCtrlFOC& value = RyObject_GetMotorctrl(cpu->register_get(TH).get());
+			value.ModeClosedLoopPositionTrajectory();
 			rycpu_param_return(cpu, GetNilObject() );
 		})));
 	members->AssignAt(
 		RyPointer(new StringObject("modeclv")), 
 		RyPointer(new SwiObject([](rycpu_t *cpu, const asmins_t *ins){
-			MotorctrlObject* This = static_cast<MotorctrlObject*>(cpu->register_get(TH).get());
-			This->value_.ModeClosedLoopVelocity();
+			MotorCtrlFOC& value = RyObject_GetMotorctrl(cpu->register_get(TH).get());
+			value.ModeClosedLoopVelocity();
 			rycpu_param_return(cpu, GetNilObject() );
 		})));
 	members->AssignAt(
 		RyPointer(new StringObject("mv")), 
 		RyPointer(new SwiObject([](rycpu_t *cpu, const asmins_t *ins){
 			rycpu_stackparam_assert_min_count(cpu, 1);
-			MotorctrlObject* This = static_cast<MotorctrlObject*>(cpu->register_get(TH).get());
 			size_t position = rycpu_stackparam_get(cpu, 0)->Int();
-			This->value_.MoveToPosition(position);
+			MotorCtrlFOC& value = RyObject_GetMotorctrl(cpu->register_get(TH).get());
+			value.MoveToPosition(position);
 			rycpu_param_return(cpu, GetNilObject() );
 		})));
 	members->AssignAt(

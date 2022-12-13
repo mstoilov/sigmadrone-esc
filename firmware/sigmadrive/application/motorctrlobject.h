@@ -20,8 +20,36 @@ struct MotorctrlObject : RyObject {
 	virtual RyPointer At(const RyPointer& v) override;
 	virtual const char* GetType() const override;
 
+	static const char* GetTypeName();
 };
 
+inline bool CheckType_Motorctrl(const RyObject* v)
+{
+	return (v->GetType() == MotorctrlObject::GetTypeName()) ? true : false; 
+}
+
+inline bool CheckType_Motorctrl(const RyPointer& v) 
+{
+	return CheckType_Motorctrl(v.get());
+}
+
+inline const MotorCtrlFOC& RyObject_GetMotorctrl(const RyObject* v)
+{
+	if (!v) 
+		ThrowInvalidParameter();
+	if (!CheckType_Motorctrl(v))
+		throw InvalidTypeError(std::string("The type must be 'motorctrl', not ") + v->GetType());
+	return static_cast<const MotorctrlObject*>(v)->value_;
+}
+
+inline MotorCtrlFOC& RyObject_GetMotorctrl(RyObject* v)
+{
+	if (!v) 
+		ThrowInvalidParameter();
+	if (!CheckType_Motorctrl(v))
+		throw InvalidTypeError(std::string("The type must be 'motorctrl', not ") + v->GetType());
+	return static_cast<MotorctrlObject*>(v)->value_;
+}
 
 }
 
