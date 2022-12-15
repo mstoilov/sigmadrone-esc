@@ -18,6 +18,7 @@ struct MotorctrlObject : RyObject {
 	virtual std::string Repr() const override;
 	virtual std::string Str() const override;
 	virtual RyPointer At(const RyPointer& v) override;
+	virtual RyPointer* PtrAt(const RyPointer& v) override;
 	virtual const char* GetType() const override;
 
 	static const char* GetTypeName();

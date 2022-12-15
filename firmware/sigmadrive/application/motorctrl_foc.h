@@ -14,7 +14,7 @@
 #include "pcontroller.h"
 #include "velocityprofiler/trapezoidal-profile.h"
 #include "ring.h"
-
+#include "ryno/ryobject.h"
 
 class MotorCtrlFOC
 {
@@ -69,7 +69,7 @@ protected:
     static void RunDebugLoopWrapper(void *ctx);
 
 
-protected:
+public:
     enum Signals {
         SIGNAL_DEBUG_DUMP_SPIN = 1u << 1,       /**< Signal the debug display thread to run and dump spin mode info */
         SIGNAL_DEBUG_DUMP_TORQUE = 1u << 2,     /**< Signal the debug display thread to run and dump closed loop torque mode info */

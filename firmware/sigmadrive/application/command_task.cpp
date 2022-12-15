@@ -71,7 +71,7 @@ void RunRynoCommandTask(void *argument)
 				if (!ret->IsNil())
 					std::cout << ret->Repr() << std::endl;
 
-			} catch (std::runtime_error& e) {
+			} catch (std::exception& e) {
 				std::cout << e.what() << "\r\n";
 			}
 		}
