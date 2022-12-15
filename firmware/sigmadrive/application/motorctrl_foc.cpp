@@ -129,7 +129,6 @@ rexjson::property MotorCtrlFOC::GetConfigPropertyMap()
 		{"tau_ratio", &config_.tau_ratio_},
 		{"vab_advance_factor", &config_.vab_advance_factor_},
 		{"display", &config_.display_},
-		{"max_poserr_factor", &config_.max_poserr_factor_},
 	});
 	return props;
 }

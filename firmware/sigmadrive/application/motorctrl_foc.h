@@ -36,7 +36,6 @@ protected:
 		float vq_bias_ = 0;                     /**< Bias for the q-voltage (Vq) PID regulator */
 		float w_bias_ = 0;                      /**< Bias for the velocity PID (W) regulator */
 		bool display_ = false;                  /**< Display mode on/off */
-		float max_poserr_factor_ = 1.0;         /**< Maximum position error factor. 1 - 0ne full revolution, 0.5 - half revolution, etc. */
 	};
 
 
