@@ -10,17 +10,17 @@
 #include "spimaster.h"
 
 SPIMaster::SPIMaster() {
-    // TODO Auto-generated constructor stub
+	// TODO Auto-generated constructor stub
 
 }
 
 SPIMaster::~SPIMaster() {
-    // TODO Auto-generated destructor stub
+	// TODO Auto-generated destructor stub
 }
 
 void SPIMaster::Attach(SPI_HandleTypeDef* hspi)
 {
-    hspi_ = hspi;
+	hspi_ = hspi;
 
 //	LL_SPI_InitTypeDef spi_init;
 //	memset(&spi_init, 0, sizeof(spi_init));
@@ -50,21 +50,21 @@ void SPIMaster::Detach()
 
 void SPIMaster::ChipSelect(GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin, bool select)
 {
-    HAL_GPIO_WritePin(NSS_GPIOx, NSS_GPIO_Pin, select ? GPIO_PIN_RESET : GPIO_PIN_SET);
+	HAL_GPIO_WritePin(NSS_GPIOx, NSS_GPIO_Pin, select ? GPIO_PIN_RESET : GPIO_PIN_SET);
 }
 
 bool SPIMaster::Transmit(uint8_t *pData, uint16_t Size)
 {
-    return (HAL_SPI_Transmit(hspi_, pData, Size, timeout) == HAL_OK) ? true : false;
+	return (HAL_SPI_Transmit(hspi_, pData, Size, timeout) == HAL_OK) ? true : false;
 }
 
 bool SPIMaster::Receive(uint8_t *pData, uint16_t Size)
 {
-    return (HAL_SPI_Receive(hspi_, pData, Size, timeout) == HAL_OK) ? true : false;
+	return (HAL_SPI_Receive(hspi_, pData, Size, timeout) == HAL_OK) ? true : false;
 }
 
 bool SPIMaster::TransmitReceive(uint8_t *pTxData, uint8_t *pRxData, uint16_t Size)
 {
-    return (HAL_SPI_TransmitReceive(hspi_, pTxData, pRxData, Size, timeout) == HAL_OK) ? true : false;
+	return (HAL_SPI_TransmitReceive(hspi_, pTxData, pRxData, Size, timeout) == HAL_OK) ? true : false;
 }
 

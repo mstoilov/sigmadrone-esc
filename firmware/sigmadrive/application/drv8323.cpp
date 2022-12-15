@@ -13,11 +13,11 @@
 #include "drv8323.h"
 
 Drv8323::Drv8323(SPIMaster& spi, GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin, GPIO_TypeDef* EN_GPIOx, uint16_t EN_GPIO_Pin)
-    : spi_(spi)
-    , NSS_GPIOx_(NSS_GPIOx)
-    , NSS_GPIO_Pin_(NSS_GPIO_Pin)
-    , EN_GPIOx_(EN_GPIOx)
-    , EN_GPIO_Pin_(EN_GPIO_Pin)
+	: spi_(spi)
+	, NSS_GPIOx_(NSS_GPIOx)
+	, NSS_GPIO_Pin_(NSS_GPIO_Pin)
+	, EN_GPIOx_(EN_GPIOx)
+	, EN_GPIO_Pin_(EN_GPIO_Pin)
 {
 
 }
@@ -29,31 +29,31 @@ Drv8323::~Drv8323()
 
 void Drv8323::InitializeDefaults()
 {
-    WriteReg(3, 0x0);
-    WriteReg(4, 0x0);
-    WriteReg(5, 0x0);
-    WriteReg(6, 0x0);
+	WriteReg(3, 0x0);
+	WriteReg(4, 0x0);
+	WriteReg(5, 0x0);
+	WriteReg(6, 0x0);
 
-    SetIDriveP_HS(Drv8323::IDRIVEP_120mA);
-    SetIDriveN_HS(Drv8323::IDRIVEN_240mA);
-    SetIDriveP_LS(Drv8323::IDRIVEP_120mA);
-    SetIDriveN_LS(Drv8323::IDRIVEN_240mA);
-    SetTDrive(Drv8323::TDRIVE_4000ns);
-    EnableCBC();
-    DisableCPUV();
-    EnableCPUV();
-    DisableGDF();
-    EnableGDF();
-    EnableOTW();
-    DisableOTW();
-    SetPWMMode(Drv8323::PWM_MODE_6X);
-    SetDeadTime(Drv8323::DEADTIME_50ns);
-    SetOCPMode(Drv8323::OCP_LATCHED_FAULT);
-    SetOCPDeglitch(Drv8323::OCP_DEG_4us);
-    SetVDSLevel(Drv8323::VDS_LVL_060V);
-    EnableVREFDiv();
-    SetCSAGain(Drv8323::CSA_GAIN_10VV);
-    SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
+	SetIDriveP_HS(Drv8323::IDRIVEP_120mA);
+	SetIDriveN_HS(Drv8323::IDRIVEN_240mA);
+	SetIDriveP_LS(Drv8323::IDRIVEP_120mA);
+	SetIDriveN_LS(Drv8323::IDRIVEN_240mA);
+	SetTDrive(Drv8323::TDRIVE_4000ns);
+	EnableCBC();
+	DisableCPUV();
+	EnableCPUV();
+	DisableGDF();
+	EnableGDF();
+	EnableOTW();
+	DisableOTW();
+	SetPWMMode(Drv8323::PWM_MODE_6X);
+	SetDeadTime(Drv8323::DEADTIME_50ns);
+	SetOCPMode(Drv8323::OCP_LATCHED_FAULT);
+	SetOCPDeglitch(Drv8323::OCP_DEG_4us);
+	SetVDSLevel(Drv8323::VDS_LVL_060V);
+	EnableVREFDiv();
+	SetCSAGain(Drv8323::CSA_GAIN_10VV);
+	SetOCPSenseLevel(Drv8323::SEN_LVL_100V);
 }
 
 /**
@@ -64,15 +64,15 @@ void Drv8323::InitializeDefaults()
  */
 uint32_t Drv8323::ReadReg(uint32_t addr)
 {
-    uint16_t data = (0x1 << 15) | ((addr & 0xF) << 11);
-    uint16_t ret = 0;
+	uint16_t data = (0x1 << 15) | ((addr & 0xF) << 11);
+	uint16_t ret = 0;
 
-    assert(spi_.hspi_->Init.DataSize == SPI_DATASIZE_16BIT);
+	assert(spi_.hspi_->Init.DataSize == SPI_DATASIZE_16BIT);
 
-    spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, true);
-    spi_.TransmitReceive((uint8_t *)&data, (uint8_t *)&ret, 1);
-    spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, false);
-    return ret & 0x7FF;
+	spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, true);
+	spi_.TransmitReceive((uint8_t *)&data, (uint8_t *)&ret, 1);
+	spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, false);
+	return ret & 0x7FF;
 }
 
 
@@ -84,141 +84,141 @@ uint32_t Drv8323::ReadReg(uint32_t addr)
  */
 void Drv8323::WriteReg(uint32_t addr, uint32_t value)
 {
-    uint16_t data = (uint16_t)(((addr & 0xF) << 11) | (value & 0x7FF));
-    uint16_t ret = 0;
+	uint16_t data = (uint16_t)(((addr & 0xF) << 11) | (value & 0x7FF));
+	uint16_t ret = 0;
 
-    assert(spi_.hspi_->Init.DataSize == SPI_DATASIZE_16BIT);
+	assert(spi_.hspi_->Init.DataSize == SPI_DATASIZE_16BIT);
 
-    spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, true);
-    spi_.TransmitReceive((uint8_t *)&data, (uint8_t *)&ret, 1);
-    spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, false);
+	spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, true);
+	spi_.TransmitReceive((uint8_t *)&data, (uint8_t *)&ret, 1);
+	spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, false);
 }
 
 void Drv8323::ChipSelect(bool select)
 {
-    spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, select);
+	spi_.ChipSelect(NSS_GPIOx_, NSS_GPIO_Pin_, select);
 }
 
 void Drv8323::ModifyReg(uint32_t addr, uint32_t clear_mask, uint32_t set_mask)
 {
-    WriteReg(addr, (ReadReg(addr) & ~clear_mask) | set_mask);
+	WriteReg(addr, (ReadReg(addr) & ~clear_mask) | set_mask);
 }
 
 void Drv8323::SetIDriveP_HS(uint32_t idrivep)
 {
-    assert(idrivep <= IDRIVEP_1000mA);
-    ModifyReg(0x3, IDRIVEP_MASK << 4 , idrivep << 4);
+	assert(idrivep <= IDRIVEP_1000mA);
+	ModifyReg(0x3, IDRIVEP_MASK << 4 , idrivep << 4);
 }
 
 void Drv8323::SetIDriveN_HS(uint32_t idriven)
 {
-    assert(idriven <= IDRIVEN_2000mA);
-    ModifyReg(0x3, IDRIVEN_MASK, idriven);
+	assert(idriven <= IDRIVEN_2000mA);
+	ModifyReg(0x3, IDRIVEN_MASK, idriven);
 }
 
 void Drv8323::SetIDriveP_LS(uint32_t idrivep)
 {
-    assert(idrivep <= IDRIVEP_1000mA);
-    ModifyReg(0x4, IDRIVEP_MASK << 4, idrivep << 4);
+	assert(idrivep <= IDRIVEP_1000mA);
+	ModifyReg(0x4, IDRIVEP_MASK << 4, idrivep << 4);
 }
 
 void Drv8323::SetIDriveN_LS(uint32_t idriven)
 {
-    assert(idriven <= IDRIVEN_2000mA);
-    ModifyReg(0x4, IDRIVEN_MASK, idriven);
+	assert(idriven <= IDRIVEN_2000mA);
+	ModifyReg(0x4, IDRIVEN_MASK, idriven);
 }
 
 void Drv8323::SetPWMMode(uint32_t pwm_mode)
 {
-    assert(pwm_mode <= PWM_MODE_IN);
-    ModifyReg(0x2, PWM_MODE_MASK << 5, pwm_mode << 5);
+	assert(pwm_mode <= PWM_MODE_IN);
+	ModifyReg(0x2, PWM_MODE_MASK << 5, pwm_mode << 5);
 }
 
 void Drv8323::SetDeadTime(uint32_t dead_time)
 {
-    assert(dead_time <= PWM_MODE_IN);
-    ModifyReg(0x5, PWM_MODE_MASK << 8, dead_time << 8);
+	assert(dead_time <= PWM_MODE_IN);
+	ModifyReg(0x5, PWM_MODE_MASK << 8, dead_time << 8);
 }
 
 void Drv8323::SetOCPMode(uint32_t ocp_mode)
 {
-    assert(ocp_mode <= OCP_NO_ACTION);
-    ModifyReg(0x5, OCP_MODE_MASK << 6, ocp_mode << 6);
+	assert(ocp_mode <= OCP_NO_ACTION);
+	ModifyReg(0x5, OCP_MODE_MASK << 6, ocp_mode << 6);
 }
 
 void Drv8323::SetOCPDeglitch(uint32_t ocp_deg)
 {
-    assert(ocp_deg <= OCP_DEG_8us);
-    ModifyReg(0x5, OCP_DEG_MASK << 4, ocp_deg << 4);
+	assert(ocp_deg <= OCP_DEG_8us);
+	ModifyReg(0x5, OCP_DEG_MASK << 4, ocp_deg << 4);
 }
 
 void Drv8323::SetVDSLevel(uint32_t vds_lvl)
 {
-    assert(vds_lvl <= VDS_LVL_188V);
-    ModifyReg(0x5, VDS_LVL_MASK, vds_lvl);
+	assert(vds_lvl <= VDS_LVL_188V);
+	ModifyReg(0x5, VDS_LVL_MASK, vds_lvl);
 }
 
 uint32_t Drv8323::SetCSAGain(uint32_t csa_gain)
 {
-    assert(csa_gain <= CSA_GAIN_40VV);
-    ModifyReg(0x6, CSA_GAIN_MASK << CSA_SHIFT_BIT, csa_gain << CSA_SHIFT_BIT);
-    return GetCSAGain();
+	assert(csa_gain <= CSA_GAIN_40VV);
+	ModifyReg(0x6, CSA_GAIN_MASK << CSA_SHIFT_BIT, csa_gain << CSA_SHIFT_BIT);
+	return GetCSAGain();
 }
 
 uint32_t Drv8323::GetCSAGain()
 {
-    uint32_t csareg = ReadReg(0x6);
-    uint32_t ret = (csareg >> CSA_SHIFT_BIT) & CSA_GAIN_MASK;
-    return ret;
+	uint32_t csareg = ReadReg(0x6);
+	uint32_t ret = (csareg >> CSA_SHIFT_BIT) & CSA_GAIN_MASK;
+	return ret;
 }
 
 uint32_t Drv8323::SetCSAGainValue(uint32_t csa_gain_value)
 {
-    switch (csa_gain_value) {
-    case 5:
-        return SetCSAGain(0);
-    case 10:
-        return SetCSAGain(1);
-    case 20:
-        return SetCSAGain(2);
-    case 40:
-        return SetCSAGain(3);
-    }
-    return GetCSAGain();
+	switch (csa_gain_value) {
+	case 5:
+		return SetCSAGain(0);
+	case 10:
+		return SetCSAGain(1);
+	case 20:
+		return SetCSAGain(2);
+	case 40:
+		return SetCSAGain(3);
+	}
+	return GetCSAGain();
 }
 
 
 uint32_t Drv8323::GetCSAGainValue()
 {
-    uint32_t csagain = GetCSAGain();
-    switch (csagain) {
-    default:
-    case 0:
-        return 5;
-    case 1:
-        return 10;
-    case 2:
-        return 20;
-    case 3:
-        return 40;
-    }
+	uint32_t csagain = GetCSAGain();
+	switch (csagain) {
+	default:
+	case 0:
+		return 5;
+	case 1:
+		return 10;
+	case 2:
+		return 20;
+	case 3:
+		return 40;
+	}
 }
 
 
 void Drv8323::SetOCPSenseLevel(uint32_t sen_lvl)
 {
-    assert(sen_lvl <= SEN_LVL_100V);
-    ModifyReg(0x6, SEN_LVL_MASK, sen_lvl);
+	assert(sen_lvl <= SEN_LVL_100V);
+	ModifyReg(0x6, SEN_LVL_MASK, sen_lvl);
 }
 
 void Drv8323::LockRegisters()
 {
-    ModifyReg(0x3, LOCK_MASK, LOCK);
+	ModifyReg(0x3, LOCK_MASK, LOCK);
 }
 
 void Drv8323::UnlockRegisters()
 {
-    ModifyReg(0x3, LOCK_MASK, UNLOCK);
+	ModifyReg(0x3, LOCK_MASK, UNLOCK);
 }
 
 /*
@@ -226,7 +226,7 @@ void Drv8323::UnlockRegisters()
  */
 void Drv8323::EnableCPUV()
 {
-    ModifyReg(0x2, DIS_CPUV, 0);
+	ModifyReg(0x2, DIS_CPUV, 0);
 }
 
 /*
@@ -234,7 +234,7 @@ void Drv8323::EnableCPUV()
  */
 void Drv8323::DisableCPUV()
 {
-    ModifyReg(0x2, DIS_CPUV, DIS_CPUV);
+	ModifyReg(0x2, DIS_CPUV, DIS_CPUV);
 }
 
 /*
@@ -242,7 +242,7 @@ void Drv8323::DisableCPUV()
  */
 void Drv8323::EnableGDF()
 {
-    ModifyReg(0x2, DIS_GDF, 0);
+	ModifyReg(0x2, DIS_GDF, 0);
 }
 
 /*
@@ -250,7 +250,7 @@ void Drv8323::EnableGDF()
  */
 void Drv8323::DisableGDF()
 {
-    ModifyReg(0x2, DIS_GDF, DIS_GDF);
+	ModifyReg(0x2, DIS_GDF, DIS_GDF);
 }
 
 /*
@@ -258,7 +258,7 @@ void Drv8323::DisableGDF()
  */
 void Drv8323::EnableOTW()
 {
-    ModifyReg(0x2, OTW_REP, OTW_REP);
+	ModifyReg(0x2, OTW_REP, OTW_REP);
 }
 
 /*
@@ -266,7 +266,7 @@ void Drv8323::EnableOTW()
  */
 void Drv8323::DisableOTW()
 {
-    ModifyReg(0x2, OTW_REP, 0);
+	ModifyReg(0x2, OTW_REP, 0);
 }
 
 /*
@@ -274,12 +274,12 @@ void Drv8323::DisableOTW()
  */
 void Drv8323::EnableCoast()
 {
-    ModifyReg(0x2, COAST, COAST);
+	ModifyReg(0x2, COAST, COAST);
 }
 
 void Drv8323::DisableCoast()
 {
-    ModifyReg(0x2, COAST, 0);
+	ModifyReg(0x2, COAST, 0);
 }
 
 /*
@@ -288,12 +288,12 @@ void Drv8323::DisableCoast()
  */
 void Drv8323::EnableBreak()
 {
-    ModifyReg(0x2, BREAK, BREAK);
+	ModifyReg(0x2, BREAK, BREAK);
 }
 
 void Drv8323::DisableBreak()
 {
-    ModifyReg(0x2, BREAK, 0);
+	ModifyReg(0x2, BREAK, 0);
 }
 
 
@@ -302,23 +302,23 @@ void Drv8323::DisableBreak()
  */
 void Drv8323::ClearFault()
 {
-    ModifyReg(0x2, CLR_FLT, CLR_FLT);
+	ModifyReg(0x2, CLR_FLT, CLR_FLT);
 }
 
 void Drv8323::EnableCBC()
 {
-    ModifyReg(0x4, CBC, CBC);
+	ModifyReg(0x4, CBC, CBC);
 }
 
 void Drv8323::DisableCBC()
 {
-    ModifyReg(0x4, CBC, 0);
+	ModifyReg(0x4, CBC, 0);
 }
 
 void Drv8323::SetTDrive(uint32_t tdrive)
 {
-    assert(tdrive <= TDRIVE_4000ns);
-    ModifyReg(0x4, TDRIVE_MASK << 8, tdrive << 8);
+	assert(tdrive <= TDRIVE_4000ns);
+	ModifyReg(0x4, TDRIVE_MASK << 8, tdrive << 8);
 }
 
 /*
@@ -326,7 +326,7 @@ void Drv8323::SetTDrive(uint32_t tdrive)
  */
 void Drv8323::EnableTRETRY()
 {
-    ModifyReg(0x5, TRETRY, TRETRY);
+	ModifyReg(0x5, TRETRY, TRETRY);
 }
 
 /*
@@ -334,7 +334,7 @@ void Drv8323::EnableTRETRY()
  */
 void Drv8323::DisableTRETRY()
 {
-    ModifyReg(0x5, TRETRY, 0);
+	ModifyReg(0x5, TRETRY, 0);
 }
 
 
@@ -343,7 +343,7 @@ void Drv8323::DisableTRETRY()
  */
 void Drv8323::EnableVREFDiv()
 {
-    ModifyReg(0x6, VREF_DIV, VREF_DIV);
+	ModifyReg(0x6, VREF_DIV, VREF_DIV);
 }
 
 /*
@@ -351,7 +351,7 @@ void Drv8323::EnableVREFDiv()
  */
 void Drv8323::DisableVREFDiv()
 {
-    ModifyReg(0x6, VREF_DIV, 0);
+	ModifyReg(0x6, VREF_DIV, 0);
 }
 
 /*
@@ -360,7 +360,7 @@ void Drv8323::DisableVREFDiv()
  */
 void Drv8323::EnableLSRef()
 {
-    ModifyReg(0x6, LS_REF, LS_REF);
+	ModifyReg(0x6, LS_REF, LS_REF);
 }
 
 /*
@@ -369,45 +369,45 @@ void Drv8323::EnableLSRef()
  */
 void Drv8323::DisableLSRef()
 {
-    ModifyReg(0x6, LS_REF, 0);
+	ModifyReg(0x6, LS_REF, 0);
 }
 
 void Drv8323::EnableSenseOvercurrent()
 {
-    ModifyReg(0x6, DIS_SEN, 0);
+	ModifyReg(0x6, DIS_SEN, 0);
 }
 
 void Drv8323::DisableSenseOvercurrent()
 {
-    ModifyReg(0x6, DIS_SEN, DIS_SEN);
+	ModifyReg(0x6, DIS_SEN, DIS_SEN);
 }
 
 void Drv8323::DumpRegs()
 {
-    for (int i = 0; i < 7; i++) {
-        fprintf(stdout, "DRV: Reg %d: 0x%x\r\n", i, (unsigned int) ReadReg(i));
-    }
-    fprintf(stdout, "\r\n\r\n");
+	for (int i = 0; i < 7; i++) {
+		fprintf(stdout, "DRV: Reg %d: 0x%x\r\n", i, (unsigned int) ReadReg(i));
+	}
+	fprintf(stdout, "\r\n\r\n");
 }
 
 void Drv8323::EnableCalibration()
 {
-    ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C);
+	ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C);
 }
 
 void Drv8323::DisableCalibration()
 {
-    ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, 0);
+	ModifyReg(0x6, Drv8323::CSA_CAL_A|Drv8323::CSA_CAL_B|Drv8323::CSA_CAL_C, 0);
 }
 
 void Drv8323::EnableDriver()
 {
-    HAL_GPIO_WritePin(EN_GPIOx_, EN_GPIO_Pin_, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(EN_GPIOx_, EN_GPIO_Pin_, GPIO_PIN_SET);
 
 }
 
 void Drv8323::DisableDriver()
 {
-    HAL_GPIO_WritePin(EN_GPIOx_, EN_GPIO_Pin_, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(EN_GPIOx_, EN_GPIO_Pin_, GPIO_PIN_RESET);
 }
 

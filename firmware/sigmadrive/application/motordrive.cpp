@@ -21,33 +21,33 @@ extern UartRpcServer rpc_server;
 
 
 MotorDrive::MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, Adc* dma_adc, IEncoder* encoder, IPwmGenerator *pwm, uint32_t update_hz)
-    : update_hz_(update_hz)
-    , time_slice_(1.0f / update_hz_)
-    , lpf_bias_a(config_.bias_alpha_)
-    , lpf_bias_b(config_.bias_alpha_)
-    , lpf_bias_c(config_.bias_alpha_)
-    , lpf_vbus_(config_.vbus_alpha_, 12.0f)
-    , lpf_Wenc_(config_.wenc_alpha_)
+	: update_hz_(update_hz)
+	, time_slice_(1.0f / update_hz_)
+	, lpf_bias_a(config_.bias_alpha_)
+	, lpf_bias_b(config_.bias_alpha_)
+	, lpf_bias_c(config_.bias_alpha_)
+	, lpf_vbus_(config_.vbus_alpha_, 12.0f)
+	, lpf_Wenc_(config_.wenc_alpha_)
 {
-    lpf_bias_a.Reset(1 << 11);
-    lpf_bias_b.Reset(1 << 11);
-    lpf_bias_c.Reset(1 << 11);
-    axis_idx_ = axis_idx;
-    drv_ = drv;
-    adc_ = adc;
-    dma_adc_ = dma_adc;
-    encoder_ = encoder;
-    pwm_ = pwm;
+	lpf_bias_a.Reset(1 << 11);
+	lpf_bias_b.Reset(1 << 11);
+	lpf_bias_c.Reset(1 << 11);
+	axis_idx_ = axis_idx;
+	drv_ = drv;
+	adc_ = adc;
+	dma_adc_ = dma_adc;
+	encoder_ = encoder;
+	pwm_ = pwm;
 
-    sched_.SetAbortTask([&]() -> void {
-        pwm_->Stop();
-    });
+	sched_.SetAbortTask([&]() -> void {
+		pwm_->Stop();
+	});
 
-    sched_.SetIdleTask([&]() -> void {
+	sched_.SetIdleTask([&]() -> void {
 //		DefaultIdleTask();
-    });
+	});
 
-    sched_.StartDispatcherThread();
+	sched_.StartDispatcherThread();
 
 }
 
@@ -57,119 +57,119 @@ MotorDrive::~MotorDrive()
 
 void MotorDrive::Attach()
 {
-    drv_->SetCSAGainValue(config_.csa_gain_);
-    SetEncoder(encoder_);
+	drv_->SetCSAGainValue(config_.csa_gain_);
+	SetEncoder(encoder_);
 }
 
 void MotorDrive::RegisterRpcMethods(const std::string& prefix)
 {
-    rpc_server.add(prefix, "abort", rexjson::make_rpc_wrapper(this, &MotorDrive::Abort, "void ServoDrive::Abort()"));
-    rpc_server.add(prefix, "measure_resistance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
-    rpc_server.add(prefix, "measure_inductance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunInductanceMeasurement, "float ServoDrive::RunInductanceMeasurement(uint32_t seconds, float test_voltage, uint32_t test_hz);"));
-    rpc_server.add(prefix, "scheduler_run", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerRun, "void SchedulerRun()"));
-    rpc_server.add(prefix, "scheduler_abort", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerAbort, "void SchedulerAbort()"));
-    rpc_server.add(prefix, "add_task_arm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
-    rpc_server.add(prefix, "add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
-    rpc_server.add(prefix, "add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
-    rpc_server.add(prefix, "add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder)"));
-    rpc_server.add(prefix, "alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAlphaPoleSearch, "void RunTaskAlphaPoleSearch()"));
-    rpc_server.add(prefix, "rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
-    rpc_server.add(prefix, "run_encoder_debug", rexjson::make_rpc_wrapper(this, &MotorDrive::RunEncoderDisplayDebugInfo, "void RunEncoderDisplayDebugInfo()"));
-    rpc_server.add(prefix, "drv_get_fault1", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
-    rpc_server.add(prefix, "drv_get_fault2", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
-    rpc_server.add(prefix, "drv_clear_fault", rexjson::make_rpc_wrapper(drv_, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
+	rpc_server.add(prefix, "abort", rexjson::make_rpc_wrapper(this, &MotorDrive::Abort, "void ServoDrive::Abort()"));
+	rpc_server.add(prefix, "measure_resistance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
+	rpc_server.add(prefix, "measure_inductance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunInductanceMeasurement, "float ServoDrive::RunInductanceMeasurement(uint32_t seconds, float test_voltage, uint32_t test_hz);"));
+	rpc_server.add(prefix, "scheduler_run", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerRun, "void SchedulerRun()"));
+	rpc_server.add(prefix, "scheduler_abort", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerAbort, "void SchedulerAbort()"));
+	rpc_server.add(prefix, "add_task_arm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskArmMotor, "void AddTaskArmMotor()"));
+	rpc_server.add(prefix, "add_task_disarm_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskDisarmMotor, "void AddTaskDisarmMotor()"));
+	rpc_server.add(prefix, "add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
+	rpc_server.add(prefix, "add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder)"));
+	rpc_server.add(prefix, "alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAlphaPoleSearch, "void RunTaskAlphaPoleSearch()"));
+	rpc_server.add(prefix, "rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
+	rpc_server.add(prefix, "run_encoder_debug", rexjson::make_rpc_wrapper(this, &MotorDrive::RunEncoderDisplayDebugInfo, "void RunEncoderDisplayDebugInfo()"));
+	rpc_server.add(prefix, "drv_get_fault1", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
+	rpc_server.add(prefix, "drv_get_fault2", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
+	rpc_server.add(prefix, "drv_clear_fault", rexjson::make_rpc_wrapper(drv_, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
 }
 
 rexjson::property MotorDrive::GetPropertyMap()
 {
-    rexjson::property props= rexjson::property_map({
-        {"Rencest", &Rencest_},
-        {"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
-        {"tim1_cnt", rexjson::property(&tim1_cnt_, rexjson::property_access::readonly)},
-        {"tim8_cnt", rexjson::property(&tim8_cnt_, rexjson::property_access::readonly)},
-        {"tim1_tim8_offset", rexjson::property(&tim1_tim8_offset_, rexjson::property_access::readonly)},
-        {"tim8_tim1_offset", rexjson::property(&tim8_tim1_offset_, rexjson::property_access::readonly)},
-        {"TIM1_CNT", rexjson::property(&TIM1->CNT, rexjson::property_access::readonly)},
-        {"TIM8_CNT", rexjson::property(&TIM8->CNT, rexjson::property_access::readonly)},
-        {"time_slice_", rexjson::property(&time_slice_, rexjson::property_access::readonly)},
-        {"Vbus", rexjson::property(&lpf_vbus_.out_, rexjson::property_access::readonly)},
-        {"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
-        {"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
-        {"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
-        {"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_access::readonly)},
-        {"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_access::readonly)},
-    });
-    return props;
+	rexjson::property props= rexjson::property_map({
+		{"Rencest", &Rencest_},
+		{"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
+		{"tim1_cnt", rexjson::property(&tim1_cnt_, rexjson::property_access::readonly)},
+		{"tim8_cnt", rexjson::property(&tim8_cnt_, rexjson::property_access::readonly)},
+		{"tim1_tim8_offset", rexjson::property(&tim1_tim8_offset_, rexjson::property_access::readonly)},
+		{"tim8_tim1_offset", rexjson::property(&tim8_tim1_offset_, rexjson::property_access::readonly)},
+		{"TIM1_CNT", rexjson::property(&TIM1->CNT, rexjson::property_access::readonly)},
+		{"TIM8_CNT", rexjson::property(&TIM8->CNT, rexjson::property_access::readonly)},
+		{"time_slice_", rexjson::property(&time_slice_, rexjson::property_access::readonly)},
+		{"Vbus", rexjson::property(&lpf_vbus_.out_, rexjson::property_access::readonly)},
+		{"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
+		{"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
+		{"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
+		{"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_access::readonly)},
+		{"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_access::readonly)},
+	});
+	return props;
 }
 
 
 rexjson::property MotorDrive::GetConfigPropertyMap()
 {
-    rexjson::property props= rexjson::property_map({
-        {"bias_alpha", rexjson::property(
-            &config_.bias_alpha_,
-            rexjson::property_access::readwrite,
-            [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-            [&](void*)->void {
-                lpf_bias_a.SetAlpha(config_.bias_alpha_);
-                lpf_bias_b.SetAlpha(config_.bias_alpha_);
-                lpf_bias_c.SetAlpha(config_.bias_alpha_);
-            })},
-        {"vbus_alpha", rexjson::property(
-                &config_.vbus_alpha_,
-                rexjson::property_access::readwrite,
-                [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-                [&](void*)->void {
-                    lpf_vbus_.SetAlpha(config_.vbus_alpha_);
-                })},
-        {"wenc_alpha", rexjson::property(
-                &config_.wenc_alpha_,
-                rexjson::property_access::readwrite,
-                [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-                [&](void*)->void {
-                    lpf_Wenc_.SetAlpha(config_.wenc_alpha_);
-                })},
+	rexjson::property props= rexjson::property_map({
+		{"bias_alpha", rexjson::property(
+			&config_.bias_alpha_,
+			rexjson::property_access::readwrite,
+			[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+			[&](void*)->void {
+				lpf_bias_a.SetAlpha(config_.bias_alpha_);
+				lpf_bias_b.SetAlpha(config_.bias_alpha_);
+				lpf_bias_c.SetAlpha(config_.bias_alpha_);
+			})},
+		{"vbus_alpha", rexjson::property(
+				&config_.vbus_alpha_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+				[&](void*)->void {
+					lpf_vbus_.SetAlpha(config_.vbus_alpha_);
+				})},
+		{"wenc_alpha", rexjson::property(
+				&config_.wenc_alpha_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
+				[&](void*)->void {
+					lpf_Wenc_.SetAlpha(config_.wenc_alpha_);
+				})},
 
-        {"enc_skip_updates", rexjson::property(
-                &config_.enc_skip_updates_,
-                rexjson::property_access::readwrite,
-                [&](const rexjson::value& v){ pwm_->Stop(); },
-                [&](void*)->void {
-                    update_counter_ = 0;
-                    HAL_Delay(2);
-                    pwm_->Start();
-                })},
-        {"max_modulation_duty", rexjson::property(
-                &config_.max_modulation_duty_,
-                rexjson::property_access::readwrite,
-                [](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");}
-        )},
-        {"csa_gain", rexjson::property(
-                &config_.csa_gain_,
-                rexjson::property_access::readwrite,
-                [](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
-                [&](void*){drv_->SetCSAGainValue(config_.csa_gain_);}
-        )},
-        {"run_simple_tasks", rexjson::property(
-                &run_simple_tasks_,
-                rexjson::property_access::readwrite,
-                [](const rexjson::value& v){},
-                [&](void*){ if (run_simple_tasks_) RunSimpleTasks(); else sched_.Abort(); }
-        )},
-        {"trip_i", &config_.trip_i_},
-        {"trip_v", &config_.trip_v_},
-        {"calib_max_i", &config_.calib_max_i_},
-        {"calib_v", &config_.calib_v_},
-        {"resistance", &config_.resistance_},
-        {"inductance", &config_.inductance_},
-        {"pole_pairs", &config_.pole_pairs},
-        {"encoder_dir", &config_.encoder_dir_},
-        {"svm_saddle", &config_.svm_saddle_},
-        {"reset_voltage", &config_.reset_voltage_},
-        {"reset_hz", &config_.reset_hz_},
-        {"display_div", &config_.display_div_},
-    });
-    return props;
+		{"enc_skip_updates", rexjson::property(
+				&config_.enc_skip_updates_,
+				rexjson::property_access::readwrite,
+				[&](const rexjson::value& v){ pwm_->Stop(); },
+				[&](void*)->void {
+					update_counter_ = 0;
+					HAL_Delay(2);
+					pwm_->Start();
+				})},
+		{"max_modulation_duty", rexjson::property(
+				&config_.max_modulation_duty_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");}
+		)},
+		{"csa_gain", rexjson::property(
+				&config_.csa_gain_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
+				[&](void*){drv_->SetCSAGainValue(config_.csa_gain_);}
+		)},
+		{"run_simple_tasks", rexjson::property(
+				&run_simple_tasks_,
+				rexjson::property_access::readwrite,
+				[](const rexjson::value& v){},
+				[&](void*){ if (run_simple_tasks_) RunSimpleTasks(); else sched_.Abort(); }
+		)},
+		{"trip_i", &config_.trip_i_},
+		{"trip_v", &config_.trip_v_},
+		{"calib_max_i", &config_.calib_max_i_},
+		{"calib_v", &config_.calib_v_},
+		{"resistance", &config_.resistance_},
+		{"inductance", &config_.inductance_},
+		{"pole_pairs", &config_.pole_pairs},
+		{"encoder_dir", &config_.encoder_dir_},
+		{"svm_saddle", &config_.svm_saddle_},
+		{"reset_voltage", &config_.reset_voltage_},
+		{"reset_hz", &config_.reset_hz_},
+		{"display_div", &config_.display_div_},
+	});
+	return props;
 }
 
 
@@ -181,8 +181,8 @@ rexjson::property MotorDrive::GetConfigPropertyMap()
  */
 void MotorDrive::Run()
 {
-    error_info_.ClearError();
-    sched_.Run();
+	error_info_.ClearError();
+	sched_.Run();
 }
 
 /** This method is similar to @ref MotorDrive::Run,
@@ -191,8 +191,8 @@ void MotorDrive::Run()
  */
 void MotorDrive::RunWaitForCompletion()
 {
-    error_info_.ClearError();
-    sched_.RunWaitForCompletion();
+	error_info_.ClearError();
+	sched_.RunWaitForCompletion();
 }
 
 /** Immediately cut the PWM outputs and abort
@@ -201,8 +201,8 @@ void MotorDrive::RunWaitForCompletion()
  */
 void MotorDrive::Abort()
 {
-    pwm_->Stop();
-    sched_.Abort();
+	pwm_->Stop();
+	sched_.Abort();
 }
 
 /** Return pointer to the currently used encoder object
@@ -211,7 +211,7 @@ void MotorDrive::Abort()
  */
 IEncoder* MotorDrive::GetEncoder() const
 {
-    return encoder_;
+	return encoder_;
 }
 
 /** Return the encoder Counts Per Revolution  (CPR)
@@ -220,7 +220,7 @@ IEncoder* MotorDrive::GetEncoder() const
  */
 uint32_t MotorDrive::GetEncoderCPR() const
 {
-    return enc_cpr_;
+	return enc_cpr_;
 }
 
 /** Get the total number of bits used by @ref GetEncoderPosition,
@@ -233,7 +233,7 @@ uint32_t MotorDrive::GetEncoderCPR() const
  */
 uint32_t MotorDrive::GetEncoderPositionBits() const
 {
-    return enc_revolution_bits_ + enc_resolution_bits_;
+	return enc_revolution_bits_ + enc_resolution_bits_;
 }
 
 /** Get the current encoder position
@@ -242,7 +242,7 @@ uint32_t MotorDrive::GetEncoderPositionBits() const
  */
 uint64_t MotorDrive::GetEncoderPosition() const
 {
-    return ((encoder_->GetPosition() << enc_position_shiftleft_) >> enc_position_shiftright_);
+	return ((encoder_->GetPosition() << enc_position_shiftleft_) >> enc_position_shiftright_);
 }
 
 /** Get the current encoder position
@@ -251,7 +251,7 @@ uint64_t MotorDrive::GetEncoderPosition() const
  */
 uint64_t MotorDrive::GetEncoderMaxPosition() const
 {
-    return enc_position_size_;
+	return enc_position_size_;
 }
 
 
@@ -264,26 +264,26 @@ uint64_t MotorDrive::GetEncoderMaxPosition() const
  */
 void MotorDrive::SetEncoder(IEncoder *encoder, uint32_t resolution_bits)
 {
-    if (encoder) {
-        if (encoder->GetStatus()) {
-            error_info_.SetError(e_encoder, "Encoder Error");
-        }
-        encoder_ = encoder;
-        enc_revolution_bits_ = encoder_->GetRevolutionBits();
-        enc_resolution_bits_ = resolution_bits;
-        if (resolution_bits <= encoder_->GetResolutionBits()) {
-            enc_position_shiftright_ = encoder_->GetResolutionBits() - resolution_bits;
-            enc_position_shiftleft_ = 0;
-        } else {
-            enc_position_shiftleft_ = encoder_->GetResolutionBits() - resolution_bits;
-            enc_position_shiftright_ = 0;
-        }
-        enc_cpr_ = (1 << enc_resolution_bits_);
-        enc_resolution_mask_ = (1 << enc_resolution_bits_) - 1;
-        enc_position_size_ = 1LLU << (enc_resolution_bits_ + enc_revolution_bits_);
-        enc_position_size_half_ = enc_position_size_ / 2;
-        enc_position_mask_ = enc_position_size_ - 1;
-    }
+	if (encoder) {
+		if (encoder->GetStatus()) {
+			error_info_.SetError(e_encoder, "Encoder Error");
+		}
+		encoder_ = encoder;
+		enc_revolution_bits_ = encoder_->GetRevolutionBits();
+		enc_resolution_bits_ = resolution_bits;
+		if (resolution_bits <= encoder_->GetResolutionBits()) {
+			enc_position_shiftright_ = encoder_->GetResolutionBits() - resolution_bits;
+			enc_position_shiftleft_ = 0;
+		} else {
+			enc_position_shiftleft_ = encoder_->GetResolutionBits() - resolution_bits;
+			enc_position_shiftright_ = 0;
+		}
+		enc_cpr_ = (1 << enc_resolution_bits_);
+		enc_resolution_mask_ = (1 << enc_resolution_bits_) - 1;
+		enc_position_size_ = 1LLU << (enc_resolution_bits_ + enc_revolution_bits_);
+		enc_position_size_half_ = enc_position_size_ / 2;
+		enc_position_mask_ = enc_position_size_ - 1;
+	}
 }
 
 /** Get the configure encoder direction.
@@ -302,7 +302,7 @@ void MotorDrive::SetEncoder(IEncoder *encoder, uint32_t resolution_bits)
  */
 int32_t MotorDrive::GetEncoderDir() const
 {
-    return config_.encoder_dir_;
+	return config_.encoder_dir_;
 }
 
 /** Return the update rate of the motor drive
@@ -311,7 +311,7 @@ int32_t MotorDrive::GetEncoderDir() const
  */
 uint32_t MotorDrive::GetUpdateFrequency() const
 {
-    return update_hz_;
+	return update_hz_;
 }
 
 /** Return the update time period in seconds
@@ -320,7 +320,7 @@ uint32_t MotorDrive::GetUpdateFrequency() const
  */
 float MotorDrive::GetTimeSlice() const
 {
-    return time_slice_;
+	return time_slice_;
 }
 
 /** Get the motor pole pairs.
@@ -329,7 +329,7 @@ float MotorDrive::GetTimeSlice() const
  */
 uint32_t MotorDrive::GetPolePairs() const
 {
-    return config_.pole_pairs;
+	return config_.pole_pairs;
 }
 
 /** Get the Vbus voltage after it has been
@@ -339,7 +339,7 @@ uint32_t MotorDrive::GetPolePairs() const
  */
 float MotorDrive::GetBusVoltage() const
 {
-    return lpf_vbus_.Output();
+	return lpf_vbus_.Output();
 }
 
 /** Get the phase current as a vector (complex value).
@@ -349,7 +349,7 @@ float MotorDrive::GetBusVoltage() const
  */
 std::complex<float> MotorDrive::GetPhaseCurrent() const
 {
-    return Iab_;
+	return Iab_;
 }
 
 /** Check if the PWM timer counter is currently enabled.
@@ -362,7 +362,7 @@ std::complex<float> MotorDrive::GetPhaseCurrent() const
  */
 bool MotorDrive::IsStarted()
 {
-    return pwm_->IsStarted();
+	return pwm_->IsStarted();
 }
 
 /** IrqUpdateCallback is the interrupt handler that drives the motor.
@@ -386,11 +386,11 @@ bool MotorDrive::IsStarted()
  */
 void MotorDrive::IrqUpdateCallback()
 {
-    if (pwm_->GetCounterDirection()) {
-        UpdateBias();
-    } else {
-        UpdateCurrent();
-    }
+	if (pwm_->GetCounterDirection()) {
+		UpdateBias();
+	} else {
+		UpdateCurrent();
+	}
 }
 
 
@@ -401,73 +401,73 @@ void MotorDrive::UpdateBias()
 //    tim1_tim8_offset_ = (int32_t)TIM8->CNT - (int32_t)TIM1->CNT;
 //    tim8_tim1_offset_ = (int32_t)TIM1->CNT - (int32_t)TIM8->CNT;
 
-    /*
-     * Sample ADC bias
-     */
-    float injdata_a = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
-    float injdata_b = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
-    float injdata_c = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_3);
+	/*
+	 * Sample ADC bias
+	 */
+	float injdata_a = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
+	float injdata_b = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
+	float injdata_c = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_3);
 
-    lpf_bias_a.DoFilter(injdata_a);
-    lpf_bias_b.DoFilter(injdata_b);
-    lpf_bias_c.DoFilter(injdata_c);
+	lpf_bias_a.DoFilter(injdata_a);
+	lpf_bias_b.DoFilter(injdata_b);
+	lpf_bias_c.DoFilter(injdata_c);
 }
 
 void MotorDrive::UpdateCurrent()
 {
-    update_counter_++;
-    if (update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
-        encoder_->Update();
-        UpdateRotor();
-    } else {
-        EstimateRotor();
-    }
+	update_counter_++;
+	if (update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
+		encoder_->Update();
+		UpdateRotor();
+	} else {
+		EstimateRotor();
+	}
 
-    /*
-     * Sample VBus voltage
-     */
+	/*
+	 * Sample VBus voltage
+	 */
 #if 1
-    float vbus = dma_adc_->RegReadConversionData(4 - 1);
-    lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, vbus, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
+	float vbus = dma_adc_->RegReadConversionData(4 - 1);
+	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, vbus, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
 #else
 
-    float injdata_vbus = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_4);
-    lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, injdata_vbus, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
+	float injdata_vbus = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_4);
+	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, injdata_vbus, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
 
 #endif
 
-    /*
-     * Sample ADC phase current
-     */
-    float injdata_a = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
-    float injdata_b = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
-    float injdata_c = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_3);
+	/*
+	 * Sample ADC phase current
+	 */
+	float injdata_a = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_1);
+	float injdata_b = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_2);
+	float injdata_c = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_3);
 
-    /*
-     * Apply the ADC bias to the current data
-     */
-    phase_current_a_ = CalculatePhaseCurrent(injdata_a, lpf_bias_a.Output());
-    phase_current_b_ = CalculatePhaseCurrent(injdata_b, lpf_bias_b.Output());
-    phase_current_c_ = CalculatePhaseCurrent(injdata_c, lpf_bias_c.Output());
+	/*
+	 * Apply the ADC bias to the current data
+	 */
+	phase_current_a_ = CalculatePhaseCurrent(injdata_a, lpf_bias_a.Output());
+	phase_current_b_ = CalculatePhaseCurrent(injdata_b, lpf_bias_b.Output());
+	phase_current_c_ = CalculatePhaseCurrent(injdata_c, lpf_bias_c.Output());
 
-    /*
-     * Update the Iab vector
-     */
-    float Ia = phase_current_a_;
-    float Ib = phase_current_b_;
-    float Ic = - phase_current_a_ - phase_current_b_;
-    Iab_ = Pa_ * Ia + Pb_ * Ib + Pc_ * Ic;
+	/*
+	 * Update the Iab vector
+	 */
+	float Ia = phase_current_a_;
+	float Ib = phase_current_b_;
+	float Ic = - phase_current_a_ - phase_current_b_;
+	Iab_ = Pa_ * Ia + Pb_ * Ib + Pc_ * Ic;
 
 
-    /*
-     * Check for abnormal conditions.
-     */
-    CheckTripViolations();
+	/*
+	 * Check for abnormal conditions.
+	 */
+	CheckTripViolations();
 
-    /*
-     * Run the scheduler tasks
-     */
-    sched_.OnUpdate();
+	/*
+	 * Run the scheduler tasks
+	 */
+	sched_.OnUpdate();
 }
 
 /** Update the rotor position and velocity
@@ -475,9 +475,9 @@ void MotorDrive::UpdateCurrent()
  */
 void MotorDrive::UpdateRotor()
 {
-    uint64_t Renc_prev = Renc_; 
-    Renc_ = GetEncoderPosition();
-    Rencest_ = Renc_;
+	uint64_t Renc_prev = Renc_; 
+	Renc_ = GetEncoderPosition();
+	Rencest_ = Renc_;
 	float theta_e = GetEncoderDir() * GetElectricAngle(Renc_);
 	E_ = std::complex<float>(arm_cos_f32(theta_e), arm_sin_f32(theta_e));
 
@@ -485,7 +485,7 @@ void MotorDrive::UpdateRotor()
 	int32_t Rangle = Renc_ & enc_resolution_mask_;
 	int32_t Wenc = (Rangle + enc_cpr_ - Rangle_prev) % enc_cpr_;
 	if (Wenc > (int32_t)(enc_cpr_ / 2))
-	    Wenc -= enc_cpr_;
+		Wenc -= enc_cpr_;
 	lpf_Wenc_.DoFilter(((float)Wenc) / (config_.enc_skip_updates_ + 1));
 }
 
@@ -494,9 +494,9 @@ void MotorDrive::UpdateRotor()
  */
 void MotorDrive::EstimateRotor()
 {
-    Rencest_ +=  lpf_Wenc_.Output();
-    float theta_e = GetEncoderDir() * GetElectricAngle(Rencest_);
-    E_ = std::complex<float>(arm_cos_f32(theta_e), arm_sin_f32(theta_e));
+	Rencest_ +=  lpf_Wenc_.Output();
+	float theta_e = GetEncoderDir() * GetElectricAngle(Rencest_);
+	E_ = std::complex<float>(arm_cos_f32(theta_e), arm_sin_f32(theta_e));
 }
 
 
@@ -506,7 +506,7 @@ void MotorDrive::EstimateRotor()
  */
 uint64_t MotorDrive::GetRotorPosition() const
 {
-    return Rencest_;
+	return Rencest_;
 }
 
 /** Calculate the position error. Trim the error within [-maxerr, maxerr]
@@ -517,10 +517,10 @@ uint64_t MotorDrive::GetRotorPosition() const
  */
 int64_t MotorDrive::GetRotorPositionError(uint64_t position, uint64_t target)
 {
-    int64_t position_err = (target + enc_position_size_ - position) & enc_position_mask_;
-    if (position_err > (int64_t)(enc_position_size_half_))
-        position_err -= enc_position_size_;
-    return position_err;
+	int64_t position_err = (target + enc_position_size_ - position) & enc_position_mask_;
+	if (position_err > (int64_t)(enc_position_size_half_))
+		position_err -= enc_position_size_;
+	return position_err;
 }
 
 
@@ -532,9 +532,9 @@ int64_t MotorDrive::GetRotorPositionError(uint64_t position, uint64_t target)
  */
 float MotorDrive::GetElectricAngle(uint64_t enc_position) const
 {
-    uint32_t enc_orientation = enc_position & enc_resolution_mask_;
-    uint32_t cpr_per_pair = (enc_cpr_ / GetPolePairs());
-    return (2.0f * M_PI / cpr_per_pair) * (enc_orientation % cpr_per_pair);
+	uint32_t enc_orientation = enc_position & enc_resolution_mask_;
+	uint32_t cpr_per_pair = (enc_cpr_ / GetPolePairs());
+	return (2.0f * M_PI / cpr_per_pair) * (enc_orientation % cpr_per_pair);
 }
 
 /** Calculate the angle of the rotor from the encoder position in mechanical radians.
@@ -544,7 +544,7 @@ float MotorDrive::GetElectricAngle(uint64_t enc_position) const
  */
 float MotorDrive::GetMechanicalAngle(uint64_t enc_position) const
 {
-    return (2.0f * M_PI / enc_cpr_) * (enc_position & enc_resolution_mask_);
+	return (2.0f * M_PI / enc_cpr_) * (enc_position & enc_resolution_mask_);
 }
 
 std::complex<float> MotorDrive::GetRotorElecRotation()
@@ -558,7 +558,7 @@ std::complex<float> MotorDrive::GetRotorElecRotation()
  */
 float MotorDrive::GetRotorVelocity()
 {
-    return GetRotorVelocityPTS() * update_hz_;
+	return GetRotorVelocityPTS() * update_hz_;
 }
 
 
@@ -568,7 +568,7 @@ float MotorDrive::GetRotorVelocity()
  */
 float MotorDrive::GetRotorVelocityPTS()
 {
-    return lpf_Wenc_.Output();
+	return lpf_Wenc_.Output();
 }
 
 /** Get the rotor velocity in elec encoder counts per time_slice
@@ -577,7 +577,7 @@ float MotorDrive::GetRotorVelocityPTS()
  */
 float MotorDrive::GetRotorElecVelocityPTS()
 {
-    return GetRotorVelocityPTS() * config_.pole_pairs;
+	return GetRotorVelocityPTS() * config_.pole_pairs;
 }
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
@@ -747,27 +747,27 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 
 void MotorDrive::RunEncoderDisplayDebugInfo()
 {
-    sched_.AddTask([&](){
+	sched_.AddTask([&](){
 
-        sched_.RunUpdateHandler([&]()->bool {
-            if ((update_counter_ % (update_hz_ >> 2)) == 0)
-                encoder_->DisplayDebugInfo();
-            return true;
-        });
+		sched_.RunUpdateHandler([&]()->bool {
+			if ((update_counter_ % (update_hz_ >> 2)) == 0)
+				encoder_->DisplayDebugInfo();
+			return true;
+		});
 
-    });
+	});
 
-    Run();
+	Run();
 }
 
 
 void MotorDrive::AddTaskDetectEncoderDir()
 {
 	sched_.AddTask([&](){
-	    uint64_t enc1 = GetEncoderPosition();
+		uint64_t enc1 = GetEncoderPosition();
 		if (RunUpdateHandlerRotateMotor(M_PI_2, M_PI, config_.reset_voltage_, true)) {
-		    uint64_t enc2 = GetEncoderPosition();
-		    config_.encoder_dir_  = (enc2 > enc1) ? 1 : -1;
+			uint64_t enc2 = GetEncoderPosition();
+			config_.encoder_dir_  = (enc2 > enc1) ? 1 : -1;
 //			config_.encoder_dir_ = (GetMechanicalAngle(GetEncoderPosition()) > M_PI) ? -1 : 1;
 		}
 	});
@@ -811,88 +811,88 @@ void MotorDrive::RunTaskAlphaPoleSearch()
 
 void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage)
 {
-    sched_.AddTask(std::bind([&](float seconds, float test_voltage){
-        uint32_t i = 0;
-        uint32_t test_cycles = update_hz_ * seconds;
-        bool ret = false;
+	sched_.AddTask(std::bind([&](float seconds, float test_voltage){
+		uint32_t i = 0;
+		uint32_t test_cycles = update_hz_ * seconds;
+		bool ret = false;
 
-        ApplyPhaseVoltage(0, 0);
-        config_.resistance_ = 0;
-        do {
-            ret = sched_.RunUpdateHandler([&]()->bool {
-                ApplyPhaseVoltage(test_voltage, std::polar<float>(1, 0));
-                return false;
-            });
+		ApplyPhaseVoltage(0, 0);
+		config_.resistance_ = 0;
+		do {
+			ret = sched_.RunUpdateHandler([&]()->bool {
+				ApplyPhaseVoltage(test_voltage, std::polar<float>(1, 0));
+				return false;
+			});
 
 #if 0
-            if ((data_.update_counter_ % 13) == 0) {
-                fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\r\n",
-                        lpf_vbus_.Output(), data_.phase_current_a_, data_.phase_current_b_, data_.phase_current_c_,
-                        data_.phase_current_a_ + data_.phase_current_b_ + data_.phase_current_c_);
-            }
+			if ((data_.update_counter_ % 13) == 0) {
+				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\r\n",
+						lpf_vbus_.Output(), data_.phase_current_a_, data_.phase_current_b_, data_.phase_current_c_,
+						data_.phase_current_a_ + data_.phase_current_b_ + data_.phase_current_c_);
+			}
 #endif
-        } while (ret && i++ < test_cycles);
-        if (ret)
-            config_.resistance_ = 2.0f / 3.0f * test_voltage / phase_current_a_;
-        ApplyPhaseVoltage(0, 0);
-    }, seconds, test_voltage));
+		} while (ret && i++ < test_cycles);
+		if (ret)
+			config_.resistance_ = 2.0f / 3.0f * test_voltage / phase_current_a_;
+		ApplyPhaseVoltage(0, 0);
+	}, seconds, test_voltage));
 }
 
 void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, uint32_t test_hz)
 {
-    sched_.AddTask(std::bind([&](float seconds, float test_voltage, uint32_t test_hz){
-        LowPassFilter<float, float> lpf_a(0.001);
-        uint32_t sine_steps = update_hz_ / test_hz;
-        uint32_t test_cycles = update_hz_ * seconds;
-        bool ret = true;
-        std::complex<float> V(1.0, 0.0);
-        std::complex<float> r = std::polar<float>(1.0, M_PI * 2 / sine_steps);
+	sched_.AddTask(std::bind([&](float seconds, float test_voltage, uint32_t test_hz){
+		LowPassFilter<float, float> lpf_a(0.001);
+		uint32_t sine_steps = update_hz_ / test_hz;
+		uint32_t test_cycles = update_hz_ * seconds;
+		bool ret = true;
+		std::complex<float> V(1.0, 0.0);
+		std::complex<float> r = std::polar<float>(1.0, M_PI * 2 / sine_steps);
 
-        ApplyPhaseVoltage(0, 0);
-        for (uint32_t i = 0; ret && i < test_cycles;  i++) {
+		ApplyPhaseVoltage(0, 0);
+		for (uint32_t i = 0; ret && i < test_cycles;  i++) {
 
-            ret = sched_.RunUpdateHandler([&]()->bool {
+			ret = sched_.RunUpdateHandler([&]()->bool {
 
-                lpf_a.DoFilter(std::abs(phase_current_a_));
-                V = V * r;
+				lpf_a.DoFilter(std::abs(phase_current_a_));
+				V = V * r;
 
-                // Test voltage along phase A
-                ApplyPhaseVoltage(test_voltage * V.real(), std::complex<float>(1.0f, 0.0f));
-                return false;
-            });
+				// Test voltage along phase A
+				ApplyPhaseVoltage(test_voltage * V.real(), std::complex<float>(1.0f, 0.0f));
+				return false;
+			});
 #if 0
-            if ((i % 13) == 0) {
-                fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\r\n",
-                        lpf_vbus_.Output(), lpf_a.Output());
-            }
+			if ((i % 13) == 0) {
+				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\r\n",
+						lpf_vbus_.Output(), lpf_a.Output());
+			}
 #endif
-        }
+		}
 
-        if (ret) {
-            float X = (lpf_vbus_.Output() - lpf_a.Output() * config_.resistance_)/ lpf_a.Output();
-            float L = X / (2 * M_PI * test_hz);
-            config_.inductance_ = L;
-        }
-    }, seconds, test_voltage, test_hz));
+		if (ret) {
+			float X = (lpf_vbus_.Output() - lpf_a.Output() * config_.resistance_)/ lpf_a.Output();
+			float L = X / (2 * M_PI * test_hz);
+			config_.inductance_ = L;
+		}
+	}, seconds, test_voltage, test_hz));
 }
 
 
 float MotorDrive::RunResistanceMeasurement(float seconds, float test_voltage)
 {
-    AddTaskArmMotor();
-    AddTaskMeasureResistance(seconds, test_voltage);
-    AddTaskDisarmMotor();
-    sched_.RunWaitForCompletion();
-    return config_.resistance_;
+	AddTaskArmMotor();
+	AddTaskMeasureResistance(seconds, test_voltage);
+	AddTaskDisarmMotor();
+	sched_.RunWaitForCompletion();
+	return config_.resistance_;
 }
 
 float MotorDrive::RunInductanceMeasurement(float seconds, float test_voltage, uint32_t test_hz)
 {
-    AddTaskArmMotor();
-    AddTaskMeasureInductance(seconds, test_voltage, test_hz);
-    AddTaskDisarmMotor();
-    sched_.RunWaitForCompletion();
-    return config_.inductance_;
+	AddTaskArmMotor();
+	AddTaskMeasureInductance(seconds, test_voltage, test_hz);
+	AddTaskDisarmMotor();
+	sched_.RunWaitForCompletion();
+	return config_.inductance_;
 }
 
 /** Rotate the rotor the using the specified angle, speed, voltage and direction.
@@ -909,93 +909,93 @@ float MotorDrive::RunInductanceMeasurement(float seconds, float test_voltage, ui
  */
 void MotorDrive::RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)
 {
-    AddTaskArmMotor();
-    AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
-    AddTaskRotateMotor(angle, speed, voltage, dir);
-    AddTaskDisarmMotor();
-    sched_.RunWaitForCompletion();
+	AddTaskArmMotor();
+	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
+	AddTaskRotateMotor(angle, speed, voltage, dir);
+	AddTaskDisarmMotor();
+	sched_.RunWaitForCompletion();
 }
 
 void MotorDrive::DefaultIdleTask()
 {
-    fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\r\n", lpf_vbus_.Output(),
-            lpf_bias_a.Output(), lpf_bias_b.Output(), phase_current_a_, phase_current_b_,
-            - phase_current_a_ - phase_current_b_);
+	fprintf(stderr, "VBus: %+5.2f, Bias: %+5.2f, %+5.2f, Currents: %+5.2f, %+5.2f, %+5.2f\r\n", lpf_vbus_.Output(),
+			lpf_bias_a.Output(), lpf_bias_b.Output(), phase_current_a_, phase_current_b_,
+			- phase_current_a_ - phase_current_b_);
 }
 
 bool MotorDrive::CheckPhaseCurrentViolation(float current)
 {
-    if (current > config_.trip_i_) {
-        Abort();
-        error_info_.SetError(e_trip_voltage, "Current limit violation, %f", current);
-        return true;
-    }
-    return false;
+	if (current > config_.trip_i_) {
+		Abort();
+		error_info_.SetError(e_trip_voltage, "Current limit violation, %f", current);
+		return true;
+	}
+	return false;
 }
 
 bool MotorDrive::CheckPhaseVoltageViolation(float voltage)
 {
-    if (voltage > config_.trip_v_) {
-        Abort();
-        error_info_.SetError(e_trip_voltage, "Voltage bus limit violation, %f", voltage);
-        return true;
-    }
-    return false;
+	if (voltage > config_.trip_v_) {
+		Abort();
+		error_info_.SetError(e_trip_voltage, "Voltage bus limit violation, %f", voltage);
+		return true;
+	}
+	return false;
 }
 
 bool MotorDrive::CheckTripViolations()
 {
-    bool ret = false;
-    if (delay_trip_check_ < (update_hz_ / 4)) {
-        delay_trip_check_++;
-        return false;
-    }
-    ret = ret || CheckPhaseVoltageViolation(lpf_vbus_.Output());
-    ret = ret || CheckPhaseCurrentViolation(phase_current_a_);
-    ret = ret || CheckPhaseCurrentViolation(phase_current_b_);
-    ret = ret || CheckPhaseCurrentViolation(phase_current_c_);
-    if (ret)
-        delay_trip_check_ = 0;
-    return ret;
+	bool ret = false;
+	if (delay_trip_check_ < (update_hz_ / 4)) {
+		delay_trip_check_++;
+		return false;
+	}
+	ret = ret || CheckPhaseVoltageViolation(lpf_vbus_.Output());
+	ret = ret || CheckPhaseCurrentViolation(phase_current_a_);
+	ret = ret || CheckPhaseCurrentViolation(phase_current_b_);
+	ret = ret || CheckPhaseCurrentViolation(phase_current_c_);
+	if (ret)
+		delay_trip_check_ = 0;
+	return ret;
 }
 
 void MotorDrive::RunSimpleTasks()
 {
-    sched_.AddTask([&](){
-        uint32_t t0 = xTaskGetTickCount();
-        if (sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT, 2000) == Scheduler::THREAD_FLAG_ABORT) {
-            fprintf(stderr, "Task1 Aborting...\r\n\r\n\r\n");
-            return;
-        }
-        fprintf(stderr, "Task1 finished %lu\n", xTaskGetTickCount() - t0);
-    });
-    sched_.AddTask([&](){
-        uint32_t t0 = xTaskGetTickCount();
-        if (sched_.WaitSignalAbort(2000)) {
-            fprintf(stderr, "Task2 Aborting...\r\n\r\n\r\n");
-            return;
-        }
-        fprintf(stderr, "Task2 finished %lu\r\n", xTaskGetTickCount() - t0);
-    });
-    sched_.AddTask([&](){
-        uint32_t t0 = xTaskGetTickCount();
-        if (sched_.WaitSignalAbort(2000)) {
-            fprintf(stderr, "Task3 Aborting...\r\n\r\n\r\n");
-            return;
-        }
-        fprintf(stderr, "Task3 finished %lu\r\n\r\n\r\n", xTaskGetTickCount() - t0);
-    });
-    sched_.Run();
+	sched_.AddTask([&](){
+		uint32_t t0 = xTaskGetTickCount();
+		if (sched_.WaitSignals(Scheduler::THREAD_FLAG_ABORT, 2000) == Scheduler::THREAD_FLAG_ABORT) {
+			fprintf(stderr, "Task1 Aborting...\r\n\r\n\r\n");
+			return;
+		}
+		fprintf(stderr, "Task1 finished %lu\n", xTaskGetTickCount() - t0);
+	});
+	sched_.AddTask([&](){
+		uint32_t t0 = xTaskGetTickCount();
+		if (sched_.WaitSignalAbort(2000)) {
+			fprintf(stderr, "Task2 Aborting...\r\n\r\n\r\n");
+			return;
+		}
+		fprintf(stderr, "Task2 finished %lu\r\n", xTaskGetTickCount() - t0);
+	});
+	sched_.AddTask([&](){
+		uint32_t t0 = xTaskGetTickCount();
+		if (sched_.WaitSignalAbort(2000)) {
+			fprintf(stderr, "Task3 Aborting...\r\n\r\n\r\n");
+			return;
+		}
+		fprintf(stderr, "Task3 finished %lu\r\n\r\n\r\n", xTaskGetTickCount() - t0);
+	});
+	sched_.Run();
 
 }
 
 void MotorDrive::SchedulerRun()
 {
-    sched_.Run();
+	sched_.Run();
 }
 
 void MotorDrive::SchedulerAbort()
 {
-    sched_.Abort();
+	sched_.Abort();
 }
 

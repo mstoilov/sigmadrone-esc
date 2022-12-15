@@ -25,20 +25,20 @@
 
 class FlashMemory {
 public:
-    FlashMemory(void *mem, size_t nbytes, size_t sector, size_t nsecors);
-    ~FlashMemory();
+	FlashMemory(void *mem, size_t nbytes, size_t sector, size_t nsecors);
+	~FlashMemory();
 
-    void erase();
-    void program(const void *data, size_t nbytes);
-    void* data();
-    size_t size();
+	void erase();
+	void program(const void *data, size_t nbytes);
+	void* data();
+	size_t size();
 
 protected:
 public:
-    uint8_t* mem_;
-    size_t nbytes_;
-    size_t sector_;
-    size_t nsectors_;
+	uint8_t* mem_;
+	size_t nbytes_;
+	size_t sector_;
+	size_t nsectors_;
 };
 
 #endif // FLASHMEMORY_H_

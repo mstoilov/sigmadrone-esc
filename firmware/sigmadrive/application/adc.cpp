@@ -16,7 +16,7 @@
 
 Adc::Adc() : hadc_(nullptr)
 {
-    memset(regdata_, 0, sizeof(regdata_));
+	memset(regdata_, 0, sizeof(regdata_));
 }
 
 Adc::~Adc()
@@ -36,14 +36,14 @@ Adc::~Adc()
  */
 void Adc::Attach(ADC_HandleTypeDef *hadc, uint32_t n_regranks, bool enable_irq)
 {
-    hadc_ = hadc;
-    __HAL_ADC_ENABLE(hadc_);
-    if (enable_irq)
-        __HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
-    if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, n_regranks) != HAL_OK) {
-        /* Start Conversation Error */
-        printf("Failed to start regular conversions for ADC\n");
-    }
+	hadc_ = hadc;
+	__HAL_ADC_ENABLE(hadc_);
+	if (enable_irq)
+		__HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
+	if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, n_regranks) != HAL_OK) {
+		/* Start Conversation Error */
+		printf("Failed to start regular conversions for ADC\n");
+	}
 }
 
 /** Trigger the injected channels conversion
@@ -54,7 +54,7 @@ void Adc::Attach(ADC_HandleTypeDef *hadc, uint32_t n_regranks, bool enable_irq)
  */
 void Adc::InjectedSwTrig()
 {
-    LL_ADC_INJ_StartConversionSWStart(hadc_->Instance);
+	LL_ADC_INJ_StartConversionSWStart(hadc_->Instance);
 }
 
 /** Read injected channel conversion data
@@ -68,11 +68,11 @@ void Adc::InjectedSwTrig()
  */
 uint32_t Adc::InjReadConversionData(uint32_t rank)
 {
-    return LL_ADC_INJ_ReadConversionData12(hadc_->Instance, rank);
+	return LL_ADC_INJ_ReadConversionData12(hadc_->Instance, rank);
 }
 
 
 uint32_t Adc::RegReadConversionData(uint32_t rank_index)
 {
-    return regdata_[rank_index];
+	return regdata_[rank_index];
 }

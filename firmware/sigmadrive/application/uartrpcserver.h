@@ -28,19 +28,19 @@
 class UartRpcServer : public rexjson::rpc_server<UartRpcServer>
 {
 public:
-    UartRpcServer();
-    virtual ~UartRpcServer();
+	UartRpcServer();
+	virtual ~UartRpcServer();
 
 protected:
-    rexjson::value rpc_get_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
-    rexjson::value rpc_set_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_get_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_set_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
 
-    rexjson::value rpc_get_config_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
-    rexjson::value rpc_set_config_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_get_config_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_set_config_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
 
 
 protected:
-    float kp_ = 0.0;
+	float kp_ = 0.0;
 };
 
 #endif /* UARTRPCSERVER_H_ */
