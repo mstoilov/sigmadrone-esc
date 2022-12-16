@@ -1,6 +1,6 @@
 
 #include "trapezoidal-profile-int.h"
-#include <math.h>
+#include <cmath>
 
 #ifdef STM32F745xx
 #include "stm32f745xx.h"
