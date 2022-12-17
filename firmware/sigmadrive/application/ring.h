@@ -55,6 +55,7 @@ public:
 	void push(const T& e)	{ buffer_[wp_] = e; wp_ = (wp_ + 1) % bufsize_; }
 	void pop()				{ rp_ = (rp_ + 1) % bufsize_; }
 	bool empty()			{ return wp_ == rp_ ? true : false; }
+	void clear()			{ rp_ = wp_; }
 
 public:
 	volatile size_t wp_ = 0UL;

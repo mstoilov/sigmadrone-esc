@@ -34,7 +34,7 @@ void MotorCtrlFOC::RegisterRpcMethods()
 	rpc_server.add(prefix, "mvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveToPosition, "void MotorCtrlFOC::MoveToPosition(uint64_t position)"));
 	rpc_server.add(prefix, "mvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelative, "void MotorCtrlFOC::MoveRelative(int64_t relative)"));
 
-	rpc_server.add(prefix, "push", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPoint, "void PushStreamPoint(uint32_t time, float velocity)"));
+	rpc_server.add(prefix, "push", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPoint, "void PushStreamPoint(uint32_t time, float velocity, float position)"));
 	rpc_server.add(prefix, "go", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Go, "void Go()"));
 
 	drive_->RegisterRpcMethods(prefix + "drive.");
@@ -548,10 +548,11 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 		float V2 = 0.0f;
 		float V = 0.0f;
 		float S2 = target_ = drive_->GetEncoderPosition();
-		float S = 0.0f;
+		float S = target_;
 		float A = 0.0f;
 		uint32_t T1 = 0;
 		uint32_t T2 = 0;
+		velocity_stream_.clear();
 
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
@@ -575,6 +576,21 @@ again:
 			}
 
 			if (prof_ptr) {
+				/*   
+				*  V2     /|
+				*        / |   
+				*       /  |
+				*  V   /|  |
+				*     / |  |
+				*    /__|__|
+				*   0   T  T2
+				*
+				*  S is the face of the triangle 0-T-V
+				*  it is calculated by sustracting:
+				*  the face of the trapezoid T - T2 - V2 - V
+				*  from S2
+				*  S = S2 - (V + V2) * (T2 - T) / 2
+				*/
 				uint32_t T = (drive_->GetUpdateCounter() - T1);
 				V = V1  + A * T;
 				S = S2 - (V + V2) * (T2 - drive_->GetUpdateCounter()) / 2;
@@ -637,15 +653,14 @@ again:
 	drive_->Run();
 }
 
-void MotorCtrlFOC::PushStreamPoint(uint32_t time, float velocity)
+void MotorCtrlFOC::PushStreamPoint(uint32_t time, float velocity, float position)
 {
-	TrajectoryPoint pt(time, velocity);
+	TrajectoryPoint pt(time, velocity, position);
 	velocity_stream_.push(pt);
 }
 
 void MotorCtrlFOC::Go()
 {
-	go_ = true;
 }
 
 
@@ -672,7 +687,6 @@ uint64_t MotorCtrlFOC::MoveToPosition(uint64_t target)
 	int64_t oldpos = target_;
 	target_ = target;
 	trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency());
-	trap_profiler_ptr_ = &trap_profiler_;
 
 	TrajectoryPoint pt0, pt1, pt2, pt3;
 	trap_profiler_.CalcTrapezoidPoints(target_, oldpos, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency(), pt0, pt1, pt2, pt3);
@@ -698,7 +712,6 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
 
 	target_ = newpos;
 	trap_profiler_.Init(target_, drive_->GetEncoderPosition(), drive_->GetRotorVelocity(), velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency());
-	trap_profiler_ptr_ = &trap_profiler_;
 
 	TrajectoryPoint pt0, pt1, pt2, pt3;
 	trap_profiler_.CalcTrapezoidPoints(target_, oldpos, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency(), pt0, pt1, pt2, pt3);

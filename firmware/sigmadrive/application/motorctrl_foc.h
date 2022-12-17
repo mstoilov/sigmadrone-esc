@@ -55,7 +55,7 @@ public:
 	rexjson::property GetPropertyMap();
 	rexjson::property GetConfigPropertyMap();
 	void RegisterRpcMethods();
-	void PushStreamPoint(uint32_t time, float velocity);
+	void PushStreamPoint(uint32_t time, float velocity, float position);
 	void Go();
 
 protected:
@@ -109,9 +109,7 @@ protected:
 	uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
 	ProfileData<float> profile_target_;         /**< Target position, velocity, acceleration from the velocity profiler */
 	TrapezoidalProfile trap_profiler_;
-	TrapezoidalProfile *trap_profiler_ptr_ = nullptr;
 	Ring<TrajectoryPoint, 128> velocity_stream_;
-	bool go_  = false;
 };
 
 
