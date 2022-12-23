@@ -160,6 +160,7 @@ AS_INCLUDES =
 C_INCLUDES =  \
 -I. \
 -IInc \
+-Irexjson \
 -IDrivers/STM32F7xx_HAL_Driver/Inc \
 -IDrivers/STM32F7xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F7xx/Include \
@@ -192,8 +193,8 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = STM32F745VGTx_FLASH.ld
 
 # libraries
-LIBS = -lc -lm -lnosys -larm_cortexM7lfdp_math
-LIBDIR = -LDrivers/CMSIS/Lib/GCC
+LIBS = -lc -lm -lnosys -larm_cortexM7lfdp_math -lrexjson++
+LIBDIR = -LDrivers/CMSIS/Lib/GCC -Lrexjson/build/arm/bin
 LDFLAGS = $(MCU) -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
