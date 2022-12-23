@@ -44,7 +44,7 @@ C_INCLUDES = -I../lib/rexjson \
 	
 CFLAGS = $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall
 
-LDFLAGS = -lm -lrt -pthread -ldl -lboost_system -lboost_filesystem -lboost_program_options -lboost_thread
+LDFLAGS = -lm -pthread
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
