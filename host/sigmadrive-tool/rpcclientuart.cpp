@@ -42,7 +42,7 @@ rpc_client_uart::rpc_client_uart(const std::string& filename, speed_t speed, siz
 {
 	struct termios tio;
 
-	fd_ = ::open(filename.c_str(), O_RDWR);
+	fd_ = ::open(filename.c_str(), O_RDWR | O_NOCTTY);
 	if (fd_ < 0)
 		throw std::runtime_error(
 				std::string("Failed to open file: " + filename));
@@ -62,7 +62,7 @@ rpc_client_uart::rpc_client_uart(const std::string& filename, speed_t speed, siz
 	tio.c_cflag &= ~CRTSCTS;
 	tio.c_cflag |= (CS8);
 	tio.c_cc[VMIN] = 1;
-	tio.c_cc[VTIME] = 0;
+	tio.c_cc[VTIME] = 20;
 	cfsetospeed(&tio, speed);
 	cfsetispeed(&tio, speed);
 	tcsetattr(fd_, TCSANOW, &tio);
@@ -151,9 +151,14 @@ void rpc_client_uart::request(const std::string& req)
 	ssize_t ret = 0;
 
 	while (size) {
-		ret = write(fd_, (void*)bufptr, size);
-		if (ret < 0)
-			throw std::runtime_error("rpc_client_uart::write failed");
+		ret = ::write(fd_, (void*)bufptr, 1);
+		if (ret < 0) {
+			char errstr[256];
+			memset(errstr, 0, sizeof(errstr));
+			strerror_r(errno, errstr, sizeof(errstr) - 1);
+			throw std::runtime_error(std::string(errstr) + ", rpc_client_uart::write failed");
+
+		}
 		size -= ret;
 		bufptr += ret;
 	}
@@ -183,7 +188,7 @@ rexjson::value rpc_client_uart::call(const std::string& method, const rexjson::a
 		fprintf(stderr, "rpc_client_uart::call exception: %s, CONTENT: \n%s", e.what(), content.c_str());
 		throw;
 	}
-	if (rpc_response.get_obj()["error"].type() == rexjson::obj_type)
+	if (rpc_response.get_obj()["error"].get_type() == rexjson::obj_type)
 		throw std::runtime_error(rpc_response.get_obj()["error"].get_obj()["message"].get_str());
 	return rpc_response.get_obj()["result"];
 }

@@ -24,8 +24,8 @@
 #include <string>
 #include <memory.h>
 
-#include "../lib/cmdargs/cmdargs.h"
-#include "rexjson++.h"
+#include "cmdargs/cmdargs.h"
+#include "rexjson/rexjson++.h"
 
 class client_app
 {

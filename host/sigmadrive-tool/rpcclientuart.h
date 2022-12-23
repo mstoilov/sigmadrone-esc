@@ -23,7 +23,7 @@
 #define _RPCCLIENTUART_H_
 
 #include <termios.h>
-#include "rexjson++.h"
+#include "rexjson/rexjson++.h"
 
 class rpc_client_uart {
 public:

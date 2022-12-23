@@ -1,14 +1,14 @@
 #include <iostream>
 
 #include "rpcclientuart.h"
-#include "../lib/cmdargs/cmdargs.h"
-#include "rexjson++.h"
+#include "cmdargs/cmdargs.h"
+#include "rexjson/rexjson++.h"
 
 
 static cmd_arg_spec g_argspec[] = {
 		{"help",			"h",	"Display this help", CMD_ARG_BOOL},
 		{"dev",				"d",	"Uart Device", CMD_ARG_STRING},
-		{"id",				"i",	"Uart Device", CMD_ARG_STRING},
+		{"id",				"i",	"Request id", CMD_ARG_STRING},
 };
 
 std::string create_rpc_request(const std::string& id, const std::vector<std::string>& params)

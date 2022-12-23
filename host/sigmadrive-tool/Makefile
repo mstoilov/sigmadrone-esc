@@ -38,13 +38,11 @@ BUILD_DIR = bin
 
 C_DEFS =
 
-C_INCLUDES = -I../lib/rexjson \
-	-I../lib/commandline \
-
+C_INCLUDES = -Irexjson
 	
 CFLAGS = $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall
 
-LDFLAGS = -lm -lrt -pthread -ldl -lboost_system -lboost_filesystem -lboost_program_options -lboost_thread
+LDFLAGS = -lm -pthread -lrexjson++ -lcmdargs -Lrexjson/build/unix/bin -Lcmdargs/build/unix/bin
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -76,10 +74,10 @@ $(BUILD_DIR)/$(TARGET): $(OBJECTS) Makefile | $(BUILD_DIR)
 	$(CPP) -std=gnu++14 $(OBJECTS) $(LDFLAGS) -o $@
 
 $(BUILD_DIR)/%.o: %.cpp Makefile | $(BUILD_DIR)
-	$(CPP) -std=gnu++14 -c $(CFLAGS) -fexceptions -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cpp=.lst)) $< -o $@
+	$(CPP) -std=gnu++14 -c $(CFLAGS) -fexceptions $< -o $@
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 
 $(BUILD_DIR):
