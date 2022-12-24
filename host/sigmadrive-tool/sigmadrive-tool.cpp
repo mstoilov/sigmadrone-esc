@@ -1,5 +1,10 @@
 /*
 * Examples:
+*
+* MacOS:
+* # ./bin/sigmadrive-tool -d /dev/cu.usbserial-A5026YP3 help
+*
+* Linux:
 * ./bin/sigmadrive-tool help
 * ./bin/sigmadrive-tool help get
 * ./bin/sigmadrive-tool -r help get
