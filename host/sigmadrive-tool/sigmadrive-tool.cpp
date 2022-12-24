@@ -1,3 +1,15 @@
+/*
+* Examples:
+* ./bin/sigmadrive-tool help
+* ./bin/sigmadrive-tool help get
+* ./bin/sigmadrive-tool -r help get
+*
+* # ./bin/sigmadrive-tool -r get axis1.drive.Rencest
+* {"id":"noid","jsonrpc":"1.0","method":"get","params":["axis1.drive.Rencest"]}
+* {"id":"noid","result":19997925}
+*/
+
+
 #include <iostream>
 
 #include "rpcclientuart.h"
@@ -9,6 +21,8 @@ static cmd_arg_spec g_argspec[] = {
 		{"help",			"h",	"Display this help", CMD_ARG_BOOL},
 		{"dev",				"d",	"Uart Device", CMD_ARG_STRING},
 		{"id",				"i",	"Request id", CMD_ARG_STRING},
+		{"response",		"r",	"Display the RPC response, not just the result", CMD_ARG_BOOL},
+
 };
 
 std::string create_rpc_request(const std::string& id, const std::vector<std::string>& params)
@@ -41,20 +55,6 @@ std::string create_rpc_request(const std::string& id, const std::vector<std::str
 	return rexjson::write(rpc_request);
 }
 
-std::vector<std::string> parse_command_line(int argc, const char *argv[])
-{
-	std::vector<std::string> ret;
-
-	for (int i = 1; i < argc; i++) {
-		std::string arg(argv[i]);
-		if (arg[0] != '-') {
-			ret.push_back(arg);
-		}
-	}
-	return ret;
-}
-
-
 int main(int argc, const char *argv[])
 {
 	cmd_args args;
@@ -67,12 +67,16 @@ int main(int argc, const char *argv[])
 			std::cout << args.get_help_message() << std::endl;
 		} else {
 			rpc_client_uart uart(args.get_value("dev", "/dev/ttyUSB1"));
-			std::string res;
-			std::string req = create_rpc_request(args.get_value("id", "noid"), parse_command_line(argc, argv));
+			std::string strres;
+			std::string req = create_rpc_request(args.get_value("id", "noid"), args.get_commands());
 			std::cout << req << std::endl;
-			res = uart.json_rpc_request(req);
-			std::cout << res << std::endl;
-
+			strres = uart.json_rpc_request(req);
+			if (!args.get_value("response").empty()) {
+				std::cout << strres << std::endl;
+			} else {
+				rexjson::value res = rexjson::read(strres);
+				std::cout << res["result"] << std::endl;
+			}
 		}
 	} catch (std::exception& e) {
 		std::cout << "Error: " << e.what() << std::endl;

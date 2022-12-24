@@ -52,17 +52,6 @@ endif
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
-
-OBJECTS = $(addprefix $(BUILD_DIR)/, $(patsubst %.c,%.o,$(notdir $(wildcard ../lib/commandline/*.c))))
-vpath %.c ../lib/commandline/
-
-OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp,%.o,$(notdir $(wildcard ../lib/rexjson/*.cpp))))
-vpath %.cpp ../lib/rexjson/
-
-OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp,%.o,$(notdir $(wildcard ../lib/cmdargs/*.cpp))))
-vpath %.cpp ../lib/cmdargs/
-
-
 OBJECTS += $(addprefix $(BUILD_DIR)/, $(patsubst %.cpp,%.o,$(notdir $(wildcard ./*.cpp))))
 vpath %.cpp ./
 

@@ -16,7 +16,6 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  *  Martin Stoilov <martin@sigmadrone.org>
- *  Svetoslav Vassilev <svassilev@sigmadrone.org>
  */
 
 #ifndef _RPCCLIENTUART_H_
