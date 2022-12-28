@@ -8,6 +8,7 @@
 #ifndef _MOTORCTRL_FOC_H_
 #define _MOTORCTRL_FOC_H_
 
+#include <vector>
 #include "motordrive.h"
 #include "pidcontroller.h"
 #include "picontroller.h"
@@ -24,7 +25,7 @@ protected:
 		float pid_current_ki_ = 1500;  /* 3120*/ /**< Current PID regulator integral gain */
 		float pid_current_maxout_ = 45;         /**< Current PID regulator output limit */
 
-		float pid_w_kp_ = 0.15;                 /**< Velocity PID regulator proportional gain */
+		float pid_w_kp_ = 0.25;                 /**< Velocity PID regulator proportional gain */
 		float pid_w_ki_ = 120;                  /**< Velocity PID regulator integral gain */
 		float pid_w_maxout_ = 15.0;             /**< Velocity PID regulator output limit */
 
@@ -69,6 +70,10 @@ protected:
 	void SignalDumpSpin();
 	static void RunDebugLoopWrapper(void *ctx);
 
+	rexjson::array GetCapturedPosition();
+	rexjson::array GetCapturedVelocity();
+	rexjson::array GetCapturedVelocitySpec();
+	rexjson::array GetCapturedCurrent();
 
 protected:
 	enum Signals {
@@ -77,6 +82,14 @@ protected:
 		SIGNAL_DEBUG_DUMP_VELOCITY = 1u << 3,   /**< Signal the debug display thread to run and dump closed loop velocity mode info */
 		SIGNAL_DEBUG_DUMP_POSITION = 1u << 4,   /**< Signal the debug display thread to run and dump closed loop position mode info */
 		SIGNAL_DEBUG_DUMP_TRAJECTORY = 1u << 5, /**< Signal the debug display thread to run and dump closed loop position mode trajectory info */
+	};
+
+	enum CaptureMode {
+		CAPTURE_NONE = 0,
+		CAPTURE_POSITION = 1,
+		CAPTURE_VELOCITY = 2,
+		CAPTURE_VELOCITYSPEC = 4,
+		CAPTURE_CURRENT = 8,
 	};
 
 	osThreadId_t debug_thread_;                 /**< Debug display info thread */
@@ -101,15 +114,22 @@ protected:
 	float Werr_ = 0;                            /**< Velocity error. Used as input for the velocity PID regulator */
 	float Perr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */
 	uint64_t target_ = 0;                       /**< Target position used in closed loop position mode */
-	float velocity_ = 1500000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
+	float velocity_ = 6000000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
 	float acceleration_ = 3000000;              /**< Movement acceleration [counts/s^2] */
-	float deceleration_ = 2000000;              /**< Movement deceleration [counts/s^2] */
+	float deceleration_ = 3000000;              /**< Movement deceleration [counts/s^2] */
 	float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
 	float spin_voltage_ = 3.0f;                 /**< Voltage used for the spin mode */
 	uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
 	ProfileData<float> profile_target_;         /**< Target position, velocity, acceleration from the velocity profiler */
 	TrapezoidalProfile trap_profiler_;
 	Ring<TrajectoryPoint, 128> velocity_stream_;
+	std::vector<float> capture_position_;
+	std::vector<float> capture_velocity_;
+	std::vector<float> capture_current_;
+	std::vector<float> capture_velocityspec_;
+	size_t capture_interval_;
+	size_t capture_mode_;
+	size_t capture_capacity_;
 };
 
 

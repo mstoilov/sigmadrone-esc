@@ -15,7 +15,14 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
 	, pid_Iq_(config_.pid_current_kp_, config_.pid_current_ki_, config_.pid_current_maxout_)
 	, pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, 1, config_.pid_w_maxout_, 0)
 	, pid_P_(config_.pid_p_kp_, config_.pid_p_maxout_)
+	, capture_interval_(100)
+	, capture_mode_(CAPTURE_NONE)
+	, capture_capacity_(1000)
 {
+	capture_position_.reserve(capture_capacity_);
+	capture_velocity_.reserve(capture_capacity_);
+	capture_velocityspec_.reserve(capture_capacity_);
+	capture_current_.reserve(capture_capacity_);
 	StartDebugThread();
 	RegisterRpcMethods();
 }
@@ -33,6 +40,10 @@ void MotorCtrlFOC::RegisterRpcMethods()
 	rpc_server.add(prefix, "velocity_rps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocityRPS, "void MotorCtrlFOC::VelocityRPS(float revpersec)"));
 	rpc_server.add(prefix, "mvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveToPosition, "void MotorCtrlFOC::MoveToPosition(uint64_t position)"));
 	rpc_server.add(prefix, "mvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelative, "void MotorCtrlFOC::MoveRelative(int64_t relative)"));
+	rpc_server.add(prefix, "get_captured_position", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedPosition, "resjson::array MotorCtrlFOC::GetCapturePosition()"));
+	rpc_server.add(prefix, "get_captured_velocity", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedVelocity, "resjson::array MotorCtrlFOC::GetCaptureVelocity()"));
+	rpc_server.add(prefix, "get_captured_velocityspec", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedVelocitySpec, "resjson::array MotorCtrlFOC::GetCaptureVelocitySpec()"));
+	rpc_server.add(prefix, "get_captured_current", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedCurrent, "resjson::array MotorCtrlFOC::GetCaptureCurrent()"));
 
 	rpc_server.add(prefix, "push", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPoint, "void PushStreamPoint(uint32_t time, float velocity, float position)"));
 	rpc_server.add(prefix, "go", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Go, "void Go()"));
@@ -50,6 +61,21 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
 		{"deceleration", &deceleration_},
 		{"target", &target_},
 		{"spin_voltage", &spin_voltage_},
+		{"capture_interval", &capture_interval_},
+		{"capture_mode", &capture_mode_},
+		{"capture_capacity", rexjson::property(
+			&capture_capacity_, 
+			rexjson::property_access::readwrite, 
+			[](const rexjson::value& v){},
+			[&](void*) {
+				__disable_irq(); 
+				capture_position_.reserve(capture_capacity_);
+				capture_velocity_.reserve(capture_capacity_);
+				capture_velocityspec_.reserve(capture_capacity_);
+				capture_current_.reserve(capture_capacity_);
+				capture_velocityspec_.reserve(capture_capacity_);
+				__enable_irq(); }
+		)},
 	});
 	return props;
 }
@@ -269,6 +295,37 @@ void MotorCtrlFOC::SignalDumpSpin()
 		osThreadFlagsSet(debug_thread_, SIGNAL_DEBUG_DUMP_SPIN);
 }
 
+rexjson::array MotorCtrlFOC::GetCapturedPosition() 
+{
+	rexjson::array ret;
+	for (const auto& i : capture_position_)
+		ret.push_back(i);
+	return ret;
+}
+
+rexjson::array MotorCtrlFOC::GetCapturedVelocity() 
+{
+	rexjson::array ret;
+	for (const auto& i : capture_velocity_)
+		ret.push_back(i);
+	return ret;
+}
+
+rexjson::array MotorCtrlFOC::GetCapturedVelocitySpec() 
+{
+	rexjson::array ret;
+	for (const auto& i : capture_velocityspec_)
+		ret.push_back(i);
+	return ret;
+}
+
+rexjson::array MotorCtrlFOC::GetCapturedCurrent() 
+{
+	rexjson::array ret;
+	for (const auto& i : capture_current_)
+		ret.push_back(i);
+	return ret;
+}
 
 void MotorCtrlFOC::StartDebugThread()
 {
@@ -558,11 +615,12 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
 			std::complex<float> R = drive_->GetRotorElecRotation();
 			uint64_t enc_position = drive_->GetRotorPosition();
+			size_t update_counter = drive_->GetUpdateCounter();
 
 again:
 			if (!prof_ptr && !velocity_stream_.empty()) {
 				prof_ptr = velocity_stream_.get_read_ptr();
-				T1 = drive_->GetUpdateCounter();
+				T1 = update_counter;
 				T2 = T1 + prof_ptr->time_;
 				V1 = V2;
 				V2 = prof_ptr->velocity_;
@@ -591,17 +649,39 @@ again:
 				*  from S2
 				*  S = S2 - (V + V2) * (T2 - T) / 2
 				*/
-				uint32_t T = (drive_->GetUpdateCounter() - T1);
+				uint32_t T = (update_counter - T1);
 				V = V1  + A * T;
-				S = S2 - (V + V2) * (T2 - drive_->GetUpdateCounter()) / 2;
+				S = S2 - (V + V2) * (T2 - update_counter) / 2;
 				Perr_ = drive_->GetRotorPositionError(enc_position, S) * timeslice;
 				pid_P_.Input(Perr_, timeslice);
 				Werr_ = pid_P_.Output() + V - drive_->GetRotorVelocityPTS();
 				pid_W_.Input(Werr_, timeslice);
-				if (drive_->GetUpdateCounter() == T2) {
+				if (update_counter == T2) {
 					velocity_stream_.pop();
 					prof_ptr = nullptr;
 				}
+
+				if (capture_mode_ & CAPTURE_POSITION && 
+					update_counter % capture_interval_ == 0 && 
+					capture_position_.size() < capture_capacity_) {
+						capture_position_.push_back(enc_position);
+				}
+				if (capture_mode_ & CAPTURE_VELOCITY && 
+					update_counter % capture_interval_ == 0 && 
+					capture_velocity_.size() < capture_capacity_) {
+						capture_velocity_.push_back(drive_->GetRotorVelocityPTS());
+				}
+				if (capture_mode_ & CAPTURE_VELOCITYSPEC && 
+					update_counter % capture_interval_ == 0 && 
+					capture_velocityspec_.size() < capture_capacity_) {
+						capture_velocityspec_.push_back(V);
+				}
+				if (capture_mode_ & CAPTURE_CURRENT && 
+					update_counter % capture_interval_ == 0 && 
+					capture_current_.size() < capture_capacity_) {
+						capture_current_.push_back(lpf_Iq_);
+				}
+
 			} else {
 				Perr_ = drive_->GetRotorPositionError(enc_position, S2) * timeslice;
 				pid_P_.Input(Perr_, timeslice);
@@ -691,6 +771,10 @@ uint64_t MotorCtrlFOC::MoveToPosition(uint64_t target)
 	TrajectoryPoint pt0, pt1, pt2, pt3;
 	trap_profiler_.CalcTrapezoidPoints(target_, oldpos, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency(), pt0, pt1, pt2, pt3);
 	__disable_irq();
+	capture_position_.resize(0);
+	capture_velocity_.resize(0);
+	capture_velocityspec_.resize(0);
+	capture_current_.resize(0);
 	velocity_stream_.push(pt0);
 	velocity_stream_.push(pt1);
 	velocity_stream_.push(pt2);
@@ -716,6 +800,10 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
 	TrajectoryPoint pt0, pt1, pt2, pt3;
 	trap_profiler_.CalcTrapezoidPoints(target_, oldpos, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency(), pt0, pt1, pt2, pt3);
 	__disable_irq();
+	capture_position_.resize(0);
+	capture_velocity_.resize(0);
+	capture_velocityspec_.resize(0);
+	capture_current_.resize(0);
 	velocity_stream_.push(pt0);
 	velocity_stream_.push(pt1);
 	velocity_stream_.push(pt2);

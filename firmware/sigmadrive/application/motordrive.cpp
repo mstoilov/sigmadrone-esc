@@ -74,10 +74,12 @@ void MotorDrive::RegisterRpcMethods(const std::string& prefix)
 	rpc_server.add(prefix, "add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder)"));
 	rpc_server.add(prefix, "alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAlphaPoleSearch, "void RunTaskAlphaPoleSearch()"));
 	rpc_server.add(prefix, "rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
+	rpc_server.add(prefix, "velocitypts", rexjson::make_rpc_wrapper(this, &MotorDrive::GetRotorVelocityPTS, "void GetRotorVelocityPTS()"));
 	rpc_server.add(prefix, "run_encoder_debug", rexjson::make_rpc_wrapper(this, &MotorDrive::RunEncoderDisplayDebugInfo, "void RunEncoderDisplayDebugInfo()"));
 	rpc_server.add(prefix, "drv_get_fault1", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
 	rpc_server.add(prefix, "drv_get_fault2", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
 	rpc_server.add(prefix, "drv_clear_fault", rexjson::make_rpc_wrapper(drv_, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
+
 }
 
 rexjson::property MotorDrive::GetPropertyMap()
@@ -91,7 +93,7 @@ rexjson::property MotorDrive::GetPropertyMap()
 		{"tim8_tim1_offset", rexjson::property(&tim8_tim1_offset_, rexjson::property_access::readonly)},
 		{"TIM1_CNT", rexjson::property(&TIM1->CNT, rexjson::property_access::readonly)},
 		{"TIM8_CNT", rexjson::property(&TIM8->CNT, rexjson::property_access::readonly)},
-		{"time_slice_", rexjson::property(&time_slice_, rexjson::property_access::readonly)},
+		{"time_slice", rexjson::property(&time_slice_, rexjson::property_access::readonly)},
 		{"Vbus", rexjson::property(&lpf_vbus_.out_, rexjson::property_access::readonly)},
 		{"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
 		{"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
