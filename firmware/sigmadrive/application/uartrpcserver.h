@@ -32,6 +32,9 @@ public:
 	virtual ~UartRpcServer();
 
 protected:
+	rexjson::value rpc_get_propertyex(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+	rexjson::value rpc_set_propertyex(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
+
 	rexjson::value rpc_get_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
 	rexjson::value rpc_set_property(rexjson::array& params, rexjson::rpc_exec_mode mode = rexjson::execute);
 

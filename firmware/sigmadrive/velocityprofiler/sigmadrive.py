@@ -18,7 +18,7 @@ def rpc_call(method, params, dev = '/dev/cu.usbserial-A5026YP3'):
         parity=serial.PARITY_NONE,
         stopbits=serial.STOPBITS_ONE,
         bytesize=serial.EIGHTBITS,
-        timeout=1
+        timeout=30
     )
 
     ser.isOpen()
@@ -26,11 +26,9 @@ def rpc_call(method, params, dev = '/dev/cu.usbserial-A5026YP3'):
     ser.flush()
     responsestr = ser.readline().decode("utf-8")
     response = json.loads(responsestr)
+    if 'error' in response:
+        raise Exception("RPC Error: " + response['error']['message'])
     return response
-
-# print(rpc_call('help', ['getcfg'])['result'])
-# exit()
-
 
 class drive:
     def __init__(self, name, device = '/dev/cu.usbserial-A5026YP3'):
@@ -522,6 +520,8 @@ class axis:
     def display(self, v):
         self.setcfg("display", v)
 
+    def calibration(self, reset_rotor):
+        return self.call("calibration", [reset_rotor])
     def velocity_rps(self):
         return self.call("velocity_rps", [])
     def stop(self):
@@ -546,6 +546,8 @@ class axis:
         return self.call("get_captured_position", [])
     def get_captured_current(self):
         return self.call("get_captured_current", [])
+    def get_sequence(self, count):
+        return self.call("get_sequence", [count])
     def mvp(self, pos):
         return self.call("mvp", [pos])
     def mvr(self, pos):

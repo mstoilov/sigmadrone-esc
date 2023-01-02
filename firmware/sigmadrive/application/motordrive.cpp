@@ -85,21 +85,21 @@ void MotorDrive::RegisterRpcMethods(const std::string& prefix)
 rexjson::property MotorDrive::GetPropertyMap()
 {
 	rexjson::property props= rexjson::property_map({
-		{"Rencest", &Rencest_},
-		{"update_hz", rexjson::property(&update_hz_, rexjson::property_access::readonly)},
-		{"tim1_cnt", rexjson::property(&tim1_cnt_, rexjson::property_access::readonly)},
-		{"tim8_cnt", rexjson::property(&tim8_cnt_, rexjson::property_access::readonly)},
-		{"tim1_tim8_offset", rexjson::property(&tim1_tim8_offset_, rexjson::property_access::readonly)},
-		{"tim8_tim1_offset", rexjson::property(&tim8_tim1_offset_, rexjson::property_access::readonly)},
-		{"TIM1_CNT", rexjson::property(&TIM1->CNT, rexjson::property_access::readonly)},
-		{"TIM8_CNT", rexjson::property(&TIM8->CNT, rexjson::property_access::readonly)},
-		{"time_slice", rexjson::property(&time_slice_, rexjson::property_access::readonly)},
-		{"Vbus", rexjson::property(&lpf_vbus_.out_, rexjson::property_access::readonly)},
-		{"error", rexjson::property(&error_info_.error_, rexjson::property_access::readonly)},
-		{"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_access::readonly)},
-		{"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_access::readonly)},
-		{"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_access::readonly)},
-		{"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_access::readonly)},
+		{"Rencest", {&Rencest_, rexjson::property_get<decltype(Rencest_)>}},
+		{"update_hz", rexjson::property(&update_hz_, rexjson::property_get<decltype(update_hz_)>)},
+		{"tim1_cnt", rexjson::property(&tim1_cnt_, rexjson::property_get<decltype(tim1_cnt_)>)},
+		{"tim8_cnt", rexjson::property(&tim8_cnt_, rexjson::property_get<decltype(tim8_cnt_)>)},
+		{"tim1_tim8_offset", rexjson::property(&tim1_tim8_offset_, rexjson::property_get<decltype(tim1_tim8_offset_)>)},
+		{"tim8_tim1_offset", rexjson::property(&tim8_tim1_offset_, rexjson::property_get<decltype(tim8_tim1_offset_)>)},
+		{"TIM1_CNT", rexjson::property((void*)&TIM1->CNT, rexjson::property_get<decltype(TIM1->CNT)>)},
+		{"TIM8_CNT", rexjson::property((void*)&TIM8->CNT, rexjson::property_get<decltype(TIM8->CNT)>)},
+		{"time_slice", rexjson::property(&time_slice_, rexjson::property_get<decltype(time_slice_)>)},
+		{"Vbus", rexjson::property(&lpf_vbus_.out_, rexjson::property_get<decltype(lpf_vbus_.out_)>)},
+		{"error", rexjson::property(&error_info_.error_, rexjson::property_get<decltype(error_info_.error_)>)},
+		{"error_msg", rexjson::property(&error_info_.error_msg_, rexjson::property_get<decltype(error_info_.error_msg_)>)},
+		{"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_get<decltype(lpf_bias_a.out_)>)},
+		{"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_get<decltype(lpf_bias_b.out_)>)},
+		{"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_get<decltype(lpf_bias_c.out_)>)},
 	});
 	return props;
 }
@@ -110,66 +110,89 @@ rexjson::property MotorDrive::GetConfigPropertyMap()
 	rexjson::property props= rexjson::property_map({
 		{"bias_alpha", rexjson::property(
 			&config_.bias_alpha_,
-			rexjson::property_access::readwrite,
-			[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-			[&](void*)->void {
+			rexjson::property_get<decltype(config_.bias_alpha_)>,
+			[&](const rexjson::value& v, void* ctx) {
+				float t = v.get_real(); 
+				if (t < 0 || t > 1.0) 
+					throw std::range_error("Invalid value");
+				rexjson::property_set<decltype(config_.bias_alpha_)>(v, ctx);
 				lpf_bias_a.SetAlpha(config_.bias_alpha_);
 				lpf_bias_b.SetAlpha(config_.bias_alpha_);
 				lpf_bias_c.SetAlpha(config_.bias_alpha_);
 			})},
 		{"vbus_alpha", rexjson::property(
 				&config_.vbus_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.vbus_alpha_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					float t = v.get_real(); 
+					if (t < 0 || t > 1.0) 
+						throw std::range_error("Invalid value");
+					rexjson::property_set<decltype(config_.vbus_alpha_)>(v, ctx);
 					lpf_vbus_.SetAlpha(config_.vbus_alpha_);
 				})},
+
 		{"wenc_alpha", rexjson::property(
 				&config_.wenc_alpha_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.vbus_alpha_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					float t = v.get_real();
+					if (t < 0 || t > 1.0) 
+						throw std::range_error("Invalid value");
+					rexjson::property_set<decltype(config_.vbus_alpha_)>(v, ctx);
 					lpf_Wenc_.SetAlpha(config_.wenc_alpha_);
 				})},
 
 		{"enc_skip_updates", rexjson::property(
 				&config_.enc_skip_updates_,
-				rexjson::property_access::readwrite,
-				[&](const rexjson::value& v){ pwm_->Stop(); },
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.enc_skip_updates_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					pwm_->Stop();
 					update_counter_ = 0;
+					rexjson::property_set<decltype(config_.enc_skip_updates_)>(v, ctx);
 					HAL_Delay(2);
 					pwm_->Start();
 				})},
 		{"max_modulation_duty", rexjson::property(
 				&config_.max_modulation_duty_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){float t = v.get_real(); if (t < 0 || t > 1.0) throw std::range_error("Invalid value");}
-		)},
+				rexjson::property_get<decltype(config_.max_modulation_duty_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					float t = v.get_real(); 
+					if (t < 0 || t > 1.0) 
+						throw std::range_error("Invalid value");
+					rexjson::property_set<decltype(config_.max_modulation_duty_)>(v, ctx);
+				})},
 		{"csa_gain", rexjson::property(
 				&config_.csa_gain_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){int t = v.get_int(); if (t != 5 && t != 10 && t != 20 && t != 40) throw std::range_error("Invalid value");},
-				[&](void*){drv_->SetCSAGainValue(config_.csa_gain_);}
-		)},
+				rexjson::property_get<decltype(config_.csa_gain_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					int t = v.get_int(); 
+					if (t != 5 && t != 10 && t != 20 && t != 40) 
+						throw std::range_error("Invalid value");
+					rexjson::property_set<decltype(config_.csa_gain_)>(v, ctx);
+					drv_->SetCSAGainValue(config_.csa_gain_);
+				})},
 		{"run_simple_tasks", rexjson::property(
 				&run_simple_tasks_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*){ if (run_simple_tasks_) RunSimpleTasks(); else sched_.Abort(); }
-		)},
-		{"trip_i", &config_.trip_i_},
-		{"trip_v", &config_.trip_v_},
-		{"calib_max_i", &config_.calib_max_i_},
-		{"calib_v", &config_.calib_v_},
-		{"resistance", &config_.resistance_},
-		{"inductance", &config_.inductance_},
-		{"pole_pairs", &config_.pole_pairs},
-		{"encoder_dir", &config_.encoder_dir_},
-		{"svm_saddle", &config_.svm_saddle_},
-		{"reset_voltage", &config_.reset_voltage_},
-		{"reset_hz", &config_.reset_hz_},
-		{"display_div", &config_.display_div_},
+				rexjson::property_get<decltype(run_simple_tasks_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					rexjson::property_set<decltype(run_simple_tasks_)>(v, ctx);
+					if (run_simple_tasks_) 
+						RunSimpleTasks(); 
+					else 
+						sched_.Abort();
+				})},
+		{"trip_i", {&config_.trip_i_, rexjson::property_get<decltype(config_.trip_i_)>, rexjson::property_set<decltype(config_.trip_i_)>}},
+		{"trip_v", {&config_.trip_v_, rexjson::property_get<decltype(config_.trip_v_)>, rexjson::property_set<decltype(config_.trip_v_)>}},
+		{"calib_max_i", {&config_.calib_max_i_, rexjson::property_get<decltype(config_.calib_max_i_)>, rexjson::property_set<decltype(config_.calib_max_i_)>}},
+		{"calib_v", {&config_.calib_v_, rexjson::property_get<decltype(config_.calib_v_)>, rexjson::property_set<decltype(config_.calib_v_)>}},
+		{"resistance", {&config_.resistance_, rexjson::property_get<decltype(config_.resistance_)>, rexjson::property_set<decltype(config_.resistance_)>}},
+		{"inductance", {&config_.inductance_, rexjson::property_get<decltype(config_.inductance_)>, rexjson::property_set<decltype(config_.inductance_)>}},
+		{"pole_pairs", {&config_.pole_pairs, rexjson::property_get<decltype(config_.pole_pairs)>, rexjson::property_set<decltype(config_.pole_pairs)>}},
+		{"encoder_dir", {&config_.encoder_dir_, rexjson::property_get<decltype(config_.encoder_dir_)>, rexjson::property_set<decltype(config_.encoder_dir_)>}},
+		{"svm_saddle", {&config_.svm_saddle_, rexjson::property_get<decltype(config_.svm_saddle_)>, rexjson::property_set<decltype(config_.svm_saddle_)>}},
+		{"reset_voltage", {&config_.reset_voltage_, rexjson::property_get<decltype(config_.reset_voltage_)>, rexjson::property_set<decltype(config_.reset_voltage_)>}},
+		{"reset_hz", {&config_.reset_hz_, rexjson::property_get<decltype(config_.reset_hz_)>, rexjson::property_set<decltype(config_.reset_hz_)>}},
+		{"display_div", {&config_.display_div_, rexjson::property_get<decltype(config_.display_div_)>, rexjson::property_set<decltype(config_.display_div_)>}},
 	});
 	return props;
 }

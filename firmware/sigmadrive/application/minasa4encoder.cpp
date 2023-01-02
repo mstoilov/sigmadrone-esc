@@ -45,7 +45,7 @@ MinasA4Encoder::~MinasA4Encoder()
 rexjson::property MinasA4Encoder::GetPropertyMap()
 {
 	rexjson::property props = rexjson::property_map({
-		{"crc_errors", rexjson::property(&crc_error_count_, rexjson::property_access::readonly)},
+		{"crc_errors", rexjson::property(&crc_error_count_, rexjson::property_get<decltype(crc_error_count_)>, rexjson::property_set<decltype(crc_error_count_)>)},
 	});
 	return props;
 }

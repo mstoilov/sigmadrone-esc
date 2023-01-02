@@ -40,6 +40,7 @@ void MotorCtrlFOC::RegisterRpcMethods()
 	rpc_server.add(prefix, "velocity_rps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocityRPS, "void MotorCtrlFOC::VelocityRPS(float revpersec)"));
 	rpc_server.add(prefix, "mvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveToPosition, "void MotorCtrlFOC::MoveToPosition(uint64_t position)"));
 	rpc_server.add(prefix, "mvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelative, "void MotorCtrlFOC::MoveRelative(int64_t relative)"));
+	rpc_server.add(prefix, "get_sequence", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetSequence, "resjson::array MotorCtrlFOC::GetSequence(size_t count)"));
 	rpc_server.add(prefix, "get_captured_position", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedPosition, "resjson::array MotorCtrlFOC::GetCapturePosition()"));
 	rpc_server.add(prefix, "get_captured_velocity", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedVelocity, "resjson::array MotorCtrlFOC::GetCaptureVelocity()"));
 	rpc_server.add(prefix, "get_captured_velocityspec", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedVelocitySpec, "resjson::array MotorCtrlFOC::GetCaptureVelocitySpec()"));
@@ -55,26 +56,27 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
 {
 	rexjson::property props = rexjson::property_map({
 		{"drive", rexjson::property({drive_->GetPropertyMap()})},
-		{"q_current", &q_current_},
-		{"velocity", &velocity_},
-		{"acceleration", &acceleration_},
-		{"deceleration", &deceleration_},
-		{"target", &target_},
-		{"spin_voltage", &spin_voltage_},
-		{"capture_interval", &capture_interval_},
-		{"capture_mode", &capture_mode_},
+		{"q_current", {&q_current_, rexjson::property_get<decltype(q_current_)>, rexjson::property_set<decltype(q_current_)>}},
+		{"velocity", {&velocity_, rexjson::property_get<decltype(velocity_)>, rexjson::property_set<decltype(velocity_)>}},
+		{"acceleration", {&acceleration_, rexjson::property_get<decltype(acceleration_)>, rexjson::property_set<decltype(acceleration_)>}},
+		{"deceleration", {&deceleration_, rexjson::property_get<decltype(deceleration_)>, rexjson::property_set<decltype(deceleration_)>}},
+		{"target", {&target_, rexjson::property_get<decltype(target_)>, rexjson::property_set<decltype(target_)>}},
+		{"spin_voltage", {&spin_voltage_, rexjson::property_get<decltype(spin_voltage_)>, rexjson::property_set<decltype(spin_voltage_)>}},
+		{"capture_interval", {&capture_interval_, rexjson::property_get<decltype(capture_interval_)>, rexjson::property_set<decltype(capture_interval_)>}},
+		{"capture_mode", {&capture_mode_, rexjson::property_get<decltype(capture_mode_)>, rexjson::property_set<decltype(capture_mode_)>}},
 		{"capture_capacity", rexjson::property(
 			&capture_capacity_, 
-			rexjson::property_access::readwrite, 
-			[](const rexjson::value& v){},
-			[&](void*) {
-				__disable_irq(); 
+			rexjson::property_get<decltype(capture_capacity_)>,
+			[&](const rexjson::value& v, void* ctx) {
+				__disable_irq();
+				rexjson::property_set<decltype(capture_capacity_)>(v, ctx);
 				capture_position_.reserve(capture_capacity_);
 				capture_velocity_.reserve(capture_capacity_);
 				capture_velocityspec_.reserve(capture_capacity_);
 				capture_current_.reserve(capture_capacity_);
 				capture_velocityspec_.reserve(capture_capacity_);
-				__enable_irq(); }
+				__enable_irq(); 
+			}
 		)},
 	});
 	return props;
@@ -87,74 +89,73 @@ rexjson::property MotorCtrlFOC::GetConfigPropertyMap()
 		{"drive", rexjson::property({drive_->GetConfigPropertyMap()})},
 		{"pid_current_kp", rexjson::property(
 				&config_.pid_current_kp_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.pid_current_kp_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					rexjson::property_set<decltype(config_.pid_current_kp_)>(v, ctx);
 					pid_Iq_.SetGainP(config_.pid_current_kp_);
 					pid_Id_.SetGainP(config_.pid_current_kp_);
 				})},
 		{"pid_current_ki", rexjson::property(
 				&config_.pid_current_ki_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.pid_current_ki_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					rexjson::property_set<decltype(config_.pid_current_ki_)>(v, ctx);
 					pid_Iq_.SetGainI(config_.pid_current_ki_);
 					pid_Id_.SetGainI(config_.pid_current_ki_);
 				})},
 		{"pid_current_maxout", rexjson::property(
 				&config_.pid_current_maxout_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.pid_current_maxout_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					rexjson::property_set<decltype(config_.pid_current_maxout_)>(v, ctx);
 					pid_Iq_.SetMaxOutput(config_.pid_current_maxout_);
 					pid_Id_.SetMaxOutput(config_.pid_current_maxout_);
 				})},
 		{"w_bias", rexjson::property(
 				&config_.w_bias_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.w_bias_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					rexjson::property_set<decltype(config_.w_bias_)>(v, ctx);
 					pid_W_.SetBias(config_.w_bias_);
 				})},
 		{"pid_w_kp", rexjson::property(
 				&config_.pid_w_kp_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.pid_w_kp_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					rexjson::property_set<decltype(config_.pid_w_kp_)>(v, ctx);
 					pid_W_.SetGainP(config_.pid_w_kp_);
 				})},
 		{"pid_w_ki", rexjson::property(
 				&config_.pid_w_ki_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.pid_w_ki_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					rexjson::property_set<decltype(config_.pid_w_ki_)>(v, ctx);
 					pid_W_.SetGainI(config_.pid_w_ki_);
 				})},
 		{"pid_w_maxout", rexjson::property(
 				&config_.pid_w_maxout_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.pid_w_maxout_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					rexjson::property_set<decltype(config_.pid_w_maxout_)>(v, ctx);
 					pid_W_.SetMaxOutput(config_.pid_w_maxout_);
 				})},
-
 		{"pid_p_kp", rexjson::property(
 				&config_.pid_p_kp_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.pid_p_kp_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					rexjson::property_set<decltype(config_.pid_p_kp_)>(v, ctx);
 					pid_P_.SetGainP(config_.pid_p_kp_);
 				})},
 		{"pid_p_maxout", rexjson::property(
 				&config_.pid_p_maxout_,
-				rexjson::property_access::readwrite,
-				[](const rexjson::value& v){},
-				[&](void*)->void {
+				rexjson::property_get<decltype(config_.pid_p_maxout_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					rexjson::property_set<decltype(config_.pid_p_maxout_)>(v, ctx);
 					pid_P_.SetMaxOutput(config_.pid_p_maxout_);
 				})},
-		{"tau_ratio", &config_.tau_ratio_},
-		{"vab_advance_factor", &config_.vab_advance_factor_},
-		{"display", &config_.display_},
+		{"tau_ratio", {&config_.tau_ratio_, rexjson::property_get<decltype(config_.tau_ratio_)>, rexjson::property_set<decltype(config_.tau_ratio_)>}},
+		{"vab_advance_factor", {&config_.vab_advance_factor_, rexjson::property_get<decltype(config_.vab_advance_factor_)>, rexjson::property_set<decltype(config_.vab_advance_factor_)>}},
+		{"display", {&config_.display_, rexjson::property_get<decltype(config_.display_)>, rexjson::property_set<decltype(config_.display_)>}},
 	});
 	return props;
 }
@@ -293,6 +294,14 @@ void MotorCtrlFOC::SignalDumpSpin()
 {
 	if (debug_thread_)
 		osThreadFlagsSet(debug_thread_, SIGNAL_DEBUG_DUMP_SPIN);
+}
+
+rexjson::array MotorCtrlFOC::GetSequence(size_t count) 
+{
+	rexjson::array ret;
+	for (size_t i = 0; i < count; i++)
+		ret.push_back(i);
+	return ret;
 }
 
 rexjson::array MotorCtrlFOC::GetCapturedPosition() 

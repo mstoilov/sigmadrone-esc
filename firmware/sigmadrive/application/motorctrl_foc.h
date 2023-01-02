@@ -9,12 +9,14 @@
 #define _MOTORCTRL_FOC_H_
 
 #include <vector>
+#include "rexjson/rexjsonproperty.h"
 #include "motordrive.h"
 #include "pidcontroller.h"
 #include "picontroller.h"
 #include "pcontroller.h"
 #include "velocityprofiler/trapezoidal-profile.h"
 #include "ring.h"
+
 
 
 class MotorCtrlFOC
@@ -53,6 +55,7 @@ public:
 	uint64_t MoveRelative(int64_t position);
 	void RunCalibrationSequence(bool reset_rotor);
 	float VelocityRPS(float revpersec);
+
 	rexjson::property GetPropertyMap();
 	rexjson::property GetConfigPropertyMap();
 	void RegisterRpcMethods();
@@ -70,6 +73,7 @@ protected:
 	void SignalDumpSpin();
 	static void RunDebugLoopWrapper(void *ctx);
 
+	rexjson::array GetSequence(size_t count);
 	rexjson::array GetCapturedPosition();
 	rexjson::array GetCapturedVelocity();
 	rexjson::array GetCapturedVelocitySpec();
@@ -114,9 +118,9 @@ protected:
 	float Werr_ = 0;                            /**< Velocity error. Used as input for the velocity PID regulator */
 	float Perr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */
 	uint64_t target_ = 0;                       /**< Target position used in closed loop position mode */
-	float velocity_ = 6000000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
-	float acceleration_ = 3000000;              /**< Movement acceleration [counts/s^2] */
-	float deceleration_ = 3000000;              /**< Movement deceleration [counts/s^2] */
+	float velocity_ = 3000000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
+	float acceleration_ = 20000000;              /**< Movement acceleration [counts/s^2] */
+	float deceleration_ = 5000000;              /**< Movement deceleration [counts/s^2] */
 	float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
 	float spin_voltage_ = 3.0f;                 /**< Voltage used for the spin mode */
 	uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */

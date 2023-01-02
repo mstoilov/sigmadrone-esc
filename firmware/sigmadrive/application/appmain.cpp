@@ -76,7 +76,7 @@ HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
 
 rexjson::property g_props =
 		rexjson::property_map {
-			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_access::readonly)},
+			{"clock_hz", rexjson::property(&SystemCoreClock, rexjson::property_get<decltype(SystemCoreClock)>)},
 			{"axis1", rexjson::property({foc1.GetPropertyMap()})},
 			{"axis2", rexjson::property({foc2.GetPropertyMap()})},
 		};
@@ -89,6 +89,8 @@ rexjson::property g_configprops =
 			{"axis2", rexjson::property({foc2.GetConfigPropertyMap()})},
 		};
 rexjson::property* g_config_properties = &g_configprops;
+
+
 
 extern "C"
 void RunRpcTask(void *argument)
@@ -120,7 +122,6 @@ void RunRpcTask(void *argument)
 
 
 		} catch (std::exception& e) {
-
 		}
 	}
 }
@@ -233,22 +234,27 @@ void SaveConfig()
 void LoadConfig()
 {
 	std::string configuration(flashregion);
-	rexjson::value props = rexjson::read(configuration);
-	g_config_properties->enumerate_children("", [&](const std::string& path, rexjson::property& prop)->void {
 
-		if (prop.access() & rexjson::property_access::writeonly) {
-			rexjson::object::const_iterator it = props.get_obj().find(path);
-			if (it != props.get_obj().end()) {
-				try {
-					prop.set_prop(it->second);
-				} catch (std::exception& e) {
-					std::cout << e.what() << ", Failed to set " << path << " : " << it->second.to_string() << "\r\n";
+	try {
+		rexjson::value props = rexjson::read(configuration);
+		g_config_properties->enumerate(*g_config_properties, "", [&](const std::string& path, rexjson::property& prop)->void {
+
+			if (prop.access() & rexjson::property_access::access_write) {
+				rexjson::object::const_iterator it = props.get_obj().find(path);
+				if (it != props.get_obj().end()) {
+					try {
+						prop.set(it->second);
+					} catch (std::exception& e) {
+						std::cout << e.what() << ", Failed to set " << path << " : " << it->second.to_string() << "\r\n";
+					}
 				}
 			}
-		}
-	});
+		});
+	} catch (std::exception& e) {
+		throw std::runtime_error("Failed to read/apply configuration settings.");
+	}
 }
-
+#if 0
 static const char * dump = R"desc(
   1 : aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
   2 : bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
@@ -303,7 +309,7 @@ static const char * dump = R"desc(
 
 
 )desc";
-
+#endif
 
 std::string DumpTextDo()
 {
@@ -423,7 +429,7 @@ void StartCommandThread()
 
 void DisplayPropertiesInfo()
 {
-	g_properties->enumerate_children("", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get_prop().to_string() << "\r\n";});
+	g_properties->enumerate(*g_properties, "", [](const std::string& path, rexjson::property& prop)->void{std::cout << path << " : " << prop.get().to_string() << "\r\n";});
 }
 
 void DisplayDrvRegs()
