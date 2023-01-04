@@ -22,18 +22,19 @@ Acc = int(sys.argv[5]) if nargs > 5 else Acc
 Dec = int(sys.argv[6]) if nargs > 6 else Dec
 HZ = int(sys.argv[7]) if nargs > 7 else HZ
 
-prof = tp.TrapezoidProfile()
-points = prof.CalcTrapPoints(Pf, Pi, Vi, Vmax, Acc, Dec, HZ)
+points = tp.CalculateTrapezoidPoints(Pf, Pi, Vi, Vmax, Acc, Dec, HZ)
 
 print("             Time,     Velocity,     Position")
 for i in range(0, 4):
-    print("point ", i, " : ", points[i].time, ", ", points[i].velocity, ", ", points[i].position)
+    print("point ", i, " : ", points[i][0], ", ", points[i][1], ", ", points[i][2])
 
 totalTime = 0
 for i in range(0, 4):
-    totalTime += points[i].time
+    totalTime += points[i][0]
+
 
 time = np.arange(0, totalTime)
+A = np.zeros_like(time, dtype=float)
 V = np.zeros_like(time, dtype=float)
 S = np.zeros_like(time, dtype=float)
 T = np.zeros_like(time, dtype=float)
@@ -44,26 +45,30 @@ offset = 0
 for k in range(0, 4):
     point = points[k]
     V1 = V2
-    V2 = point.velocity
-    S2 = point.position
+    V2 = point[1]
+    S2 = point[2]
     T1 = 0
-    T2 = point.time
+    T2 = point[0]
     if (T2 > T1):
-        A = (V2 - V1) / (T2 - T1)
-        for i in range(0, point.time) :
-            v = V[i + offset] = V1  + A * i
+        Acc = (V2 - V1) / (T2 - T1)
+        for i in range(0, int(point[0])) :
+            A[i + offset] = Acc
+            V[i + offset] = V1  + Acc * i
+            v = V[i + offset]
             S[i + offset] = S2 - (v + V2) * (T2 - i) / 2
-    offset += point.time
-    
+    offset += int(point[0])
 
 pp.figure()
-pp.subplot(2,1,1)
+pp.subplot(3,1,1)
 pp.plot(time, V, label="Velocity")
 pp.ylabel('Velocity')
-#pp.legend(loc="upper right")
-pp.subplot(2,1,2)
+pp.subplot(3,1,2)
 pp.plot(time, S, color="orange", label="Position")
 pp.xlabel('Time')
 pp.ylabel('Position')
+pp.subplot(3,1,3)
+pp.plot(time, A, color="green", label="Acceleration")
+pp.xlabel('Time')
+pp.ylabel('Acceleration')
 #pp.legend(loc="right")
 pp.show()

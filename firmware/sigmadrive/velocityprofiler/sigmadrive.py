@@ -3,6 +3,7 @@ import serial
 import json
 import matplotlib.pyplot as pp
 import numpy as np
+import tprofile as tp
 
 def rpc_call(method, params, dev = '/dev/cu.usbserial-A5026YP3'):
     request = {
@@ -552,6 +553,10 @@ class axis:
         return self.call("mvp", [pos])
     def mvr(self, pos):
         return self.call("mvr", [pos])
+    def push(self, time, velocity, position):
+        return self.call("push", [time, velocity, position])
+    def go(self):
+        return self.call("go", [])
 
     def capture(self):
         V = self.get_captured_velocity()
@@ -569,4 +574,14 @@ class axis:
         pp.xlabel('Time')
         pp.ylabel('Position')
         pp.show()
+
+def mvrx(axis, P, V, A, D):
+    curtarget = axis.target
+    newtarget = curtarget + P
+    points = tp.TrapezoidalProfile(curtarget, newtarget, 0, 0, V, A, D, axis.drive.update_hz)
+    for i in range(0, len(points)):
+        axis.push(int(points[i][0]), points[i][1], points[i][2])
+    axis.target = newtarget
+    axis.go()
+    return points
 
