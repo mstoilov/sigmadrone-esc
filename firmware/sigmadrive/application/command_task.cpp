@@ -100,6 +100,8 @@ void RunCommandTask(void *argument)
 				} else {
 					if (ret["result"].get_type() == rexjson::obj_type || ret["result"].get_type() == rexjson::array_type)
 						std::cout << ret["result"].write(false, true, 4, 4) << "\r\n";
+					else if (ret["result"].get_type() == rexjson::null_type)
+						;
 					else
 						std::cout << ret["result"].to_string() << "\r\n";
 				}

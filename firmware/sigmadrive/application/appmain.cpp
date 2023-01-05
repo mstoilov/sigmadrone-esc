@@ -100,7 +100,7 @@ void RunRpcTask(void *argument)
 		try {
 			std::string req = rpc_uart.GetLine();
 			rexjson::value res = rpc_server.call(req);
-			std::string response = res.write(false, false, 0, 9);
+			std::string response = res.write(false, true, 0, 9);
 			response += "\r\n";
 			rpc_uart.Transmit(response);
 
