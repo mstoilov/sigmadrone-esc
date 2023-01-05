@@ -15,7 +15,6 @@
 #include "picontroller.h"
 #include "pcontroller.h"
 #include "velocityprofiler/trapezoidprofile.h"
-#include "velocityprofiler/trapezoidal-profile.h"
 #include "ring.h"
 
 

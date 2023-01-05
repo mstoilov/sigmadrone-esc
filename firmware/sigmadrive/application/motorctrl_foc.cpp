@@ -5,7 +5,6 @@
 #include "sdmath.h"
 #include "uartrpcserver.h"
 #include "minasa4encoder.h"
-#include "velocityprofiler/trapezoidal-profile.h"
 
 extern UartRpcServer rpc_server;
 
@@ -687,13 +686,12 @@ again:
 				if (capture_mode_ & CAPTURE_VELOCITYSPEC && 
 					update_counter % capture_interval_ == 0 && 
 					capture_velocityspec_.size() < capture_capacity_) {
-						capture_velocityspec_.push_back(S);
+						capture_velocityspec_.push_back(V);
 				}
 				if (capture_mode_ & CAPTURE_CURRENT && 
 					update_counter % capture_interval_ == 0 && 
 					capture_current_.size() < capture_capacity_) {
-						capture_current_.push_back(Perr_);
-						// capture_current_.push_back(lpf_Iq_);
+						capture_current_.push_back(lpf_Iq_);
 				}
 			} else {
 				Perr_ = drive_->GetRotorPositionError(enc_position, S2) * timeslice;
