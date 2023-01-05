@@ -12,7 +12,7 @@
 // Accel - acceleration                  [ec/(sec*sec)]
 // Decel - deceleration                  [ec/(sec*sec)]
 // Hz    - Closed loop update frequency  [Hz]
-std::vector<std::vector<int64_t>> CalculateTrapezoidPoints(float Pin, float Pfin, float Vin, float Vfin, float Vmax, float Accel, float Decel, float Hz)
+std::vector<std::vector<float>> CalculateTrapezoidPoints(float Pin, float Pfin, float Vin, float Vfin, float Vmax, float Accel, float Decel, float Hz)
 {
 	float s = (Pfin >= Pin) ? 1.0f : -1.0f;
 	float Vr = abs(Vmax) / Hz;							// Requested Velocity
@@ -68,11 +68,11 @@ std::vector<std::vector<int64_t>> CalculateTrapezoidPoints(float Pin, float Pfin
 	float pt3v = Vf;
 	float pt3p = Pfin;
 
-	std::vector<std::vector<int64_t>> ret = {
-		{(int64_t)pt0t, (int64_t)pt0v, (int64_t)pt0p},
-		{(int64_t)pt1t, (int64_t)pt1v, (int64_t)pt1p},
-		{(int64_t)pt2t, (int64_t)pt2v, (int64_t)pt2p},
-		{(int64_t)pt3t, (int64_t)pt3v, (int64_t)pt3p}};
+	std::vector<std::vector<float>> ret = {
+		{(float)pt0t, (float)pt0v, (float)pt0p},
+		{(float)pt1t, (float)pt1v, (float)pt1p},
+		{(float)pt2t, (float)pt2v, (float)pt2p},
+		{(float)pt3t, (float)pt3v, (float)pt3p}};
 	return ret;
 }
 
