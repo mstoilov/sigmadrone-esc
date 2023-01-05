@@ -577,12 +577,11 @@ class axis:
 
         pp.figure()
         pp.subplot(3,1,1)
-        # pp.plot(np.arange(0, len(S)), S, alpha=0.75, linewidth=3, label="Spec")
+        pp.plot(np.arange(0, len(S)), S, alpha=0.75, linewidth=3, label="Spec")
         pp.plot(np.arange(0, len(V)), V, label="Velocity")
         pp.ylabel('Velocity')
 
         pp.subplot(3,1,2)
-        pp.plot(np.arange(0, len(S)), S, color="green", linewidth=3, label="Spec")
         pp.plot(np.arange(0, len(P)), P, color="orange", linewidth=3, label="Position")
         pp.xlabel('Time')
         pp.ylabel('Position')

@@ -127,11 +127,7 @@ protected:
 	float spin_voltage_ = 3.0f;                 /**< Voltage used for the spin mode */
 	uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
 
-#if 0
-	Ring<std::vector<int64_t>, 512> velocity_stream_;
-#else
-	Ring<TrajectoryPoint, 512> velocity_stream_;
-#endif
+	Ring<std::vector<float>, 512> velocity_stream_;
 	std::vector<float> capture_position_;
 	std::vector<float> capture_velocity_;
 	std::vector<float> capture_current_;
