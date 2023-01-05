@@ -3,7 +3,7 @@ import serial
 import json
 import matplotlib.pyplot as pp
 import numpy as np
-import tprofile as tp
+import trapezoidprofile as tp
 
 def rpc_call(method, params, dev = '/dev/cu.usbserial-A5026YP3'):
     request = {
@@ -521,6 +521,13 @@ class axis:
     def display(self, v):
         self.setcfg("display", v)
 
+    @property
+    def acc_alpha(self):
+        return self.getcfg("acc_alpha")
+    @acc_alpha.setter
+    def acc_alpha(self, v):
+        self.setcfg("acc_alpha", v)
+
     def calibration(self, reset_rotor):
         return self.call("calibration", [reset_rotor])
     def velocity_rps(self):
@@ -558,30 +565,65 @@ class axis:
     def go(self):
         return self.call("go", [])
 
+    def trajectory(self, points):
+        for i in range(0, len(points)):
+            self.push(int(points[i][0]), points[i][1], points[i][2])
+
     def capture(self):
         V = self.get_captured_velocity()
         S = self.get_captured_velocityspec()
         P = self.get_captured_position()
+        I = self.get_captured_current()
 
         pp.figure()
-        pp.subplot(2,1,1)
-        pp.plot(np.arange(0, len(S)), S, alpha=0.75, linewidth=3, label="Spec")
+        pp.subplot(3,1,1)
+        # pp.plot(np.arange(0, len(S)), S, alpha=0.75, linewidth=3, label="Spec")
         pp.plot(np.arange(0, len(V)), V, label="Velocity")
         pp.ylabel('Velocity')
 
-        pp.subplot(2,1,2)
+        pp.subplot(3,1,2)
+        pp.plot(np.arange(0, len(S)), S, color="green", linewidth=3, label="Spec")
         pp.plot(np.arange(0, len(P)), P, color="orange", linewidth=3, label="Position")
         pp.xlabel('Time')
         pp.ylabel('Position')
+
+        pp.subplot(3,1,3)
+        pp.plot(np.arange(0, len(I)), I, color="blue", linewidth=3, label="Current")
+        pp.xlabel('Time')
+        pp.ylabel('Current')
         pp.show()
+
+def push(axis, points):
+    for i in range(0, len(points)):
+        axis.push(int(points[i][0]), points[i][1], points[i][2])
+
 
 def mvrx(axis, P, V, A, D):
     curtarget = axis.target
     newtarget = curtarget + P
-    points = tp.TrapezoidalProfile(curtarget, newtarget, 0, 0, V, A, D, axis.drive.update_hz)
+    points = tp.CalculateTrapezoidPoints(curtarget, newtarget, 0, 0, V, A, D, axis.drive.update_hz)
     for i in range(0, len(points)):
         axis.push(int(points[i][0]), points[i][1], points[i][2])
     axis.target = newtarget
     axis.go()
     return points
 
+def mvrxy(x, y, distance, angle, V, Acc):
+    i = np.cos(angle)
+    j = np.sin(angle)
+    curtarget_x = x.target
+    newtarget_x = curtarget_x + distance * i
+    velocity_x = V * i
+    acceleration_x = Acc * i
+    curtarget_y = y.target
+    newtarget_y = curtarget_y + distance * j
+    velocity_y = V * j
+    acceleration_y = Acc * j
+
+    points_x = tp.CalculateTrapezoidPoints(curtarget_x, newtarget_x, 0, 0, velocity_x, acceleration_x, acceleration_x, x.drive.update_hz)
+    x.trajectory(points_x)
+    x.target = int(newtarget_x)
+    points_y = tp.CalculateTrapezoidPoints(curtarget_y, newtarget_y, 0, 0, velocity_y, acceleration_y, acceleration_y, y.drive.update_hz)
+    y.trajectory(points_y)
+    y.target = int(newtarget_y)
+    return points_x, points_y

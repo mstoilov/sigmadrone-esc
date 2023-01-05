@@ -24,9 +24,9 @@ def CalculateTrapezoidPoints(Pin, Pfin, Vin, Vfin, Vmax, Accel, Decel, Hz, scale
 
     if (Vi > Vr):
         Ar = -Ar
-    Da = 0.5 * (Vr + Vi) * (Vr - Vi) / Ar           # Displacement during acceleration
-    Dd = 0.5 * (Vr + Vf) * (Vr - Vf) / Dr           # Displacement during deceleration
-    Dc = dP - (Da + Dd)                             # Displacement during const velocity
+    Da = 0.5 * (Vr + Vi) * (Vr - Vi) / Ar if (Ar) else 0.0          # Displacement during acceleration
+    Dd = 0.5 * (Vr + Vf) * (Vr - Vf) / Dr if (Dr) else 0.0          # Displacement during deceleration
+    Dc = dP - (Da + Dd)                                             # Displacement during const velocity
 
     if (Dc < 0):
         # Find Vr by solving:
@@ -45,9 +45,9 @@ def CalculateTrapezoidPoints(Pin, Pfin, Vin, Vfin, Vmax, Accel, Decel, Hz, scale
         Da = 0.5 * (Vr + Vi) * (Vr - Vi) / Ar
         Dd = 0.5 * (Vr + Vf) * (Vr - Vf) / Dr
 
-    Ta = (Vr - Vi) / Ar
-    Tr = Dc / Vr if (Vr != 0) else 0
-    Td = (Vr - Vf) / Dr
+    Ta = (Vr - Vi) / Ar if (Ar) else 0.0
+    Tr = Dc / Vr if (Vr) else 0
+    Td = (Vr - Vf) / Dr if (Dr) else 0.0
 
     pt0t = 0
     pt0v = Vi
