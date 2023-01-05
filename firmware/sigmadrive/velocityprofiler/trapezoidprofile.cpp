@@ -1,11 +1,6 @@
-
-#include "trapezoidal-profile.h"
-
 #include <math.h>
+#include "trapezoidprofile.h"
 
-#ifdef STM32F745xx
-#include "stm32f745xx.h"
-#endif
 
 #define SQ(x) ((x) * (x))
 
@@ -20,12 +15,12 @@
 std::vector<std::vector<int64_t>> CalculateTrapezoidPoints(float Pin, float Pfin, float Vin, float Vfin, float Vmax, float Accel, float Decel, float Hz)
 {
 	float s = (Pfin >= Pin) ? 1.0f : -1.0f;
-	float Vr = abs(Vmax) / Hz;				// Requested Velocity
-	float Ar = abs(Accel) / SQ(Hz);			// Requested Acceleration
-	float Dr = abs(Decel) / SQ(Hz);			// Requested Deceleration
-	float dP = abs(Pfin - Pin);				// Total displacement
-	float Vi = s * Vin  / Hz;				// Initial speed in encoder counts/per timeslice
-	float Vf = s * Vfin  / Hz;				// Final speed in encoder counts/per timeslice
+	float Vr = abs(Vmax) / Hz;							// Requested Velocity
+	float Ar = abs(Accel) / SQ(Hz);						// Requested Acceleration
+	float Dr = abs(Decel) / SQ(Hz);						// Requested Deceleration
+	float dP = abs(Pfin - Pin);							// Total displacement
+	float Vi = s * Vin  / Hz;							// Initial speed in encoder counts/per timeslice
+	float Vf = s * Vfin  / Hz;							// Final speed in encoder counts/per timeslice
 
 
 	if (Vi > Vr)
