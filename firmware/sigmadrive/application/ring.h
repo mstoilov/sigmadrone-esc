@@ -42,6 +42,7 @@ public:
 	}
 
 	T* get_read_ptr() { return &buffer_[rp_];	}
+	T* get_read_ptr_last() { return &buffer_[(rp_ + bufsize_ + data_size() - 1) % bufsize_]; }
 	T* get_write_ptr() { return &buffer_[wp_]; 	}
 	T* get_data_ptr() { return &buffer_[0]; 	}
 

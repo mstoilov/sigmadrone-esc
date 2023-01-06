@@ -15,9 +15,9 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
 	, pid_Iq_(config_.pid_current_kp_, config_.pid_current_ki_, config_.pid_current_maxout_)
 	, pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, 1, config_.pid_w_maxout_, 0)
 	, pid_P_(config_.pid_p_kp_, config_.pid_p_maxout_)
-	, capture_interval_(200)
+	, capture_interval_(50)
 	, capture_mode_(15)
-	, capture_capacity_(750)
+	, capture_capacity_(1000)
 	, go_(false)
 {
 	capture_position_.reserve(capture_capacity_);
@@ -47,8 +47,7 @@ void MotorCtrlFOC::RegisterRpcMethods()
 	rpc_server.add(prefix, "get_captured_velocityspec", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedVelocitySpec, "resjson::array MotorCtrlFOC::GetCaptureVelocitySpec()"));
 	rpc_server.add(prefix, "get_captured_current", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedCurrent, "resjson::array MotorCtrlFOC::GetCaptureCurrent()"));
 
-	rpc_server.add(prefix, "push", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPoint, "void PushStreamPoint(uint32_t time, float velocity, float position)"));
-	// rpc_server.add(prefix, "pushv", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPointV, "void MotorCtrlFOC::PushStreamPointV(const std::vector<int64_t>& pt)"));
+	rpc_server.add(prefix, "push", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPoint, "void PushStreamPoint(int64_t time, int64_t velocity, int64_t position)"));
 	rpc_server.add(prefix, "go", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Go, "void Go()"));
 
 	drive_->RegisterRpcMethods(prefix + "drive.");
@@ -608,15 +607,15 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 		pid_Iq_.Reset();
 		pid_W_.Reset();
 		pid_P_.Reset();
-		std::vector<float>* prof_ptr = nullptr;
+		std::vector<int64_t>* prof_ptr = nullptr;
 		float V1 = 0.0f;
 		float V2 = 0.0f;
 		float V = 0.0f;
 		float S2 = drive_->GetEncoderPosition();
 		float S = drive_->GetEncoderPosition();
 		float A = 0.0f;
-		uint32_t T1 = 0;
-		uint32_t T2 = 0;
+		float T1 = 0;
+		float T2 = 0;
 		velocity_stream_.clear();
 		target_ = drive_->GetEncoderPosition();
 
@@ -634,7 +633,7 @@ again:
 				T1 = update_counter;
 				T2 = T1 + prof_ptr->at(0);
 				V1 = V2;
-				V2 = prof_ptr->at(1);
+				V2 = prof_ptr->at(1) * timeslice;
 				S2 = prof_ptr->at(2);
 				if (T1 == T2) {
 					prof_ptr = nullptr;
@@ -746,17 +745,18 @@ again:
 
 void MotorCtrlFOC::PushStreamPoint(int64_t time, int64_t velocity, int64_t position)
 {
-	// std::vector<int64_t> pt{time, velocity, position};
-	// velocity_stream_.push(pt);
-}
-
-void MotorCtrlFOC::PushStreamPointV(std::vector<int64_t> pt)
-{
-	// velocity_stream_.push(pt);
+	std::vector<int64_t> pt{time, velocity, position};
+	velocity_stream_.push(pt);
 }
 
 void MotorCtrlFOC::Go()
 {
+	capture_position_.resize(0);
+	capture_velocity_.resize(0);
+	capture_velocityspec_.resize(0);
+	capture_current_.resize(0);
+	if (!velocity_stream_.empty())
+		target_ = velocity_stream_.get_read_ptr_last()->at(2);
 	go_ = true;
 }
 
@@ -785,14 +785,10 @@ uint64_t MotorCtrlFOC::MoveToPosition(uint64_t target)
 	int64_t oldpos = target_;
 	target_ = target;
 
-	std::vector<std::vector<float>> points = CalculateTrapezoidPoints(oldpos, target_, 0, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency());
+	std::vector<std::vector<int64_t>> points = CalculateTrapezoidPoints(oldpos, target_, 0, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency());
 	__disable_irq();
-	capture_position_.resize(0);
-	capture_velocity_.resize(0);
-	capture_velocityspec_.resize(0);
-	capture_current_.resize(0);
 	for (auto& pt : points)
-		velocity_stream_.push(pt);
+		velocity_stream_.push({pt[0], pt[1], pt[2]});
 	__enable_irq();
 	Go();
 	return target_;
@@ -809,14 +805,10 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
 	}
 
 	target_ = newpos;
-	std::vector<std::vector<float>> points =  CalculateTrapezoidPoints(oldpos, target_, 0, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency());
+	std::vector<std::vector<int64_t>> points =  CalculateTrapezoidPoints(oldpos, target_, 0, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency());
 	__disable_irq();
-	capture_position_.resize(0);
-	capture_velocity_.resize(0);
-	capture_velocityspec_.resize(0);
-	capture_current_.resize(0);
 	for (auto& pt : points)
-		velocity_stream_.push(pt);
+		velocity_stream_.push({pt[0], pt[1], pt[2]});
 	__enable_irq();
 	Go();
 	return target_;

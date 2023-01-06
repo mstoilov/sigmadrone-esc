@@ -12,15 +12,15 @@ import sys
 # Accel - acceleration                  [ec/(sec*sec)]
 # Decel - deceleration                  [ec/(sec*sec)]
 # Hz    - Closed loop update frequency  [Hz]
-def CalculateTrapezoidPoints(Pin, Pfin, Vin, Vfin, Vmax, Accel, Decel, Hz, scale=1.0):
+def CalculateTrapezoidPoints(Pin, Pfin, Vin, Vfin, Vmax, Accel, Decel, Hz):
     squareHz = Hz * Hz
     s = float(1.0) if Pfin >= Pin else float(-1.0)  # Direction of the trajectory
-    Vr = float(np.abs(Vmax) / Hz)                   # Requested velocity in encoder counts/per timeslice
-    Ar = float(np.abs(Accel)/squareHz)              # Requested acceleration in encoder counts/per timeslice
-    Dr = float(np.abs(Decel)/squareHz)              # Requested deceleration in encoder counts/per timeslice
-    dP = float(np.abs(Pfin - Pin))                  # Total displacement
-    Vi = float(s * Vin  / Hz)                       # Initial speed in encoder counts/per timeslice
-    Vf = float(s * Vfin  / Hz)                      # Final speed in encoder counts/per timeslice
+    Vr = float(np.abs(Vmax))                        # Requested velocity absolute value
+    Ar = float(np.abs(Accel))                       # Requested acceleration absolute value
+    Dr = float(np.abs(Decel))                       # Requested deceleration absolute value
+    dP = float(np.abs(Pfin - Pin))                  # Total displacement absolute value
+    Vi = float(s * Vin )                            # Initial speed
+    Vf = float(s * Vfin )                           # Final speed
 
     if (Vi > Vr):
         Ar = -Ar
@@ -67,8 +67,13 @@ def CalculateTrapezoidPoints(Pin, Pfin, Vin, Vfin, Vmax, Accel, Decel, Hz, scale
 
     #
     # Return the 4 points of the trapezoid
-    #
-    return [[pt0t, pt0v, pt0p], [pt1t, pt1v, pt1p], [pt2t, pt2v, pt2p], [pt3t, pt3v, pt3p]]
+    # The time (col 0) is specified in time slices
+    # The velocity (col 1) is in encoder counts / second (it needs to be converted to ec/timeslice)
+    # The position (col 2) is in encoder counts
+    return [[int(pt0t * Hz), int(pt0v), int(pt0p)], 
+            [int(pt1t * Hz), int(pt1v), int(pt1p)], 
+            [int(pt2t * Hz), int(pt2v), int(pt2p)], 
+            [int(pt3t * Hz), int(pt3v), int(pt3p)]]
 
 
 if __name__ == "__main__":
@@ -82,12 +87,11 @@ if __name__ == "__main__":
     Dec = int(sys.argv[7]) if nargs > 7 else 1000000
     HZ = int(sys.argv[8]) if nargs > 8 else 18000
 
-    points = np.array(tp.CalculateTrapezoidPoints(Pi, Pf, Vi, Vf, Vmax, Acc, Dec, HZ), dtype=int)
+    profile = tp.CalculateTrapezoidPoints(Pi, Pf, Vi, Vf, Vmax, Acc, Dec, HZ)
+    points = np.array(profile, dtype=int)
     Tcol = points[0:5, 0]
     Vcol = points[0:5, 1]
     Pcol = points[0:5, 2]
-
-    print(type(points[0,0]))
 
     time = np.arange(0, np.sum(Tcol))
     A = np.zeros_like(time, dtype=float)
@@ -97,7 +101,7 @@ if __name__ == "__main__":
     offset = 0
     for k in range(0, len(Tcol)):
         V1 = V2
-        V2 = Vcol[k]
+        V2 = Vcol[k] / HZ
         P2 = Pcol[k]
         T1 = 0
         T2 = Tcol[k]
@@ -110,6 +114,7 @@ if __name__ == "__main__":
                 P[i + offset] = P2 - (v + V2) * (T2 - i) / 2
         offset += int(Tcol[k])
 
+    print(profile)
     print(points)
     pp.figure()
     pp.subplot(3,1,1)
