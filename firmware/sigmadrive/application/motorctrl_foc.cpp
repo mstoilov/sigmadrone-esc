@@ -751,6 +751,8 @@ void MotorCtrlFOC::PushStreamPoint(int64_t time, int64_t velocity, int64_t posit
 
 void MotorCtrlFOC::Go()
 {
+	if (go_)
+		return;
 	capture_position_.resize(0);
 	capture_velocity_.resize(0);
 	capture_velocityspec_.resize(0);

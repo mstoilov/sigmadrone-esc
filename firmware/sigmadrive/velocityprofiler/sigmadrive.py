@@ -3,7 +3,7 @@ import serial
 import json
 import matplotlib.pyplot as pp
 import numpy as np
-import trapezoidprofile as tp
+import pytrapezoidprofile as tp
 
 def rpc_call(method, params, dev = '/dev/cu.usbserial-A5026YP3'):
     request = {
@@ -596,6 +596,14 @@ def push(axis, points):
     for i in range(0, len(points)):
         axis.push(int(points[i][0]), points[i][1], points[i][2])
 
+def Go():
+    rpc_call("all.go", [])
+
+def Stop():
+    rpc_call("all.stop", [])
+
+def Modeclp():
+    rpc_call("all.modeclp", [])
 
 def mvrx(axis, P, V, A, D):
     curtarget = axis.target
@@ -626,3 +634,91 @@ def mvrxy(x, y, distance, angle, V, Acc):
     y.trajectory(points_y)
     y.target = int(newtarget_y)
     return points_x, points_y
+
+
+def mvxy(x, y, posX, posY, V, Acc, Dec):
+    ptsX, ptsY = tp.CalculateTrapezoidPointsXY(x.target, y.target, posX, posY, V, Acc, Dec, x.drive.update_hz)
+    x.trajectory(ptsX)
+    x.target = int(posX)
+    y.trajectory(ptsY)
+    y.target = int(posY)
+    return ptsX, ptsY
+
+def mvpolar(x, y, D, angle, V, Acc, Dec):
+    curX = x.target
+    curY = y.target
+    posX = curX + D * np.cos(angle)
+    posY = curY + D * np.sin(angle)
+    ptsX, ptsY = tp.CalculateTrapezoidPointsXY(curX, curY, posX, posY, V, Acc, Dec, x.drive.update_hz)
+    x.trajectory(ptsX)
+    x.target = int(posX)
+    y.trajectory(ptsY)
+    y.target = int(posY)
+    return ptsX, ptsY
+
+def mvromb(x, y, D, V, Acc):
+    mvpolar(x, y, D, np.deg2rad(30), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(60), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(210), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(240), V, Acc, Acc)
+    Go()
+
+# Example:
+# sd.mvromb2(x, y, 1000000, 2000000, 20000000)
+#
+def mvromb2(x, y, D, V, Acc):
+    mvpolar(x, y, D, np.deg2rad(30), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(60), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(210), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(240), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(60), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(90), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(240), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(270), V, Acc, Acc)
+    Go()
+
+def mvhexagon(x, y, D, V, Acc):
+    mvpolar(x, y, D, np.deg2rad(60), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(120), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(180), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(240), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(300), V, Acc, Acc)
+    mvpolar(x, y, D, np.deg2rad(360), V, Acc, Acc)
+    Go()
+
+
+def capture_position(x, y):
+    datax = x.get_captured_position()
+    datay = y.get_captured_position()
+    trim = len(datax) if (len(datax) <= len(datay)) else len(datay)
+    datax = datax[0:trim]
+    datay = datay[0:trim]
+    pp.figure()
+    pp.subplot(3,2,1)
+    pp.plot(datax, datay, label="Path")
+    pp.xlabel('X')
+    pp.ylabel('Y')
+    V = x.get_captured_velocity()
+    S = x.get_captured_velocityspec()
+    P = x.get_captured_position()
+    pp.subplot(3,2,3)
+    pp.plot(np.arange(0, len(S)), S, alpha=0.75, linewidth=3, label="Spec")
+    pp.plot(np.arange(0, len(V)), V, label="Velocity")
+    pp.ylabel('Velocity')
+    pp.subplot(3,2,5)
+    pp.plot(np.arange(0, len(P)), P, color="orange", linewidth=3, label="Position")
+    pp.xlabel('Time')
+    pp.ylabel('Position')
+
+    V = y.get_captured_velocity()
+    S = y.get_captured_velocityspec()
+    P = y.get_captured_position()
+    pp.subplot(3,2,4)
+    pp.plot(np.arange(0, len(S)), S, alpha=0.75, linewidth=3, label="Spec")
+    pp.plot(np.arange(0, len(V)), V, label="Velocity")
+    pp.ylabel('Velocity')
+    pp.subplot(3,2,6)
+    pp.plot(np.arange(0, len(P)), P, color="orange", linewidth=3, label="Position")
+    pp.xlabel('Time')
+    pp.ylabel('Position')
+    pp.show()

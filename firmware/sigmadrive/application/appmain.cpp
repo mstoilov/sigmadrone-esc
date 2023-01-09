@@ -95,11 +95,12 @@ rexjson::property* g_config_properties = &g_configprops;
 extern "C"
 void RunRpcTask(void *argument)
 {
-//    char buf[64];
+	std::string id;
 	for (;;) {
 		try {
-			std::string req = rpc_uart.GetLine();
-			rexjson::value res = rpc_server.call(req);
+			std::string reqstr = rpc_uart.GetLine();
+			id = rexjson::read(reqstr)["id"].to_string();
+			rexjson::value res = rpc_server.call(reqstr);
 			std::string response = res.write(false, true, 0, 9);
 			response += "\r\n";
 			rpc_uart.Transmit(response);
@@ -107,21 +108,17 @@ void RunRpcTask(void *argument)
 			/*
 			 * Log the Request/Response
 			 */
-			usb_cdc.Transmit(req);
+			usb_cdc.Transmit(reqstr);
 			usb_cdc.Transmit(response);
 
-//            size_t ret = uart4.ReceiveOnce(buf, sizeof(buf));
-//            if (ret > 0) {
-//                usb_cdc.Transmit(buf, ret);
-//            }
-//            osDelay(10);
-
-//            std::string req = uart4.GetLine();
-//            usb_cdc.Transmit(req);
-
-
-
 		} catch (std::exception& e) {
+			rexjson::object ret;
+			rexjson::object errobj;
+			errobj["message"] = e.what();
+			errobj["code"] = rexjson::RPC_MISC_ERROR;
+			ret["id"] = id;
+			ret["error"] = errobj;
+			rpc_uart.Transmit(rexjson::value(ret).write(false, true) + "\r\n");
 		}
 	}
 }
@@ -371,6 +368,13 @@ void AllModeStop()
 	foc2.Stop();
 }
 
+void AllGo()
+{
+	__disable_irq();
+	foc1.Go();
+	foc2.Go();
+	__enable_irq();
+}
 
 void RegisterRpcMethods()
 {
@@ -403,6 +407,7 @@ void RegisterRpcMethods()
 	rpc_server.add("all.modeclv", rexjson::make_rpc_wrapper(AllModeClv, "void AllModeClv()"));
 	rpc_server.add("all.modeclp", rexjson::make_rpc_wrapper(AllModeClp, "void AllModeClp()"));
 	rpc_server.add("all.stop", rexjson::make_rpc_wrapper(AllModeStop, "void AllModeStop()"));
+	rpc_server.add("all.go", rexjson::make_rpc_wrapper(AllGo, "void AllGo()"));
 }
 
 

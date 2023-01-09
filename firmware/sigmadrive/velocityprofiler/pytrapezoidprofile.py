@@ -76,6 +76,84 @@ def CalculateTrapezoidPoints(Pin, Pfin, Vin, Vfin, Vmax, Accel, Decel, Hz):
             [int(pt3t * Hz), int(pt3v), int(pt3p)]]
 
 
+# Pin   - initial position              [ec]
+# Pfin  - final position                [ec]
+# Vin   - initial velocity              [ec/sec]
+# Vfin  - final velocity                [ec/sec]
+# Vmax  - max velocity allowed          [ec/sec]
+# Accel - acceleration                  [ec/(sec*sec)]
+# Decel - deceleration                  [ec/(sec*sec)]
+# Hz    - Closed loop update frequency  [Hz]
+def CalculateTrapezoidPointsXY(Xin, Yin, Xfin, Yfin, Vmax, Accel, Decel, Hz):
+    Vr = float(np.abs(Vmax))                        # Requested velocity absolute value
+    Ar = float(np.abs(Accel))                       # Requested acceleration absolute value
+    Dr = float(np.abs(Decel))                       # Requested deceleration absolute value
+    dX = float(np.abs(Xfin - Xin))
+    dY = float(np.abs(Yfin - Yin))
+    dP = np.sqrt(dX * dX + dY * dY)                 # Total displacement absolute value
+    Vi = 0                                          # Initial speed
+    Vf = 0                                          # Final speed
+    angle = np.arctan2(Yfin - Yin, Xfin - Xin)
+
+    if (Vi > Vr):
+        Ar = -Ar
+    Da = 0.5 * (Vr + Vi) * (Vr - Vi) / Ar if (Ar) else 0.0          # Displacement during acceleration
+    Dd = 0.5 * (Vr + Vf) * (Vr - Vf) / Dr if (Dr) else 0.0          # Displacement during deceleration
+    Dc = dP - (Da + Dd)                                             # Displacement during const velocity
+
+    if (Dc < 0):
+        # Find Vr by solving:
+        # Da + Dd = dX
+        # 0.5 * (Vr + Vi) * (Vr - Vi) / Ar + 0.5 *(Vr * Vr) / Dr = dX
+        Vr_sq = Dr * (2.0 * Ar * dP + np.square(Vi))/(Dr + Ar)
+        if (Vr_sq < 0 or Da == 0):
+            # The distance to the requested position is too short
+            # for the specified decelaration.
+            # Calculate the required decelaration to reach the position
+            Vr = Vi
+            Dr = 0.5 * np.square(Vi) / dP
+        else:
+            Vr = np.sqrt(Vr_sq)
+        Dc = 0
+        Da = 0.5 * (Vr + Vi) * (Vr - Vi) / Ar
+        Dd = 0.5 * (Vr + Vf) * (Vr - Vf) / Dr
+
+    Ta = (Vr - Vi) / Ar if (Ar) else 0.0
+    Tr = Dc / Vr if (Vr) else 0
+    Td = (Vr - Vf) / Dr if (Dr) else 0.0
+
+    pt0t = 0
+    pt0v = 0
+    pt0p = 0
+
+    pt1t = Ta
+    pt1v = Vr
+    pt1p = (Vi + pt1v) * Ta * 0.5
+
+    pt2t = Tr
+    pt2v = Vr
+    pt2p = pt1p + (pt1v + pt2v) * Tr * 0.5
+
+    pt3t = Td
+    pt3v = Vf
+    pt3p = dP
+
+
+    #
+    # Return the 4 points of the trapezoid
+    # The time (col 0) is specified in time slices
+    # The velocity (col 1) is in encoder counts / second (it needs to be converted to ec/timeslice)
+    # The position (col 2) is in encoder counts
+    ptsX = [[int(pt0t * Hz), int(pt0v * np.cos(angle)), int(pt0p * np.cos(angle) + Xin)], 
+            [int(pt1t * Hz), int(pt1v * np.cos(angle)), int(pt1p * np.cos(angle) + Xin)], 
+            [int(pt2t * Hz), int(pt2v * np.cos(angle)), int(pt2p * np.cos(angle) + Xin)], 
+            [int(pt3t * Hz), int(pt3v * np.cos(angle)), int(pt3p * np.cos(angle) + Xin)]]
+    ptsY = [[int(pt0t * Hz), int(pt0v * np.sin(angle)), int(pt0p * np.sin(angle) + Yin)], 
+            [int(pt1t * Hz), int(pt1v * np.sin(angle)), int(pt1p * np.sin(angle) + Yin)], 
+            [int(pt2t * Hz), int(pt2v * np.sin(angle)), int(pt2p * np.sin(angle) + Yin)], 
+            [int(pt3t * Hz), int(pt3v * np.sin(angle)), int(pt3p * np.sin(angle) + Yin)]]
+    return (ptsX, ptsY)
+
 if __name__ == "__main__":
     nargs = len(sys.argv)
     Pi = int(sys.argv[1]) if nargs > 1 else 0
