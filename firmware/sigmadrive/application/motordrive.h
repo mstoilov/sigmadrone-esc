@@ -8,7 +8,9 @@
 #ifndef _MOTOR_DRIVE_H_
 #define _MOTOR_DRIVE_H_
 
+#include <variant>
 #include <complex>
+#include <math.h>
 #include "adc.h"
 #include "drv8323.h"
 #include "iencoder.h"
@@ -28,6 +30,7 @@ extern HRTimer hrtimer;
 class MotorDrive {
 public:
 	struct Config {
+		std::variant<int, float> var_;
 		int32_t encoder_dir_ = 1;				            /**< Encoder direction: (1) - encoder increasing or (-1) encoder decreasing */
 		uint32_t reset_hz_ = 35;                            /**< Rotor reset rate. The rotor is oscilated with this rate during the reset process */
 		uint32_t pole_pairs = 7;                            /**< Motor pole pairs */

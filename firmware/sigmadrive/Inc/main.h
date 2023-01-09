@@ -87,6 +87,7 @@ void Error_Handler(void);
 #define ENCODER_Z_Pin GPIO_PIN_7
 #define ENCODER_Z_GPIO_Port GPIOD
 #define ENCODER_Z_EXTI_IRQn EXTI9_5_IRQn
+
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
@@ -96,5 +97,3 @@ void Error_Handler(void);
 #endif
 
 #endif /* __MAIN_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

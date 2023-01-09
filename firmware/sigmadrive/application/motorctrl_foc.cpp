@@ -15,9 +15,9 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
 	, pid_Iq_(config_.pid_current_kp_, config_.pid_current_ki_, config_.pid_current_maxout_)
 	, pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, 1, config_.pid_w_maxout_, 0)
 	, pid_P_(config_.pid_p_kp_, config_.pid_p_maxout_)
-	, capture_interval_(50)
+	, capture_interval_(200)
 	, capture_mode_(15)
-	, capture_capacity_(1000)
+	, capture_capacity_(500)
 	, go_(false)
 {
 	capture_position_.reserve(capture_capacity_);
