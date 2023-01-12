@@ -76,10 +76,10 @@ def CalculateTrapezoidPoints(Pin, Pfin, Vin, Vfin, Vmax, Accel, Decel, Hz):
             [int(pt3t * Hz), int(pt3v), int(pt3p)]]
 
 
-# Pin   - initial position              [ec]
-# Pfin  - final position                [ec]
-# Vin   - initial velocity              [ec/sec]
-# Vfin  - final velocity                [ec/sec]
+# Xin   - initial position              [ec]
+# Yin   - initial position              [ec]
+# Xfin  - final position                [ec]
+# Yfin  - final position                [ec]
 # Vmax  - max velocity allowed          [ec/sec]
 # Accel - acceleration                  [ec/(sec*sec)]
 # Decel - deceleration                  [ec/(sec*sec)]

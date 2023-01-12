@@ -3,7 +3,7 @@ import serial
 import json
 import matplotlib.pyplot as pp
 import numpy as np
-import pytrapezoidprofile as tp
+import trapezoidprofile as tp
 
 def rpc_call(method, params, dev = '/dev/cu.usbserial-A5026YP3'):
     request = {
@@ -562,12 +562,14 @@ class axis:
         return self.call("mvr", [pos])
     def push(self, time, velocity, position):
         return self.call("push", [time, velocity, position])
+    def pushv(self, v):
+        return self.call("pushv", [v])
     def go(self):
         return self.call("go", [])
 
     def trajectory(self, points):
         for i in range(0, len(points)):
-            self.push(int(points[i][0]), points[i][1], points[i][2])
+            self.pushv(points[i])
 
     def capture(self):
         V = self.get_captured_velocity()
