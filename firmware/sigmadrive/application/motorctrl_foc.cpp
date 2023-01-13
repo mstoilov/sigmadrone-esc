@@ -41,13 +41,13 @@ void MotorCtrlFOC::RegisterRpcMethods()
 	rpc_server.add(prefix, "velocity_rps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocityRPS, "void MotorCtrlFOC::VelocityRPS(float revpersec)"));
 	rpc_server.add(prefix, "mvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveToPosition, "void MotorCtrlFOC::MoveToPosition(uint64_t position)"));
 	rpc_server.add(prefix, "mvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelative, "void MotorCtrlFOC::MoveRelative(int64_t relative)"));
-	rpc_server.add(prefix, "get_sequence", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetSequence, "resjson::array MotorCtrlFOC::GetSequence(size_t count)"));
 	rpc_server.add(prefix, "get_captured_position", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedPosition, "resjson::array MotorCtrlFOC::GetCapturePosition()"));
 	rpc_server.add(prefix, "get_captured_velocity", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedVelocity, "resjson::array MotorCtrlFOC::GetCaptureVelocity()"));
 	rpc_server.add(prefix, "get_captured_velocityspec", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedVelocitySpec, "resjson::array MotorCtrlFOC::GetCaptureVelocitySpec()"));
 	rpc_server.add(prefix, "get_captured_current", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedCurrent, "resjson::array MotorCtrlFOC::GetCaptureCurrent()"));
 
 	rpc_server.add(prefix, "push", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPoint, "void PushStreamPoint(int64_t time, int64_t velocity, int64_t position)"));
+	rpc_server.add(prefix, "pushv", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPointV, "void PushStreamPointV(const std::vector<int64_t>& v)"));
 	rpc_server.add(prefix, "go", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Go, "void Go()"));
 
 	drive_->RegisterRpcMethods(prefix + "drive.");
@@ -292,14 +292,6 @@ void MotorCtrlFOC::SignalDumpSpin()
 {
 	if (debug_thread_)
 		osThreadFlagsSet(debug_thread_, SIGNAL_DEBUG_DUMP_SPIN);
-}
-
-rexjson::array MotorCtrlFOC::GetSequence(size_t count) 
-{
-	rexjson::array ret;
-	for (size_t i = 0; i < count; i++)
-		ret.push_back(i);
-	return ret;
 }
 
 rexjson::array MotorCtrlFOC::GetCapturedPosition() 
@@ -743,11 +735,19 @@ again:
 	drive_->Run();
 }
 
+void MotorCtrlFOC::PushStreamPointV(std::vector<int64_t> v)
+{
+	if (v.size() != 3)
+		throw std::runtime_error("Invalid stream point");
+	velocity_stream_.push(v);
+}
+
 void MotorCtrlFOC::PushStreamPoint(int64_t time, int64_t velocity, int64_t position)
 {
 	std::vector<int64_t> pt{time, velocity, position};
 	velocity_stream_.push(pt);
 }
+
 
 void MotorCtrlFOC::Go()
 {

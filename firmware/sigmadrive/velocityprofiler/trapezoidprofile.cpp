@@ -14,7 +14,7 @@
 // Accel - acceleration                  [ec/(sec*sec)]
 // Decel - deceleration                  [ec/(sec*sec)]
 // Hz    - Closed loop update frequency  [Hz]
-std::vector<std::vector<int64_t>> CalculateTrapezoidPoints(float Pin, float Pfin, float Vin, float Vfin, float Vmax, float Accel, float Decel, float Hz)
+std::vector<std::vector<int64_t>> CalculateTrapezoidPoints(int64_t Pin, int64_t Pfin, int64_t Vin, int64_t Vfin, int64_t Vmax, int64_t Accel, int64_t Decel, int64_t Hz)
 {
 	float s = (Pfin >= Pin) ? 1.0f : -1.0f;
 	float Vr = abs(Vmax);								// Requested Velocity
@@ -87,9 +87,9 @@ std::vector<std::vector<int64_t>> CalculateTrapezoidPoints(float Pin, float Pfin
 // Decel - deceleration                  [ec/(sec*sec)]
 // Hz    - Closed loop update frequency  [Hz]
 // def CalculateTrapezoidPointsXY(Xin, Yin, Xfin, Yfin, Vmax, Accel, Decel, Hz):
-std::vector<std::vector<std::vector<int64_t>>> CalculateTrapezoidPointsXY(float Xin, float Yin, float Xfin, float Yfin, float Vmax, float Accel, float Decel, float Hz)
+std::vector<std::vector<std::vector<int64_t>>> CalculateTrapezoidPointsXY(int64_t Xin, int64_t Yin, int64_t Xfin, int64_t Yfin, int64_t Vmax, int64_t Accel, int64_t Decel, int64_t Hz)
 {
-	float Vr = abs(Vmax);								// Requested Velocity
+	int64_t Vr = abs(Vmax);								// Requested Velocity
 	float Ar = abs(Accel);								// Requested Acceleration
 	float Dr = abs(Decel);								// Requested Deceleration
     float dX = abs(Xfin - Xin);							// 

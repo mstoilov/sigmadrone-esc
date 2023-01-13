@@ -71,9 +71,9 @@ public:
 	 * @param position 		[ec]
 	 */
 	void PushStreamPoint(int64_t time, int64_t velocity, int64_t position);
+	void PushStreamPointV(std::vector<int64_t> v);
 	void Go();
 
-protected:
 	void UpdateRotor();
 	void RunDebugLoop();
 	void StartDebugThread();
@@ -84,13 +84,11 @@ protected:
 	void SignalDumpSpin();
 	static void RunDebugLoopWrapper(void *ctx);
 
-	rexjson::array GetSequence(size_t count);
 	rexjson::array GetCapturedPosition();
 	rexjson::array GetCapturedVelocity();
 	rexjson::array GetCapturedVelocitySpec();
 	rexjson::array GetCapturedCurrent();
 
-protected:
 	enum Signals {
 		SIGNAL_DEBUG_DUMP_SPIN = 1u << 1,       /**< Signal the debug display thread to run and dump spin mode info */
 		SIGNAL_DEBUG_DUMP_TORQUE = 1u << 2,     /**< Signal the debug display thread to run and dump closed loop torque mode info */
@@ -107,10 +105,12 @@ protected:
 		CAPTURE_CURRENT = 8,
 	};
 
-	osThreadId_t debug_thread_;                 /**< Debug display info thread */
 	Config config_;                             /**< Structure holding all configuration parameters */
 	MotorDrive *drive_;                         /**< Pointer to the MotorDrive structure */
 	std::string axis_id_;                       /**< Axis identifying this motor control */
+
+protected:
+	osThreadId_t debug_thread_;                 /**< Debug display info thread */
 
 	/*
 	 * Filters

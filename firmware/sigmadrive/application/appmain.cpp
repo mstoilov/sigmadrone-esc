@@ -337,6 +337,18 @@ std::string DumpText()
 		return DumpTextDo();
 }
 
+void TrapezoidXY(int64_t Xin, int64_t Yin, int64_t Xfin, int64_t Yfin, int64_t Vmax, int64_t Acc, int64_t Dec)
+{
+	std::vector<std::vector<std::vector<int64_t>>> pointsXY = CalculateTrapezoidPointsXY(Xin, Yin, Xfin, Yfin, Vmax, Acc, Dec, foc1.drive_->GetUpdateFrequency());
+	const std::vector<std::vector<int64_t>>& pointsX = pointsXY[0];
+	const std::vector<std::vector<int64_t>>& pointsY = pointsXY[1];
+	for (const auto& v : pointsX) {
+		foc1.PushStreamPointV(v);
+	}
+	for (const auto& v : pointsY) {
+		foc2.PushStreamPointV(v);
+	}
+}
 
 void AllMoveToPosition(uint64_t pos_a1, uint64_t pos_a2)
 {
