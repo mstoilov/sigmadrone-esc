@@ -599,13 +599,25 @@ def push(axis, points):
         axis.push(int(points[i][0]), points[i][1], points[i][2])
 
 def Go():
-    rpc_call("all.go", [])
+    rpc_call("go", [])
 
 def Stop():
-    rpc_call("all.stop", [])
+    rpc_call("stop", [])
 
 def Modeclp():
-    rpc_call("all.modeclp", [])
+    rpc_call("modeclp", [])
+
+def mvxy(posX, posY, V, Acc, Dec):
+    rpc_call("mvxy", [posX, posY, V, Acc, Dec])
+
+def mvpolar(D, angle, V, Acc, Dec):
+    rpc_call("mvpolar", [D, float(angle), V, Acc, Dec])
+
+def gomvxy(posX, posY, V, Acc, Dec):
+    rpc_call("gomvxy", [posX, posY, V, Acc, Dec])
+
+def gomvpolar(D, angle, V, Acc, Dec):
+    rpc_call("gomvpolar", [D, float(angle), V, Acc, Dec])
 
 def mvrx(axis, P, V, A, D):
     curtarget = axis.target
@@ -637,55 +649,34 @@ def mvrxy(x, y, distance, angle, V, Acc):
     y.target = int(newtarget_y)
     return points_x, points_y
 
-
-def mvxy(x, y, posX, posY, V, Acc, Dec):
-    ptsX, ptsY = tp.CalculateTrapezoidPointsXY(x.target, y.target, posX, posY, V, Acc, Dec, x.drive.update_hz)
-    x.trajectory(ptsX)
-    x.target = int(posX)
-    y.trajectory(ptsY)
-    y.target = int(posY)
-    return ptsX, ptsY
-
-def mvpolar(x, y, D, angle, V, Acc, Dec):
-    curX = x.target
-    curY = y.target
-    posX = curX + D * np.cos(angle)
-    posY = curY + D * np.sin(angle)
-    ptsX, ptsY = tp.CalculateTrapezoidPointsXY(curX, curY, posX, posY, V, Acc, Dec, x.drive.update_hz)
-    x.trajectory(ptsX)
-    x.target = int(posX)
-    y.trajectory(ptsY)
-    y.target = int(posY)
-    return ptsX, ptsY
-
-def mvromb(x, y, D, V, Acc):
-    mvpolar(x, y, D, np.deg2rad(30), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(60), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(210), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(240), V, Acc, Acc)
+def mvromb(D, V, Acc, Dec):
+    mvpolar(D, np.deg2rad(30), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(60), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(210), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(240), V, Acc, Decc)
     Go()
 
 # Example:
-# sd.mvromb2(x, y, 1000000, 2000000, 20000000)
+# sd.mvromb2(1000000, 2000000, 20000000, 2000000)
 #
-def mvromb2(x, y, D, V, Acc):
-    mvpolar(x, y, D, np.deg2rad(30), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(60), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(210), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(240), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(60), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(90), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(240), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(270), V, Acc, Acc)
+def mvromb2(D, V, Acc, Dec):
+    mvpolar(D, np.deg2rad(30), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(60), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(210), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(240), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(60), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(90), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(240), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(270), V, Acc, Dec)
     Go()
 
-def mvhexagon(x, y, D, V, Acc):
-    mvpolar(x, y, D, np.deg2rad(60), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(120), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(180), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(240), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(300), V, Acc, Acc)
-    mvpolar(x, y, D, np.deg2rad(360), V, Acc, Acc)
+def mvhexagon(D, V, Acc, Dec):
+    mvpolar(D, np.deg2rad(60), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(120), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(180), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(240), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(300), V, Acc, Dec)
+    mvpolar(D, np.deg2rad(360), V, Acc, Dec)
     Go()
 
 
