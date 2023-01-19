@@ -337,8 +337,18 @@ std::string DumpText()
 		return DumpTextDo();
 }
 
-void TrapezoidXY(int64_t Xin, int64_t Yin, int64_t Xfin, int64_t Yfin, int64_t Vmax, int64_t Acc, int64_t Dec)
+void AllGo()
 {
+	__disable_irq();
+	foc1.Go();
+	foc2.Go();
+	__enable_irq();
+}
+
+void TrapezoidMoveXY(int64_t Xfin, int64_t Yfin, int64_t Vmax, int64_t Acc, int64_t Dec)
+{
+	int64_t Xin = foc1.GetTarget();
+	int64_t Yin = foc2.GetTarget();
 	std::vector<std::vector<std::vector<int64_t>>> pointsXY = CalculateTrapezoidPointsXY(Xin, Yin, Xfin, Yfin, Vmax, Acc, Dec, foc1.drive_->GetUpdateFrequency());
 	const std::vector<std::vector<int64_t>>& pointsX = pointsXY[0];
 	const std::vector<std::vector<int64_t>>& pointsY = pointsXY[1];
@@ -348,6 +358,40 @@ void TrapezoidXY(int64_t Xin, int64_t Yin, int64_t Xfin, int64_t Yfin, int64_t V
 	for (const auto& v : pointsY) {
 		foc2.PushStreamPointV(v);
 	}
+	foc1.SetTarget(Xfin);
+	foc2.SetTarget(Yfin);
+}
+
+void GoTrapezoidMoveXY(int64_t Xfin, int64_t Yfin, int64_t Vmax, int64_t Acc, int64_t Dec)
+{
+	TrapezoidMoveXY(Xfin, Yfin, Vmax, Acc, Dec);
+	AllGo();
+}
+
+void TrapezoidMovePolar(int64_t D, float Angle, int64_t Vmax, int64_t Acc, int64_t Dec)
+{
+	int64_t Xin = foc1.GetTarget();
+	int64_t Yin = foc2.GetTarget();
+	int64_t Xfin = Xin + D * std::cos(Angle);
+	int64_t Yfin = Yin + D * std::sin(Angle);
+
+	std::vector<std::vector<std::vector<int64_t>>> pointsXY = CalculateTrapezoidPointsXY(Xin, Yin, Xfin, Yfin, Vmax, Acc, Dec, foc1.drive_->GetUpdateFrequency());
+	const std::vector<std::vector<int64_t>>& pointsX = pointsXY[0];
+	const std::vector<std::vector<int64_t>>& pointsY = pointsXY[1];
+	for (const auto& v : pointsX) {
+		foc1.PushStreamPointV(v);
+	}
+	for (const auto& v : pointsY) {
+		foc2.PushStreamPointV(v);
+	}
+	foc1.SetTarget(Xfin);
+	foc2.SetTarget(Yfin);
+}
+
+void GoTrapezoidMovePolar(int64_t D, float Angle, int64_t Vmax, int64_t Acc, int64_t Dec)
+{
+	TrapezoidMovePolar(D, Angle, Vmax, Acc, Dec);
+	AllGo();
 }
 
 void AllMoveToPosition(uint64_t pos_a1, uint64_t pos_a2)
@@ -380,13 +424,6 @@ void AllModeStop()
 	foc2.Stop();
 }
 
-void AllGo()
-{
-	__disable_irq();
-	foc1.Go();
-	foc2.Go();
-	__enable_irq();
-}
 
 void RegisterRpcMethods()
 {
@@ -414,12 +451,14 @@ void RegisterRpcMethods()
 	rpc_server.add("drv2.DisableDriver", rexjson::make_rpc_wrapper(&drv2, &Drv8323::DisableDriver, "void Drv8323::DisableDriver()"));
 	rpc_server.add("drv2.InitializeDefaults", rexjson::make_rpc_wrapper(&drv2, &Drv8323::InitializeDefaults, "void Drv8323::InitializeDefaults()"));
 
-	rpc_server.add("all.mvp", rexjson::make_rpc_wrapper(AllMoveToPosition, "AllMoveToPosition(uint64_t pos_a1, uint64_t pos_a2)"));
-	rpc_server.add("all.mvr", rexjson::make_rpc_wrapper(AllMoveRelative, "void AllMoveRelative(int64_t offset_a1, int64_t offset_a2)"));
-	rpc_server.add("all.modeclv", rexjson::make_rpc_wrapper(AllModeClv, "void AllModeClv()"));
-	rpc_server.add("all.modeclp", rexjson::make_rpc_wrapper(AllModeClp, "void AllModeClp()"));
-	rpc_server.add("all.stop", rexjson::make_rpc_wrapper(AllModeStop, "void AllModeStop()"));
-	rpc_server.add("all.go", rexjson::make_rpc_wrapper(AllGo, "void AllGo()"));
+	rpc_server.add("modeclv", rexjson::make_rpc_wrapper(AllModeClv, "void AllModeClv()"));
+	rpc_server.add("modeclp", rexjson::make_rpc_wrapper(AllModeClp, "void AllModeClp()"));
+	rpc_server.add("stop", rexjson::make_rpc_wrapper(AllModeStop, "void AllModeStop()"));
+	rpc_server.add("go", rexjson::make_rpc_wrapper(AllGo, "void AllGo()"));
+	rpc_server.add("mvxy", rexjson::make_rpc_wrapper(TrapezoidMoveXY, "void TrapezoidMoveXY(int64_t Xfin, int64_t Yfin, int64_t Vmax, int64_t Acc, int64_t Dec)"));
+	rpc_server.add("gomvxy", rexjson::make_rpc_wrapper(GoTrapezoidMoveXY, "void GoTrapezoidMoveXY(int64_t Xfin, int64_t Yfin, int64_t Vmax, int64_t Acc, int64_t Dec)"));
+	rpc_server.add("mvpolar", rexjson::make_rpc_wrapper(TrapezoidMovePolar, "void TrapezoidMovePolar(int64_t D, float Angle, int64_t Vmax, int64_t Acc, int64_t Dec)"));
+	rpc_server.add("gomvpolar", rexjson::make_rpc_wrapper(GoTrapezoidMovePolar, "void GoTrapezoidMovePolar(int64_t D, float Angle, int64_t Vmax, int64_t Acc, int64_t Dec)"));
 }
 
 

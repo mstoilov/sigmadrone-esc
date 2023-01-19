@@ -774,6 +774,25 @@ float MotorCtrlFOC::VelocityRPS(float revpersec)
 	return velocity_;
 }
 
+/**
+ * @brief Return the current target position
+ * 
+ * @return int64_t Target position
+ */
+int64_t MotorCtrlFOC::GetTarget() const
+{
+	return target_;
+}
+
+/**
+ * @brief Set the current target position
+ * 
+ * @param position New target position
+ */
+void MotorCtrlFOC::SetTarget(const int64_t position)
+{
+	target_ = position;
+}
 
 /** Set target position
  *

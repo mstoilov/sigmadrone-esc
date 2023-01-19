@@ -49,8 +49,10 @@ public:
 	void ModeClosedLoopVelocity();
 	void ModeClosedLoopPositionSimple();
 	void ModeClosedLoopPositionTrajectory();
-
 	void ModeSpin();
+
+	int64_t GetTarget() const;						// Get the current target position. Relevant only in Closed Loop Position mode.
+	void SetTarget(const int64_t position);			// Set the current target position. Relevant only in Closed Loop Position mode.
 	uint64_t MoveToPosition(uint64_t position);
 	uint64_t MoveRelative(int64_t position);
 	void RunCalibrationSequence(bool reset_rotor);
