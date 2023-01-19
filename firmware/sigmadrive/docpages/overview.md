@@ -25,6 +25,32 @@ is 90 degrees apart.
 
 ![](foc-block.png)
 
+### Diagram steps:
+1. Forward Clark Transformation \n
+Convert the 3 phase current vectors: (I<sub>a</sbu>, I<sub>b</sub>, I<sub>c</sub>) to 
+2 phase vectors (I<sub>&alpha;</sub>, I<sub>&beta;</sub>)\n 
+I<sub>&alpha;</sub> = I<sub>a</sub> * 3 / 2 \n 
+I<sub>&beta;</sub> = I<sub>b</sub> * &radic;3 / 2 - Ic * &radic;3 / 2 \n
+
+
+2. Forward Park Transformation \n
+Jump on the rotatating reference frame\n
+Convert the 2 phase current vector: I<sub>&alpha;&beta;</sub> to vector I<sub>dq</sub> (in DQ-rotating reference frame)\n 
+The D axis is aligned with the rotor flux. \n
+I<sub>d</sub> = I<sub>&alpha;</sub> cos(&theta;) + I<sub>&beta;</sub> sin(&theta;) \n
+I<sub>q</sub> = -I<sub>&alpha;</sub> sin(&theta;) + I<sub>&beta;</sub> cos(&theta;) \n
+
+
+3. Reverse Park Transformation \n
+V<sub>&alpha;</sub> = V<sub>d</sub> cos(&theta;) - V<sub>q</sub> sin(&theta;) \n
+V<sub>&beta;</sub> = -V<sub>d</sub> sin(&theta;) + V<sub>q</sub> cos(&theta;) \n
+
+
+4. Reverse Clark Transformation \n
+V<sub>a</sub> = V<sub>&alpha;</sub> * 2 / 3 \n
+V<sub>b</sub> = -V<sub>&alpha;</sub> / 3 + V<sub>&beta;</sub> / &radic;3 \n
+V<sub>c</sub> = -V<sub>&alpha;</sub> / 3 - V<sub>&beta;</sub> / &radic;3 \n
+
 
 ## Design and important classes
 
