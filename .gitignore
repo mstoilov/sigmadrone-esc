@@ -1,0 +1,13 @@
+obj
+bin
+build
+docpages
+*.o
+*.d
+*.lst
+*.so
+*.pyc
+*.zip
+.DS_Store
+
+
