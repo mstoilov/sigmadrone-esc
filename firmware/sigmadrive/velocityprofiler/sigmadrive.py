@@ -5,7 +5,11 @@ import matplotlib.pyplot as pp
 import numpy as np
 import trapezoidprofile as tp
 
-def rpc_call(method, params, dev = '/dev/cu.usbserial-A5026YP3'):
+# pip3 install pybind11
+# pip3 install pyserial
+# pip3 install matplotlib
+
+def rpc_call(method, params, dev):
     request = {
         "id" : "noid", 
         "jsonrpc" : "1.0", 
@@ -32,7 +36,7 @@ def rpc_call(method, params, dev = '/dev/cu.usbserial-A5026YP3'):
     return response
 
 class drive:
-    def __init__(self, name, device = '/dev/cu.usbserial-A5026YP3'):
+    def __init__(self, name, device = '/dev/cu.usbserial-B001B0DR'):
         self.namestr = name
         self.device = device
 
@@ -339,11 +343,12 @@ class drive:
         return self.call("scheduler_run", [])
     def velocitypts(self):
         return self.call("velocitypts", [])
-
+    def set_resolution_bits(self, resolution_bits):
+        return self.call("set_resolution_bits", [resolution_bits])
 
 
 class axis:
-    def __init__(self, name, device = '/dev/cu.usbserial-A5026YP3'):
+    def __init__(self, name, device = '/dev/cu.usbserial-B001B0DR'):
         self.namestr = name
         self.drive = drive(name, device)
         self.device = device
@@ -528,8 +533,8 @@ class axis:
     def acc_alpha(self, v):
         self.setcfg("acc_alpha", v)
 
-    def calibration(self, reset_rotor):
-        return self.call("calibration", [reset_rotor])
+    def calibration(self):
+        return self.call("calibration", [])
     def velocity_rps(self):
         return self.call("velocity_rps", [])
     def stop(self):

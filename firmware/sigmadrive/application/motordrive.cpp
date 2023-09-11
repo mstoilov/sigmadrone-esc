@@ -75,6 +75,7 @@ void MotorDrive::RegisterRpcMethods(const std::string& prefix)
 	rpc_server.add(prefix, "alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAlphaPoleSearch, "void RunTaskAlphaPoleSearch()"));
 	rpc_server.add(prefix, "rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
 	rpc_server.add(prefix, "velocitypts", rexjson::make_rpc_wrapper(this, &MotorDrive::GetRotorVelocityPTS, "void GetRotorVelocityPTS()"));
+	rpc_server.add(prefix, "set_resolution_bits", rexjson::make_rpc_wrapper(this, &MotorDrive::SetResolutionBits, "void SetResolutionBits(uint32_t resolution_bits)"));
 	rpc_server.add(prefix, "run_encoder_debug", rexjson::make_rpc_wrapper(this, &MotorDrive::RunEncoderDisplayDebugInfo, "void RunEncoderDisplayDebugInfo()"));
 	rpc_server.add(prefix, "drv_get_fault1", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
 	rpc_server.add(prefix, "drv_get_fault2", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
@@ -181,6 +182,8 @@ rexjson::property MotorDrive::GetConfigPropertyMap()
 					else 
 						sched_.Abort();
 				})},
+		{"enc_position_shiftleft", {&enc_position_shiftleft_, rexjson::property_get<decltype(enc_position_shiftleft_)>, rexjson::property_set<decltype(enc_position_shiftleft_)>}},
+		{"enc_position_shiftright", {&enc_position_shiftright_, rexjson::property_get<decltype(enc_position_shiftright_)>, rexjson::property_set<decltype(enc_position_shiftright_)>}},
 		{"trip_i", {&config_.trip_i_, rexjson::property_get<decltype(config_.trip_i_)>, rexjson::property_set<decltype(config_.trip_i_)>}},
 		{"trip_v", {&config_.trip_v_, rexjson::property_get<decltype(config_.trip_v_)>, rexjson::property_set<decltype(config_.trip_v_)>}},
 		{"calib_max_i", {&config_.calib_max_i_, rexjson::property_get<decltype(config_.calib_max_i_)>, rexjson::property_set<decltype(config_.calib_max_i_)>}},
@@ -211,7 +214,7 @@ void MotorDrive::Run()
 }
 
 /** This method is similar to @ref MotorDrive::Run,
- * but it will block until will all tasks finish.
+ * but it will block until all tasks finish.
  *
  */
 void MotorDrive::RunWaitForCompletion()
@@ -283,33 +286,45 @@ uint64_t MotorDrive::GetEncoderMaxPosition() const
 /** Set the IEncoder interface
  *
  * @param encoder IEncoder interface
- * @param resolution_bits Desired resolution bits. If the encoder hardware uses more bits the
- * encoder position will be shifted right to match the desired resolution. If the encoder
- * hardware uses less bits the encoder position value will be shifted left.
  */
-void MotorDrive::SetEncoder(IEncoder *encoder, uint32_t resolution_bits)
+void MotorDrive::SetEncoder(IEncoder *encoder)
 {
 	if (encoder) {
 		if (encoder->GetStatus()) {
 			error_info_.SetError(e_encoder, "Encoder Error");
 		}
 		encoder_ = encoder;
-		enc_revolution_bits_ = encoder_->GetRevolutionBits();
-		enc_resolution_bits_ = resolution_bits;
-		if (resolution_bits <= encoder_->GetResolutionBits()) {
-			enc_position_shiftright_ = encoder_->GetResolutionBits() - resolution_bits;
-			enc_position_shiftleft_ = 0;
-		} else {
-			enc_position_shiftleft_ = encoder_->GetResolutionBits() - resolution_bits;
-			enc_position_shiftright_ = 0;
-		}
-		enc_cpr_ = (1 << enc_resolution_bits_);
-		enc_resolution_mask_ = (1 << enc_resolution_bits_) - 1;
-		enc_position_size_ = 1LLU << (enc_resolution_bits_ + enc_revolution_bits_);
-		enc_position_size_half_ = enc_position_size_ / 2;
-		enc_position_mask_ = enc_position_size_ - 1;
+		SetResolutionBits();
 	}
 }
+
+/**
+ * @brief Set the desired resolution bits. The number of resolution bits
+ * defines the encoder counts corresponding to one full revolution
+ * CPR = 1 << resolution_bits
+ * 
+ * @param resolution_bits Desired resolution bits. If the encoder hardware uses more bits the
+ * encoder position will be shifted right to match the desired resolution. If the encoder
+ * hardware uses less bits the encoder position value will be shifted left.
+ */
+void MotorDrive::SetResolutionBits(uint32_t resolution_bits)
+{
+	enc_revolution_bits_ = encoder_->GetRevolutionBits();
+	enc_resolution_bits_ = resolution_bits;
+	if (resolution_bits <= encoder_->GetResolutionBits()) {
+		enc_position_shiftright_ = encoder_->GetResolutionBits() - resolution_bits;
+		enc_position_shiftleft_ = 0;
+	} else {
+		enc_position_shiftleft_ = encoder_->GetResolutionBits() - resolution_bits;
+		enc_position_shiftright_ = 0;
+	}
+	enc_cpr_ = (1 << enc_resolution_bits_);
+	enc_resolution_mask_ = (1 << enc_resolution_bits_) - 1;
+	enc_position_size_ = 1LLU << (enc_resolution_bits_ + enc_revolution_bits_);
+	enc_position_size_half_ = enc_position_size_ / 2;
+	enc_position_mask_ = enc_position_size_ - 1;
+}
+
 
 /** Get the configure encoder direction.
  *
@@ -823,7 +838,7 @@ void MotorDrive::RunTaskAlphaPoleSearch()
 	}
 	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_);
 	for (size_t i = 0; i < config_.pole_pairs; i++) {
-		AddTaskRotateMotor((M_PI * 2)/config_.pole_pairs, M_PI, 0.45, true);
+		AddTaskRotateMotor((M_PI * 2)/(config_.pole_pairs + 1), M_PI, 0.45, true);
 		AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
 		sched_.AddTask([&](void){
 			fprintf(stderr, "Enc: %7lu\r\n", (uint32_t)(GetEncoderPosition() & enc_resolution_bits_));

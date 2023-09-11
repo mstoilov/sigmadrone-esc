@@ -84,7 +84,8 @@ public:
 	bool RunUpdateHandler(const std::function<bool(void)> &update_handler);
 	IEncoder* GetEncoder() const;
 	uint32_t GetEncoderCPR() const;
-	void SetEncoder(IEncoder *encoder, uint32_t resolution_bits = 16);
+	void SetEncoder(IEncoder *encoder);
+	void SetResolutionBits(uint32_t resolution_bits = 16);
 	int32_t GetEncoderDir() const;
 	uint64_t GetEncoderPosition() const;
 	uint64_t GetEncoderMaxPosition() const;

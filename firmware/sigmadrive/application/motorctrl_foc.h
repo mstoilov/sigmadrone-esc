@@ -23,8 +23,8 @@ class MotorCtrlFOC
 {
 protected:
 	struct Config {
-		float pid_current_kp_ = 4.5;    /* 3 */ /**< Current PID regulator proportional gain */
-		float pid_current_ki_ = 1500;  /* 3120*/ /**< Current PID regulator integral gain */
+		float pid_current_kp_ = 0.9;            /**< Current PID regulator proportional gain */
+		float pid_current_ki_ = 200;           /**< Current PID regulator integral gain */
 		float pid_current_maxout_ = 45;         /**< Current PID regulator output limit */
 
 		float pid_w_kp_ = 0.25;                 /**< Velocity PID regulator proportional gain */
@@ -34,7 +34,7 @@ protected:
 		float pid_p_kp_ = 20;                   /**< Position PID regulator proportional gain */
 		float pid_p_maxout_ = 240;              /**< Position PID regulator output limit */
 
-		float tau_ratio_ = 2;                   /**< Constant used in the calculations of the closed loop PID regulator gains. Tratio = Tcl/Tp as per https://www.youtube.com/watch?v=3viD5ij60EI */
+		float tau_ratio_ = 5;                   /**< Constant used in the calculations of the closed loop PID regulator gains. Tratio = Tcl/Tp as per https://www.youtube.com/watch?v=3viD5ij60EI */
 		float vab_advance_factor_ = 1.5;        /**< Magnetic field advance factor. The V_ab will be advanced proportional to the rotor variable speed and this constant  */
 		float vq_bias_ = 0;                     /**< Bias for the q-voltage (Vq) PID regulator */
 		float w_bias_ = 0;                      /**< Bias for the velocity PID (W) regulator */
@@ -55,7 +55,7 @@ public:
 	void SetTarget(const int64_t position);			// Set the current target position. Relevant only in Closed Loop Position mode.
 	uint64_t MoveToPosition(uint64_t position);
 	uint64_t MoveRelative(int64_t position);
-	void RunCalibrationSequence(bool reset_rotor);
+	void RunCalibrationSequence();
 	float VelocityRPS(float revpersec);
 
 	rexjson::property GetPropertyMap();
@@ -129,11 +129,12 @@ protected:
 	PController<float> pid_P_;                  /**< PID regulator controlling the target position */
 	float Ierr_ = 0;                            /**< Q-current error. Used as input for the Iq PID regulator */
 	float Werr_ = 0;                            /**< Velocity error. Used as input for the velocity PID regulator */
+	float Wraderr_ = 0;                         /**< Velocity error in rads. Used as input for the velocity PID regulator */
 	float Perr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */
 	uint64_t target_ = 0;                       /**< Target position used in closed loop position mode */
-	float velocity_ = 2000000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
-	float acceleration_ = 8000000;              /**< Movement acceleration [counts/s^2] */
-	float deceleration_ = 3000000;              /**< Movement deceleration [counts/s^2] */
+	float velocity_ = 1800000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
+	float acceleration_ = 6000000;              /**< Movement acceleration [counts/s^2] */
+	float deceleration_ = 2000000;              /**< Movement deceleration [counts/s^2] */
 	float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
 	float spin_voltage_ = 3.0f;                 /**< Voltage used for the spin mode */
 	uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
