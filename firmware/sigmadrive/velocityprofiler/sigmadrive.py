@@ -9,7 +9,7 @@ import trapezoidprofile as tp
 # pip3 install pyserial
 # pip3 install matplotlib
 
-def rpc_call(method, params, dev):
+def rpc_call(method, params, dev="/dev/cu.usbserial-A10M4W77"):
     request = {
         "id" : "noid", 
         "jsonrpc" : "1.0", 
@@ -36,7 +36,7 @@ def rpc_call(method, params, dev):
     return response
 
 class drive:
-    def __init__(self, name, device = '/dev/cu.usbserial-B001B0DR'):
+    def __init__(self, name, device = '/dev/cu.usbserial-A10M4W77'):
         self.namestr = name
         self.device = device
 
@@ -311,6 +311,14 @@ class drive:
     def wenc_alpha(self, v):
         self.setcfg("wenc_alpha", v)
 
+    @property
+    def pos_offset(self):
+        return self.getcfg("pos_offset")
+    @pos_offset.setter
+    def pos_offset(self, v):
+        self.setcfg("pos_offset", v)
+
+
     def abort(self):
         return self.call("abort", [])
     def add_task_arm_motor(self):
@@ -348,7 +356,7 @@ class drive:
 
 
 class axis:
-    def __init__(self, name, device = '/dev/cu.usbserial-B001B0DR'):
+    def __init__(self, name, device = '/dev/cu.usbserial-A10M4W77'):
         self.namestr = name
         self.drive = drive(name, device)
         self.device = device
