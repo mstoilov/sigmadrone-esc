@@ -70,6 +70,13 @@ class drive:
         self.set("Rencest", v)
 
     @property
+    def Renc(self):
+        return self.get("Renc")
+    @Renc.setter
+    def Renc(self, v):
+        self.set("Renc", v)
+
+    @property
     def TIM1_CNT(self):
         return self.get("TIM1_CNT")
     @TIM1_CNT.setter
@@ -541,8 +548,8 @@ class axis:
     def acc_alpha(self, v):
         self.setcfg("acc_alpha", v)
 
-    def calibration(self):
-        return self.call("calibration", [])
+    def calibration(self, reset_rotor):
+        return self.call("calibration", [reset_rotor])
     def velocity_rps(self):
         return self.call("velocity_rps", [])
     def stop(self):

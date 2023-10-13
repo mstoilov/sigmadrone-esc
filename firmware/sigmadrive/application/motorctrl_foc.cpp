@@ -213,7 +213,7 @@ void MotorCtrlFOC::RunDebugLoop()
 			fprintf(stderr,
 					"P: %10llu (%10llu) I_q: %+6.3f PVd: %+5.2f PVq: %+7.2f PVqP: %+7.2f PVqI: %+7.2f "
 					"Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f V_PEP: %+6.1f, T: %3lu\r\n",
-					drive_->GetEncoderPosition(),
+					drive_->GetRotorPosition(),
 					target_,
 					lpf_Iq_,
 					pid_Id_.Output(),
@@ -530,7 +530,7 @@ void MotorCtrlFOC::ModeClosedLoopPositionSimple()
 		pid_Iq_.Reset();
 		pid_W_.Reset();
 		pid_P_.Reset();
-		target_ = drive_->GetEncoderPosition();
+		target_ = drive_->GetRotorPosition();
 
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
@@ -603,13 +603,13 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 		float V1 = 0.0f;
 		float V2 = 0.0f;
 		float V = 0.0f;
-		float S2 = drive_->GetEncoderPosition();
-		float S = drive_->GetEncoderPosition();
+		float S2 = drive_->GetRotorPosition();
+		float S = drive_->GetRotorPosition();
 		float A = 0.0f;
 		float T1 = 0;
 		float T2 = 0;
 		velocity_stream_.clear();
-		target_ = drive_->GetEncoderPosition();
+		target_ = drive_->GetRotorPosition();
 
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
@@ -835,9 +835,9 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
 	return target_;
 }
 
-void MotorCtrlFOC::RunCalibrationSequence()
+void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)
 {
-	drive_->AddTaskCalibrationSequence(false);
+	drive_->AddTaskCalibrationSequence(reset_rotor);
 	drive_->sched_.AddTask([&](){
 #if 1
 /*

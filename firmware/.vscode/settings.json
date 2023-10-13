@@ -66,6 +66,16 @@
 		"tuple": "cpp",
 		"type_traits": "cpp",
 		"typeinfo": "cpp",
-		"variant": "cpp"
+		"variant": "cpp",
+		"__hash_table": "cpp",
+		"__verbose_abort": "cpp",
+		"bit": "cpp",
+		"fstream": "cpp",
+		"iomanip": "cpp",
+		"queue": "cpp",
+		"stack": "cpp",
+		"unordered_map": "cpp",
+		"numeric": "cpp",
+		"algorithm": "cpp"
 	}
 }

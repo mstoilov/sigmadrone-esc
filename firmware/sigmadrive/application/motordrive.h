@@ -36,6 +36,7 @@ public:
 		uint32_t display_div_ = 2999;
 		uint32_t enc_skip_updates_ = 1;                     /**< How many update interrupts to skip, before initiating a new encoder update */
 		uint32_t csa_gain_ = 10;                            /**< Current sensing amplifier gain */
+		uint64_t pos_offset_ = 0;                           /**< Encoder position offset */
 		bool svm_saddle_ = false;                           /**< Use space vector modulation (SVM) saddle form */
 		float Vref_ = 3.3;                                  /**< ADC reference voltage */
 		float max_modulation_duty_ = 0.95;                  /**< Maximum modulation duty */
@@ -87,7 +88,11 @@ public:
 	void SetEncoder(IEncoder *encoder);
 	void SetResolutionBits(uint32_t resolution_bits = 16);
 	int32_t GetEncoderDir() const;
+
+protected:
 	uint64_t GetEncoderPosition() const;
+
+public:
 	uint64_t GetEncoderMaxPosition() const;
 	uint32_t GetEncoderPositionBits() const;
 	uint32_t GetUpdateFrequency() const;

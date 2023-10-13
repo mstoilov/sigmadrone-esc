@@ -87,6 +87,7 @@ rexjson::property MotorDrive::GetPropertyMap()
 {
 	rexjson::property props= rexjson::property_map({
 		{"Rencest", {&Rencest_, rexjson::property_get<decltype(Rencest_)>}},
+		{"Renc", {&Renc_, rexjson::property_get<decltype(Renc_)>}},
 		{"update_hz", rexjson::property(&update_hz_, rexjson::property_get<decltype(update_hz_)>)},
 		{"tim1_cnt", rexjson::property(&tim1_cnt_, rexjson::property_get<decltype(tim1_cnt_)>)},
 		{"tim8_cnt", rexjson::property(&tim8_cnt_, rexjson::property_get<decltype(tim8_cnt_)>)},
@@ -181,6 +182,14 @@ rexjson::property MotorDrive::GetConfigPropertyMap()
 						RunSimpleTasks(); 
 					else 
 						sched_.Abort();
+				})},
+		{"pos_offset", rexjson::property(
+				&config_.pos_offset_,
+				rexjson::property_get<decltype(config_.pos_offset_)>,
+				[&](const rexjson::value& v, void* ctx)->void {
+					if (sched_.IsDispatching())
+						throw std::runtime_error("Cannot set the value when the drive is running");
+					rexjson::property_set<decltype(config_.pos_offset_)>(v, ctx);
 				})},
 		{"enc_position_shiftleft", {&enc_position_shiftleft_, rexjson::property_get<decltype(enc_position_shiftleft_)>, rexjson::property_set<decltype(enc_position_shiftleft_)>}},
 		{"enc_position_shiftright", {&enc_position_shiftright_, rexjson::property_get<decltype(enc_position_shiftright_)>, rexjson::property_set<decltype(enc_position_shiftright_)>}},
@@ -517,7 +526,7 @@ void MotorDrive::UpdateRotor()
 {
 	uint64_t Renc_prev = Renc_; 
 	Renc_ = GetEncoderPosition();
-	Rencest_ = Renc_;
+	Rencest_ = (Renc_ + config_.pos_offset_) & enc_position_mask_;
 	float theta_e = GetEncoderDir() * GetElectricAngle(Renc_);
 	E_ = std::complex<float>(arm_cos_f32(theta_e), arm_sin_f32(theta_e));
 
@@ -535,7 +544,7 @@ void MotorDrive::UpdateRotor()
 void MotorDrive::EstimateRotor()
 {
 	Rencest_ +=  lpf_Wenc_.Output();
-	float theta_e = GetEncoderDir() * GetElectricAngle(Rencest_);
+	float theta_e = GetEncoderDir() * GetElectricAngle((Rencest_ - config_.pos_offset_) & enc_position_mask_);
 	E_ = std::complex<float>(arm_cos_f32(theta_e), arm_sin_f32(theta_e));
 }
 
