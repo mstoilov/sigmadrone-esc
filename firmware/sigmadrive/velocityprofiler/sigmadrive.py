@@ -9,7 +9,7 @@ import trapezoidprofile as tp
 # pip3 install pyserial
 # pip3 install matplotlib
 
-def rpc_call(method, params, dev="/dev/cu.usbserial-A10M4W77"):
+def rpc_call(method, params, dev):
     request = {
         "id" : "noid", 
         "jsonrpc" : "1.0", 
@@ -36,7 +36,7 @@ def rpc_call(method, params, dev="/dev/cu.usbserial-A10M4W77"):
     return response
 
 class drive:
-    def __init__(self, name, device = '/dev/cu.usbserial-A10M4W77'):
+    def __init__(self, name, device):
         self.namestr = name
         self.device = device
 
@@ -363,13 +363,11 @@ class drive:
 
 
 class axis:
-    def __init__(self, name, device = '/dev/cu.usbserial-A10M4W77'):
+    def __init__(self, name, device):
         self.namestr = name
         self.drive = drive(name, device)
         self.device = device
-
-
-
+ 
     def getcfg(self, name):
         return rpc_call("getcfg", [self.namestr + "." + name], self.device)["result"]
     def setcfg(self, name, value):
@@ -614,90 +612,98 @@ class axis:
         pp.ylabel('Current')
         pp.show()
 
-def push(axis, points):
-    for i in range(0, len(points)):
-        axis.push(int(points[i][0]), points[i][1], points[i][2])
 
-def Go():
-    rpc_call("go", [])
+class util:
+    def __init__(self, device):
+        self.device = device
 
-def Stop():
-    rpc_call("stop", [])
+    def rpc_call(self, method, params):
+        rpc_call(method, params, self.device)
 
-def Modeclp():
-    rpc_call("modeclp", [])
+    def push(self, axis, points):
+        for i in range(0, len(points)):
+            axis.push(int(points[i][0]), points[i][1], points[i][2])
 
-def mvxy(posX, posY, V, Acc, Dec):
-    rpc_call("mvxy", [posX, posY, V, Acc, Dec])
+    def Go(self):
+        self.rpc_call("go", [])
 
-def mvpolar(D, angle, V, Acc, Dec):
-    rpc_call("mvpolar", [D, float(angle), V, Acc, Dec])
+    def Stop(self):
+        self.rpc_call("stop", [])
 
-def gomvxy(posX, posY, V, Acc, Dec):
-    rpc_call("gomvxy", [posX, posY, V, Acc, Dec])
+    def Modeclp(self):
+        self.rpc_call("modeclp", [])
 
-def gomvpolar(D, angle, V, Acc, Dec):
-    rpc_call("gomvpolar", [D, float(angle), V, Acc, Dec])
+    def mvxy(self, posX, posY, V, Acc, Dec):
+        self.rpc_call("mvxy", [posX, posY, V, Acc, Dec])
 
-def mvrx(axis, P, V, A, D):
-    curtarget = axis.target
-    newtarget = curtarget + P
-    points = tp.CalculateTrapezoidPoints(curtarget, newtarget, 0, 0, V, A, D, axis.drive.update_hz)
-    for i in range(0, len(points)):
-        axis.push(int(points[i][0]), points[i][1], points[i][2])
-    axis.target = newtarget
-    axis.go()
-    return points
+    def mvpolar(self, D, angle, V, Acc, Dec):
+        self.rpc_call("mvpolar", [D, float(angle), V, Acc, Dec])
 
-def mvrxy(x, y, distance, angle, V, Acc):
-    i = np.cos(angle)
-    j = np.sin(angle)
-    curtarget_x = x.target
-    newtarget_x = curtarget_x + distance * i
-    velocity_x = V * i
-    acceleration_x = Acc * i
-    curtarget_y = y.target
-    newtarget_y = curtarget_y + distance * j
-    velocity_y = V * j
-    acceleration_y = Acc * j
+    def gomvxy(self, posX, posY, V, Acc, Dec):
+        self.rpc_call("gomvxy", [posX, posY, V, Acc, Dec])
 
-    points_x = tp.CalculateTrapezoidPoints(curtarget_x, newtarget_x, 0, 0, velocity_x, acceleration_x, acceleration_x, x.drive.update_hz)
-    x.trajectory(points_x)
-    x.target = int(newtarget_x)
-    points_y = tp.CalculateTrapezoidPoints(curtarget_y, newtarget_y, 0, 0, velocity_y, acceleration_y, acceleration_y, y.drive.update_hz)
-    y.trajectory(points_y)
-    y.target = int(newtarget_y)
-    return points_x, points_y
+    def gomvpolar(self, D, angle, V, Acc, Dec):
+        self.rpc_call("gomvpolar", [D, float(angle), V, Acc, Dec])
 
-def mvromb(D, V, Acc, Dec):
-    mvpolar(D, np.deg2rad(30), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(60), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(210), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(240), V, Acc, Decc)
-    Go()
+    def mvrx(self, axis, P, V, A, D):
+        curtarget = axis.target
+        newtarget = curtarget + P
+        points = tp.CalculateTrapezoidPoints(curtarget, newtarget, 0, 0, V, A, D, axis.drive.update_hz)
+        for i in range(0, len(points)):
+            axis.push(int(points[i][0]), points[i][1], points[i][2])
+        axis.target = newtarget
+        axis.go()
+        return points
 
-# Example:
-# sd.mvromb2(1000000, 2000000, 20000000, 2000000)
-#
-def mvromb2(D, V, Acc, Dec):
-    mvpolar(D, np.deg2rad(30), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(60), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(210), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(240), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(60), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(90), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(240), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(270), V, Acc, Dec)
-    Go()
+    def mvrxy(self, x, y, distance, angle, V, Acc):
+        i = np.cos(angle)
+        j = np.sin(angle)
+        curtarget_x = x.target
+        newtarget_x = curtarget_x + distance * i
+        velocity_x = V * i
+        acceleration_x = Acc * i
+        curtarget_y = y.target
+        newtarget_y = curtarget_y + distance * j
+        velocity_y = V * j
+        acceleration_y = Acc * j
 
-def mvhexagon(D, V, Acc, Dec):
-    mvpolar(D, np.deg2rad(60), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(120), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(180), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(240), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(300), V, Acc, Dec)
-    mvpolar(D, np.deg2rad(360), V, Acc, Dec)
-    Go()
+        points_x = tp.CalculateTrapezoidPoints(curtarget_x, newtarget_x, 0, 0, velocity_x, acceleration_x, acceleration_x, x.drive.update_hz)
+        x.trajectory(points_x)
+        x.target = int(newtarget_x)
+        points_y = tp.CalculateTrapezoidPoints(curtarget_y, newtarget_y, 0, 0, velocity_y, acceleration_y, acceleration_y, y.drive.update_hz)
+        y.trajectory(points_y)
+        y.target = int(newtarget_y)
+        return points_x, points_y
+
+    def mvromb(self, D, V, Acc, Dec):
+        self.mvpolar(D, np.deg2rad(30), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(60), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(210), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(240), V, Acc, Decc)
+        self.Go()
+
+    # Example:
+    # sd.mvromb2(1000000, 2000000, 20000000, 2000000)
+    #
+    def mvromb2(self, D, V, Acc, Dec):
+        self.mvpolar(D, np.deg2rad(30), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(60), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(210), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(240), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(60), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(90), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(240), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(270), V, Acc, Dec)
+        self.Go()
+
+    def mvhexagon(self, D, V, Acc, Dec):
+        self.mvpolar(D, np.deg2rad(60), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(120), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(180), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(240), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(300), V, Acc, Dec)
+        self.mvpolar(D, np.deg2rad(360), V, Acc, Dec)
+        self.Go()
 
 
 def capture_position(x, y):
