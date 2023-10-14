@@ -414,7 +414,7 @@ bool MotorDrive::IsStarted()
 	return pwm_->IsStarted();
 }
 
-/** IrqUpdateCallback is the interrupt handler that drives the motor.
+/** 
  *
  * We use center aligned PWM. When the counter is going up the
  * current through the windings should be zero at that point
@@ -433,14 +433,6 @@ bool MotorDrive::IsStarted()
  *
  * ```
  */
-void MotorDrive::IrqUpdateCallback()
-{
-	if (pwm_->GetCounterDirection()) {
-		UpdateBias();
-	} else {
-		UpdateCurrent();
-	}
-}
 
 
 void MotorDrive::UpdateBias()

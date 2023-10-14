@@ -64,7 +64,6 @@ public:
 	virtual ~MotorDrive();
 
 	void Attach();
-	void IrqUpdateCallback();
 
 	float CalculatePhaseCurrent(float adc_val, float adc_bias);
 	float VoltageToDuty(float voltage, float v_bus);

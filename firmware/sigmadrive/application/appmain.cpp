@@ -136,6 +136,26 @@ void SD_TIM1_IRQHandler(TIM_HandleTypeDef* htim)
 
 //#define NO_AXIS2_UPDATE
 
+/** SD_ADC_IRQHandler is the interrupt handler that drives the motor.
+ *
+ * We use center aligned PWM. When the counter is going up the
+ * current through the windings should be zero at that point
+ * we update the bias. When the counter is going down we update
+ * the current.
+ * ```
+ *   |       _____|_____       |
+ *   |      |     |     |      |
+ *   |______|     |     |______|
+ *   |            |            |
+ *   /\     up    /\     down
+ *    \            \
+ *     \            \___ update current
+ *      \
+ *       \___update bias
+ *
+ * ```
+ */
+
 extern "C"
 void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 {
