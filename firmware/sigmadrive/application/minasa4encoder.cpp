@@ -1,8 +1,9 @@
 /*
  * panasonic_ma4_encoder.cpp
  *
- *  Created on: Mar 9, 2019
+ *  Created on: Oct 16, 2023
  *      Author: svetlio
+ *      Author: Martin Stoilov
  */
 
 #include "minasa4encoder.h"

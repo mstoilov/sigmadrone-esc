@@ -38,6 +38,7 @@
 #include "motorctrl_foc.h"
 #include "rexjson/rexjsonproperty.h"
 #include "minasa4encoder.h"
+#include "encoder_minas.h"
 #include "dumbencoder.h"
 #include "hrtimer.h"
 #include "flashmemory.h"
@@ -63,8 +64,8 @@ CdcIface usb_cdc;
 // QuadratureEncoder tim4(0x2000);
 // Exti encoder_z(ENCODER_Z_Pin, []()->void{tim4.CallbackIndex();});
 DumbEncoder dumb_encoder;
-MinasA4Encoder ma4_abs_encoder1;
-MinasA4Encoder ma4_abs_encoder2;
+EncoderMinas ma4_abs_encoder1;
+EncoderMinas ma4_abs_encoder2;
 Drv8323 drv1(spi2, GPIOC, GPIO_PIN_13, GPIOE, GPIO_PIN_15);
 Drv8323 drv2(spi2, GPIOC, GPIO_PIN_14, GPIOB, GPIO_PIN_2);
 MotorDrive motor_drive1(1, &drv1, &adc1, &adc1, &ma4_abs_encoder1, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
@@ -551,15 +552,11 @@ int application_main()
 	/*
 	 * Set up RPC properties/methods for the encoders.
 	 */
-	if (ma4_abs_encoder1.GetDeviceId() != 0) {
-		g_props.insert("enc1", ma4_abs_encoder1.GetPropertyMap());
-		ma4_abs_encoder1.RegisterRpcMethods("enc1.");
-	}
+	g_props.insert("enc1", ma4_abs_encoder1.GetPropertyMap());
+	ma4_abs_encoder1.RegisterRpcMethods("enc1.");
 
-	if (ma4_abs_encoder2.GetDeviceId() != 0) {
-		g_props.insert("enc2", ma4_abs_encoder2.GetPropertyMap());
-		ma4_abs_encoder1.RegisterRpcMethods("enc2.");
-	}
+	g_props.insert("enc2", ma4_abs_encoder2.GetPropertyMap());
+	ma4_abs_encoder2.RegisterRpcMethods("enc2.");
 
 	adc1.Attach(&hadc1, 6, true);
 	adc2.Attach(&hadc2, 3, false);
