@@ -520,7 +520,7 @@ void MotorDrive::UpdateRotor()
 	uint64_t Renc_prev = Renc_; 
 	Renc_ = GetEncoderPosition();
 	Rencest_ = (Renc_ + config_.pos_offset_) & enc_position_mask_;
-	float theta_e = config_.encoder_dir_ * GetElectricAngle(Renc_);
+	float theta_e = GetEncoderDir() * GetElectricAngle(Renc_);
 	float cos_theta = arm_cos_f32(theta_e);
 	float sin_theta = arm_sin_f32(theta_e);
 	E_ = std::complex<float>(cos_theta, sin_theta);
@@ -541,6 +541,8 @@ void MotorDrive::UpdateRotor()
 void MotorDrive::EstimateRotor()
 {
 	Rencest_ = (Rencpred_ + config_.pos_offset_) & enc_position_mask_;
+	float theta_e = GetEncoderDir() * GetElectricAngle((Rencest_ - config_.pos_offset_) & enc_position_mask_);
+	E_ = std::complex<float>(arm_cos_f32(theta_e), arm_sin_f32(theta_e));
 }
 
 /** Return the current rotor position in encoder counts
