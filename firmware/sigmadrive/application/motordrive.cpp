@@ -781,7 +781,7 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 		}
 		for (size_t i = 0; (i < update_hz_) && ret; i++) {
 			ret = sched_.RunUpdateHandler([&]()->bool {
-				ApplyPhaseVoltage(reset_voltage * 4, std::polar<float>(1.0f, 0));
+				ApplyPhaseVoltage(reset_voltage * 1.5, std::polar<float>(1.0f, 0));
 				return false;
 			});
 		};
