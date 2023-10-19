@@ -143,15 +143,21 @@ size_t CdcIface::ReceiveOnce(char* buffer, size_t nsize)
 {
 	if (!nsize)
 		return 0;
-	size_t readsize = std::min(rx_ringbuf_.read_size(), nsize);
-	std::copy(rx_ringbuf_.get_read_ptr(), rx_ringbuf_.get_read_ptr() + readsize, buffer);
-	rx_ringbuf_.read_update(readsize);
-
+	nsize = std::min(rx_ringbuf_.read_size(), nsize);
+	if (nsize) {
+		const char *src = rx_ringbuf_.get_read_ptr();
+		for (size_t i = 0; i < nsize; i++) {
+			buffer[i] = src[i];
+			if (buffer[i] == '\n')
+				nsize = i + 1;
+		}
+		rx_ringbuf_.read_update(nsize);
+	}
 	if (rx_initiated_ == false && rx_ringbuf_.space_size() > rx_ringbuf_.capacity()/2) {
 		rx_initiated_ = true;
 		CDC_Receive_Initiate();
 	}
-	return readsize;
+	return nsize;
 }
 
 size_t CdcIface::Receive(char* buffer, size_t nsize)
@@ -176,10 +182,10 @@ size_t CdcIface::ReceiveLine(char* buffer, size_t nsize)
 	size_t ret = 0;
 	size_t offset = 0;
 	while (nsize) {
-		recvsiz = ReceiveOnce(buffer + offset, 1);
+		recvsiz = ReceiveOnce(buffer + offset, nsize);
 		if (recvsiz <= 0)
 			break;
-		if (buffer[offset] == '\n')
+		if (buffer[offset + recvsiz] == '\n')
 			return ret + recvsiz;
 		ret += recvsiz;
 		offset += recvsiz;
@@ -188,6 +194,21 @@ size_t CdcIface::ReceiveLine(char* buffer, size_t nsize)
 	return ret;
 }
 
+std::string CdcIface::GetLine()
+{
+	char rxbuffer[64];
+	size_t ret = 0;
+	std::string recv;
+
+again:
+	ret = ReceiveOnce(rxbuffer, sizeof(rxbuffer) - 1);
+	if (ret < 0)
+		return recv;
+	recv += std::string(rxbuffer, ret);
+	if (rxbuffer[ret - 1] != '\n')
+		goto again;
+	return recv;
+}
 
 int8_t CdcIface::ReceiveComplete(uint8_t* buf, uint32_t len)
 {

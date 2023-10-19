@@ -27,6 +27,7 @@ public:
 	size_t Transmit(const std::string& str);
 	size_t Receive(char* buffer, size_t nsize);
 	size_t ReceiveLine(char* buffer, size_t nsize);
+	std::string GetLine();
 	void RunTxLoop();
 	static handle_map_type handle_map_;
 
