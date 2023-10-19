@@ -16,12 +16,14 @@ CdcIface::handle_map_type CdcIface::handle_map_;
 CdcIface::CdcIface()
 {
 	// TODO Auto-generated constructor stub
+	cdcevt_id_ = osEventFlagsNew(nullptr);
 
 }
 
 CdcIface::~CdcIface()
 {
 	// TODO Auto-generated destructor stub
+	osEventFlagsDelete(cdcevt_id_);
 }
 
 void CdcIface::Attach(USBD_HandleTypeDef* usbd, bool start_tx_thread)
@@ -29,34 +31,17 @@ void CdcIface::Attach(USBD_HandleTypeDef* usbd, bool start_tx_thread)
 	usbd_ = usbd;
 	assert(handle_map_.find(usbd) == handle_map_.end());
 	handle_map_[usbd_] = this;
-	if (start_tx_thread)
-		StartTxThread();
-
 }
 
-size_t CdcIface::TransmitNoWait(const char* buffer, size_t nsize)
+size_t CdcIface::TransmitOnce(const char* buffer, size_t nsize)
 {
-	size_t space_size = tx_ringbuf_.space_size();
-	if ((space_size < tx_ringbuf_.capacity() / 2) || !nsize) {
-		/* Nothing to send
-		 *
-		 * or
-		 *
-		 * If the queue is out of space
-		 * just drop the write request.
-		 */
-		SignalDataToTransmit();
-		return nsize;
-	}
-
-	nsize = std::min(tx_ringbuf_.write_size(), nsize);
-	std::copy(buffer, buffer + nsize, tx_ringbuf_.get_write_ptr());
-	tx_ringbuf_.write_update(nsize);
-	SignalDataToTransmit();
-	return nsize;
+	size_t ret = std::min(nsize, (size_t)64);
+	while (CDC_Transmit_FS((uint8_t*)buffer, ret) == USBD_BUSY)
+		osDelay(1);
+	return ret;
 }
 
-size_t CdcIface::TransmitCanWait(const char* buffer, size_t nsize)
+size_t CdcIface::Transmit(const char* buffer, size_t nsize)
 {
 	const char *p = buffer;
 	size_t size = nsize;
@@ -70,94 +55,44 @@ size_t CdcIface::TransmitCanWait(const char* buffer, size_t nsize)
 	return nsize;
 }
 
-
-size_t CdcIface::TransmitOnce(const char* buffer, size_t nsize)
-{
-	size_t ret = std::min(nsize, (size_t)64);
-	while (CDC_Transmit_FS((uint8_t*)buffer, ret) == USBD_BUSY)
-		osDelay(2);
-	return ret;
-}
-
-size_t CdcIface::Transmit(const char* buffer, size_t nsize)
-{
-	if (tx_thread_) {
-		return TransmitNoWait(buffer, nsize);
-	} else {
-		return TransmitCanWait(buffer, nsize);
-	}
-}
-
 size_t CdcIface::Transmit(const std::string& str)
 {
 	return Transmit(str.c_str(), str.size());
 }
 
-void CdcIface::RunTxLoop()
+bool CdcIface::WaitDataToReceive()
 {
-	for (;;) {
-		if (WaitDataToTransmit()) {
-			size_t nsize = 0;
-			while ((nsize = tx_ringbuf_.read_size()) != 0) {
-				char* buffer = tx_ringbuf_.get_read_ptr();
-				size_t ret = TransmitOnce(buffer, nsize);
-				tx_ringbuf_.read_update(ret);
-			}
-		}
-	}
-
-	tx_thread_ = 0;
+	return (osEventFlagsWait(cdcevt_id_, SIGNAL_RX_DATA_READY, osFlagsWaitAny, osWaitForever) == SIGNAL_RX_DATA_READY) ? true : false;
 }
 
-static void RunTxLoopWrapper(void* ctx)
+void CdcIface::SignalDataToReceive()
 {
-	reinterpret_cast<CdcIface*>(const_cast<void*>(ctx))->RunTxLoop();
-}
-
-bool CdcIface::WaitDataToTransmit()
-{
-	return (osThreadFlagsWait(SIGNAL_TX_DATA_READY, osFlagsWaitAll, tx_timeout_) == SIGNAL_TX_DATA_READY) ? true : false;
-}
-
-void CdcIface::SignalDataToTransmit()
-{
-	if (tx_thread_)
-		osThreadFlagsSet(tx_thread_, SIGNAL_TX_DATA_READY);
-}
-
-void CdcIface::StartTxThread()
-{
-	osThreadAttr_t task_attributes;
-	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
-	task_attributes.name = "CdcTxLoop";
-	task_attributes.priority = (osPriority_t) osPriorityNormal;
-	task_attributes.stack_size = 2048;
-	tx_thread_ = osThreadNew(RunTxLoopWrapper, this, &task_attributes);
-
-
-//	osThreadDef(RunTxLoopWrapper, osPriorityNormal, 0, 2048);
-//	tx_thread_ = osThreadCreate(&os_thread_def_RunTxLoopWrapper, this);
+	osEventFlagsSet(cdcevt_id_, SIGNAL_RX_DATA_READY);
 }
 
 size_t CdcIface::ReceiveOnce(char* buffer, size_t nsize)
 {
 	if (!nsize)
 		return 0;
-	nsize = std::min(rx_ringbuf_.read_size(), nsize);
-	if (nsize) {
-		const char *src = rx_ringbuf_.get_read_ptr();
-		for (size_t i = 0; i < nsize; i++) {
-			buffer[i] = src[i];
-			if (buffer[i] == '\n')
-				nsize = i + 1;
+	size_t recvsize = 0;
+again:
+	recvsize = std::min(rx_ringbuf_.read_size(), nsize);
+	if (!recvsize) {
+		if (rx_initiated_ == false && rx_ringbuf_.space_size() > rx_ringbuf_.capacity()/2) {
+			rx_initiated_ = true;
+			CDC_Receive_Initiate();
 		}
-		rx_ringbuf_.read_update(nsize);
+		WaitDataToReceive();
+		goto again;
 	}
-	if (rx_initiated_ == false && rx_ringbuf_.space_size() > rx_ringbuf_.capacity()/2) {
-		rx_initiated_ = true;
-		CDC_Receive_Initiate();
+	const char *src = rx_ringbuf_.get_read_ptr();
+	for (size_t i = 0; i < recvsize; i++) {
+		buffer[i] = src[i];
+		if (buffer[i] == '\n')
+			recvsize = i + 1;
 	}
-	return nsize;
+	rx_ringbuf_.read_update(recvsize);
+	return recvsize;
 }
 
 size_t CdcIface::Receive(char* buffer, size_t nsize)
@@ -185,7 +120,7 @@ size_t CdcIface::ReceiveLine(char* buffer, size_t nsize)
 		recvsiz = ReceiveOnce(buffer + offset, nsize);
 		if (recvsiz <= 0)
 			break;
-		if (buffer[offset + recvsiz] == '\n')
+		if (buffer[offset + recvsiz - 1] == '\n')
 			return ret + recvsiz;
 		ret += recvsiz;
 		offset += recvsiz;
@@ -221,6 +156,7 @@ int8_t CdcIface::ReceiveComplete(uint8_t* buf, uint32_t len)
 		rx_ringbuf_.write_update(copy_size);
 		len -= copy_size;
 		offset += copy_size;
+		SignalDataToReceive();
 	}
 
 	if (rx_ringbuf_.space_size() > rx_ringbuf_.capacity()/2) {

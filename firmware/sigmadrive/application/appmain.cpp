@@ -99,18 +99,21 @@ void RunRpcTask(void *argument)
 	std::string id;
 	for (;;) {
 		try {
-			std::string reqstr = rpc_uart.GetLine();
+			std::string reqstr = usb_cdc.GetLine();
 			id = rexjson::read(reqstr)["id"].to_string();
 			rexjson::value res = rpc_server.call(reqstr);
 			std::string response = res.write(false, true, 0, 9);
 			response += "\r\n";
-			rpc_uart.Transmit(response);
+			usb_cdc.Transmit(response);
 
 			/*
 			 * Log the Request/Response
 			 */
-			usb_cdc.Transmit(reqstr);
-			usb_cdc.Transmit(response);
+			reqstr.erase(reqstr.find_last_not_of(" \n\r\t")+1);
+			response.erase(response.find_last_not_of(" \n\r\t")+1);
+			std::cerr << reqstr << "\r\n";
+			std::cerr << response << "\r\n";
+
 
 		} catch (std::exception& e) {
 			rexjson::object ret;
@@ -119,7 +122,7 @@ void RunRpcTask(void *argument)
 			errobj["code"] = rexjson::RPC_MISC_ERROR;
 			ret["id"] = id;
 			ret["error"] = errobj;
-			rpc_uart.Transmit(rexjson::value(ret).write(false, true) + "\r\n");
+			usb_cdc.Transmit(rexjson::value(ret).write(false, true) + "\r\n");
 		}
 	}
 }
