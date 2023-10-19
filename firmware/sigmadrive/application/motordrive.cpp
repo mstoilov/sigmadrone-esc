@@ -73,6 +73,7 @@ void MotorDrive::RegisterRpcMethods(const std::string& prefix)
 	rpc_server.add(prefix, "add_task_rotate_motor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskRotateMotor, "void AddTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
 	rpc_server.add(prefix, "add_task_reset_rotor", rexjson::make_rpc_wrapper(this, &MotorDrive::AddTaskResetRotorWithParams, "void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder)"));
 	rpc_server.add(prefix, "alpha_pole_search", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskAlphaPoleSearch, "void RunTaskAlphaPoleSearch()"));
+	rpc_server.add(prefix, "reset_rotor_hold", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskResetRotorAndHold, "void RunTaskResetRotorAndHold()"));
 	rpc_server.add(prefix, "rotate", rexjson::make_rpc_wrapper(this, &MotorDrive::RunTaskRotateMotor, "void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir)"));
 	rpc_server.add(prefix, "velocitypts", rexjson::make_rpc_wrapper(this, &MotorDrive::GetRotorVelocityPTS, "void GetRotorVelocityPTS()"));
 	rpc_server.add(prefix, "set_resolution_bits", rexjson::make_rpc_wrapper(this, &MotorDrive::SetResolutionBits, "void SetResolutionBits(uint32_t resolution_bits)"));
@@ -780,7 +781,7 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 		}
 		for (size_t i = 0; (i < update_hz_) && ret; i++) {
 			ret = sched_.RunUpdateHandler([&]()->bool {
-				ApplyPhaseVoltage(reset_voltage * 1.5, std::polar<float>(1.0f, 0));
+				ApplyPhaseVoltage(reset_voltage * 4, std::polar<float>(1.0f, 0));
 				return false;
 			});
 		};
@@ -832,6 +833,19 @@ void MotorDrive::AddTaskCalibrationSequence(bool reset_rotor)
 	AddTaskDetectEncoderDir();
 	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
 	AddTaskDisarmMotor();
+}
+
+void MotorDrive::RunTaskResetRotorAndHold()
+{
+	AddTaskArmMotor();
+	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
+	sched_.AddTask([&](void){
+			sched_.RunUpdateHandler([&]()->bool {
+				ApplyPhaseVoltage(config_.reset_voltage_, std::polar<float>(1, 0));
+				return true;
+			});
+	});
+	sched_.Run();
 }
 
 void MotorDrive::RunTaskAlphaPoleSearch()

@@ -335,7 +335,7 @@ bool EncoderMinas::Initialize()
 
 void EncoderMinas::ResetPosition()
 {
-
+	ResetErrorCodeF();
 }
 
 uint32_t EncoderMinas::GetResolutionBits()

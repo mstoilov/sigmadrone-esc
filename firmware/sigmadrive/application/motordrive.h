@@ -144,6 +144,7 @@ public:
 	void RunTaskRotateMotor(float angle, float speed, float voltage, bool dir);
 	void RunSimpleTasks();
 	void AddTaskCalibrationSequence(bool reset_rotor);
+	void RunTaskResetRotorAndHold();
 	float RunResistanceMeasurement(float seconds, float test_voltage);
 	float RunInductanceMeasurement(float seconds, float test_voltage, uint32_t test_hz);
 	void RunEncoderDisplayDebugInfo();
