@@ -29,10 +29,11 @@ extern HRTimer hrtimer;
 class MotorDrive {
 public:
 	struct Config {
-		int32_t encoder_dir_ = 1;				            /**< Encoder direction: (1) - encoder increasing or (-1) encoder decreasing */
+		int32_t encoder_dir_ = 1;                           /**< Encoder direction: (1) - encoder increasing or (-1) encoder decreasing */
 		uint32_t reset_hz_ = 35;                            /**< Rotor reset rate. The rotor is oscilated with this rate during the reset process */
-		uint32_t pole_pairs = 7;                            /**< Motor pole pairs */
-		uint32_t adc_full_scale = (1 << 12);                /**< ADC converter full scale */
+		uint32_t pole_pairs_ = 7;                           /**< Motor pole pairs */
+		int32_t pole_offset_ = 0;                           /**< The mechanical offset of the magnetic pole in encoder counts */
+		uint32_t adc_full_scale_ = (1 << 12);               /**< ADC converter full scale */
 		uint32_t display_div_ = 2999;
 		uint32_t enc_skip_updates_ = 1;                     /**< How many update interrupts to skip, before initiating a new encoder update */
 		uint32_t csa_gain_ = 10;                            /**< Current sensing amplifier gain */

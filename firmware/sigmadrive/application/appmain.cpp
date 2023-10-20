@@ -593,18 +593,18 @@ int application_main()
 	 * Reconfigure pole_pairs for panasonic motors
 	 */
 	if (motor_drive1.GetEncoder()->GetResolutionBits() == 17) {
-		motor_drive1.config_.pole_pairs = 4;
+		motor_drive1.config_.pole_pairs_ = 4;
 	} else if (motor_drive1.GetEncoder()->GetResolutionBits() == 23) {
-		motor_drive1.config_.pole_pairs = 5;
+		motor_drive1.config_.pole_pairs_ = 5;
 	}
 
 	/*
 	 * Reconfigure pole_pairs for panasonic motors
 	 */
 	if (motor_drive2.GetEncoder()->GetResolutionBits() == 17) {
-		motor_drive2.config_.pole_pairs = 4;
+		motor_drive2.config_.pole_pairs_ = 4;
 	} else if (motor_drive2.GetEncoder()->GetResolutionBits() == 23) {
-		motor_drive2.config_.pole_pairs = 5;
+		motor_drive2.config_.pole_pairs_ = 5;
 	}
 
 	RegisterRpcMethods();

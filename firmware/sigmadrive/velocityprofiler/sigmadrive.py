@@ -256,6 +256,13 @@ class drive:
         self.setcfg("pole_pairs", v)
 
     @property
+    def pole_offset(self):
+        return self.getcfg("pole_offset")
+    @pole_offset.setter
+    def pole_offset(self, v):
+        self.setcfg("pole_offset", v)
+
+    @property
     def reset_hz(self):
         return self.getcfg("reset_hz")
     @reset_hz.setter
@@ -338,6 +345,8 @@ class drive:
         return self.call("add_task_rotate_motor", [angle, speed, voltage, dir])
     def alpha_pole_search(self):
         return self.call("alpha_pole_search", [])
+    def reset_rotor_hold(self):
+        return self.call("reset_rotor_hold", [])
     def drv_clear_fault(self):
         return self.call("drv_clear_fault", [])
     def drv_get_fault1(self):
@@ -714,7 +723,7 @@ def capture_position(x, y):
     datay = datay[0:trim]
     pp.figure()
     pp.subplot(3,2,1)
-    pp.plot(datax, datay, label="Path")
+    pp.plot(datax, datay, color="orange", label="Path")
     pp.xlabel('X')
     pp.ylabel('Y')
     V = x.get_captured_velocity()

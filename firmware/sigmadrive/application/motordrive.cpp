@@ -200,7 +200,8 @@ rexjson::property MotorDrive::GetConfigPropertyMap()
 		{"calib_v", {&config_.calib_v_, rexjson::property_get<decltype(config_.calib_v_)>, rexjson::property_set<decltype(config_.calib_v_)>}},
 		{"resistance", {&config_.resistance_, rexjson::property_get<decltype(config_.resistance_)>, rexjson::property_set<decltype(config_.resistance_)>}},
 		{"inductance", {&config_.inductance_, rexjson::property_get<decltype(config_.inductance_)>, rexjson::property_set<decltype(config_.inductance_)>}},
-		{"pole_pairs", {&config_.pole_pairs, rexjson::property_get<decltype(config_.pole_pairs)>, rexjson::property_set<decltype(config_.pole_pairs)>}},
+		{"pole_pairs", {&config_.pole_pairs_, rexjson::property_get<decltype(config_.pole_pairs_)>, rexjson::property_set<decltype(config_.pole_pairs_)>}},
+		{"pole_offset", {&config_.pole_offset_, rexjson::property_get<decltype(config_.pole_offset_)>, rexjson::property_set<decltype(config_.pole_offset_)>}},
 		{"encoder_dir", {&config_.encoder_dir_, rexjson::property_get<decltype(config_.encoder_dir_)>, rexjson::property_set<decltype(config_.encoder_dir_)>}},
 		{"svm_saddle", {&config_.svm_saddle_, rexjson::property_get<decltype(config_.svm_saddle_)>, rexjson::property_set<decltype(config_.svm_saddle_)>}},
 		{"reset_voltage", {&config_.reset_voltage_, rexjson::property_get<decltype(config_.reset_voltage_)>, rexjson::property_set<decltype(config_.reset_voltage_)>}},
@@ -379,7 +380,7 @@ float MotorDrive::GetTimeSlice() const
  */
 uint32_t MotorDrive::GetPolePairs() const
 {
-	return config_.pole_pairs;
+	return config_.pole_pairs_;
 }
 
 /** Get the Vbus voltage after it has been
@@ -521,7 +522,7 @@ void MotorDrive::UpdateRotor()
 	uint64_t Renc_prev = Renc_; 
 	Renc_ = GetEncoderPosition();
 	Rencest_ = (Renc_ + config_.pos_offset_) & enc_position_mask_;
-	float theta_e = GetEncoderDir() * GetElectricAngle(Renc_);
+	float theta_e = GetEncoderDir() * GetElectricAngle(Renc_ - config_.pole_offset_);
 	float cos_theta = arm_cos_f32(theta_e);
 	float sin_theta = arm_sin_f32(theta_e);
 	E_ = std::complex<float>(cos_theta, sin_theta);
@@ -542,7 +543,7 @@ void MotorDrive::UpdateRotor()
 void MotorDrive::EstimateRotor()
 {
 	Rencest_ = (Rencpred_ + config_.pos_offset_) & enc_position_mask_;
-	// float theta_e = GetEncoderDir() * GetElectricAngle((Rencest_ - config_.pos_offset_) & enc_position_mask_);
+	// float theta_e = GetEncoderDir() * GetElectricAngle((Rencpred_ - config_.pole_offset_) & enc_position_mask_);
 	// E_ = std::complex<float>(arm_cos_f32(theta_e), arm_sin_f32(theta_e));
 }
 
@@ -579,7 +580,7 @@ int64_t MotorDrive::GetRotorPositionError(uint64_t position, uint64_t target)
 float MotorDrive::GetElectricAngle(uint64_t enc_position) const
 {
 	uint32_t enc_orientation = enc_position & enc_resolution_mask_;
-	uint32_t cpr_per_pair = (enc_cpr_ / config_.pole_pairs);
+	uint32_t cpr_per_pair = (enc_cpr_ / config_.pole_pairs_);
 	return (2.0f * M_PI / cpr_per_pair) * (enc_orientation % cpr_per_pair);
 }
 
@@ -623,12 +624,12 @@ float MotorDrive::GetRotorVelocityPTS()
  */
 float MotorDrive::GetRotorElecVelocityPTS()
 {
-	return GetRotorVelocityPTS() * config_.pole_pairs;
+	return GetRotorVelocityPTS() * config_.pole_pairs_;
 }
 
 float MotorDrive::CalculatePhaseCurrent(float adc_val, float adc_bias)
 {
-	return ((adc_bias - adc_val) * config_.Vref_ / config_.adc_full_scale) / config_.Rsense_ / config_.csa_gain_;
+	return ((adc_bias - adc_val) * config_.Vref_ / config_.adc_full_scale_) / config_.Rsense_ / config_.csa_gain_;
 }
 
 float MotorDrive::VoltageToDuty(float voltage, float v_bus)
@@ -733,8 +734,8 @@ void MotorDrive::AddTaskDisarmMotor()
 
 bool MotorDrive::RunUpdateHandlerRotateMotor(float angle, float speed, float voltage, bool dir)
 {
-	float el_speed = speed * config_.pole_pairs;
-	float total_rotation = angle * config_.pole_pairs;
+	float el_speed = speed * config_.pole_pairs_;
+	float total_rotation = angle * config_.pole_pairs_;
 	float total_time = total_rotation / el_speed;
 	uint32_t total_cycles = update_hz_ * total_time;
 	std::complex<float> step = std::polar<float>(1.0, total_rotation/total_cycles);
@@ -787,6 +788,9 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 		};
 		if (reset_encoder)
 			encoder_->ResetPosition();
+		config_.pole_offset_ = GetEncoderPosition() % (enc_cpr_ / config_.pole_pairs_);
+		if (config_.pole_offset_ > (int32_t)(enc_cpr_ / config_.pole_pairs_ / 2))
+			config_.pole_offset_ -= enc_cpr_ / config_.pole_pairs_;
 	}, reset_voltage, reset_hz, reset_encoder));
 }
 
@@ -856,8 +860,8 @@ void MotorDrive::RunTaskAlphaPoleSearch()
 		AddTaskDetectEncoderDir();
 	}
 	AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_);
-	for (size_t i = 0; i < config_.pole_pairs; i++) {
-		AddTaskRotateMotor((M_PI * 2)/(config_.pole_pairs + 1), M_PI, 0.45, true);
+	for (size_t i = 0; i < config_.pole_pairs_; i++) {
+		AddTaskRotateMotor((M_PI * 2)/(config_.pole_pairs_ + 1), M_PI, 0.45, true);
 		AddTaskResetRotorWithParams(config_.reset_voltage_, config_.reset_hz_, false);
 		sched_.AddTask([&](void){
 			fprintf(stderr, "Enc: %7lu\r\n", (uint32_t)(GetEncoderPosition() & enc_resolution_bits_));
