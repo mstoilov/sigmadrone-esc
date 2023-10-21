@@ -788,7 +788,7 @@ void MotorDrive::AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset
 		};
 		if (reset_encoder)
 			encoder_->ResetPosition();
-		config_.pole_offset_ = GetEncoderPosition() % (enc_cpr_ / config_.pole_pairs_);
+		config_.pole_offset_ = (GetEncoderPosition() % enc_cpr_) % (enc_cpr_ / config_.pole_pairs_);
 		if (config_.pole_offset_ > (int32_t)(enc_cpr_ / config_.pole_pairs_ / 2))
 			config_.pole_offset_ -= enc_cpr_ / config_.pole_pairs_;
 	}, reset_voltage, reset_hz, reset_encoder));
