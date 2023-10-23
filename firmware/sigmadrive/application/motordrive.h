@@ -110,9 +110,8 @@ public:
 
 	std::complex<float> GetPhaseCurrent() const;
 	void DefaultIdleTask();
-	bool CheckPhaseCurrentViolation(float current);
-	bool CheckPhaseVoltageViolation(float voltage);
-	bool CheckTripViolations();
+	bool AbortOnPhaseCurrentViolation(float current);
+	bool AbortOnBusVoltageViolation(float voltage);
 	void RegisterRpcMethods(const std::string& prefix);
 	rexjson::property GetPropertyMap();
 	rexjson::property GetConfigPropertyMap();
@@ -176,7 +175,6 @@ protected:
 	int32_t tim8_tim1_offset_ = 0;
 
 	float time_slice_;
-	uint32_t delay_trip_check_ = 0;
 	uint32_t enc_position_shiftright_ = 6;      /**< Shift right the encoder position value */
 	uint32_t enc_position_shiftleft_ = 0;       /**< Shift right the encoder position value */
 

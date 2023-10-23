@@ -501,11 +501,11 @@ void MotorDrive::UpdateCurrent()
 	float Ic = - phase_current_a_ - phase_current_b_;
 	Iab_ = Pa_ * Ia + Pb_ * Ib + Pc_ * Ic;
 
-
 	/*
 	 * Check for abnormal conditions.
 	 */
-	CheckTripViolations();
+	AbortOnBusVoltageViolation(lpf_vbus_.Output());
+	AbortOnPhaseCurrentViolation(std::abs(Iab_));
 
 	/*
 	 * Run the scheduler tasks
@@ -985,7 +985,7 @@ void MotorDrive::DefaultIdleTask()
 			- phase_current_a_ - phase_current_b_);
 }
 
-bool MotorDrive::CheckPhaseCurrentViolation(float current)
+bool MotorDrive::AbortOnPhaseCurrentViolation(float current)
 {
 	if (current > config_.trip_i_) {
 		Abort();
@@ -995,7 +995,7 @@ bool MotorDrive::CheckPhaseCurrentViolation(float current)
 	return false;
 }
 
-bool MotorDrive::CheckPhaseVoltageViolation(float voltage)
+bool MotorDrive::AbortOnBusVoltageViolation(float voltage)
 {
 	if (voltage > config_.trip_v_) {
 		Abort();
@@ -1003,22 +1003,6 @@ bool MotorDrive::CheckPhaseVoltageViolation(float voltage)
 		return true;
 	}
 	return false;
-}
-
-bool MotorDrive::CheckTripViolations()
-{
-	bool ret = false;
-	if (delay_trip_check_ < (update_hz_ / 4)) {
-		delay_trip_check_++;
-		return false;
-	}
-	ret = ret || CheckPhaseVoltageViolation(lpf_vbus_.Output());
-	ret = ret || CheckPhaseCurrentViolation(phase_current_a_);
-	ret = ret || CheckPhaseCurrentViolation(phase_current_b_);
-	ret = ret || CheckPhaseCurrentViolation(phase_current_c_);
-	if (ret)
-		delay_trip_check_ = 0;
-	return ret;
 }
 
 void MotorDrive::RunSimpleTasks()
