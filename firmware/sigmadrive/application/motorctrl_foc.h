@@ -23,9 +23,9 @@ class MotorCtrlFOC
 {
 protected:
 	struct Config {
-		float pid_current_kp_ = 2.4;            /**< Current PID regulator proportional gain */
-		float pid_current_ki_ = 570;            /**< Current PID regulator integral gain */
-		float pid_current_maxout_ = 45;         /**< Current PID regulator output limit */
+		float pid_current_kp_ = 1.5;            /**< Current PID regulator proportional gain */
+		float pid_current_ki_ = 300;            /**< Current PID regulator integral gain */
+		float pid_current_maxout_ = 60;         /**< Current PID regulator output limit */
 
 		float pid_w_kp_ = 0.40;                 /**< Velocity PID regulator proportional gain */
 		float pid_w_ki_ = 120;                  /**< Velocity PID regulator integral gain */
@@ -34,7 +34,7 @@ protected:
 		float pid_p_kp_ = 20;                   /**< Position PID regulator proportional gain */
 		float pid_p_maxout_ = 240;              /**< Position PID regulator output limit */
 
-		float tau_ratio_ = 2;                   /**< Constant used in the calculations of the closed loop PID regulator gains. Tratio = Tcl/Tp as per https://www.youtube.com/watch?v=3viD5ij60EI */
+		float tau_ratio_ = 3;                   /**< Constant used in the calculations of the closed loop PID regulator gains. Tratio = Tcl/Tp as per https://www.youtube.com/watch?v=3viD5ij60EI */
 		float vab_advance_factor_ = 1.5;        /**< Magnetic field advance factor. The V_ab will be advanced proportional to the rotor variable speed and this constant  */
 		float vq_bias_ = 0;                     /**< Bias for the q-voltage (Vq) PID regulator */
 		float w_bias_ = 0;                      /**< Bias for the velocity PID (W) regulator */
