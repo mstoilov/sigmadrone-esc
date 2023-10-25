@@ -24,7 +24,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
 	capture_velocity_.reserve(capture_capacity_);
 	capture_velocityspec_.reserve(capture_capacity_);
 	capture_current_.reserve(capture_capacity_);
-	StartDebugThread();
+	StartMonitorThread();
 	RegisterRpcMethods();
 }
 
@@ -156,6 +156,8 @@ rexjson::property MotorCtrlFOC::GetConfigPropertyMap()
 				})},
 		{"tau_ratio", {&config_.tau_ratio_, rexjson::property_get<decltype(config_.tau_ratio_)>, rexjson::property_set<decltype(config_.tau_ratio_)>}},
 		{"vab_advance_factor", {&config_.vab_advance_factor_, rexjson::property_get<decltype(config_.vab_advance_factor_)>, rexjson::property_set<decltype(config_.vab_advance_factor_)>}},
+		{"crash_current", {&config_.crash_current_, rexjson::property_get<decltype(config_.crash_current_)>, rexjson::property_set<decltype(config_.crash_current_)>}},
+		{"crash_backup", {&config_.crash_backup_, rexjson::property_get<decltype(config_.crash_backup_)>, rexjson::property_set<decltype(config_.crash_backup_)>}},
 		{"display", {&config_.display_, rexjson::property_get<decltype(config_.display_)>, rexjson::property_set<decltype(config_.display_)>}},
 	});
 	return props;
@@ -167,10 +169,10 @@ void MotorCtrlFOC::Stop()
 	drive_->Abort();
 }
 
-void MotorCtrlFOC::RunDebugLoop()
+void MotorCtrlFOC::RunMonitorLoop()
 {
 	for (;;) {
-		uint32_t status = osThreadFlagsWait(SIGNAL_DEBUG_DUMP_POSITION | SIGNAL_DEBUG_DUMP_TRAJECTORY | SIGNAL_DEBUG_DUMP_VELOCITY | SIGNAL_DEBUG_DUMP_TORQUE | SIGNAL_DEBUG_DUMP_SPIN, osFlagsWaitAny, -1);
+		uint32_t status = osThreadFlagsWait(SIGNAL_DEBUG_DUMP_POSITION | SIGNAL_DEBUG_DUMP_TRAJECTORY | SIGNAL_DEBUG_DUMP_VELOCITY | SIGNAL_DEBUG_DUMP_TORQUE | SIGNAL_DEBUG_DUMP_SPIN | SIGNAL_CRASH_DETECTED, osFlagsWaitAny, -1);
 		if (status & osFlagsError) {
 			continue;
 		} else if (status & SIGNAL_DEBUG_DUMP_TORQUE) {
@@ -255,44 +257,72 @@ void MotorCtrlFOC::RunDebugLoop()
 					foc_time_,
 					config_.vab_advance_factor_ * drive_->GetRotorElecVelocityPTS()/drive_->GetEncoderCPR() * 2.0f * M_PI
 			);
+		} else if (status & SIGNAL_CRASH_DETECTED) {
+			if (velocity_stream_.data_size()) {
+				float V = velocity_stream_.get_read_ptr()->at(1);
+				uint64_t newtarget = (V > 0) ? target_ - config_.crash_backup_ : target_ + config_.crash_backup_;
+				std::vector<std::vector<int64_t>> backup = CalculateTrapezoidPoints(
+					target_,
+					newtarget,
+					0,
+					0,
+					250000,
+					2000000,
+					2000000,
+					drive_->GetUpdateFrequency()
+				);
+				velocity_stream_.clear();
+				for (const auto& v : backup) {
+					PushStreamPointV(v);
+				}
+				SetTarget(newtarget);
+				Go();
+			}
 		}
 	}
 }
 
 void MotorCtrlFOC::RunDebugLoopWrapper(void* ctx)
 {
-	reinterpret_cast<MotorCtrlFOC*>(const_cast<void*>(ctx))->RunDebugLoop();
+	reinterpret_cast<MotorCtrlFOC*>(const_cast<void*>(ctx))->RunMonitorLoop();
 }
 
 void MotorCtrlFOC::SignalDumpTrajectory()
 {
-	if (debug_thread_)
-		osThreadFlagsSet(debug_thread_, SIGNAL_DEBUG_DUMP_TRAJECTORY);
+	if (monitor_thread_)
+		osThreadFlagsSet(monitor_thread_, SIGNAL_DEBUG_DUMP_TRAJECTORY);
 }
 
 void MotorCtrlFOC::SignalDumpPosition()
 {
-	if (debug_thread_)
-		osThreadFlagsSet(debug_thread_, SIGNAL_DEBUG_DUMP_POSITION);
+	if (monitor_thread_)
+		osThreadFlagsSet(monitor_thread_, SIGNAL_DEBUG_DUMP_POSITION);
 }
 
 void MotorCtrlFOC::SignalDumpVelocity()
 {
-	if (debug_thread_)
-		osThreadFlagsSet(debug_thread_, SIGNAL_DEBUG_DUMP_VELOCITY);
+	if (monitor_thread_)
+		osThreadFlagsSet(monitor_thread_, SIGNAL_DEBUG_DUMP_VELOCITY);
 }
 
 void MotorCtrlFOC::SignalDumpTorque()
 {
-	if (debug_thread_)
-		osThreadFlagsSet(debug_thread_, SIGNAL_DEBUG_DUMP_TORQUE);
+	if (monitor_thread_)
+		osThreadFlagsSet(monitor_thread_, SIGNAL_DEBUG_DUMP_TORQUE);
 }
 
 void MotorCtrlFOC::SignalDumpSpin()
 {
-	if (debug_thread_)
-		osThreadFlagsSet(debug_thread_, SIGNAL_DEBUG_DUMP_SPIN);
+	if (monitor_thread_)
+		osThreadFlagsSet(monitor_thread_, SIGNAL_DEBUG_DUMP_SPIN);
 }
+
+void MotorCtrlFOC::SignalCrashDetected()
+{
+	if (monitor_thread_)
+		osThreadFlagsSet(monitor_thread_, SIGNAL_CRASH_DETECTED);
+}
+
 
 rexjson::array MotorCtrlFOC::GetCapturedPosition() 
 {
@@ -326,14 +356,14 @@ rexjson::array MotorCtrlFOC::GetCapturedCurrent()
 	return ret;
 }
 
-void MotorCtrlFOC::StartDebugThread()
+void MotorCtrlFOC::StartMonitorThread()
 {
 	osThreadAttr_t task_attributes;
 	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
 	task_attributes.name = "DebugFOC";
 	task_attributes.priority = (osPriority_t) osPriorityNormal;
 	task_attributes.stack_size = 2048;
-	debug_thread_ = osThreadNew(RunDebugLoopWrapper, this, &task_attributes);
+	monitor_thread_ = osThreadNew(RunDebugLoopWrapper, this, &task_attributes);
 }
 
 void MotorCtrlFOC::ModeSpin()
@@ -608,17 +638,31 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 		float A = 0.0f;
 		float T1 = 0;
 		float T2 = 0;
+		uint32_t crash_counter = 0;
 		velocity_stream_.clear();
 		target_ = drive_->GetRotorPosition();
 
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
 			std::complex<float> R = drive_->GetRotorElecRotation();
-			uint64_t enc_position = drive_->GetRotorPosition();
-			size_t update_counter = drive_->GetUpdateCounter();
+			uint64_t rotor_position = drive_->GetRotorPosition();
+			uint32_t update_counter = drive_->GetUpdateCounter();
 
-			if (velocity_stream_.empty())
+			if ((update_counter - crash_counter) > drive_->GetUpdateFrequency() 
+				&& drive_->GetPhaseCurrentMagnetude() >= config_.crash_current_) {
+					crash_counter = update_counter;
+					V1 = V2 = V = 0;
+					A = 0;
+					T1 = T2 = 0;
+					S = S2 = target_ = rotor_position;
+					prof_ptr = nullptr;
+					go_ = false;
+					SignalCrashDetected();
+			}
+
+			if (velocity_stream_.empty()) {
 				go_ = false;
+			}
 again:
 			if (go_ && !prof_ptr && !velocity_stream_.empty()) {
 				prof_ptr = velocity_stream_.get_read_ptr();
@@ -645,16 +689,16 @@ again:
 				*    /__|__|
 				*   0   T  T2
 				*
-				*  S is the face of the triangle 0-T-V
-				*  it is calculated by sustracting:
-				*  the face of the trapezoid T - T2 - V2 - V
+				*  S is the area of the triangle 0-T-V
+				*  it is calculated by subtracting:
+				*  the area of the trapezoid T - T2 - V2 - V
 				*  from S2
 				*  S = S2 - (V + V2) * (T2 - T) / 2
 				*/
 				uint32_t T = (update_counter - T1);
 				V = V1 + A * T;
 				S = S2 - (V + V2) * (T2 - update_counter) / 2;
-				Perr_ = drive_->GetRotorPositionError(enc_position, S) * timeslice;
+				Perr_ = drive_->GetRotorPositionError(rotor_position, S) * timeslice;
 				pid_P_.Input(Perr_, timeslice);
 				Werr_ = pid_P_.Output() + V - drive_->GetRotorVelocityPTS();
 				pid_W_.Input(Werr_, timeslice);
@@ -667,7 +711,7 @@ again:
 				if (capture_mode_ & CAPTURE_POSITION && 
 					update_counter % capture_interval_ == 0 && 
 					capture_position_.size() < capture_capacity_) {
-						capture_position_.push_back(enc_position);
+						capture_position_.push_back(rotor_position);
 				}
 				if (capture_mode_ & CAPTURE_VELOCITY && 
 					update_counter % capture_interval_ == 0 && 
@@ -685,7 +729,7 @@ again:
 						capture_current_.push_back(lpf_Iq_);
 				}
 			} else {
-				Perr_ = drive_->GetRotorPositionError(enc_position, S2) * timeslice;
+				Perr_ = drive_->GetRotorPositionError(rotor_position, S) * timeslice;
 				pid_P_.Input(Perr_, timeslice);
 				Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
 				pid_W_.Input(Werr_, timeslice);

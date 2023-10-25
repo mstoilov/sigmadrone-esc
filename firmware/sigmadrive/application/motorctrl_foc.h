@@ -38,6 +38,9 @@ protected:
 		float vab_advance_factor_ = 1.5;        /**< Magnetic field advance factor. The V_ab will be advanced proportional to the rotor variable speed and this constant  */
 		float vq_bias_ = 0;                     /**< Bias for the q-voltage (Vq) PID regulator */
 		float w_bias_ = 0;                      /**< Bias for the velocity PID (W) regulator */
+		float crash_current_ = 2.0;             /**< If the current is above this value the crash detection will kick in */
+		uint32_t crash_backup_ = 100000;        /**< If crash is detected, backup from that point by the given encoder counts */
+		uint32_t crash_backup_speed_ = 250000;  /**< How fast to backup from the crash point */
 		bool display_ = false;                  /**< Display mode on/off */
 	};
 
@@ -77,13 +80,14 @@ public:
 	void Go();
 
 	void UpdateRotor();
-	void RunDebugLoop();
-	void StartDebugThread();
+	void RunMonitorLoop();
+	void StartMonitorThread();
 	void SignalDumpTorque();
 	void SignalDumpVelocity();
 	void SignalDumpPosition();
 	void SignalDumpTrajectory();
 	void SignalDumpSpin();
+	void SignalCrashDetected();
 	static void RunDebugLoopWrapper(void *ctx);
 
 	rexjson::array GetCapturedPosition();
@@ -97,6 +101,7 @@ public:
 		SIGNAL_DEBUG_DUMP_VELOCITY = 1u << 3,   /**< Signal the debug display thread to run and dump closed loop velocity mode info */
 		SIGNAL_DEBUG_DUMP_POSITION = 1u << 4,   /**< Signal the debug display thread to run and dump closed loop position mode info */
 		SIGNAL_DEBUG_DUMP_TRAJECTORY = 1u << 5, /**< Signal the debug display thread to run and dump closed loop position mode trajectory info */
+		SIGNAL_CRASH_DETECTED = 1u <<  6        /**< Signal the monitoring loop crash detection */
 	};
 
 	enum CaptureMode {
@@ -112,7 +117,7 @@ public:
 	std::string axis_id_;                       /**< Axis identifying this motor control */
 
 protected:
-	osThreadId_t debug_thread_;                 /**< Debug display info thread */
+	osThreadId_t monitor_thread_;                 /**< Debug display info thread */
 
 	/*
 	 * Filters

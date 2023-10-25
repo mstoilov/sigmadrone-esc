@@ -109,6 +109,7 @@ public:
 	void ResetUpdateCounter()                                           { update_counter_ = 0; }
 
 	std::complex<float> GetPhaseCurrent() const;
+	float GetPhaseCurrentMagnetude() const;
 	void DefaultIdleTask();
 	bool AbortOnPhaseCurrentViolation(float current);
 	bool AbortOnBusVoltageViolation(float voltage);
@@ -202,6 +203,7 @@ protected:
 	LowPassFilter<float, float> lpf_vbus_;      /**< Low pass filter for the Vbus voltage */
 	LowPassFilter<float, float> lpf_Wenc_;      /**< Low pass filter for rotor velocity in enc counts per encoder_time_slice */
 	std::complex<float> Iab_;                   /**< Phase current represented as a complex vector, where the real value is alpha current and the imag value is the beta current */
+	float Iab_m_;                               /**< Phase current magnetude */
 	std::complex<float> E_;                     /**< Orientation of the rotor in electrical radians converted to complex vector. */
 	std::complex<float> Et_;                    /**< Orientation of the rotor in electrical radians converted to complex vector. */
 	std::complex<float> Pa_ = std::polar<float>(1.0f, 0.0f);

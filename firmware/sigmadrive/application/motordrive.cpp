@@ -403,6 +403,16 @@ std::complex<float> MotorDrive::GetPhaseCurrent() const
 	return Iab_;
 }
 
+/**
+ * @brief Get the magnetude of the phase current.
+ * 
+ * @return float Magnetude of the phase current
+ */
+float MotorDrive::GetPhaseCurrentMagnetude() const
+{
+	return Iab_m_;
+}
+
 /** Check if the PWM timer counter is currently enabled.
  *
  * If the PWM timer is enabled it will trigger the interrupts
@@ -500,13 +510,13 @@ void MotorDrive::UpdateCurrent()
 	float Ib = phase_current_b_;
 	float Ic = - phase_current_a_ - phase_current_b_;
 	Iab_ = Pa_ * Ia + Pb_ * Ib + Pc_ * Ic;
+	Iab_m_ = std::abs(Iab_);
 
 	/*
 	 * Check for abnormal conditions.
 	 */
 	AbortOnBusVoltageViolation(lpf_vbus_.Output());
-	AbortOnPhaseCurrentViolation(std::abs(Iab_));
-
+	AbortOnPhaseCurrentViolation(Iab_m_);
 	/*
 	 * Run the scheduler tasks
 	 */
