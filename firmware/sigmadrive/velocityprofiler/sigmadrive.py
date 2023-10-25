@@ -479,6 +479,21 @@ class axis:
         self.setcfg("vab_advance_factor", v)
 
     @property
+    def crash_current(self):
+        return self.getcfg("crash_current")
+    @crash_current.setter
+    def crash_current(self, v):
+        self.setcfg("crash_current", v)
+
+    @property
+    def crash_backup(self):
+        return self.getcfg("crash_backup")
+    @crash_backup.setter
+    def crash_backup(self, v):
+        self.setcfg("crash_backup", v)
+
+
+    @property
     def tau_ratio(self):
         return self.getcfg("tau_ratio")
     @tau_ratio.setter
