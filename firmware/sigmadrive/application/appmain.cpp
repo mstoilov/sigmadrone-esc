@@ -36,7 +36,6 @@
 #include "cdc_iface.h"
 #include "motordrive.h"
 #include "motorctrl_foc.h"
-#include "motorctrl_xy.h"
 #include "rexjson/rexjsonproperty.h"
 #include "minasa4encoder.h"
 #include "encoder_minas.h"
@@ -73,7 +72,6 @@ MotorDrive motor_drive1(1, &drv1, &adc1, &adc1, &ma4_abs_encoder1, &tim1, SYSTEM
 MotorDrive motor_drive2(2, &drv2, &adc2, &adc1, &ma4_abs_encoder2, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlFOC foc1(&motor_drive1, "axis1");
 MotorCtrlFOC foc2(&motor_drive2, "axis2");
-MotorCtrlXY xy(&foc1, &foc2);
 
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
 
@@ -437,6 +435,8 @@ void AllModeClp()
 {
 	foc1.ModeClosedLoopPositionTrajectory();
 	foc2.ModeClosedLoopPositionTrajectory();
+	foc1.SetRelatedAxis(&foc2);
+	foc2.SetRelatedAxis(&foc1);
 }
 
 void AllModeClv()

@@ -44,6 +44,11 @@ protected:
 		bool display_ = false;                  /**< Display mode on/off */
 	};
 
+	struct CrashInfo {
+		int32_t speed;
+		int64_t path;
+	};
+
 
 public:
 	MotorCtrlFOC(MotorDrive* drive, std::string axis_id);
@@ -52,12 +57,17 @@ public:
 	void ModeClosedLoopVelocity();
 	void ModeClosedLoopPositionSimple();
 	void ModeClosedLoopPositionTrajectory();
+	void StopMove();
 	void ModeSpin();
+	void SetRelatedAxis(MotorCtrlFOC* related) { related_ptr_ = related; }
 
 	int64_t GetTarget() const;						// Get the current target position. Relevant only in Closed Loop Position mode.
 	void SetTarget(const int64_t position);			// Set the current target position. Relevant only in Closed Loop Position mode.
 	uint64_t MoveToPosition(uint64_t position);
-	uint64_t MoveRelative(int64_t position);
+	uint64_t MoveToPositionParams(uint64_t target, uint32_t v, uint32_t acc, uint32_t dec);
+	uint64_t MoveRelative(int64_t relative);
+	uint64_t MoveRelativeParams(int64_t relateive, uint32_t v, uint32_t acc, uint32_t dec);
+
 	void RunCalibrationSequence(bool reset_rotor);
 	float VelocityRPS(float revpersec);
 
@@ -88,6 +98,8 @@ public:
 	void SignalDumpTrajectory();
 	void SignalDumpSpin();
 	void SignalCrashDetected();
+	void SignalRelatedCrashDetected();
+
 	static void RunDebugLoopWrapper(void *ctx);
 
 	rexjson::array GetCapturedPosition();
@@ -101,7 +113,8 @@ public:
 		SIGNAL_DEBUG_DUMP_VELOCITY = 1u << 3,   /**< Signal the debug display thread to run and dump closed loop velocity mode info */
 		SIGNAL_DEBUG_DUMP_POSITION = 1u << 4,   /**< Signal the debug display thread to run and dump closed loop position mode info */
 		SIGNAL_DEBUG_DUMP_TRAJECTORY = 1u << 5, /**< Signal the debug display thread to run and dump closed loop position mode trajectory info */
-		SIGNAL_CRASH_DETECTED = 1u <<  6        /**< Signal the monitoring loop crash detection */
+		SIGNAL_CRASH_DETECTED = 1u <<  6,       /**< Signal the monitoring loop crash detection */
+		SIGNAL_RELATEDCRASH_DETECTED = 1u <<  7 /**< Signal the monitoring loop crash detection */
 	};
 
 	enum CaptureMode {
@@ -132,6 +145,7 @@ protected:
 	PIController<float> pid_Iq_;                /**< PID regulator controlling the q-current (Iq) */
 	PIDController<float> pid_W_;                /**< PID regulator controlling the rotor velocity (W) */
 	PController<float> pid_P_;                  /**< PID regulator controlling the target position */
+	MotorCtrlFOC* related_ptr_ = nullptr;       /**< Related axis */
 	float Ierr_ = 0;                            /**< Q-current error. Used as input for the Iq PID regulator */
 	float Werr_ = 0;                            /**< Velocity error. Used as input for the velocity PID regulator */
 	float Wraderr_ = 0;                         /**< Velocity error in rads. Used as input for the velocity PID regulator */
@@ -143,6 +157,7 @@ protected:
 	float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
 	float spin_voltage_ = 3.0f;                 /**< Voltage used for the spin mode */
 	uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
+	float S_ = 0;
 
 	Ring<std::vector<int64_t>, 512> velocity_stream_;
 	std::vector<float> capture_position_;

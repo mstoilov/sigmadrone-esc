@@ -37,10 +37,13 @@ void MotorCtrlFOC::RegisterRpcMethods()
 	rpc_server.add(prefix, "modeclt", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopTorque, "void MotorCtrlFOC::ModeClosedLoopTorque()"));
 	rpc_server.add(prefix, "modespin", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeSpin, "void MotorCtrlFOC::ModeSpin()"));
 	rpc_server.add(prefix, "stop", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Stop, "void MotorCtrlFOC::Stop()"));
+	rpc_server.add(prefix, "stopmove", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::StopMove, "void MotorCtrlFOC::StopMove()"));
 	rpc_server.add(prefix, "calibration", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::RunCalibrationSequence, "void MotorCtrlFOC::RunCalibrationSequence()"));
 	rpc_server.add(prefix, "velocity_rps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::VelocityRPS, "void MotorCtrlFOC::VelocityRPS(float revpersec)"));
 	rpc_server.add(prefix, "mvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveToPosition, "void MotorCtrlFOC::MoveToPosition(uint64_t position)"));
 	rpc_server.add(prefix, "mvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelative, "void MotorCtrlFOC::MoveRelative(int64_t relative)"));
+	rpc_server.add(prefix, "mvpp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveToPositionParams, "void MotorCtrlFOC::MoveToPositionParams(uint64_t target, uint32_t v, uint32_t acc, uint32_t dec)"));
+	rpc_server.add(prefix, "mvrp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelativeParams, "void MotorCtrlFOC::MoveRelativeParams(int64_t relateive, uint32_t v, uint32_t acc, uint32_t dec)"));
 	rpc_server.add(prefix, "get_captured_position", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedPosition, "resjson::array MotorCtrlFOC::GetCapturePosition()"));
 	rpc_server.add(prefix, "get_captured_velocity", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedVelocity, "resjson::array MotorCtrlFOC::GetCaptureVelocity()"));
 	rpc_server.add(prefix, "get_captured_velocityspec", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::GetCapturedVelocitySpec, "resjson::array MotorCtrlFOC::GetCaptureVelocitySpec()"));
@@ -172,7 +175,13 @@ void MotorCtrlFOC::Stop()
 void MotorCtrlFOC::RunMonitorLoop()
 {
 	for (;;) {
-		uint32_t status = osThreadFlagsWait(SIGNAL_DEBUG_DUMP_POSITION | SIGNAL_DEBUG_DUMP_TRAJECTORY | SIGNAL_DEBUG_DUMP_VELOCITY | SIGNAL_DEBUG_DUMP_TORQUE | SIGNAL_DEBUG_DUMP_SPIN | SIGNAL_CRASH_DETECTED, osFlagsWaitAny, -1);
+		uint32_t status = osThreadFlagsWait(SIGNAL_DEBUG_DUMP_POSITION | 
+			SIGNAL_DEBUG_DUMP_TRAJECTORY | 
+			SIGNAL_DEBUG_DUMP_VELOCITY | 
+			SIGNAL_DEBUG_DUMP_TORQUE | 
+			SIGNAL_DEBUG_DUMP_SPIN | 
+			SIGNAL_CRASH_DETECTED |
+			SIGNAL_RELATEDCRASH_DETECTED, osFlagsWaitAny, -1);
 		if (status & osFlagsError) {
 			continue;
 		} else if (status & SIGNAL_DEBUG_DUMP_TORQUE) {
@@ -257,27 +266,22 @@ void MotorCtrlFOC::RunMonitorLoop()
 					foc_time_,
 					config_.vab_advance_factor_ * drive_->GetRotorElecVelocityPTS()/drive_->GetEncoderCPR() * 2.0f * M_PI
 			);
-		} else if (status & SIGNAL_CRASH_DETECTED) {
-			if (velocity_stream_.data_size()) {
-				float V = velocity_stream_.get_read_ptr()->at(1);
-				uint64_t newtarget = (V > 0) ? target_ - config_.crash_backup_ : target_ + config_.crash_backup_;
-				std::vector<std::vector<int64_t>> backup = CalculateTrapezoidPoints(
-					target_,
-					newtarget,
-					0,
-					0,
-					250000,
-					2000000,
-					2000000,
-					drive_->GetUpdateFrequency()
-				);
-				velocity_stream_.clear();
-				for (const auto& v : backup) {
-					PushStreamPointV(v);
-				}
-				SetTarget(newtarget);
-				Go();
+		} else if (status & (SIGNAL_CRASH_DETECTED | SIGNAL_RELATEDCRASH_DETECTED)) {
+			int64_t V = 0;
+			__disable_irq();
+			if (!velocity_stream_.empty())
+				V = velocity_stream_.get_read_ptr()->at(1);
+			__enable_irq();
+			StopMove();
+			int32_t backup = (V < 0) ? config_.crash_backup_ : -config_.crash_backup_;
+			try {
+				if (V)
+					MoveRelativeParams(backup, config_.crash_backup_speed_, 2000000, 2000000);
+			} catch (std::exception& e) {
+
 			}
+			if (related_ptr_ && (status & SIGNAL_CRASH_DETECTED))
+				related_ptr_->SignalRelatedCrashDetected();
 		}
 	}
 }
@@ -321,6 +325,12 @@ void MotorCtrlFOC::SignalCrashDetected()
 {
 	if (monitor_thread_)
 		osThreadFlagsSet(monitor_thread_, SIGNAL_CRASH_DETECTED);
+}
+
+void MotorCtrlFOC::SignalRelatedCrashDetected()
+{
+	if (monitor_thread_)
+		osThreadFlagsSet(monitor_thread_, SIGNAL_RELATEDCRASH_DETECTED);
 }
 
 
@@ -368,8 +378,8 @@ void MotorCtrlFOC::StartMonitorThread()
 
 void MotorCtrlFOC::ModeSpin()
 {
+	related_ptr_ = nullptr;
 	drive_->AddTaskArmMotor();
-
 	drive_->sched_.AddTask([&](){
 		uint32_t display_counter = 0;
 		drive_->ResetUpdateCounter();
@@ -426,8 +436,8 @@ void MotorCtrlFOC::ModeSpin()
 
 void MotorCtrlFOC::ModeClosedLoopTorque()
 {
+	related_ptr_ = nullptr;
 	drive_->AddTaskArmMotor();
-
 	drive_->sched_.AddTask([&](){
 		float timeslice = drive_->GetTimeSlice();
 		uint32_t display_counter = 0;
@@ -487,8 +497,8 @@ void MotorCtrlFOC::ModeClosedLoopTorque()
 
 void MotorCtrlFOC::ModeClosedLoopVelocity()
 {
+	related_ptr_ = nullptr;
 	drive_->AddTaskArmMotor();
-
 	drive_->sched_.AddTask([&](){
 		float timeslice = drive_->GetTimeSlice();
 		uint32_t display_counter = 0;
@@ -550,8 +560,8 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
 
 void MotorCtrlFOC::ModeClosedLoopPositionSimple()
 {
+	related_ptr_ = nullptr;
 	drive_->AddTaskArmMotor();
-
 	drive_->sched_.AddTask([&](){
 		float timeslice = drive_->GetTimeSlice();
 		uint32_t display_counter = 0;
@@ -616,6 +626,13 @@ void MotorCtrlFOC::ModeClosedLoopPositionSimple()
 	drive_->Run();
 }
 
+void MotorCtrlFOC::StopMove()
+{
+	__disable_irq();
+	velocity_stream_.clear();
+	S_ = target_ = drive_->GetRotorPosition();
+	__enable_irq();
+}
 
 void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 {
@@ -633,11 +650,11 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 		float V1 = 0.0f;
 		float V2 = 0.0f;
 		float V = 0.0f;
-		float S2 = drive_->GetRotorPosition();
-		float S = drive_->GetRotorPosition();
 		float A = 0.0f;
 		float T1 = 0;
 		float T2 = 0;
+		float S2 = drive_->GetRotorPosition();
+		S_ = drive_->GetRotorPosition();
 		uint32_t crash_counter = 0;
 		velocity_stream_.clear();
 		target_ = drive_->GetRotorPosition();
@@ -651,17 +668,14 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 			if ((update_counter - crash_counter) > drive_->GetUpdateFrequency() 
 				&& drive_->GetPhaseCurrentMagnetude() >= config_.crash_current_) {
 					crash_counter = update_counter;
-					V1 = V2 = V = 0;
-					A = 0;
-					T1 = T2 = 0;
-					S = S2 = target_ = rotor_position;
-					prof_ptr = nullptr;
-					go_ = false;
+					// crash.speed = V / timeslice;
+					// crash.path = S2 - S_;
 					SignalCrashDetected();
 			}
 
 			if (velocity_stream_.empty()) {
 				go_ = false;
+				prof_ptr = nullptr;
 			}
 again:
 			if (go_ && !prof_ptr && !velocity_stream_.empty()) {
@@ -697,8 +711,8 @@ again:
 				*/
 				uint32_t T = (update_counter - T1);
 				V = V1 + A * T;
-				S = S2 - (V + V2) * (T2 - update_counter) / 2;
-				Perr_ = drive_->GetRotorPositionError(rotor_position, S) * timeslice;
+				S_ = S2 - (V + V2) * (T2 - update_counter) / 2;
+				Perr_ = drive_->GetRotorPositionError(rotor_position, S_) * timeslice;
 				pid_P_.Input(Perr_, timeslice);
 				Werr_ = pid_P_.Output() + V - drive_->GetRotorVelocityPTS();
 				pid_W_.Input(Werr_, timeslice);
@@ -729,7 +743,7 @@ again:
 						capture_current_.push_back(lpf_Iq_);
 				}
 			} else {
-				Perr_ = drive_->GetRotorPositionError(rotor_position, S) * timeslice;
+				Perr_ = drive_->GetRotorPositionError(rotor_position, S_) * timeslice;
 				pid_P_.Input(Perr_, timeslice);
 				Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
 				pid_W_.Input(Werr_, timeslice);
@@ -838,6 +852,26 @@ void MotorCtrlFOC::SetTarget(const int64_t position)
 	target_ = position;
 }
 
+uint64_t MotorCtrlFOC::MoveToPositionParams(uint64_t target, uint32_t v, uint32_t acc, uint32_t dec)
+{
+	if (velocity_stream_.write_size() < 4)
+		throw std::range_error("Velocity profiler queue is full.");
+	if (target >= drive_->GetEncoderMaxPosition())
+		throw std::range_error("Invalid position");
+	uint64_t oldpos = target_;
+
+	std::vector<std::vector<int64_t>> points = CalculateTrapezoidPoints(oldpos, target, 0, 0, v, acc, dec, drive_->GetUpdateFrequency());
+	__disable_irq();
+	for (auto& pt : points)
+		velocity_stream_.push({pt[0], pt[1], pt[2]});
+	__enable_irq();
+	SetTarget(target);
+	Go();
+	return target_;
+
+}
+
+
 /** Set target position
  *
  * @param target new position in encoder counts
@@ -845,38 +879,17 @@ void MotorCtrlFOC::SetTarget(const int64_t position)
  */
 uint64_t MotorCtrlFOC::MoveToPosition(uint64_t target)
 {
-	if (target >= drive_->GetEncoderMaxPosition())
-		throw std::range_error("Invalid position");
-	int64_t oldpos = target_;
-	target_ = target;
+	return MoveToPositionParams(target, velocity_, acceleration_, deceleration_);
+}
 
-	std::vector<std::vector<int64_t>> points = CalculateTrapezoidPoints(oldpos, target_, 0, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency());
-	__disable_irq();
-	for (auto& pt : points)
-		velocity_stream_.push({pt[0], pt[1], pt[2]});
-	__enable_irq();
-	Go();
-	return target_;
+uint64_t MotorCtrlFOC::MoveRelativeParams(int64_t relative, uint32_t v, uint32_t acc, uint32_t dec)
+{
+	return MoveToPositionParams(target_ + relative, v, acc, dec);
 }
 
 uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
 {
-	int64_t oldpos = target_;
-	int64_t newpos = relative + target_;
-	if (newpos < 0 || newpos >= (int64_t)drive_->GetEncoderMaxPosition())
-		throw std::range_error("Invalid position");
-	if (velocity_stream_.write_size() < 4) {
-		throw std::range_error("Velocity profiler queue is full.");
-	}
-
-	target_ = newpos;
-	std::vector<std::vector<int64_t>> points =  CalculateTrapezoidPoints(oldpos, target_, 0, 0, velocity_, acceleration_, deceleration_, drive_->GetUpdateFrequency());
-	__disable_irq();
-	for (auto& pt : points)
-		velocity_stream_.push({pt[0], pt[1], pt[2]});
-	__enable_irq();
-	Go();
-	return target_;
+	return MoveRelativeParams(relative, velocity_, acceleration_, deceleration_);
 }
 
 void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)

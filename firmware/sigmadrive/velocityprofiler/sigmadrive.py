@@ -602,12 +602,16 @@ class axis:
         return self.call("mvp", [pos])
     def mvr(self, pos):
         return self.call("mvr", [pos])
+    def mvpp(self, pos, v, acc, dec):
+        return self.call("mvpp", [pos, v, acc, dec])
+    def mvrp(self, pos, v, acc, dec):
+        return self.call("mvrp", [pos, v, acc, dec])
     def push(self, time, velocity, position):
         return self.call("push", [time, velocity, position])
     def pushv(self, v):
         return self.call("pushv", [v])
-    def go(self):
-        return self.call("go", [])
+    def stopmove(self):
+        return self.call("stopmove", [])
 
     def trajectory(self, points):
         for i in range(0, len(points)):
