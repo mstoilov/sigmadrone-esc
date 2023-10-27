@@ -5,6 +5,35 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"cwd": "${workspaceRoot}",
+			"executable": "./build/sigmadrive.elf",
+			"name": "Debug with OpenOCD",
+			"request": "launch",
+			"type": "cortex-debug",
+			"servertype": "openocd",
+			"serverpath": "/opt/openocd/bin/openocd",
+			"configFiles": ["interface/stlink.cfg", "target/stm32f7x.cfg"],
+			"searchDir": [],
+			"runToEntryPoint": "main",
+			"showDevDebugOutput": "none",
+			"swoConfig": {
+				"enabled": true,
+				"cpuFrequency": 216000000,
+				"swoFrequency": 1000000,
+				"source": "probe",
+				"decoders":
+				[
+					{
+						"label": "ITM port 0 output",
+						"type": "console",
+						"port": 0,
+						"showOnStartup": true,
+						"encoding": "ascii"
+					}
+				]
+			}
+		},
+		{
 			"name": "M1 sigmadrive",
 			"cwd": "${workspaceFolder}",
 			"executable": "./build/sigmadrive.elf",

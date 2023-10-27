@@ -41,7 +41,7 @@ public:
 		bool svm_saddle_ = false;                           /**< Use space vector modulation (SVM) saddle form */
 		float Vref_ = 3.3;                                  /**< ADC reference voltage */
 		float max_modulation_duty_ = 0.95;                  /**< Maximum modulation duty */
-		float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;    /**< Vbus divider ratio used to measure the Vbus voltage  */
+		float Vbus_resistor_ratio_ = (47.0 + 2.2) / 2.2;    /**< Vbus divider ratio used to measure the Vbus voltage  */
 		float reset_voltage_ = 3.5f;                        /**< Voltage used during the rotor reset process. @see reset_hz_ */
 		float Rsense_ = 0.010f;                             /**< Shunt resistor value */
 		float calib_v_ = 12;                                /**< Calibration voltage. This voltage is used for the calibration process */
@@ -51,7 +51,7 @@ public:
 		float bias_alpha_ = 0.00035f;                       /**< RC filter alpha coefficient */
 		float vbus_alpha_ = 0.2f;                           /**< Vbus filter alpha coefficient */
 		float wenc_alpha_ = 0.85;                           /**< rotor velocity filter alpha coefficient */
-		float trip_i_ = 8.0f;                               /**< Trip current, the max phase allowed current. */
+		float trip_i_ = 10.0f;                              /**< Trip current, the max phase allowed current. */
 		float trip_v_ = 60.0f;                              /**< Trip voltage, the max allowed voltage */
 	};
 

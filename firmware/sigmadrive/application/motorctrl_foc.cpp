@@ -242,7 +242,7 @@ void MotorCtrlFOC::RunMonitorLoop()
 		} else if (status & SIGNAL_DEBUG_DUMP_TRAJECTORY) {
 			fprintf(stderr,
 					"%s: %10llu (%10llu) I_q: %+6.3f PVq: %+7.2f "
-					"Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f V_PTS: %+8.3f T: %3lu\r\n",
+					"Werr: %+7.3f PID_W: %+6.3f Perr: %+6.1f PID_PP: %+6.1f V_PTS: %+8.3f V: %5.1f T: %3lu\r\n",
 					axis_id_.c_str(),
 					drive_->GetRotorPosition(),
 					target_,
@@ -252,7 +252,8 @@ void MotorCtrlFOC::RunMonitorLoop()
 					pid_W_.Output(),
 					Perr_,
 					pid_P_.Output(),
-					drive_->GetRotorVelocityPTS(),
+					drive_->GetRotorVelocityPTS() * drive_->GetUpdateFrequency(),
+					ms_.V * drive_->GetUpdateFrequency(),
 					foc_time_
 			);
 		} else if (status & SIGNAL_DEBUG_DUMP_SPIN) {
@@ -267,21 +268,23 @@ void MotorCtrlFOC::RunMonitorLoop()
 					config_.vab_advance_factor_ * drive_->GetRotorElecVelocityPTS()/drive_->GetEncoderCPR() * 2.0f * M_PI
 			);
 		} else if (status & (SIGNAL_CRASH_DETECTED | SIGNAL_RELATEDCRASH_DETECTED)) {
-			int64_t V = 0;
-			__disable_irq();
-			if (!velocity_stream_.empty())
-				V = velocity_stream_.get_read_ptr()->at(1);
-			__enable_irq();
-			StopMove();
-			int32_t backup = (V < 0) ? config_.crash_backup_ : -config_.crash_backup_;
+			int64_t V = drive_->GetRotorVelocityPTS() * drive_->GetUpdateFrequency();
+			StopMove()
+			;
+			if (V > 0)
+				backup_ = -config_.crash_backup_;
+			else 
+				backup_ = config_.crash_backup_;
 			try {
-				if (V)
-					MoveRelativeParams(backup, config_.crash_backup_speed_, 2000000, 2000000);
+				if (std::abs(V) > 1000)
+					MoveRelativeParams(backup_, config_.crash_backup_speed_, 2000000, 2000000);
 			} catch (std::exception& e) {
 
 			}
-			if (related_ptr_ && (status & SIGNAL_CRASH_DETECTED))
+			if (related_ptr_ && (status & SIGNAL_CRASH_DETECTED)) {
+				related_ptr_->crash_counter_ = related_ptr_->drive_->GetUpdateCounter();
 				related_ptr_->SignalRelatedCrashDetected();
+			}
 		}
 	}
 }
@@ -630,7 +633,7 @@ void MotorCtrlFOC::StopMove()
 {
 	__disable_irq();
 	velocity_stream_.clear();
-	S_ = target_ = drive_->GetRotorPosition();
+	ms_.S = target_ = drive_->GetRotorPosition();
 	__enable_irq();
 }
 
@@ -647,15 +650,14 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 		pid_W_.Reset();
 		pid_P_.Reset();
 		std::vector<int64_t>* prof_ptr = nullptr;
-		float V1 = 0.0f;
-		float V2 = 0.0f;
-		float V = 0.0f;
-		float A = 0.0f;
-		float T1 = 0;
-		float T2 = 0;
-		float S2 = drive_->GetRotorPosition();
-		S_ = drive_->GetRotorPosition();
-		uint32_t crash_counter = 0;
+		ms_.V1 = 0.0f;
+		ms_.V2 = 0.0f;
+		ms_.V = 0.0f;
+		ms_.A = 0.0f;
+		ms_.T1 = 0;
+		ms_.T2 = 0;
+		ms_.S2 = drive_->GetRotorPosition();
+		ms_.S = drive_->GetRotorPosition();
 		velocity_stream_.clear();
 		target_ = drive_->GetRotorPosition();
 
@@ -665,11 +667,9 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 			uint64_t rotor_position = drive_->GetRotorPosition();
 			uint32_t update_counter = drive_->GetUpdateCounter();
 
-			if ((update_counter - crash_counter) > drive_->GetUpdateFrequency() 
+			if (go_ && (update_counter - crash_counter_) > drive_->GetUpdateFrequency() 
 				&& drive_->GetPhaseCurrentMagnetude() >= config_.crash_current_) {
-					crash_counter = update_counter;
-					// crash.speed = V / timeslice;
-					// crash.path = S2 - S_;
+					crash_counter_ = update_counter;
 					SignalCrashDetected();
 			}
 
@@ -680,17 +680,17 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 again:
 			if (go_ && !prof_ptr && !velocity_stream_.empty()) {
 				prof_ptr = velocity_stream_.get_read_ptr();
-				T1 = update_counter;
-				T2 = T1 + prof_ptr->at(0);
-				V1 = V2;
-				V2 = prof_ptr->at(1) * timeslice;
-				S2 = prof_ptr->at(2);
-				if (T1 == T2) {
+				ms_.T1 = update_counter;
+				ms_.T2 = ms_.T1 + prof_ptr->at(0);
+				ms_.V1 = ms_.V2;
+				ms_.V2 = prof_ptr->at(1) * timeslice;
+				ms_.S2 = prof_ptr->at(2);
+				if (ms_.T1 == ms_.T2) {
 					prof_ptr = nullptr;
 					velocity_stream_.pop();
 					goto again;
 				}
-				A = (V2 - V1) / (T2 - T1);
+				ms_.A = (ms_.V2 - ms_.V1) / (ms_.T2 - ms_.T1);
 			}
 
 			if (prof_ptr) {
@@ -709,16 +709,16 @@ again:
 				*  from S2
 				*  S = S2 - (V + V2) * (T2 - T) / 2
 				*/
-				uint32_t T = (update_counter - T1);
-				V = V1 + A * T;
-				S_ = S2 - (V + V2) * (T2 - update_counter) / 2;
-				Perr_ = drive_->GetRotorPositionError(rotor_position, S_) * timeslice;
+				ms_.T = (update_counter - ms_.T1);
+				ms_.V = ms_.V1 + ms_.A * ms_.T;
+				ms_.S = ms_.S2 - (ms_.V + ms_.V2) * (ms_.T2 - update_counter) / 2;
+				Perr_ = drive_->GetRotorPositionError(rotor_position, ms_.S) * timeslice;
 				pid_P_.Input(Perr_, timeslice);
-				Werr_ = pid_P_.Output() + V - drive_->GetRotorVelocityPTS();
+				Werr_ = pid_P_.Output() + ms_.V - drive_->GetRotorVelocityPTS();
 				pid_W_.Input(Werr_, timeslice);
-				if (update_counter == T2) {
+				if (update_counter == ms_.T2) {
 					velocity_stream_.pop();
-					A = 0.0f;
+					ms_.A = 0.0f;
 					prof_ptr = nullptr;
 				}
 
@@ -735,7 +735,7 @@ again:
 				if (capture_mode_ & CAPTURE_VELOCITYSPEC && 
 					update_counter % capture_interval_ == 0 && 
 					capture_velocityspec_.size() < capture_capacity_) {
-						capture_velocityspec_.push_back(V);
+						capture_velocityspec_.push_back(ms_.V);
 				}
 				if (capture_mode_ & CAPTURE_CURRENT && 
 					update_counter % capture_interval_ == 0 && 
@@ -743,7 +743,7 @@ again:
 						capture_current_.push_back(lpf_Iq_);
 				}
 			} else {
-				Perr_ = drive_->GetRotorPositionError(rotor_position, S_) * timeslice;
+				Perr_ = drive_->GetRotorPositionError(rotor_position, ms_.S) * timeslice;
 				pid_P_.Input(Perr_, timeslice);
 				Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
 				pid_W_.Input(Werr_, timeslice);

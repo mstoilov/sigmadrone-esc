@@ -34,14 +34,27 @@ protected:
 		float pid_p_kp_ = 20;                   /**< Position PID regulator proportional gain */
 		float pid_p_maxout_ = 240;              /**< Position PID regulator output limit */
 
-		float tau_ratio_ = 3;                   /**< Constant used in the calculations of the closed loop PID regulator gains. Tratio = Tcl/Tp as per https://www.youtube.com/watch?v=3viD5ij60EI */
+		float tau_ratio_ = 2.5;                 /**< Constant used in the calculations of the closed loop PID regulator gains. Tratio = Tcl/Tp as per https://www.youtube.com/watch?v=3viD5ij60EI */
 		float vab_advance_factor_ = 1.5;        /**< Magnetic field advance factor. The V_ab will be advanced proportional to the rotor variable speed and this constant  */
 		float vq_bias_ = 0;                     /**< Bias for the q-voltage (Vq) PID regulator */
 		float w_bias_ = 0;                      /**< Bias for the velocity PID (W) regulator */
-		float crash_current_ = 2.0;             /**< If the current is above this value the crash detection will kick in */
+		float crash_current_ = 2.5;             /**< If the current is above this value the crash detection will kick in */
 		uint32_t crash_backup_ = 100000;        /**< If crash is detected, backup from that point by the given encoder counts */
 		uint32_t crash_backup_speed_ = 250000;  /**< How fast to backup from the crash point */
 		bool display_ = false;                  /**< Display mode on/off */
+	};
+
+	struct MotionStats {
+		float V1;
+		float V2;
+		float V;
+		float A;
+		float T1;
+		float T2;
+		float T;
+		float S2;
+		float S;
+		int32_t lpf_V;
 	};
 
 	struct CrashInfo {
@@ -157,7 +170,9 @@ protected:
 	float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
 	float spin_voltage_ = 3.0f;                 /**< Voltage used for the spin mode */
 	uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
-	float S_ = 0;
+	uint32_t crash_counter_ = 0;
+	int32_t backup_;
+	MotionStats ms_;
 
 	Ring<std::vector<int64_t>, 512> velocity_stream_;
 	std::vector<float> capture_position_;
