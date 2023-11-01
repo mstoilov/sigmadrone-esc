@@ -707,8 +707,7 @@ class util:
         self.mvpolar(D, np.deg2rad(30), V, Acc, Dec)
         self.mvpolar(D, np.deg2rad(60), V, Acc, Dec)
         self.mvpolar(D, np.deg2rad(210), V, Acc, Dec)
-        self.mvpolar(D, np.deg2rad(240), V, Acc, Decc)
-        self.Go()
+        self.mvpolar(D, np.deg2rad(240), V, Acc, Dec)
 
     # Example:
     # mvromb2(1000000, 2000000, 20000000, 2000000)
@@ -723,16 +722,14 @@ class util:
         self.mvpolar(D, np.deg2rad(90), V, Acc, Dec)
         self.mvpolar(D, np.deg2rad(240), V, Acc, Dec)
         self.mvpolar(D, np.deg2rad(270), V, Acc, Dec)
-        self.Go()
 
     def mvhexagon(self, D, V, Acc, Dec):
-        self.mvpolar(D, np.deg2rad(60), V, Acc, Dec)
         self.mvpolar(D, np.deg2rad(120), V, Acc, Dec)
         self.mvpolar(D, np.deg2rad(180), V, Acc, Dec)
         self.mvpolar(D, np.deg2rad(240), V, Acc, Dec)
         self.mvpolar(D, np.deg2rad(300), V, Acc, Dec)
         self.mvpolar(D, np.deg2rad(360), V, Acc, Dec)
-        self.Go()
+        self.mvpolar(D, np.deg2rad(60), V, Acc, Dec)
 
     def circpoints(self, Xorg, Yorg, R, Phi, steps=100, HZ=20000):
         V = Phi * R / HZ
@@ -751,7 +748,7 @@ class util:
     #
     def mvcirc(self, Xaxis, Yaxis, Xorg, Yorg, R, Phi, steps=100, HZ=20000):
         pts = self.circpoints(Xorg, Yorg, R, Phi, steps, HZ)
-        self.mvxy(Xorg+R, Yorg, 1000000, 1000000, 10000)
+        self.mvxy(Xorg+R, Yorg, 1500000, 24000000, 8000000)
         Xaxis.trajectory(pts[0].tolist())
         Yaxis.trajectory(pts[1].tolist())
 
@@ -796,3 +793,9 @@ def capture_position(x, y):
 # x2=axis("axis2", "/dev/cu.usbmodem375A368130331")
 # x1=axis("axis1", "/dev/cu.usbmodem375A368130331")
 # u=util(x1.device)
+#
+# u.mvcirc(x1,x2,x1.drive.Renc-150000,x2.drive.Renc,150000,np.pi,30)
+# u.mvhexagon(150000, 2000000, 24000000, 8000000)
+# u.mvromb(150000, 2000000, 24000000, 8000000)
+# u.mvromb2(150000, 2000000, 24000000, 8000000)
+# u.mvromb2(750000, 2000000, 24000000, 8000000)
