@@ -38,7 +38,7 @@ protected:
 		float vab_advance_factor_ = 1.5;        /**< Magnetic field advance factor. The V_ab will be advanced proportional to the rotor variable speed and this constant  */
 		float vq_bias_ = 0;                     /**< Bias for the q-voltage (Vq) PID regulator */
 		float w_bias_ = 0;                      /**< Bias for the velocity PID (W) regulator */
-		float crash_current_ = 2.5;             /**< If the current is above this value the crash detection will kick in */
+		float crash_current_ = 25;              /**< If the current is above this value the crash detection will kick in */
 		uint32_t crash_backup_ = 100000;        /**< If crash is detected, backup from that point by the given encoder counts */
 		uint32_t crash_backup_speed_ = 250000;  /**< How fast to backup from the crash point */
 		bool display_ = false;                  /**< Display mode on/off */
@@ -174,7 +174,7 @@ protected:
 	int32_t backup_;
 	MotionStats ms_;
 
-	Ring<std::vector<int64_t>, 512> velocity_stream_;
+	Ring<std::vector<int64_t>, 512> velocity_stream_; /**< (T, V, P) T in counts of update periods, V in enc. counts per sec, P in enc. counts */
 	std::vector<float> capture_position_;
 	std::vector<float> capture_velocity_;
 	std::vector<float> capture_current_;

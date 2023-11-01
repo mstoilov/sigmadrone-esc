@@ -730,12 +730,12 @@ again:
 				if (capture_mode_ & CAPTURE_VELOCITY && 
 					update_counter % capture_interval_ == 0 && 
 					capture_velocity_.size() < capture_capacity_) {
-						capture_velocity_.push_back(drive_->GetRotorVelocityPTS());
+						capture_velocity_.push_back(drive_->GetRotorVelocity());
 				}
 				if (capture_mode_ & CAPTURE_VELOCITYSPEC && 
 					update_counter % capture_interval_ == 0 && 
 					capture_velocityspec_.size() < capture_capacity_) {
-						capture_velocityspec_.push_back(ms_.V);
+						capture_velocityspec_.push_back(ms_.V * drive_->GetUpdateFrequency());
 				}
 				if (capture_mode_ & CAPTURE_CURRENT && 
 					update_counter % capture_interval_ == 0 && 
