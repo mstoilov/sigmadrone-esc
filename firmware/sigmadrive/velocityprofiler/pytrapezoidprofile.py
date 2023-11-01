@@ -163,7 +163,7 @@ if __name__ == "__main__":
     Vmax = int(sys.argv[5]) if nargs > 5 else 2000000
     Acc = int(sys.argv[6]) if nargs > 6 else 3000000
     Dec = int(sys.argv[7]) if nargs > 7 else 1000000
-    HZ = int(sys.argv[8]) if nargs > 8 else 18000
+    HZ = int(sys.argv[8]) if nargs > 8 else 20000
 
     profile = tp.CalculateTrapezoidPoints(Pi, Pf, Vi, Vf, Vmax, Acc, Dec, HZ)
     points = np.array(profile, dtype=int)
