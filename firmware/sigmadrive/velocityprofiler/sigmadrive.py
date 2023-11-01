@@ -711,7 +711,8 @@ class util:
         self.Go()
 
     # Example:
-    # sd.mvromb2(1000000, 2000000, 20000000, 2000000)
+    # mvromb2(1000000, 2000000, 20000000, 2000000)
+    # mvromb2(750000, 2000000, 24000000, 8000000)
     #
     def mvromb2(self, D, V, Acc, Dec):
         self.mvpolar(D, np.deg2rad(30), V, Acc, Dec)
@@ -733,6 +734,26 @@ class util:
         self.mvpolar(D, np.deg2rad(360), V, Acc, Dec)
         self.Go()
 
+    def circpoints(self, Xorg, Yorg, R, Phi, steps=100, HZ=20000):
+        V = Phi * R / HZ
+        alpha = np.linspace(0, 2*np.pi, steps+1)
+        T = 2*np.pi / Phi
+        Ts = T/steps
+        HZstep = int(Ts * HZ)
+        arrX = np.array([(steps+1) * [HZstep], -V * np.sin(alpha)*HZ, np.cos(alpha) * R + Xorg], dtype=int).transpose()
+        arrY = np.array([(steps+1) * [HZstep],  V * np.cos(alpha)*HZ, np.sin(alpha) * R + Yorg], dtype=int).transpose()
+        arrX[0][0] = 0
+        arrY[0][0] = 0
+        return np.array([arrX, arrY])
+
+    #
+    # u.mvcirc(x1,x2,5000000,5000000,100000,np.pi,30)
+    #
+    def mvcirc(self, Xaxis, Yaxis, Xorg, Yorg, R, Phi, steps=100, HZ=20000):
+        pts = self.circpoints(Xorg, Yorg, R, Phi, steps, HZ)
+        self.mvxy(Xorg+R, Yorg, 1000000, 1000000, 10000)
+        Xaxis.trajectory(pts[0].tolist())
+        Yaxis.trajectory(pts[1].tolist())
 
 def capture_position(x, y):
     datax = x.get_captured_position()
@@ -769,3 +790,9 @@ def capture_position(x, y):
     pp.xlabel('Time')
     pp.ylabel('Position')
     pp.show()
+
+# import numpy as np
+# import sigmadrive as sd
+# x2=axis("axis2", "/dev/cu.usbmodem375A368130331")
+# x1=axis("axis1", "/dev/cu.usbmodem375A368130331")
+# u=util(x1.device)
