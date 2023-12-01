@@ -695,10 +695,10 @@ class util:
         velocity_y = V * j
         acceleration_y = Acc * j
 
-        points_x = tp.CalculateTrapezoidPoints(curtarget_x, newtarget_x, 0, 0, velocity_x, acceleration_x, acceleration_x, x.drive.update_hz)
+        points_x = tp.CalculateTrapezoidPoints(int(curtarget_x), int(newtarget_x), 0, 0, int(velocity_x), int(acceleration_x), int(acceleration_x), x.drive.update_hz)
         x.trajectory(points_x)
         x.target = int(newtarget_x)
-        points_y = tp.CalculateTrapezoidPoints(curtarget_y, newtarget_y, 0, 0, velocity_y, acceleration_y, acceleration_y, y.drive.update_hz)
+        points_y = tp.CalculateTrapezoidPoints(int(curtarget_y), int(newtarget_y), 0, 0, int(velocity_y), int(acceleration_y), int(acceleration_y), y.drive.update_hz)
         y.trajectory(points_y)
         y.target = int(newtarget_y)
         return points_x, points_y
