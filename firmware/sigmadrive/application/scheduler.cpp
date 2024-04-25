@@ -38,6 +38,11 @@ void Scheduler::SetAbortTask(const std::function<void(void)>& task)
 	abort_task_ = task;
 }
 
+/**
+ * @brief Update handler. This function is called periodically by
+ * the update IRQ. It executes the actual update code from
+ * pointed by the update_handler_
+ */
 void Scheduler::OnUpdate()
 {
 	if (update_handler_) {
@@ -48,6 +53,15 @@ void Scheduler::OnUpdate()
 	}
 }
 
+/**
+ * @brief Setup a new update handler to run and wait indefinetely
+ * while the update handler runs in the background.
+ * 
+ * @param update_handler The new update handler.
+ * @return true If the update handler was setup and run.
+ * @return false The update handler failed to run, because for 
+ * example the dispatch queue was empty.
+ */
 bool Scheduler::RunUpdateHandler(const std::function<bool(void)>& update_handler)
 {
 	if (dispatch_queue_.empty())
@@ -58,6 +72,12 @@ bool Scheduler::RunUpdateHandler(const std::function<bool(void)>& update_handler
 	return true;
 }
 
+/**
+ * @brief Abort the scheduler (Stop the IRQ driven update handler)
+ * 
+ * This is done simply by clearing any outstanding items in the 
+ * dispatch queue.
+ */
 void Scheduler::Abort()
 {
 	__disable_irq();

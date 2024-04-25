@@ -51,7 +51,7 @@ public:
 		float bias_alpha_ = 0.00035f;                       /**< RC filter alpha coefficient */
 		float vbus_alpha_ = 0.2f;                           /**< Vbus filter alpha coefficient */
 		float wenc_alpha_ = 0.85;                           /**< rotor velocity filter alpha coefficient */
-		float trip_i_ = 10.0f;                              /**< Trip current, the max phase allowed current. */
+		float trip_i_ = 3.0f;                              /**< Trip current, the max phase allowed current. */
 		float trip_v_ = 60.0f;                              /**< Trip voltage, the max allowed voltage */
 	};
 
