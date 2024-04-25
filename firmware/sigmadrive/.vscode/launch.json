@@ -6,6 +6,34 @@
 	"configurations": [
 		{
 			"cwd": "${workspaceRoot}",
+			"executable": "${workspaceFolder}/build/sigmadrive.elf",
+			"name": "Debug with OpenOCD (M1)",
+			"request": "launch",
+			"type": "cortex-debug",
+			"servertype": "openocd",
+			"configFiles": ["interface/stlink.cfg", "target/stm32f7x.cfg"],
+			"svdFile": "${workspaceFolder}/STM32F745.svd",
+			"searchDir": [],
+			"showDevDebugOutput": "none",
+			"swoConfig": {
+				"enabled": true,
+				"cpuFrequency": 216000000,
+				"swoFrequency": 1000000,
+				"source": "probe",
+				"decoders":
+				[
+					{
+						"label": "ITM port 0 output",
+						"type": "console",
+						"port": 0,
+						"showOnStartup": true,
+						"encoding": "ascii"
+					}
+				]
+			}
+		},
+		{
+			"cwd": "${workspaceRoot}",
 			"executable": "./build/sigmadrive.elf",
 			"name": "Debug with OpenOCD",
 			"request": "launch",
@@ -13,8 +41,8 @@
 			"servertype": "openocd",
 			"serverpath": "/opt/openocd/bin/openocd",
 			"configFiles": ["interface/stlink.cfg", "target/stm32f7x.cfg"],
+			"svdFile": "${workspaceFolder}/STM32F745.svd",
 			"searchDir": [],
-			"runToEntryPoint": "main",
 			"showDevDebugOutput": "none",
 			"swoConfig": {
 				"enabled": true,
