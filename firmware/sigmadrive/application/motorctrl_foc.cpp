@@ -1,5 +1,6 @@
 
 #include <string.h>
+#include <math.h>
 
 #include "motorctrl_foc.h"
 #include "sdmath.h"
@@ -269,8 +270,7 @@ void MotorCtrlFOC::RunMonitorLoop()
 			);
 		} else if (status & (SIGNAL_CRASH_DETECTED | SIGNAL_RELATEDCRASH_DETECTED)) {
 			int64_t V = drive_->GetRotorVelocityPTS() * drive_->GetUpdateFrequency();
-			StopMove()
-			;
+			StopMove();
 			if (V > 0)
 				backup_ = -config_.crash_backup_;
 			else 
