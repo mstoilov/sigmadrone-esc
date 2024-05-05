@@ -68,7 +68,7 @@ public:
 	void Stop();
 	void ModeClosedLoopTorque();
 	void ModeClosedLoopVelocity();
-	void ModeClosedLoopPositionSimple();
+	void SimpleModeClosedLoopPosition();
 	void ModeClosedLoopPositionTrajectory();
 	void StopMove();
 	void ModeSpin();
@@ -80,6 +80,9 @@ public:
 	uint64_t MoveToPositionParams(uint64_t target, uint32_t v, uint32_t acc, uint32_t dec);
 	uint64_t MoveRelative(int64_t relative);
 	uint64_t MoveRelativeParams(int64_t relateive, uint32_t v, uint32_t acc, uint32_t dec);
+
+	uint64_t SimpleMoveToPosition(uint64_t position);
+	uint64_t SimpleMoveRelative(int64_t relative);
 
 	void RunCalibrationSequence(bool reset_rotor);
 	float VelocityRPS(float revpersec);

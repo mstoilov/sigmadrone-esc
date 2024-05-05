@@ -33,7 +33,6 @@ void MotorCtrlFOC::RegisterRpcMethods()
 {
 	std::string prefix = axis_id_ + ".";
 	rpc_server.add(prefix, "modeclp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopPositionTrajectory, "void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()"));
-	rpc_server.add(prefix, "modeclps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopPositionSimple, "void MotorCtrlFOC::ModeClosedLoopPositionSimple()"));
 	rpc_server.add(prefix, "modeclv", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopVelocity, "void MotorCtrlFOC::ModeClosedLoopVelocity()"));
 	rpc_server.add(prefix, "modeclt", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopTorque, "void MotorCtrlFOC::ModeClosedLoopTorque()"));
 	rpc_server.add(prefix, "modespin", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeSpin, "void MotorCtrlFOC::ModeSpin()"));
@@ -53,6 +52,12 @@ void MotorCtrlFOC::RegisterRpcMethods()
 	rpc_server.add(prefix, "push", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPoint, "void PushStreamPoint(int64_t time, int64_t velocity, int64_t position)"));
 	rpc_server.add(prefix, "pushv", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PushStreamPointV, "void PushStreamPointV(const std::vector<int64_t>& v)"));
 	rpc_server.add(prefix, "go", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Go, "void Go()"));
+
+
+	rpc_server.add(prefix, "smodeclp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::SimpleModeClosedLoopPosition, "void MotorCtrlFOC::ModeClosedLoopPositionSimple()"));
+	rpc_server.add(prefix, "smvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::SimpleMoveToPosition, "void SimpleMotorCtrlFOC::MoveToPosition(uint64_t position)"));
+	rpc_server.add(prefix, "smvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::SimpleMoveRelative, "void SimpleMotorCtrlFOC::MoveRelative(int64_t relative)"));
+
 
 	drive_->RegisterRpcMethods(prefix + "drive.");
 }
@@ -83,6 +88,7 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
 				__enable_irq(); 
 			}
 		)},
+		{"lpf_Iq", {&lpf_Iq_, rexjson::property_get<decltype(lpf_Iq_)>}},
 	});
 	return props;
 }
@@ -561,7 +567,7 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
 	drive_->Run();
 }
 
-void MotorCtrlFOC::ModeClosedLoopPositionSimple()
+void MotorCtrlFOC::SimpleModeClosedLoopPosition()
 {
 	related_ptr_ = nullptr;
 	drive_->AddTaskArmMotor();
@@ -578,12 +584,31 @@ void MotorCtrlFOC::ModeClosedLoopPositionSimple()
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
 			std::complex<float> R = drive_->GetRotorElecRotation();
+			uint64_t rotor_position = drive_->GetRotorPosition();
+			uint32_t update_counter = drive_->GetUpdateCounter();
 
 			uint64_t enc_position = drive_->GetRotorPosition();
 			Perr_ = drive_->GetRotorPositionError(enc_position, target_) * timeslice;
+			pid_P_.SetMaxOutput(velocity_ * timeslice);
 			pid_P_.Input(Perr_, timeslice);
 			Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
 			pid_W_.Input(Werr_, timeslice);
+
+			if (capture_mode_ & CAPTURE_POSITION && 
+				update_counter % capture_interval_ == 0 && 
+				capture_position_.size() < capture_capacity_) {
+					capture_position_.push_back(rotor_position);
+			}
+			if (capture_mode_ & CAPTURE_VELOCITY && 
+				update_counter % capture_interval_ == 0 && 
+				capture_velocity_.size() < capture_capacity_) {
+					capture_velocity_.push_back(drive_->GetRotorVelocity());
+			}
+			if (capture_mode_ & CAPTURE_CURRENT && 
+				update_counter % capture_interval_ == 0 && 
+				capture_current_.size() < capture_capacity_) {
+					capture_current_.push_back(lpf_Iq_);
+			}
 
 			/*
 			 *  Park Transform
@@ -868,7 +893,6 @@ uint64_t MotorCtrlFOC::MoveToPositionParams(uint64_t target, uint32_t v, uint32_
 	SetTarget(target);
 	Go();
 	return target_;
-
 }
 
 
@@ -891,6 +915,22 @@ uint64_t MotorCtrlFOC::MoveRelative(int64_t relative)
 {
 	return MoveRelativeParams(relative, velocity_, acceleration_, deceleration_);
 }
+
+
+uint64_t MotorCtrlFOC::SimpleMoveToPosition(uint64_t target)
+{
+	if (target >= drive_->GetEncoderMaxPosition())
+		throw std::range_error("Invalid position");
+	target_ = target;
+	go_ = true;
+	return target_;
+}
+
+uint64_t MotorCtrlFOC::SimpleMoveRelative(int64_t relative)
+{
+	return SimpleMoveToPosition(target_ + relative);
+}
+
 
 void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)
 {
