@@ -160,16 +160,16 @@ public:
 	uint32_t t_begin_ = 0;
 
 protected:
-	uint32_t update_counter_ = 0;
-	uint32_t enc_cpr_ = 0;
-	uint32_t enc_revolution_bits_ = 0;
-	uint32_t enc_resolution_bits_ = 0;
-	uint32_t enc_resolution_mask_ = 0;
-	uint64_t enc_position_mask_ = 0;
-	uint64_t enc_position_size_ = 0;
-	uint64_t enc_position_size_half_ = 0;
+	uint32_t update_counter_ = 0;               /**< This counter is increased on every update interrupt */
+	uint32_t enc_cpr_ = 0;                      /**< Encoder counts per revolution */
+	uint32_t enc_revolution_bits_ = 0;          /**< The number of bits used by the hardware to store the counts of one full rotation */
+	uint32_t enc_resolution_bits_ = 0;          /**< The number of bits used by the hardware to store the maximum supported revolution counts */
+	uint32_t enc_resolution_mask_ = 0;          /**< Mask for the resolution bits (position within one revolution) */
+	uint64_t enc_position_size_ = 0;            /**< 1LLU << (enc_resolution_bits_ + enc_revolution_bits_) */
+	uint64_t enc_position_mask_ = 0;            /**< enc_position_size_ - 1 */
+	uint64_t enc_position_size_half_ = 0;       /**< enc_position_size_ / 2 */
 
-	uint32_t update_hz_ = 0;
+	uint32_t update_hz_ = 0;                    /**< Frequency of the update interrupt (Should be between 18K - 25K) */
 	uint32_t tim1_cnt_ = 0;
 	uint32_t tim8_cnt_ = 0;
 	int32_t tim1_tim8_offset_ = 0;

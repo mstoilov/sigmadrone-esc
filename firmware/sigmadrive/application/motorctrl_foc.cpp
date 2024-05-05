@@ -582,33 +582,22 @@ void MotorCtrlFOC::SimpleModeClosedLoopPosition()
 		target_ = drive_->GetRotorPosition();
 
 		drive_->sched_.RunUpdateHandler([&]()->bool {
+			/*
+			 * Get the latest values for I,R 
+			*/
 			std::complex<float> Iab = drive_->GetPhaseCurrent();
 			std::complex<float> R = drive_->GetRotorElecRotation();
 			uint64_t rotor_position = drive_->GetRotorPosition();
 			uint32_t update_counter = drive_->GetUpdateCounter();
 
-			uint64_t enc_position = drive_->GetRotorPosition();
-			Perr_ = drive_->GetRotorPositionError(enc_position, target_) * timeslice;
+			/* Calculate the position error and input it in the Position PID */
+			Perr_ = drive_->GetRotorPositionError(rotor_position, target_) * timeslice;
 			pid_P_.SetMaxOutput(velocity_ * timeslice);
 			pid_P_.Input(Perr_, timeslice);
+
+			/* Calculate the velocity error and input it in the Velocity PID */
 			Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
 			pid_W_.Input(Werr_, timeslice);
-
-			if (capture_mode_ & CAPTURE_POSITION && 
-				update_counter % capture_interval_ == 0 && 
-				capture_position_.size() < capture_capacity_) {
-					capture_position_.push_back(rotor_position);
-			}
-			if (capture_mode_ & CAPTURE_VELOCITY && 
-				update_counter % capture_interval_ == 0 && 
-				capture_velocity_.size() < capture_capacity_) {
-					capture_velocity_.push_back(drive_->GetRotorVelocity());
-			}
-			if (capture_mode_ & CAPTURE_CURRENT && 
-				update_counter % capture_interval_ == 0 && 
-				capture_current_.size() < capture_capacity_) {
-					capture_current_.push_back(lpf_Iq_);
-			}
 
 			/*
 			 *  Park Transform
@@ -646,7 +635,21 @@ void MotorCtrlFOC::SimpleModeClosedLoopPosition()
 				foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t_begin_, hrtimer.GetCounter());
 				SignalDumpPosition();
 			}
-
+			if (capture_mode_ & CAPTURE_POSITION && 
+				update_counter % capture_interval_ == 0 && 
+				capture_position_.size() < capture_capacity_) {
+					capture_position_.push_back(rotor_position);
+			}
+			if (capture_mode_ & CAPTURE_VELOCITY && 
+				update_counter % capture_interval_ == 0 && 
+				capture_velocity_.size() < capture_capacity_) {
+					capture_velocity_.push_back(drive_->GetRotorVelocity());
+			}
+			if (capture_mode_ & CAPTURE_CURRENT && 
+				update_counter % capture_interval_ == 0 && 
+				capture_current_.size() < capture_capacity_) {
+					capture_current_.push_back(lpf_Iq_);
+			}
 			return true;
 		});
 	});

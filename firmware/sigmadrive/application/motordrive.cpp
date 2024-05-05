@@ -565,7 +565,8 @@ uint64_t MotorDrive::GetRotorPosition() const
 	return Rencest_;
 }
 
-/** Calculate the position error. Trim the error within [-maxerr, maxerr]
+/** Calculate the position error (rotor orientationerror error). 
+ * Trim the error within [-maxerr, maxerr]
  *
  * @param position
  * @param target
@@ -602,6 +603,13 @@ float MotorDrive::GetMechanicalAngle(uint64_t enc_position) const
 {
 	return (2.0f * M_PI / enc_cpr_) * (enc_position & enc_resolution_mask_);
 }
+
+/**
+ * @brief Get the rotor electric angle orientation. The angle is
+ * returned as a complex vector.
+ * 
+ * @return std::complex<float> 
+ */
 
 std::complex<float> MotorDrive::GetRotorElecRotation()
 {
