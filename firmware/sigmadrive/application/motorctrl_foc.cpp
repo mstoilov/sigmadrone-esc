@@ -275,22 +275,7 @@ void MotorCtrlFOC::RunMonitorLoop()
 					config_.vab_advance_factor_ * drive_->GetRotorElecVelocityPTS()/drive_->GetEncoderCPR() * 2.0f * M_PI
 			);
 		} else if (status & (SIGNAL_CRASH_DETECTED | SIGNAL_RELATEDCRASH_DETECTED)) {
-			int64_t V = drive_->GetRotorVelocityPTS() * drive_->GetUpdateFrequency();
-			StopMove();
-			if (V > 0)
-				backup_ = -config_.crash_backup_;
-			else 
-				backup_ = config_.crash_backup_;
-			try {
-				if (std::abs(V) > 1000)
-					MoveRelativeParams(backup_, config_.crash_backup_speed_, 2000000, 2000000);
-			} catch (std::exception& e) {
 
-			}
-			if (related_ptr_ && (status & SIGNAL_CRASH_DETECTED)) {
-				related_ptr_->crash_counter_ = related_ptr_->drive_->GetUpdateCounter();
-				related_ptr_->SignalRelatedCrashDetected();
-			}
 		}
 	}
 }
@@ -387,7 +372,6 @@ void MotorCtrlFOC::StartMonitorThread()
 
 void MotorCtrlFOC::ModeSpin()
 {
-	related_ptr_ = nullptr;
 	drive_->AddTaskArmMotor();
 	drive_->sched_.AddTask([&](){
 		uint32_t display_counter = 0;
@@ -445,7 +429,6 @@ void MotorCtrlFOC::ModeSpin()
 
 void MotorCtrlFOC::ModeClosedLoopTorque()
 {
-	related_ptr_ = nullptr;
 	drive_->AddTaskArmMotor();
 	drive_->sched_.AddTask([&](){
 		float timeslice = drive_->GetTimeSlice();
@@ -506,7 +489,6 @@ void MotorCtrlFOC::ModeClosedLoopTorque()
 
 void MotorCtrlFOC::ModeClosedLoopVelocity()
 {
-	related_ptr_ = nullptr;
 	drive_->AddTaskArmMotor();
 	drive_->sched_.AddTask([&](){
 		float timeslice = drive_->GetTimeSlice();
@@ -569,7 +551,6 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
 
 void MotorCtrlFOC::SimpleModeClosedLoopPosition()
 {
-	related_ptr_ = nullptr;
 	drive_->AddTaskArmMotor();
 	drive_->sched_.AddTask([&](){
 		float timeslice = drive_->GetTimeSlice();
@@ -694,12 +675,6 @@ void MotorCtrlFOC::ModeClosedLoopPositionTrajectory()
 			std::complex<float> R = drive_->GetRotorElecRotation();
 			uint64_t rotor_position = drive_->GetRotorPosition();
 			uint32_t update_counter = drive_->GetUpdateCounter();
-
-			if (go_ && (update_counter - crash_counter_) > drive_->GetUpdateFrequency() 
-				&& drive_->GetPhaseCurrentMagnetude() >= config_.crash_current_) {
-					crash_counter_ = update_counter;
-					SignalCrashDetected();
-			}
 
 			if (velocity_stream_.empty()) {
 				go_ = false;

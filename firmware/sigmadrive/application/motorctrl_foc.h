@@ -72,7 +72,6 @@ public:
 	void ModeClosedLoopPositionTrajectory();
 	void StopMove();
 	void ModeSpin();
-	void SetRelatedAxis(MotorCtrlFOC* related) { related_ptr_ = related; }
 
 	int64_t GetTarget() const;						// Get the current target position. Relevant only in Closed Loop Position mode.
 	void SetTarget(const int64_t position);			// Set the current target position. Relevant only in Closed Loop Position mode.
@@ -161,7 +160,6 @@ protected:
 	PIController<float> pid_Iq_;                /**< PID regulator controlling the q-current (Iq) */
 	PIDController<float> pid_W_;                /**< PID regulator controlling the rotor velocity (W) */
 	PController<float> pid_P_;                  /**< PID regulator controlling the target position */
-	MotorCtrlFOC* related_ptr_ = nullptr;       /**< Related axis */
 	float Ierr_ = 0;                            /**< Q-current error. Used as input for the Iq PID regulator */
 	float Werr_ = 0;                            /**< Velocity error. Used as input for the velocity PID regulator */
 	float Wraderr_ = 0;                         /**< Velocity error in rads. Used as input for the velocity PID regulator */
@@ -173,7 +171,6 @@ protected:
 	float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
 	float spin_voltage_ = 3.0f;                 /**< Voltage used for the spin mode */
 	uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
-	uint32_t crash_counter_ = 0;
 	int32_t backup_;
 	MotionStats ms_;
 

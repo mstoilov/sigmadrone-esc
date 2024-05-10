@@ -435,8 +435,6 @@ void AllModeClp()
 {
 	foc1.ModeClosedLoopPositionTrajectory();
 	foc2.ModeClosedLoopPositionTrajectory();
-	foc1.SetRelatedAxis(&foc2);
-	foc2.SetRelatedAxis(&foc1);
 }
 
 void AllModeClv()

@@ -461,6 +461,14 @@ class axis:
     def capture_capacity(self, v):
         self.set("capture_capacity", v)
 
+    @property
+    def lpf_Iq(self):
+        return self.get("lpf_Iq")
+    @lpf_Iq.setter
+    def lpf_Iq(self, v):
+        self.set("lpf_Iq", v)
+
+
     #
     # Config Props
     #
@@ -578,8 +586,8 @@ class axis:
         return self.call("stop", [])
     def modeclp(self):
         return self.call("modeclp", [])
-    def modeclps(self):
-        return self.call("modeclps", [])
+    def smodeclp(self):
+        return self.call("smodeclp", [])
     def modeclv(self):
         return self.call("modeclv", [])
     def modespin(self):
@@ -600,6 +608,10 @@ class axis:
         return self.call("get_sequence", [count])
     def mvp(self, pos):
         return self.call("mvp", [pos])
+    def smvr(self, pos):
+        return self.call("smvr", [pos])
+    def smvp(self, pos):
+        return self.call("smvp", [pos])
     def mvr(self, pos):
         return self.call("mvr", [pos])
     def mvpp(self, pos, v, acc, dec):
@@ -612,6 +624,14 @@ class axis:
         return self.call("pushv", [v])
     def stopmove(self):
         return self.call("stopmove", [])
+    
+    def home(self, speed, amp, step = 100, maxtravel=10000000):
+        maxsteps = int(abs(maxtravel)/abs(step))
+        pos = self.target
+        self.velocity = speed
+        for s in range(0, maxsteps):
+            pos = self.smvr(step)
+        return pos
 
     def trajectory(self, points):
         for i in range(0, len(points)):
