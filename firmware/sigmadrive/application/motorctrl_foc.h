@@ -41,6 +41,8 @@ protected:
 		float crash_current_ = 25;              /**< If the current is above this value the crash detection will kick in */
 		uint32_t crash_backup_ = 100000;        /**< If crash is detected, backup from that point by the given encoder counts */
 		uint32_t crash_backup_speed_ = 250000;  /**< How fast to backup from the crash point */
+		uint32_t pulse_enc_counts_ = 256;             /**< Encoder counts per pulse */
+
 		bool display_ = false;                  /**< Display mode on/off */
 	};
 
@@ -69,6 +71,7 @@ public:
 	void ModeClosedLoopTorque();
 	void ModeClosedLoopVelocity();
 	void SimpleModeClosedLoopPosition();
+	void ModeClosedLoopPositionStream();
 	void ModeClosedLoopPositionTrajectory();
 	void StopMove();
 	void ModeSpin();
@@ -103,6 +106,24 @@ public:
 	void PushStreamPoint(int64_t time, int64_t velocity, int64_t position);
 	void PushStreamPointV(std::vector<int64_t> v);
 	void Go();
+
+	/**
+	 * @brief Specify a pulse stream to be executed in the control loop
+	 * 
+	 * The pulse stream increases or decreases the target position.
+	 * Every byte holds 4 pulses, 2bits per pulse
+	 * Pulse spec:
+	 * Bit 0 - Pulse
+	 * Bit 1 - Direction
+	 * Example: 
+	 *    00 - No pulse
+	 *    01 - Pulse forward
+	 *    10 - No pulse
+	 *    11 - Pulse backward
+	 * 
+	 * @param v 
+	 */
+	void PulseStream(std::vector<uint8_t> v);
 
 	void UpdateRotor();
 	void RunMonitorLoop();
@@ -175,6 +196,7 @@ protected:
 	MotionStats ms_;
 
 	Ring<std::vector<int64_t>, 512> velocity_stream_; /**< (T, V, P) T in counts of update periods, V in enc. counts per sec, P in enc. counts */
+	Ring<uint8_t, 2500> pulse_stream_;                /**< Two bits per pulse. Bit 0 is pulse, Bit 1 is dir. Values: 0 - No pulse, 1 - Pulse Forward, 2 - Not used, 3 - Pulse Backward */
 	std::vector<float> capture_position_;
 	std::vector<float> capture_velocity_;
 	std::vector<float> capture_current_;

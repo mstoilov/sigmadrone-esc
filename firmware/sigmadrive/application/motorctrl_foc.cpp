@@ -54,7 +54,11 @@ void MotorCtrlFOC::RegisterRpcMethods()
 	rpc_server.add(prefix, "go", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::Go, "void Go()"));
 
 
-	rpc_server.add(prefix, "smodeclp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::SimpleModeClosedLoopPosition, "void MotorCtrlFOC::ModeClosedLoopPositionSimple()"));
+	rpc_server.add(prefix, "modeclps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopPositionStream, "void MotorCtrlFOC::ModeClosedLoopPositionStream()"));
+	rpc_server.add(prefix, "pulse_stream", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PulseStream, "void PulseStream(const std::vector<int64_t>& v)"));
+	
+	
+	rpc_server.add(prefix, "smodeclp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::SimpleModeClosedLoopPosition, "void MotorCtrlFOC::SimpleModeClosedLoopPosition()"));
 	rpc_server.add(prefix, "smvp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::SimpleMoveToPosition, "void SimpleMotorCtrlFOC::MoveToPosition(uint64_t position)"));
 	rpc_server.add(prefix, "smvr", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::SimpleMoveRelative, "void SimpleMotorCtrlFOC::MoveRelative(int64_t relative)"));
 
@@ -169,6 +173,7 @@ rexjson::property MotorCtrlFOC::GetConfigPropertyMap()
 		{"crash_current", {&config_.crash_current_, rexjson::property_get<decltype(config_.crash_current_)>, rexjson::property_set<decltype(config_.crash_current_)>}},
 		{"crash_backup", {&config_.crash_backup_, rexjson::property_get<decltype(config_.crash_backup_)>, rexjson::property_set<decltype(config_.crash_backup_)>}},
 		{"display", {&config_.display_, rexjson::property_get<decltype(config_.display_)>, rexjson::property_set<decltype(config_.display_)>}},
+		{"pulse_enc_counts", {&config_.pulse_enc_counts_, rexjson::property_get<decltype(config_.pulse_enc_counts_)>, rexjson::property_set<decltype(config_.pulse_enc_counts_)>}},
 	});
 	return props;
 }
@@ -547,6 +552,128 @@ void MotorCtrlFOC::ModeClosedLoopVelocity()
 	});
 	drive_->AddTaskDisarmMotor();
 	drive_->Run();
+}
+
+void MotorCtrlFOC::ModeClosedLoopPositionStream()
+{
+	drive_->AddTaskArmMotor();
+	drive_->sched_.AddTask([&](){
+		float timeslice = drive_->GetTimeSlice();
+		uint32_t display_counter = 0;
+		uint32_t npulse = 0; // 0..3 The current pulse. There are 4 pulses in one byte.
+		drive_->ResetUpdateCounter();
+		pid_Id_.Reset();
+		pid_Iq_.Reset();
+		pid_W_.Reset();
+		pid_P_.Reset();
+		target_ = drive_->GetRotorPosition();
+
+		drive_->sched_.RunUpdateHandler([&]()->bool {
+			/*
+			 * Get the latest values for I,R 
+			*/
+			std::complex<float> Iab = drive_->GetPhaseCurrent();
+			std::complex<float> R = drive_->GetRotorElecRotation();
+			uint64_t rotor_position = drive_->GetRotorPosition();
+			uint32_t update_counter = drive_->GetUpdateCounter();
+
+			/* 
+			 * Target calculations
+			 */
+			if (!pulse_stream_.empty() & go_) {
+				uint8_t pulse = *pulse_stream_.get_read_ptr() >> (2 * npulse);
+				if (pulse & 0x1) {
+					if (pulse & 0x2) {
+						target_ -= config_.pulse_enc_counts_;
+					} else {
+						target_ += config_.pulse_enc_counts_;
+					}
+				}
+				npulse = (npulse + 1) & 0x3;
+				if (npulse == 0) {
+					pulse_stream_.read_update(1);
+					if (pulse_stream_.empty())
+						go_ = false;
+				}
+			}
+
+			/* Calculate the position error and input it in the Position PID */
+			Perr_ = drive_->GetRotorPositionError(rotor_position, target_) * timeslice;
+			pid_P_.SetMaxOutput(velocity_ * timeslice);
+			pid_P_.Input(Perr_, timeslice);
+
+			/* Calculate the velocity error and input it in the Velocity PID */
+			Werr_ = pid_P_.Output() - drive_->GetRotorVelocityPTS();
+			pid_W_.Input(Werr_, timeslice);
+
+			/*
+			 *  Park Transform
+			 *  Id = Ialpha * cos(R) + Ibeta  * sin(R)
+			 *  Iq = Ibeta  * cos(R) - Ialpha * sin(R)
+			 *
+			 *  Idq = std::complex<float>(Id, Iq);
+			 */
+			std::complex<float> Idq = Iab * std::conj(R);
+			lpf_Id_ = Idq.real();
+			lpf_Iq_ = Idq.imag();
+
+			/*
+			 * Update D/Q PID Regulators.
+			 */
+			Ierr_ = pid_W_.Output() - lpf_Iq_;
+			pid_Id_.Input(0.0f - lpf_Id_, timeslice);
+			pid_Iq_.Input(Ierr_, timeslice);
+
+			/*
+			 * Inverse Park Transform
+			 * Va = Vd * cos(R) - Vq * sin(R)
+			 * Vb = Vd * sin(R) + Vq * cos(R)
+			 *
+			 * Vab = std::complex<float>(Va, Vb)
+			 */
+			std::complex<float> V_ab = std::complex<float>(pid_Id_.Output(), pid_Iq_.Output()) * R;
+
+			/*
+			 * Apply the voltage timings
+			 */
+			drive_->ApplyPhaseVoltage(V_ab.real(), V_ab.imag());
+
+			if (config_.display_ &&  display_counter++ % drive_->config_.display_div_ == 0) {
+				foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t_begin_, hrtimer.GetCounter());
+				SignalDumpPosition();
+			}
+			if (capture_mode_ & CAPTURE_POSITION && 
+				update_counter % capture_interval_ == 0 && 
+				capture_position_.size() < capture_capacity_) {
+					capture_position_.push_back(rotor_position);
+			}
+			if (capture_mode_ & CAPTURE_VELOCITY && 
+				update_counter % capture_interval_ == 0 && 
+				capture_velocity_.size() < capture_capacity_) {
+					capture_velocity_.push_back(drive_->GetRotorVelocity());
+			}
+			if (capture_mode_ & CAPTURE_CURRENT && 
+				update_counter % capture_interval_ == 0 && 
+				capture_current_.size() < capture_capacity_) {
+					capture_current_.push_back(lpf_Iq_);
+			}
+
+			return true;
+		});
+	});
+	drive_->AddTaskDisarmMotor();
+	drive_->Run();
+}
+
+
+void MotorCtrlFOC::PulseStream(std::vector<uint8_t> v)
+{
+	if (pulse_stream_.space_size() < v.size())
+		throw std::runtime_error("Out of memory");
+
+	for (uint8_t& pulse : v) {
+		pulse_stream_.push(pulse);
+	}
 }
 
 void MotorCtrlFOC::SimpleModeClosedLoopPosition()

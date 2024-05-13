@@ -572,6 +572,13 @@ class axis:
         self.setcfg("display", v)
 
     @property
+    def pulse_enc_counts(self):
+        return self.getcfg("pulse_enc_counts")
+    @pulse_enc_counts.setter
+    def pulse_enc_counts(self, v):
+        self.setcfg("pulse_enc_counts", v)
+
+    @property
     def acc_alpha(self):
         return self.getcfg("acc_alpha")
     @acc_alpha.setter
@@ -586,6 +593,8 @@ class axis:
         return self.call("stop", [])
     def modeclp(self):
         return self.call("modeclp", [])
+    def modeclps(self):
+        return self.call("modeclps", [])
     def smodeclp(self):
         return self.call("smodeclp", [])
     def modeclv(self):
@@ -624,7 +633,8 @@ class axis:
         return self.call("pushv", [v])
     def stopmove(self):
         return self.call("stopmove", [])
-    
+    def pulse_stream(self, v):
+        return self.call("pulse_stream", [v])
     def home(self, speed, amp, step = 100, maxtravel=10000000):
         maxsteps = int(abs(maxtravel)/abs(step))
         pos = self.target
