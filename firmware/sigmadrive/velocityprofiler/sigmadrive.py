@@ -635,6 +635,10 @@ class axis:
         return self.call("stopmove", [])
     def pulse_stream(self, v):
         return self.call("pulse_stream", [v])
+    def mvrps(self, v):
+        return self.call("mvrps", [v])
+    def mvt(self, rel, vel, acc, dec):
+        return self.call("mvt", [rel, vel, acc, dec])
     def home(self, speed, amp, step = 100, maxtravel=10000000):
         maxsteps = int(abs(maxtravel)/abs(step))
         pos = self.target
@@ -678,9 +682,19 @@ class util:
     def rpc_call(self, method, params):
         rpc_call(method, params, self.device)
 
+    def get(self, name):
+        return rpc_call("get", [name], self.device)["result"]
+    def set(self, name, value):
+        rpc_call("set", [name, value], self.device)
+
     def push(self, axis, points):
         for i in range(0, len(points)):
             axis.push(int(points[i][0]), points[i][1], points[i][2])
+
+    @property
+    def clock_hz(self):
+        return self.get("clock_hz")
+
 
     def Go(self):
         self.rpc_call("go", [])
