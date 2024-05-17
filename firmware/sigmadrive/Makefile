@@ -22,7 +22,7 @@ TARGET = sigmadrive
 # debug build?
 DEBUG = 1
 # optimization
-OPT = -O3
+OPT = -O2
 
 
 
