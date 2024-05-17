@@ -59,12 +59,6 @@ protected:
 		int32_t lpf_V;
 	};
 
-	struct CrashInfo {
-		int32_t speed;
-		int64_t path;
-	};
-
-
 public:
 	MotorCtrlFOC(MotorDrive* drive, std::string axis_id);
 	void Stop();
@@ -81,10 +75,13 @@ public:
 	uint64_t MoveToPosition(uint64_t position);
 	uint64_t MoveToPositionParams(uint64_t target, uint32_t v, uint32_t acc, uint32_t dec);
 	uint64_t MoveRelative(int64_t relative);
+	void MoveTrapezoid(int64_t relative, uint32_t v, uint32_t acc, uint32_t dec);
 	uint64_t MoveRelativeParams(int64_t relateive, uint32_t v, uint32_t acc, uint32_t dec);
 
 	uint64_t SimpleMoveToPosition(uint64_t position);
 	uint64_t SimpleMoveRelative(int64_t relative);
+
+
 
 	void RunCalibrationSequence(bool reset_rotor);
 	float VelocityRPS(float revpersec);
@@ -105,6 +102,9 @@ public:
 	 */
 	void PushStreamPoint(int64_t time, int64_t velocity, int64_t position);
 	void PushStreamPointV(std::vector<int64_t> v);
+	void MoveRelativePulseStream(int64_t relative);
+	void PulseStreamPush(uint32_t dir, uint32_t pulse, uint32_t seq);
+	void PulseStreamFlush();
 	void Go();
 
 	/**
@@ -135,6 +135,7 @@ public:
 	void SignalDumpSpin();
 	void SignalCrashDetected();
 	void SignalRelatedCrashDetected();
+	void Capture();
 
 	static void RunDebugLoopWrapper(void *ctx);
 
@@ -186,7 +187,7 @@ protected:
 	float Wraderr_ = 0;                         /**< Velocity error in rads. Used as input for the velocity PID regulator */
 	float Perr_ = 0;                            /**< Rotor position error. Used as input for the position PID regulator */
 	uint64_t target_ = 0;                       /**< Target position used in closed loop position mode */
-	float velocity_ = 1400000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
+	float velocity_ = 1200000;                  /**< Movement velocity in encoder counts per second used in velocity loop and position loop modes */
 	float acceleration_ = 6000000;              /**< Movement acceleration [counts/s^2] */
 	float deceleration_ = 2000000;              /**< Movement deceleration [counts/s^2] */
 	float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
@@ -196,7 +197,8 @@ protected:
 	MotionStats ms_;
 
 	Ring<std::vector<int64_t>, 512> velocity_stream_; /**< (T, V, P) T in counts of update periods, V in enc. counts per sec, P in enc. counts */
-	Ring<uint8_t, 2500> pulse_stream_;                /**< Two bits per pulse. Bit 0 is pulse, Bit 1 is dir. Values: 0 - No pulse, 1 - Pulse Forward, 2 - Not used, 3 - Pulse Backward */
+	using PulseStreamType = uint8_t;
+	Ring<PulseStreamType, 2500> pulse_stream_;                /**< Two bits per pulse. Bit 0 is pulse, Bit 1 is dir. Values: 0 - No pulse, 1 - Pulse Forward, 2 - Not used, 3 - Pulse Backward */
 	std::vector<float> capture_position_;
 	std::vector<float> capture_velocity_;
 	std::vector<float> capture_current_;
@@ -205,6 +207,9 @@ protected:
 	size_t capture_mode_;
 	size_t capture_capacity_;
 	bool go_;
+
+private:
+	PulseStreamType scratch_;
 };
 
 

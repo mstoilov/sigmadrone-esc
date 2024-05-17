@@ -56,6 +56,8 @@ void MotorCtrlFOC::RegisterRpcMethods()
 
 	rpc_server.add(prefix, "modeclps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::ModeClosedLoopPositionStream, "void MotorCtrlFOC::ModeClosedLoopPositionStream()"));
 	rpc_server.add(prefix, "pulse_stream", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::PulseStream, "void PulseStream(const std::vector<int64_t>& v)"));
+	rpc_server.add(prefix, "mvrps", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveRelativePulseStream, "void MoveRelativePulseStream(int64_t relative)"));
+	rpc_server.add(prefix, "mvt", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::MoveTrapezoid, "uint64_t MoveTrapezoid(int64_t relative, uint32_t v, uint32_t acc, uint32_t dec)"));
 	
 	
 	rpc_server.add(prefix, "smodeclp", rexjson::make_rpc_wrapper(this, &MotorCtrlFOC::SimpleModeClosedLoopPosition, "void MotorCtrlFOC::SimpleModeClosedLoopPosition()"));
@@ -567,6 +569,7 @@ void MotorCtrlFOC::ModeClosedLoopPositionStream()
 		pid_W_.Reset();
 		pid_P_.Reset();
 		target_ = drive_->GetRotorPosition();
+		pulse_stream_.clear();
 
 		drive_->sched_.RunUpdateHandler([&]()->bool {
 			/*
@@ -580,7 +583,7 @@ void MotorCtrlFOC::ModeClosedLoopPositionStream()
 			/* 
 			 * Target calculations
 			 */
-			if (!pulse_stream_.empty() & go_) {
+			if (!pulse_stream_.empty() && go_) {
 				uint8_t pulse = *pulse_stream_.get_read_ptr() >> (2 * npulse);
 				if (pulse & 0x1) {
 					if (pulse & 0x2) {
@@ -595,6 +598,8 @@ void MotorCtrlFOC::ModeClosedLoopPositionStream()
 					if (pulse_stream_.empty())
 						go_ = false;
 				}
+				if (update_counter % capture_interval_ == 0 && go_)
+					Capture();
 			}
 
 			/* Calculate the position error and input it in the Position PID */
@@ -642,22 +647,6 @@ void MotorCtrlFOC::ModeClosedLoopPositionStream()
 				foc_time_ = hrtimer.GetTimeElapsedMicroSec(drive_->t_begin_, hrtimer.GetCounter());
 				SignalDumpPosition();
 			}
-			if (capture_mode_ & CAPTURE_POSITION && 
-				update_counter % capture_interval_ == 0 && 
-				capture_position_.size() < capture_capacity_) {
-					capture_position_.push_back(rotor_position);
-			}
-			if (capture_mode_ & CAPTURE_VELOCITY && 
-				update_counter % capture_interval_ == 0 && 
-				capture_velocity_.size() < capture_capacity_) {
-					capture_velocity_.push_back(drive_->GetRotorVelocity());
-			}
-			if (capture_mode_ & CAPTURE_CURRENT && 
-				update_counter % capture_interval_ == 0 && 
-				capture_current_.size() < capture_capacity_) {
-					capture_current_.push_back(lpf_Iq_);
-			}
-
 			return true;
 		});
 	});
@@ -665,6 +654,21 @@ void MotorCtrlFOC::ModeClosedLoopPositionStream()
 	drive_->Run();
 }
 
+void MotorCtrlFOC::Capture()
+{
+	if (capture_mode_ & CAPTURE_POSITION && 
+		capture_position_.size() < capture_capacity_) {
+			capture_position_.push_back(drive_->GetRotorPosition());
+	}
+	if (capture_mode_ & CAPTURE_VELOCITY && 
+		capture_velocity_.size() < capture_capacity_) {
+			capture_velocity_.push_back(drive_->GetRotorVelocity());
+	}
+	if (capture_mode_ & CAPTURE_CURRENT && 
+		capture_current_.size() < capture_capacity_) {
+			capture_current_.push_back(lpf_Iq_);
+	}
+}
 
 void MotorCtrlFOC::PulseStream(std::vector<uint8_t> v)
 {
@@ -675,6 +679,114 @@ void MotorCtrlFOC::PulseStream(std::vector<uint8_t> v)
 		pulse_stream_.push(pulse);
 	}
 }
+
+void MotorCtrlFOC::MoveRelativePulseStream(int64_t relative)
+{
+	uint8_t dir = (relative < 0) ? 1 : 0;
+	float moveTime = std::abs(relative)/std::abs(velocity_);
+	uint32_t moveUpdates = moveTime * drive_->GetUpdateFrequency();
+	uint32_t npulses = std::abs(relative)/config_.pulse_enc_counts_;
+	uint32_t pulsePeriod = moveUpdates / npulses;
+	for (uint32_t i = 0; i < moveUpdates; i++) {
+		PulseStreamPush(dir, (i % pulsePeriod == 0) ? 1 : 0, i);
+	}
+	PulseStreamFlush();
+}
+
+void MotorCtrlFOC::PulseStreamFlush()
+{
+	uint32_t timeout = 1000;
+	while (!pulse_stream_.space_size()) {
+		osDelay(1);
+		if (timeout == 0)
+			throw std::runtime_error("PulseStreamPush timed out.");
+		timeout--;
+	}
+	pulse_stream_.push(scratch_);
+	scratch_ = 0;
+}
+
+void MotorCtrlFOC::PulseStreamPush(uint32_t dir, uint32_t pulse, uint32_t seq)
+{
+	uint8_t bits = (dir << 1) | pulse;
+
+	seq &= 3;
+
+	// Clear bits
+	if (seq == 0)
+		scratch_ = 0;
+	
+	// Set the Pulse bits
+	scratch_ |= (bits << (seq*2));
+
+	seq = (seq + 1) & 3;
+	if (seq == 0)
+		PulseStreamFlush();
+}
+
+
+void MotorCtrlFOC::MoveTrapezoid(int64_t relative, uint32_t v, uint32_t acc, uint32_t dec)
+{
+	std::vector<std::vector<int64_t>> points = CalculateTrapezoidPoints(0, relative, 0, 0, v, acc, dec, drive_->GetUpdateFrequency());
+	int32_t PULSEN = (relative < 0) ? -config_.pulse_enc_counts_ : config_.pulse_enc_counts_;
+	uint32_t dir = (relative < 0) ? 1 : 0;
+	uint32_t seq = 0;
+
+	// Iterate through the trapezoid velocity segments
+	int64_t Scur = 0;
+	uint32_t T1 = 0, T2 = 0, T = 0;
+	float V1 = 0, V2 = 0, V = 0;
+	float S2 = 0, S = 0;
+	float A = 0;
+	uint64_t movePeriods = 0;
+	uint32_t goTrig = pulse_stream_.space_size()/2;
+	for (const std::vector<int64_t>& pt : points)
+		movePeriods += pt[0];
+	if (movePeriods < goTrig)
+		goTrig = movePeriods/2;
+
+	for (std::vector<int64_t>& pt : points) {
+		T1 = 0; T2 = (uint32_t)pt[0];
+		V1 = V2; V2 = pt[1] / drive_->GetUpdateFrequency();
+		S2 = pt[2];
+		if (T2 > T1) {
+			A = (V2 - V1)/(T2 - T1);
+			for (T = 0; T < T2; T++) {
+				/*   
+				*  V2     /|
+				*        / |   
+				*       /  |
+				*  V   /|  |
+				*     / |  |
+				*    /__|__|
+				*   0   T  T2
+				*
+				*  S is the area of the triangle 0-T-V
+				*  it is calculated by subtracting:
+				*  the area of the trapezoid T - T2 - V2 - V
+				*  from S2
+				*  S = S2 - (V + V2) * (T2 - T) / 2
+				*/
+
+				V = V1 + A * T;
+				S = S2 - (V2 + V) * (T2 - T) / 2;
+				if (std::abs(S) - std::abs(Scur) >= std::abs(PULSEN)) {
+					PulseStreamPush(dir, 1, seq);
+					Scur += PULSEN;
+				} else {
+					PulseStreamPush(dir, 0, seq);
+				}
+				if (seq == goTrig)
+					Go();
+				seq++;
+			}
+		}
+	}
+	// for (int i = 0; i < 8000; i++)
+	// 	PulseStreamPush(0, 0, seq++);
+	PulseStreamFlush();
+}
+
 
 void MotorCtrlFOC::SimpleModeClosedLoopPosition()
 {
