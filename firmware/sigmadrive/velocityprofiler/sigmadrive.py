@@ -680,7 +680,10 @@ class util:
         self.device = device
 
     def rpc_call(self, method, params):
-        rpc_call(method, params, self.device)
+        return rpc_call(method, params, self.device)
+
+    def call(self, method, params):
+        return rpc_call(method, params, self.device)["result"]
 
     def get(self, name):
         return rpc_call("get", [name], self.device)["result"]
@@ -697,25 +700,25 @@ class util:
 
 
     def Go(self):
-        self.rpc_call("go", [])
+        self.call("go", [])
 
     def Stop(self):
-        self.rpc_call("stop", [])
+        self.call("stop", [])
 
     def Modeclp(self):
-        self.rpc_call("modeclp", [])
+        self.call("modeclp", [])
 
     def mvxy(self, posX, posY, V, Acc, Dec):
-        self.rpc_call("mvxy", [posX, posY, V, Acc, Dec])
+        self.call("mvxy", [posX, posY, V, Acc, Dec])
 
     def mvpolar(self, D, angle, V, Acc, Dec):
-        self.rpc_call("mvpolar", [D, float(angle), V, Acc, Dec])
+        self.call("mvpolar", [D, float(angle), V, Acc, Dec])
 
     def gomvxy(self, posX, posY, V, Acc, Dec):
-        self.rpc_call("gomvxy", [posX, posY, V, Acc, Dec])
+        self.call("gomvxy", [posX, posY, V, Acc, Dec])
 
     def gomvpolar(self, D, angle, V, Acc, Dec):
-        self.rpc_call("gomvpolar", [D, float(angle), V, Acc, Dec])
+        self.call("gomvpolar", [D, float(angle), V, Acc, Dec])
 
     def mvrx(self, axis, P, V, A, D):
         curtarget = axis.target
