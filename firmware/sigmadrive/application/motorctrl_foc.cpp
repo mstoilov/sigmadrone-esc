@@ -9,13 +9,14 @@
 
 extern UartRpcServer rpc_server;
 
-MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
+MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id, TIM_HandleTypeDef* htim_pulse)
 	: drive_(drive)
 	, axis_id_(axis_id)
 	, pid_Id_(config_.pid_current_kp_, config_.pid_current_ki_, config_.pid_current_maxout_)
 	, pid_Iq_(config_.pid_current_kp_, config_.pid_current_ki_, config_.pid_current_maxout_)
 	, pid_W_(config_.pid_w_kp_, config_.pid_w_ki_, 0, 1, config_.pid_w_maxout_, 0)
 	, pid_P_(config_.pid_p_kp_, config_.pid_p_maxout_)
+	, htim_pulse_(htim_pulse)
 	, capture_interval_(200)
 	, capture_mode_(15)
 	, capture_capacity_(500)
@@ -27,6 +28,7 @@ MotorCtrlFOC::MotorCtrlFOC(MotorDrive* drive, std::string axis_id)
 	capture_current_.reserve(capture_capacity_);
 	StartMonitorThread();
 	RegisterRpcMethods();
+	UpdatePulseTimerPeriod();
 }
 
 void MotorCtrlFOC::RegisterRpcMethods()
@@ -95,6 +97,39 @@ rexjson::property MotorCtrlFOC::GetPropertyMap()
 			}
 		)},
 		{"lpf_Iq", {&lpf_Iq_, rexjson::property_get<decltype(lpf_Iq_)>}},
+		{"pulse_counter", rexjson::property(
+			&pulse_counter_, 
+			rexjson::property_get<decltype(pulse_counter_)>,
+			[&](const rexjson::value& v, void* ctx) {
+				rexjson::property_set<decltype(pulse_counter_)>(v, ctx);
+				__HAL_TIM_ENABLE(htim_pulse_);
+			}
+		)},
+		{"pulse_direction", {&pulse_direction_, rexjson::property_get<decltype(pulse_direction_)>, rexjson::property_set<decltype(pulse_direction_)>}},
+		{"pulses_per_sec", rexjson::property(
+			&pulses_per_sec_, 
+			rexjson::property_get<decltype(pulses_per_sec_)>,
+			[&](const rexjson::value& v, void* ctx) {
+				rexjson::property_set<decltype(pulses_per_sec_)>(v, ctx);
+				UpdatePulseTimerPeriod();
+			}
+		)},
+		{"hclk", rexjson::property(
+			nullptr, 
+			[&](void* ctx)->rexjson::value {return HAL_RCC_GetHCLKFreq(); }
+		)},
+		{"pclk1", rexjson::property(
+			nullptr, 
+			[&](void* ctx)->rexjson::value {return HAL_RCC_GetPCLK1Freq(); }
+		)},
+		{"pclk2", rexjson::property(
+			nullptr, 
+			[&](void* ctx)->rexjson::value {return HAL_RCC_GetPCLK2Freq(); }
+		)},
+		{"arr", rexjson::property(
+			nullptr, 
+			[&](void* ctx)->rexjson::value {return __HAL_TIM_GET_AUTORELOAD(htim_pulse_); }
+		)},
 	});
 	return props;
 }
@@ -771,6 +806,10 @@ void MotorCtrlFOC::MoveTrapezoid(int64_t relative, uint32_t v, uint32_t acc, uin
 				V = V1 + A * T;
 				S = S2 - (V2 + V) * (T2 - T) / 2;
 				if (std::abs(S) - std::abs(Scur) >= std::abs(PULSEN)) {
+					/*
+					 * Only generate a pulse when we reach 
+					 * the treshold of PULSEN (the number of steps in the pulse)
+					*/
 					PulseStreamPush(dir, 1, seq);
 					Scur += PULSEN;
 				} else {
@@ -1194,3 +1233,16 @@ void MotorCtrlFOC::RunCalibrationSequence(bool reset_rotor)
 	drive_->RunWaitForCompletion();
 }
 
+uint32_t MotorCtrlFOC::PulseCallback()
+{
+	if (pulse_counter_ > 0) {
+		pulse_counter_--;
+		target_ += (pulse_direction_) ? -config_.pulse_enc_counts_ : config_.pulse_enc_counts_;
+	}
+	return pulse_counter_;
+}
+
+void MotorCtrlFOC::UpdatePulseTimerPeriod()
+{
+	__HAL_TIM_SET_AUTORELOAD(htim_pulse_, HAL_RCC_GetPCLK1Freq()*2/pulses_per_sec_);
+}

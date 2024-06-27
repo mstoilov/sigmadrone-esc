@@ -468,6 +468,55 @@ class axis:
     def lpf_Iq(self, v):
         self.set("lpf_Iq", v)
 
+    @property
+    def pulse_counter(self):
+        return self.get("pulse_counter")
+    @pulse_counter.setter
+    def pulse_counter(self, v):
+        self.set("pulse_counter", v)
+
+    @property
+    def pulse_direction(self):
+        return self.get("pulse_direction")
+    @pulse_direction.setter
+    def pulse_direction(self, v):
+        self.set("pulse_direction", v)
+
+    @property
+    def pulses_per_sec(self):
+        return self.get("pulses_per_sec")
+    @pulses_per_sec.setter
+    def pulses_per_sec(self, v):
+        self.set("pulses_per_sec", v)
+
+    @property
+    def hclk(self):
+        return self.get("hclk")
+    @hclk.setter
+    def hclk(self, v):
+        self.set("hclk", v)
+
+    @property
+    def pclk1(self):
+        return self.get("pclk1")
+    @pclk1.setter
+    def pclk1(self, v):
+        self.set("pclk1", v)
+
+    @property
+    def pclk2(self):
+        return self.get("pclk2")
+    @pclk2.setter
+    def pclk2(self, v):
+        self.set("pclk2", v)
+
+    @property
+    def arr(self):
+        return self.get("arr")
+    @arr.setter
+    def arr(self, v):
+        self.set("arr", v)
+
 
     #
     # Config Props

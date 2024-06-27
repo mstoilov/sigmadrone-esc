@@ -70,8 +70,8 @@ Drv8323 drv1(spi2, GPIOC, GPIO_PIN_13, GPIOE, GPIO_PIN_15);
 Drv8323 drv2(spi2, GPIOC, GPIO_PIN_14, GPIOB, GPIO_PIN_2);
 MotorDrive motor_drive1(1, &drv1, &adc1, &adc1, &ma4_abs_encoder1, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorDrive motor_drive2(2, &drv2, &adc2, &adc1, &ma4_abs_encoder2, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
-MotorCtrlFOC foc1(&motor_drive1, "axis1");
-MotorCtrlFOC foc2(&motor_drive2, "axis2");
+MotorCtrlFOC foc1(&motor_drive1, "axis1", &htim2);
+MotorCtrlFOC foc2(&motor_drive2, "axis2", &htim5);
 
 HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
 
@@ -128,6 +128,19 @@ void RunRpcTask(void *argument)
 	}
 }
 
+extern "C"
+void SD_TIM2_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
+{
+	if (!foc1.PulseCallback())
+		__HAL_TIM_DISABLE(htim);
+}
+
+extern "C"
+void SD_TIM5_PeriodElapsedCallback(TIM_HandleTypeDef* htim)
+{
+	if (!foc2.PulseCallback())
+		__HAL_TIM_DISABLE(htim);
+}
 
 extern "C"
 void SD_TIM1_IRQHandler(TIM_HandleTypeDef* htim)

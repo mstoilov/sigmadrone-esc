@@ -41,8 +41,7 @@ protected:
 		float crash_current_ = 25;              /**< If the current is above this value the crash detection will kick in */
 		uint32_t crash_backup_ = 100000;        /**< If crash is detected, backup from that point by the given encoder counts */
 		uint32_t crash_backup_speed_ = 250000;  /**< How fast to backup from the crash point */
-		uint32_t pulse_enc_counts_ = 256;             /**< Encoder counts per pulse */
-
+		uint32_t pulse_enc_counts_ = 256;       /**< Encoder counts per pulse */
 		bool display_ = false;                  /**< Display mode on/off */
 	};
 
@@ -60,7 +59,7 @@ protected:
 	};
 
 public:
-	MotorCtrlFOC(MotorDrive* drive, std::string axis_id);
+	MotorCtrlFOC(MotorDrive* drive, std::string axis_id, TIM_HandleTypeDef* htim_pulse);
 	void Stop();
 	void ModeClosedLoopTorque();
 	void ModeClosedLoopVelocity();
@@ -82,7 +81,7 @@ public:
 	uint64_t SimpleMoveRelative(int64_t relative);
 
 
-
+	void UpdatePulseTimerPeriod();
 	void RunCalibrationSequence(bool reset_rotor);
 	float VelocityRPS(float revpersec);
 
@@ -106,6 +105,7 @@ public:
 	void PulseStreamPush(uint32_t dir, uint32_t pulse, uint32_t seq);
 	void PulseStreamFlush();
 	void Go();
+	uint32_t PulseCallback();
 
 	/**
 	 * @brief Specify a pulse stream to be executed in the control loop
@@ -193,8 +193,11 @@ protected:
 	float q_current_ = 0.075;                   /**< Q-current used for torque loop mode */
 	float spin_voltage_ = 3.0f;                 /**< Voltage used for the spin mode */
 	uint32_t foc_time_ = 0;                     /**< The time it takes to run the FOC calculations in micro-seconds */
-	int32_t backup_;
-	MotionStats ms_;
+	uint32_t pulse_counter_ = 0;                /**< Number of pulse interrupts. This var is decremented at each period until it reaches 0 and then the pulse timer is deactivated */
+	uint32_t pulse_direction_ = 0;              /**< 0 - Move forward, 1 - Move backward */
+	uint32_t pulses_per_sec_ = 256;             /**< The pulse trains speed, i.e. how many pulses to generate per second */
+	TIM_HandleTypeDef* htim_pulse_;             /**< The timer responsible for generating pulses */
+	MotionStats ms_;                            /**< Holds the motion progress values, like time, velocity, position */
 
 	Ring<std::vector<int64_t>, 512> velocity_stream_; /**< (T, V, P) T in counts of update periods, V in enc. counts per sec, P in enc. counts */
 	using PulseStreamType = uint8_t;
