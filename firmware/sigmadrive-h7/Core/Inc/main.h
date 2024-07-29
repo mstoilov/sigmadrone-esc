@@ -36,7 +36,22 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+extern ADC_HandleTypeDef hadc1;
+extern ADC_HandleTypeDef hadc2;
+extern ADC_HandleTypeDef hadc3;
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
+extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart8;
+extern SPI_HandleTypeDef hspi2;
+extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim8;
+extern TIM_HandleTypeDef htim4;
+extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim5;
+extern TIM_HandleTypeDef htim12;
+extern struct _reent* _impure_data_ptr;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

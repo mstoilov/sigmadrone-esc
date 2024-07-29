@@ -14,12 +14,12 @@
 #include <algorithm>
 #include <iterator>
 #include <assert.h>
-#include "stm32f745xx.h"
+#include "stm32h743xx.h"
 #include "cmsis_os2.h"
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "task.h"
-#include "stm32f7xx_ll_dma.h"
+#include "stm32h7xx_ll_dma.h"
 
 #include "main.h"
 #include "appmain.h"

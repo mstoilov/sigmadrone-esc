@@ -8,11 +8,11 @@
 #ifndef APPLICATION_SPIMASTER_H_
 #define APPLICATION_SPIMASTER_H_
 
-#include "stm32f745xx.h"
-#include "stm32f7xx.h"
-#include "stm32f7xx_hal_spi.h"
+#include "stm32h743xx.h"
+#include "stm32h7xx.h"
+#include "stm32h7xx_hal_spi.h"
 
-#include "stm32f7xx_ll_spi.h"
+#include "stm32h7xx_ll_spi.h"
 
 class SPIMaster {
 public:

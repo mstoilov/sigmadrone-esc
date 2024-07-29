@@ -7,8 +7,8 @@
 
 #include <string.h>
 
-#include "stm32f7xx.h"
-#include "stm32f7xx_hal_gpio.h"
+#include "stm32h7xx.h"
+#include "stm32h7xx_hal_gpio.h"
 #include "main.h"
 
 #include "scheduler.h"

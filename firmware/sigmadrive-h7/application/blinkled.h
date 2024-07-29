@@ -2,7 +2,7 @@
 #define _BLINKLED_H_
 
 
-#include <stm32f7xx_hal_gpio.h>
+#include <stm32h7xx_hal_gpio.h>
 
 class BlinkLed
 {

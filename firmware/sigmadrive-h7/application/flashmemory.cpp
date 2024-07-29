@@ -56,7 +56,7 @@ void FlashMemory::erase()
 	EraseInitStruct.NbSectors = nsectors_;
 
 	HAL_FLASH_Unlock();
-	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_ERSERR);
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGSERR | FLASH_FLAG_STRBERR | FLASH_FLAG_INCERR);
 	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
 		HAL_FLASH_Lock();
 		HAL_FLASH_Lock();
@@ -84,7 +84,7 @@ void FlashMemory::program(const void *data, size_t datasize)
 		std::runtime_error("FlashMemory::program failed, the specified data size is too large.");
 	}
 	HAL_FLASH_Unlock();
-	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGPERR | FLASH_FLAG_ERSERR);
+	__HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGSERR | FLASH_FLAG_STRBERR | FLASH_FLAG_INCERR);
 	if (HAL_FLASHEx_Erase(&EraseInitStruct, &SectorError) != HAL_OK) {
 		HAL_FLASH_Lock();
 		std::stringstream oss;
@@ -93,13 +93,13 @@ void FlashMemory::program(const void *data, size_t datasize)
 	}
 
 	while (datasize) {
-		if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, (uint32_t)memptr, *dataptr) != HAL_OK) {
+		if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, (uint32_t)memptr, *dataptr) != HAL_OK) {
 			HAL_FLASH_Lock();
 			std::runtime_error("FlashMemory::program failed");
 		}
-		datasize--;
-		memptr++;
-		dataptr++;
+		datasize -= 2;
+		memptr += 2;
+		dataptr += 2;
 	}
 	HAL_FLASH_Lock();
 }

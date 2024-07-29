@@ -10,9 +10,9 @@
 #ifndef ENCODER_MINAS_H_
 #define ENCODER_MINAS_H_
 
-#include "stm32f745xx.h"
-#include "stm32f7xx.h"
-#include "stm32f7xx_hal_uart.h"
+#include "stm32h743xx.h"
+#include "stm32h7xx.h"
+#include "stm32h7xx_hal_uart.h"
 
 #include <stdint.h>
 #include <vector>

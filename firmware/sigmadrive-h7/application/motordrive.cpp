@@ -5,7 +5,7 @@
  *      Author: mstoilov
  */
 #define ARM_MATH_CM7
-#include "stm32f745xx.h"
+#include "stm32h743xx.h"
 #include "arm_math.h"
 #include "main.h"
 #include "iencoder.h"

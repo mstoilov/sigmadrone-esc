@@ -10,9 +10,9 @@
 
 #include <map>
 #include <functional>
-#include "stm32f745xx.h"
-#include "stm32f7xx.h"
-#include "stm32f7xx_hal_tim.h"
+#include "stm32h743xx.h"
+#include "stm32h7xx.h"
+#include "stm32h7xx_hal_tim.h"
 
 
 class Tim {

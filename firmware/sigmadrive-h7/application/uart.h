@@ -13,10 +13,10 @@
 #include <functional>
 #include <string>
 #include "cmsis_os2.h"
-#include "stm32f745xx.h"
-#include "stm32f7xx.h"
-#include "stm32f7xx_hal_uart.h"
-#include "stm32f7xx_hal.h"
+#include "stm32h743xx.h"
+#include "stm32h7xx.h"
+#include "stm32h7xx_hal_uart.h"
+#include "stm32h7xx_hal.h"
 
 #include "ring.h"
 

@@ -93,7 +93,7 @@
 extern USBD_CDC_ItfTypeDef USBD_Interface_fops_FS;
 
 /* USER CODE BEGIN EXPORTED_VARIABLES */
-
+extern USBD_HandleTypeDef hUsbDeviceFS;
 /* USER CODE END EXPORTED_VARIABLES */
 
 /**
@@ -108,6 +108,9 @@ extern USBD_CDC_ItfTypeDef USBD_Interface_fops_FS;
 uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len);
 
 /* USER CODE BEGIN EXPORTED_FUNCTIONS */
+
+void CDC_Receive_Initiate();
+int8_t cdc_iface_rx_complete(USBD_HandleTypeDef* usbd, uint8_t* buf, uint32_t len);
 
 /* USER CODE END EXPORTED_FUNCTIONS */
 

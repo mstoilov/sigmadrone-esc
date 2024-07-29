@@ -9,9 +9,9 @@
 #ifndef MINAS_A4_ENCODER_H_
 #define MINAS_A4_ENCODER_H_
 
-#include "stm32f745xx.h"
-#include "stm32f7xx.h"
-#include "stm32f7xx_hal_uart.h"
+#include "stm32h743xx.h"
+#include "stm32h7xx.h"
+#include "stm32h7xx_hal_uart.h"
 
 #include <stdint.h>
 #include <vector>

@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "stm32f745xx.h"
-#include "stm32f7xx.h"
+#include "stm32h743xx.h"
+// #include "stm32h7x3.h"
 #include "drv8323.h"
 
 Drv8323::Drv8323(SPIMaster& spi, GPIO_TypeDef* NSS_GPIOx, uint16_t NSS_GPIO_Pin, GPIO_TypeDef* EN_GPIOx, uint16_t EN_GPIO_Pin)

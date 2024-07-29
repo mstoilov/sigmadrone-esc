@@ -12,8 +12,8 @@
 #include <cstring>
 #include <assert.h>
 #include <math.h>
-#include "stm32f7xx_ll_dma.h"
-#include "stm32f7xx_ll_usart.h"
+#include "stm32h7xx_ll_dma.h"
+#include "stm32h7xx_ll_usart.h"
 #include "uartrpcserver.h"
 #include "dcache.h"
 

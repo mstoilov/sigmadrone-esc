@@ -37,7 +37,8 @@ Adc::~Adc()
 void Adc::Attach(ADC_HandleTypeDef *hadc, uint32_t n_regranks, bool enable_irq)
 {
 	hadc_ = hadc;
-	__HAL_ADC_ENABLE(hadc_);
+	// __HAL_ADC_ENABLE(hadc_);
+	LL_ADC_Enable(hadc_->Instance);
 	if (enable_irq)
 		__HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
 	if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, n_regranks) != HAL_OK) {
@@ -54,7 +55,9 @@ void Adc::Attach(ADC_HandleTypeDef *hadc, uint32_t n_regranks, bool enable_irq)
  */
 void Adc::InjectedSwTrig()
 {
-	LL_ADC_INJ_StartConversionSWStart(hadc_->Instance);
+	// LL_ADC_INJ_StartConversionSWStart(hadc_->Instance);
+	LL_ADC_INJ_SetTriggerSource(hadc_->Instance, LL_ADC_INJ_TRIG_SOFTWARE);
+	LL_ADC_INJ_StartConversion(hadc_->Instance);
 }
 
 /** Read injected channel conversion data

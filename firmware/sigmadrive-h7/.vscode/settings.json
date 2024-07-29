@@ -4,6 +4,7 @@
 	"editor.renderWhitespace": "all",
 	"editor.detectIndentation": true,
 	"files.associations": {
+		"*.macro": "python",
 		"main.h": "c",
 		"stm32f7xx_hal.h": "c",
 		"regex": "cpp",
@@ -88,7 +89,8 @@
 		"ranges": "cpp",
 		"stop_token": "cpp",
 		"thread": "cpp",
-		"cinttypes": "cpp"
+		"cinttypes": "cpp",
+		"stm32h7xx.h": "c"
 	},
 	"cmake.configureOnOpen": false
 }

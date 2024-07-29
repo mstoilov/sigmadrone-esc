@@ -21,7 +21,7 @@
 #ifndef FLASHMEMORY_H_
 #define FLASHMEMORY_H_
 
-#include "stm32f7xx_hal.h"
+#include "stm32h7xx_hal.h"
 
 class FlashMemory {
 public:

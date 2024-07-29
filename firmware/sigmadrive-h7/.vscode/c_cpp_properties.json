@@ -7,7 +7,12 @@
                 "${workspaceFolder}/Core/Inc",
                 "/opt/gcc-arm-none-eabi-10.3-2021.10/arm-none-eabi/include"
             ],
-            "defines": [],
+            "defines": [
+                "STM32H743xx",
+                "USE_HAL_DRIVER",
+                "USE_LL_USART",
+                "USE_FULL_LL_DRIVER"
+            ],
             "macFrameworkPath": [
                 "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks"
             ],
