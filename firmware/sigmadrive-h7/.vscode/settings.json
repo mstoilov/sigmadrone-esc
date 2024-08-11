@@ -90,7 +90,9 @@
 		"stop_token": "cpp",
 		"thread": "cpp",
 		"cinttypes": "cpp",
-		"stm32h7xx.h": "c"
+		"stm32h7xx.h": "c",
+		"*.old": "c"
 	},
-	"cmake.configureOnOpen": false
+	"cmake.configureOnOpen": false,
+	"cortex-debug.variableUseNaturalFormat": false
 }

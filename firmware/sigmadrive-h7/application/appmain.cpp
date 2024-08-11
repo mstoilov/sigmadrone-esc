@@ -52,11 +52,10 @@ UartRpcServer rpc_server;
 osThreadId_t commandTaskHandle;
 Adc adc1;
 Adc adc2;
-Adc adc3;
 Uart uart1;
 Uart uart8;
 Uart uart4;
-Uart& rpc_uart = uart8;
+// Uart& rpc_uart = uart8;
 SPIMaster spi2;
 PwmGenerator tim1;
 PwmGenerator tim8;
@@ -156,7 +155,15 @@ void SD_TIM1_IRQHandler(TIM_HandleTypeDef* htim)
 
 /** SD_ADC_IRQHandler is the interrupt handler that drives the motor.
  *
- * We use center aligned PWM. When the counter is going up the
+ * PWM Modes in Center-Aligned Operation:
+ * There are typically two PWM modes used with center-aligned timers:
+ * PWM Mode 1 AND PWM Mode 2
+ * 
+ * PWM Mode 2:
+ * Output is inactive (low) when the counter is less than the compare value.
+ * Output is active (high) when the counter is greater than the compare value.
+ * 
+ * We use center aligned PWM Mode 2. When the counter is going up the
  * current through the windings should be zero at that point
  * we update the bias. When the counter is going down we update
  * the current.
@@ -179,7 +186,9 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 {
 	ADC_TypeDef* ADCx = hadc->Instance;
 
-	if (LL_ADC_IsActiveFlag_JEOS(ADCx) && LL_ADC_IsEnabledIT_JEOS(ADCx)) {
+	LL_ADC_ClearFlag_OVR(ADCx);
+
+	if (LL_ADC_IsActiveFlag_JEOS(ADCx) ) { //&& LL_ADC_IsEnabledIT_JEOS(ADCx)) {
 		LL_ADC_ClearFlag_JEOS(ADCx);
 		if (hadc == &hadc1) {
 			if (tim1.GetCounterDirection()) {
@@ -517,7 +526,7 @@ void StartCommandThread()
 	memset(&task_attributes, 0, sizeof(osThreadAttr_t));
 	task_attributes.name = "CommandTask";
 	task_attributes.priority = (osPriority_t) osPriorityNormal;
-	task_attributes.stack_size = 16000;
+	task_attributes.stack_size = 12000;
 	commandTaskHandle = osThreadNew(RunCommandTask, NULL, &task_attributes);
 }
 
@@ -536,15 +545,102 @@ void DisplayDrvRegs()
 
 }
 
+
+ADC_HandleTypeDef    AdcHandle;
+
+void ADC_Init(ADC_HandleTypeDef& hadc, ADC_TypeDef* ADCx)
+{
+	AdcHandle.Instance          = ADCx;
+
+	// if (HAL_ADC_DeInit(&AdcHandle) != HAL_OK)
+	// {
+	// /* ADC de-initialization Error */
+	// 	Error_Handler();
+	// }
+
+
+	AdcHandle.Init.ClockPrescaler           = ADC_CLOCK_ASYNC_DIV2;          /* Asynchronous clock mode, input ADC clock divided by 2*/
+	AdcHandle.Init.Resolution               = ADC_RESOLUTION_16B;            /* 16-bit resolution for converted data */
+	AdcHandle.Init.ScanConvMode             = DISABLE;                       /* Sequencer disabled (ADC conversion on only 1 channel: channel set on rank 1) */
+	AdcHandle.Init.EOCSelection             = ADC_EOC_SINGLE_CONV;           /* EOC flag picked-up to indicate conversion end */
+	AdcHandle.Init.LowPowerAutoWait         = DISABLE;                       /* Auto-delayed conversion feature disabled */
+	AdcHandle.Init.ContinuousConvMode       = DISABLE;                       /* Continuous mode disabled to have only 1 conversion at each conversion trig */
+	AdcHandle.Init.NbrOfConversion          = 1;                             /* Parameter discarded because sequencer is disabled */
+	AdcHandle.Init.DiscontinuousConvMode    = DISABLE;                       /* Parameter discarded because sequencer is disabled */
+	AdcHandle.Init.NbrOfDiscConversion      = 1;                             /* Parameter discarded because sequencer is disabled */
+	AdcHandle.Init.ExternalTrigConv         = ADC_SOFTWARE_START;            /* Software start to trig the 1st conversion manually, without external event */
+	AdcHandle.Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_NONE; /* Parameter discarded because software trigger chosen */
+	AdcHandle.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;         /* Regular Conversion data stored in DR register only */
+	AdcHandle.Init.Overrun                  = ADC_OVR_DATA_OVERWRITTEN;      /* DR register is overwritten with the last conversion result in case of overrun */
+	AdcHandle.Init.OversamplingMode         = DISABLE;                       /* No oversampling */
+
+	if (HAL_ADC_Init(&AdcHandle) != HAL_OK)
+	{
+	/* ADC initialization Error */
+		Error_Handler();
+	}
+
+	ADC_ChannelConfTypeDef sConfig;
+
+	/*##-2- Configure ADC regular channel ######################################*/
+	sConfig.Channel      = ADC_CHANNEL_3;               /* Sampled channel number */
+	sConfig.Rank         = ADC_REGULAR_RANK_1;          /* Rank of sampled channel number ADCx_CHANNEL */
+	sConfig.SamplingTime = ADC_SAMPLETIME_8CYCLES_5;    /* Sampling time (number of clock cycles unit) */
+	sConfig.SingleDiff   = ADC_SINGLE_ENDED;            /* Single-ended input channel */
+	sConfig.OffsetNumber = ADC_OFFSET_NONE;             /* No offset subtraction */ 
+	sConfig.Offset = 0;                                 /* Parameter discarded because offset correction is disabled */
+
+
+	if (HAL_ADC_ConfigChannel(&AdcHandle, &sConfig) != HAL_OK)
+	{
+	/* Channel Configuration Error */
+		Error_Handler();
+	}
+
+	/* Run the ADC calibration in single-ended mode */
+	if (HAL_ADCEx_Calibration_Start(&AdcHandle, ADC_CALIB_OFFSET_LINEARITY, ADC_SINGLE_ENDED) != HAL_OK)
+	{
+	/* Calibration Error */
+		Error_Handler();
+	}
+}
+
+void ADC_Use(ADC_HandleTypeDef& hadc)
+{
+	__IO uint16_t uhADCxConvertedValue = 0;
+
+	/*##-4- Wait for the end of conversion #####################################*/
+	/*  For simplicity reasons, this example is just waiting till the end of the
+		conversion, but application may perform other tasks while conversion
+		operation is ongoing. */
+	if (HAL_ADC_PollForConversion(&AdcHandle, 100) != HAL_OK)
+	{
+		/* End Of Conversion flag not set on time */
+		Error_Handler();
+	}
+	else
+	{
+		/* ADC conversion completed */
+		/*##-5- Get the converted value of regular channel  ########################*/
+		uhADCxConvertedValue = HAL_ADC_GetValue(&AdcHandle);
+		fprintf(stderr, "ADC channel 3 value = %d\r\n", uhADCxConvertedValue);
+	}
+
+}
+
+
 void EnterMainLoop()
 {
 	BlinkLed warnblinker(LED_WARN_GPIO_Port, LED_WARN_Pin, 150, 150);
+	// ADC_Init(AdcHandle, ADC1);
 
 	for (;;) {
 		/*
 		 * Blink the WARN LED
 		 */
+		// fprintf(stderr, "Toggle the blinder...\r\n");
 		warnblinker.Blink();
+		// ADC_Use(AdcHandle);
 
 	}
 }
@@ -562,9 +658,15 @@ int application_main()
 	 * should be fully initialized.
 	 */
 	osDelay(boot_delay);
+	uart8.Attach(&huart8);
+	uart1.Attach(&huart1);
+	uart4.Attach(&huart4);
 	hrtimer.Attach(&htim12);
 	ma4_abs_encoder2.Attach(&huart2, DMA1, LL_DMA_STREAM_5, LL_DMA_STREAM_6);
 	ma4_abs_encoder1.Attach(&huart3, DMA1, LL_DMA_STREAM_1, LL_DMA_STREAM_3);
+
+	std::string str("Sigmadrive is starting...");
+	std::cout << str << std::endl;
 
 	/*
 	 * Set up RPC properties/methods for the encoders.
@@ -575,12 +677,8 @@ int application_main()
 	g_props.insert("enc2", ma4_abs_encoder2.GetPropertyMap());
 	ma4_abs_encoder2.RegisterRpcMethods("enc2.");
 
-	adc1.Attach(&hadc1, 6, true);
-	adc2.Attach(&hadc2, 3, false);
-//    adc3.Attach(&hadc3, 1, false);
-	uart1.Attach(&huart1);
-	uart8.Attach(&huart8);
-	uart4.Attach(&huart4);
+	adc1.Attach(&hadc1, 7, true);
+	adc2.Attach(&hadc3, 3, false);
 	spi2.Attach(&hspi2);
 	LL_TIM_SetCounter(TIM8, TIM1_PERIOD_CLOCKS - 1);
 	LL_TIM_SetCounter(TIM1, 0);

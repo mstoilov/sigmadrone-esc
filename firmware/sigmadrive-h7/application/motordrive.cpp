@@ -47,8 +47,6 @@ MotorDrive::MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, Adc* dma_adc, 
 //		DefaultIdleTask();
 	});
 
-	sched_.StartDispatcherThread();
-
 }
 
 MotorDrive::~MotorDrive()
@@ -59,6 +57,8 @@ void MotorDrive::Attach()
 {
 	drv_->SetCSAGainValue(config_.csa_gain_);
 	SetEncoder(encoder_);
+	sched_.StartDispatcherThread();
+
 }
 
 void MotorDrive::RegisterRpcMethods(const std::string& prefix)
@@ -81,7 +81,6 @@ void MotorDrive::RegisterRpcMethods(const std::string& prefix)
 	rpc_server.add(prefix, "drv_get_fault1", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
 	rpc_server.add(prefix, "drv_get_fault2", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
 	rpc_server.add(prefix, "drv_clear_fault", rexjson::make_rpc_wrapper(drv_, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
-
 }
 
 rexjson::property MotorDrive::GetPropertyMap()
@@ -92,8 +91,8 @@ rexjson::property MotorDrive::GetPropertyMap()
 		{"update_hz", rexjson::property(&update_hz_, rexjson::property_get<decltype(update_hz_)>)},
 		{"tim1_cnt", rexjson::property(&tim1_cnt_, rexjson::property_get<decltype(tim1_cnt_)>)},
 		{"tim8_cnt", rexjson::property(&tim8_cnt_, rexjson::property_get<decltype(tim8_cnt_)>)},
-		{"tim1_tim8_offset", rexjson::property(&tim1_tim8_offset_, rexjson::property_get<decltype(tim1_tim8_offset_)>)},
-		{"tim8_tim1_offset", rexjson::property(&tim8_tim1_offset_, rexjson::property_get<decltype(tim8_tim1_offset_)>)},
+		// {"tim1_tim8_offset", rexjson::property(&tim1_tim8_offset_, rexjson::property_get<decltype(tim1_tim8_offset_)>)},
+		// {"tim8_tim1_offset", rexjson::property(&tim8_tim1_offset_, rexjson::property_get<decltype(tim8_tim1_offset_)>)},
 		{"TIM1_CNT", rexjson::property((void*)&TIM1->CNT, rexjson::property_get<decltype(TIM1->CNT)>)},
 		{"TIM8_CNT", rexjson::property((void*)&TIM8->CNT, rexjson::property_get<decltype(TIM8->CNT)>)},
 		{"time_slice", rexjson::property(&time_slice_, rexjson::property_get<decltype(time_slice_)>)},
@@ -103,6 +102,17 @@ rexjson::property MotorDrive::GetPropertyMap()
 		{"lpf_bias_a", rexjson::property(&lpf_bias_a.out_, rexjson::property_get<decltype(lpf_bias_a.out_)>)},
 		{"lpf_bias_b", rexjson::property(&lpf_bias_b.out_, rexjson::property_get<decltype(lpf_bias_b.out_)>)},
 		{"lpf_bias_c", rexjson::property(&lpf_bias_c.out_, rexjson::property_get<decltype(lpf_bias_c.out_)>)},
+		{"tim1_tim8_offset", rexjson::property(
+			nullptr, 
+			[&](void*)->rexjson::value {
+				uint32_t t1 = TIM1->CNT;
+				if (TIM1->CR1 & TIM_CR1_DIR)
+					t1 = 2*TIM1_PERIOD_CLOCKS - t1;
+				uint32_t t8 = TIM8->CNT;
+				if (TIM8->CR1 & TIM_CR1_DIR)
+					t8 = 2*TIM1_PERIOD_CLOCKS - t8;
+				return (uint16_t)((2*TIM1_PERIOD_CLOCKS + t1 - t8) % (2*TIM1_PERIOD_CLOCKS));}
+		)},
 	});
 	return props;
 }

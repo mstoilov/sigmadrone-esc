@@ -14,6 +14,7 @@
 			"serverpath": "/usr/local/bin/JLinkGDBServer",
 			"armToolchainPath": "/Users/mstoilov/Downloads/gcc-arm-none-eabi-10.3-2021.10/bin",
 			"device": "STM32H743VG",
+			"svdFile": "${workspaceFolder}/STM32H743.svd",
 			"interface": "swd",
 		},
 		{
@@ -26,6 +27,7 @@
 			"serverpath": "/opt/SEGGER/JLink/JLinkGDBServer",
 			"armToolchainPath": "/home/mstoilov/Downloads/arm-none-eabi/gcc-arm-none-eabi/bin",
 			"device": "STM32H743VG",
+			"svdFile": "${workspaceFolder}/STM32H743.svd",
 			"interface": "swd"
 		}
 	]

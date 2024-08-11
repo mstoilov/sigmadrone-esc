@@ -38,9 +38,14 @@ void Adc::Attach(ADC_HandleTypeDef *hadc, uint32_t n_regranks, bool enable_irq)
 {
 	hadc_ = hadc;
 	// __HAL_ADC_ENABLE(hadc_);
-	LL_ADC_Enable(hadc_->Instance);
-	if (enable_irq)
+	if (enable_irq) {
+		HAL_ADCEx_InjectedStart_IT(hadc);
+		LL_ADC_Enable(hadc_->Instance);
 		__HAL_ADC_ENABLE_IT(hadc_, ADC_IT_JEOC);
+	} else {
+		HAL_ADCEx_InjectedStart(hadc);
+		LL_ADC_Enable(hadc_->Instance);
+	}
 	if (HAL_ADC_Start_DMA(hadc_, (uint32_t*) regdata_, n_regranks) != HAL_OK) {
 		/* Start Conversation Error */
 		printf("Failed to start regular conversions for ADC\n");

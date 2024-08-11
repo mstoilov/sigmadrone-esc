@@ -76,6 +76,8 @@ void Uart::Attach(UART_HandleTypeDef* huart, bool enable_idle_irq)
 	huart_->RxHalfCpltCallback = ::rx_complete;
 	huart_->RxCpltCallback = ::rx_complete;
 	huart_->ErrorCallback = ::error_callback;
+	rx_ringbuf_.reset_wp(0);
+	rx_ringbuf_.reset_rp(0);
 
 	if (huart_->Init.Mode & UART_MODE_RX) {
 		if (enable_idle_irq)
@@ -86,8 +88,6 @@ void Uart::Attach(UART_HandleTypeDef* huart, bool enable_idle_irq)
 		assert(huart_->hdmarx);
 		assert(huart_->hdmarx->Init.Mode == DMA_CIRCULAR);
 
-		rx_ringbuf_.reset_wp(0);
-		rx_ringbuf_.reset_rp(0);
 		HAL_UART_Receive_DMA(huart_, (uint8_t*)rx_ringbuf_.get_write_ptr(), rx_ringbuf_.capacity());
 	}
 }

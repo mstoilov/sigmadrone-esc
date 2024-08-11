@@ -261,6 +261,14 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 {
   /* USER CODE BEGIN 6 */
+	if (cdc_iface_rx_complete(&hUsbDeviceFS, Buf, *Len) == USBD_OK)
+		return USBD_OK;
+
+	/*
+	 * The only way we can get here is if the
+	 * cdc_iface_rx_complete fails to find the
+	 * C++ cdc_iface object in the global map.
+	 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
   return (USBD_OK);

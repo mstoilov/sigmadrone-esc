@@ -53,7 +53,7 @@
 ENTRY(Reset_Handler)
 
 /* Highest address of the user mode stack */
-_estack = 0x20050000;    /* end of RAM */
+_estack = 0x24080000;    /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
@@ -61,9 +61,17 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 320K
-FLASH (rx)     : ORIGIN = 0x8000000, LENGTH = 1024K - 128K
-FLASHCFG (wrx) : ORIGIN = 0x80E0000, LENGTH = 128K
+DTCMRAM (xrw)     : ORIGIN = 0x20000000, LENGTH = 128K
+RAM_D1 (xrw)      : ORIGIN = 0x24000000, LENGTH = 512K
+RAM_D2 (xrw)      : ORIGIN = 0x30000000, LENGTH = 288K
+RAM_D3 (xrw)      : ORIGIN = 0x38000000, LENGTH = 64K
+ITCMRAM (xrw)     : ORIGIN = 0x00000000, LENGTH = 64K
+FLASH1 (rx)       : ORIGIN = 0x8000000, LENGTH = 512K
+FLASH2 (rx)       : ORIGIN = 0x8100000, LENGTH = 512K
+
+RAM (xrw)         : ORIGIN = 0x24000000, LENGTH = 512K
+FLASH (rx)        : ORIGIN = 0x8000000, LENGTH = 512K
+FLASHCFG (wrx)    : ORIGIN = 0x81E0000, LENGTH = 128K
 }
 
 /*
@@ -90,11 +98,30 @@ SECTIONS
     . = ALIGN(4);
   } > FLASHCFG
 
+  .flash2 : ALIGN(4)
+  {
+    . = ALIGN(4);
+    *librexjson++a:*(.text*)
+    *appmain.o(.text*)
+    *drv8323.o(.text*)
+    *Cl*.o(.text*)
+    *command_task.o(.text*)
+    *usbd*.o(.text*)
+    *cmsis*.o(.text*)
+    *freertos*.o(.text*)
+    *uart*.o(.text*)
+    *pwm*.o(.text*)
+    *schedular*.o(.text*)
+    *motor*.o(.text*)
+    *minas*.o(.text*)
+
+    . = ALIGN(4);
+  } > FLASH2
+
   /* The program code and other data goes into FLASH */
   .text :
   {
     . = ALIGN(4);
-    *(.text)           /* .text sections (code) */
     *(.text*)          /* .text* sections (code) */
     *(.glue_7)         /* glue arm to thumb code */
     *(.glue_7t)        /* glue thumb to arm code */
@@ -114,35 +141,36 @@ SECTIONS
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH2
+
 
   .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
   .ARM : {
     __exidx_start = .;
     *(.ARM.exidx*)
     __exidx_end = .;
-  } >FLASH
+  } >FLASH2
 
   .preinit_array     :
   {
     PROVIDE_HIDDEN (__preinit_array_start = .);
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
-  } >FLASH
+  } >FLASH2
   .init_array :
   {
     PROVIDE_HIDDEN (__init_array_start = .);
     KEEP (*(SORT(.init_array.*)))
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } >FLASH
+  } >FLASH2
   .fini_array :
   {
     PROVIDE_HIDDEN (__fini_array_start = .);
     KEEP (*(SORT(.fini_array.*)))
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } >FLASH
+  } >FLASH2
 
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
@@ -157,7 +185,7 @@ SECTIONS
 
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
-  } >RAM AT> FLASH
+  } >RAM AT> FLASH2
 
   
   /* Uninitialized data section */
