@@ -492,11 +492,11 @@ void MotorDrive::UpdateCurrent()
 	 */
 #if 1
 	float vbus = dma_adc_->RegReadConversionData(4 - 1);
-	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, vbus, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
+	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, vbus, LL_ADC_RESOLUTION_16B) * config_.Vbus_resistor_ratio_);
 #else
 
 	float injdata_vbus = (int32_t) adc_->InjReadConversionData(LL_ADC_INJ_RANK_4);
-	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, injdata_vbus, LL_ADC_RESOLUTION_12B) * config_.Vbus_resistor_ratio_);
+	lpf_vbus_.DoFilter(__LL_ADC_CALC_DATA_TO_VOLTAGE(config_.Vref_, injdata_vbus, LL_ADC_RESOLUTION_16B) * config_.Vbus_resistor_ratio_);
 
 #endif
 
@@ -915,7 +915,7 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage)
 				return false;
 			});
 
-#if 1
+#if 0
 			if ((update_counter_ % 1000) == 0) {
 				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\r\n",
 						lpf_vbus_.Output(), phase_current_a_, phase_current_b_, phase_current_c_,
@@ -945,7 +945,7 @@ void MotorDrive::AddTaskApplyVoltage(float seconds, float test_voltage, float an
 				return false;
 			});
 			retIab.DoFilter(Iab_);
-#if 1
+#if 0
 			if ((update_counter_ % 1000) == 0) {
 				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Iab: (%6.3f, %6.3f)\r\n",
 						lpf_vbus_.Output(), phase_current_a_, phase_current_b_, phase_current_c_,
@@ -983,7 +983,7 @@ void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, uin
 				return false;
 			});
 #if 0
-			if ((i % 13) == 0) {
+			if ((i % 1000) == 0) {
 				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f\r\n",
 						lpf_vbus_.Output(), lpf_a.Output());
 			}
