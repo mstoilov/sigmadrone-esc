@@ -24,6 +24,7 @@ public:
 	void InjectedSwTrig();
 	uint32_t InjReadConversionData(uint32_t rank);
 	uint32_t RegReadConversionData(uint32_t rank_index);
+	void RegularConversionCallback();
 
 
 public:

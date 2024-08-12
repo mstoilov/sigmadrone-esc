@@ -278,7 +278,7 @@ void DMA1_Stream6_IRQHandler(void)
 void ADC_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
-	SD_ADC_IRQHandler(&hadc1);
+	// SD_ADC_IRQHandler(&hadc1);
 	// return;
   /* USER CODE END ADC_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc1);
@@ -461,7 +461,8 @@ void OTG_FS_IRQHandler(void)
   */
 void ADC3_IRQHandler(void)
 {
-  /* USER CODE BEGIN ADC3_IRQn 0 *SD_ADC_IRQHandler(&hadc3);
+  /* USER CODE BEGIN ADC3_IRQn 0 */
+
   /* USER CODE END ADC3_IRQn 0 */
   HAL_ADC_IRQHandler(&hadc3);
   /* USER CODE BEGIN ADC3_IRQn 1 */

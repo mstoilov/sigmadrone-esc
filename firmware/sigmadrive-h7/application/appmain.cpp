@@ -182,11 +182,9 @@ void SD_TIM1_IRQHandler(TIM_HandleTypeDef* htim)
  */
 
 extern "C"
-void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
+void ADC_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
 	ADC_TypeDef* ADCx = hadc->Instance;
-
-	LL_ADC_ClearFlag_OVR(ADCx);
 
 	if (LL_ADC_IsActiveFlag_JEOS(ADCx) ) { //&& LL_ADC_IsEnabledIT_JEOS(ADCx)) {
 		LL_ADC_ClearFlag_JEOS(ADCx);
@@ -210,6 +208,14 @@ void SD_ADC_IRQHandler(ADC_HandleTypeDef *hadc)
 	}
 }
 
+extern "C"
+void ADC_RegularConvCpltCallback(ADC_HandleTypeDef *hadc)
+{
+	if (hadc == &hadc1)
+		adc1.RegularConversionCallback();
+	if (hadc == &hadc3)
+		adc2.RegularConversionCallback();
+}
 
 extern "C"
 void SD_DMA1_Stream1_IRQHandler(void)
@@ -605,30 +611,6 @@ void ADC_Init(ADC_HandleTypeDef& hadc, ADC_TypeDef* ADCx)
 	}
 }
 
-void ADC_Use(ADC_HandleTypeDef& hadc)
-{
-	__IO uint16_t uhADCxConvertedValue = 0;
-
-	/*##-4- Wait for the end of conversion #####################################*/
-	/*  For simplicity reasons, this example is just waiting till the end of the
-		conversion, but application may perform other tasks while conversion
-		operation is ongoing. */
-	if (HAL_ADC_PollForConversion(&AdcHandle, 100) != HAL_OK)
-	{
-		/* End Of Conversion flag not set on time */
-		Error_Handler();
-	}
-	else
-	{
-		/* ADC conversion completed */
-		/*##-5- Get the converted value of regular channel  ########################*/
-		uhADCxConvertedValue = HAL_ADC_GetValue(&AdcHandle);
-		fprintf(stderr, "ADC channel 3 value = %d\r\n", uhADCxConvertedValue);
-	}
-
-}
-
-
 void EnterMainLoop()
 {
 	BlinkLed warnblinker(LED_WARN_GPIO_Port, LED_WARN_Pin, 150, 150);
@@ -651,6 +633,13 @@ int application_main()
 	*_impure_ptr = *_impure_data_ptr;
 
 //	Exti exti_usr_button(USER_BTN_Pin, []()->void{HAL_GPIO_TogglePin(LED_STATUS_GPIO_Port, LED_STATUS_Pin);});
+
+	/*
+	*
+	* Register ADC JEOS callback
+	*/
+	HAL_ADC_RegisterCallback(&hadc1, HAL_ADC_INJ_CONVERSION_COMPLETE_CB_ID, ADC_InjectedConvCpltCallback);
+	HAL_ADC_RegisterCallback(&hadc1, HAL_ADC_CONVERSION_COMPLETE_CB_ID, ADC_RegularConvCpltCallback);
 
 	/*
 	 * Attach the HAL handles to the
