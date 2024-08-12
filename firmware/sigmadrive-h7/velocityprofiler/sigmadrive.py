@@ -357,6 +357,8 @@ class drive:
         return self.call("measure_inductance", [seconds, test_voltage, test_hz])
     def measure_resistance(self, seconds, test_voltage):
         return self.call("measure_resistance", [seconds, test_voltage])
+    def apply_voltage(self, seconds, test_voltage, angle):
+        return self.call("apply_voltage", [seconds, test_voltage, angle])
     def rotate(self, angle, speed, voltage, dir):
         return self.call("rotate", [angle, speed, voltage, dir])
     def run_encoder_debug(self):

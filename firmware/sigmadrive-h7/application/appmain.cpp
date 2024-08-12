@@ -67,12 +67,12 @@ EncoderMinas ma4_abs_encoder1;
 EncoderMinas ma4_abs_encoder2;
 Drv8323 drv1(spi2, GPIOC, GPIO_PIN_13, GPIOE, GPIO_PIN_15);
 Drv8323 drv2(spi2, GPIOC, GPIO_PIN_14, GPIOB, GPIO_PIN_2);
-MotorDrive motor_drive1(1, &drv1, &adc1, &adc1, &ma4_abs_encoder1, &tim1, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
-MotorDrive motor_drive2(2, &drv2, &adc2, &adc1, &ma4_abs_encoder2, &tim8, SYSTEM_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+MotorDrive motor_drive1(1, &drv1, &adc1, &adc1, &ma4_abs_encoder1, &tim1, TIMER_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
+MotorDrive motor_drive2(2, &drv2, &adc2, &adc1, &ma4_abs_encoder2, &tim8, TIMER_CORE_CLOCK / (2 * TIM1_PERIOD_CLOCKS * (TIM1_RCR + 1)));
 MotorCtrlFOC foc1(&motor_drive1, "axis1", &htim2);
 MotorCtrlFOC foc2(&motor_drive2, "axis2", &htim5);
 
-HRTimer hrtimer(SYSTEM_CORE_CLOCK/2, 0xFFFF);
+HRTimer hrtimer(TIMER_CORE_CLOCK, 0xFFFF);
 
 
 rexjson::property g_props =
@@ -627,6 +627,53 @@ void EnterMainLoop()
 	}
 }
 
+uint32_t GetTIM1ClockRate(void)
+{
+    RCC_ClkInitTypeDef clkConfig;
+    uint32_t pFLatency;
+    uint32_t pclk2;
+
+    // Get the HCLK and PCLK2 clocks configuration
+    HAL_RCC_GetClockConfig(&clkConfig, &pFLatency);
+
+    // Get the PCLK2 frequency
+    pclk2 = HAL_RCC_GetPCLK2Freq();
+
+    // If APB2 prescaler is not 1, timer clock is x2
+    if (clkConfig.APB2CLKDivider != RCC_HCLK_DIV1)
+    {
+        return pclk2 * 2;
+    }
+    else
+    {
+        return pclk2;
+    }
+}
+
+
+uint32_t GetTIM12ClockRate(void)
+{
+    RCC_ClkInitTypeDef clkConfig;
+    uint32_t pFLatency;
+    uint32_t pclk1;
+
+    // Get the HCLK and PCLK1 clocks configuration
+    HAL_RCC_GetClockConfig(&clkConfig, &pFLatency);
+
+    // Get the PCLK1 frequency
+    pclk1 = HAL_RCC_GetPCLK1Freq();
+
+    // If APB1 prescaler is not 1, timer clock is x2
+    if (clkConfig.APB1CLKDivider != RCC_HCLK_DIV1)
+    {
+        return pclk1 * 2;
+    }
+    else
+    {
+        return pclk1;
+    }
+}
+
 extern "C"
 int application_main()
 {
@@ -653,6 +700,9 @@ int application_main()
 	hrtimer.Attach(&htim12);
 	ma4_abs_encoder2.Attach(&huart2, DMA1, LL_DMA_STREAM_5, LL_DMA_STREAM_6);
 	ma4_abs_encoder1.Attach(&huart3, DMA1, LL_DMA_STREAM_1, LL_DMA_STREAM_3);
+
+	fprintf(stderr, "TIM1 clock: %lu\r\n", GetTIM1ClockRate());
+	fprintf(stderr, "TIM12 clock: %lu\r\n", GetTIM12ClockRate());
 
 	std::string str("Sigmadrive is starting...");
 	std::cout << str << std::endl;

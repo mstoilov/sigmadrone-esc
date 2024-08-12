@@ -41,7 +41,7 @@ public:
 		bool svm_saddle_ = false;                           /**< Use space vector modulation (SVM) saddle form */
 		float Vref_ = 3.3;                                  /**< ADC reference voltage */
 		float max_modulation_duty_ = 0.95;                  /**< Maximum modulation duty */
-		float Vbus_resistor_ratio_ = (47.0 + 3.3) / 3.3;    /**< Vbus divider ratio used to measure the Vbus voltage  */
+		float Vbus_resistor_ratio_ = (47.0 + 2.2) / 2.2;    /**< Vbus divider ratio used to measure the Vbus voltage  */
 		float reset_voltage_ = 3.5f;                        /**< Voltage used during the rotor reset process. @see reset_hz_ */
 		float Rsense_ = 0.010f;                             /**< Shunt resistor value */
 		float calib_v_ = 12;                                /**< Calibration voltage. This voltage is used for the calibration process */
@@ -139,6 +139,7 @@ public:
 	void AddTaskDisarmMotor();
 	void AddTaskResetRotorWithParams(float reset_voltage, uint32_t reset_hz, bool reset_encoder = true);
 	void AddTaskMeasureResistance(float seconds, float test_voltage);
+	void AddTaskApplyVoltage(float seconds, float test_voltage, float angle);
 	void AddTaskMeasureInductance(float seconds, float test_voltage, uint32_t test_hz);
 	void AddTaskDetectEncoderDir();
 	void RunTaskAlphaPoleSearch();
@@ -147,6 +148,7 @@ public:
 	void AddTaskCalibrationSequence(bool reset_rotor);
 	void RunTaskResetRotorAndHold();
 	float RunResistanceMeasurement(float seconds, float test_voltage);
+	std::string RunApplyVoltage(float seconds, float test_voltage, float angle);
 	float RunInductanceMeasurement(float seconds, float test_voltage, uint32_t test_hz);
 	void RunEncoderDisplayDebugInfo();
 	void SchedulerRun();
@@ -209,6 +211,7 @@ protected:
 	std::complex<float> Pa_ = std::polar<float>(1.0f, 0.0f);
 	std::complex<float> Pb_ = std::polar<float>(1.0f, M_PI / 3.0 * 4.0);
 	std::complex<float> Pc_ = std::polar<float>(1.0f, M_PI / 3.0 * 2.0);
+	std::string returnIab_;                     /**< Returned string from RunApplyVoltage */
 };
 
 #endif /* _MOTOR_DRIVE_H_ */

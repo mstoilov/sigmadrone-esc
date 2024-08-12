@@ -74,9 +74,9 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define TIM1_PERIOD_CLOCKS 12000
+#define TIM1_PERIOD_CLOCKS 6000
 #define TIM1_RCR 0
-#define SYSTEM_CORE_CLOCK 480000000
+#define TIMER_CORE_CLOCK 240000000
 #define INPUT_1__Pin GPIO_PIN_2
 #define INPUT_1__GPIO_Port GPIOE
 #define INPUT_2__Pin GPIO_PIN_4

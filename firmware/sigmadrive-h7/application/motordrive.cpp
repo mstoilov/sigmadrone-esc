@@ -64,6 +64,7 @@ void MotorDrive::Attach()
 void MotorDrive::RegisterRpcMethods(const std::string& prefix)
 {
 	rpc_server.add(prefix, "abort", rexjson::make_rpc_wrapper(this, &MotorDrive::Abort, "void ServoDrive::Abort()"));
+	rpc_server.add(prefix, "apply_voltage", rexjson::make_rpc_wrapper(this, &MotorDrive::RunApplyVoltage, "float ServoDrive::RunApplyVoltage(uint32_t seconds, float test_voltage, float angle)"));
 	rpc_server.add(prefix, "measure_resistance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunResistanceMeasurement, "float ServoDrive::RunResistanceMeasurement(uint32_t seconds, float test_voltage)"));
 	rpc_server.add(prefix, "measure_inductance", rexjson::make_rpc_wrapper(this, &MotorDrive::RunInductanceMeasurement, "float ServoDrive::RunInductanceMeasurement(uint32_t seconds, float test_voltage, uint32_t test_hz);"));
 	rpc_server.add(prefix, "scheduler_run", rexjson::make_rpc_wrapper(this, &MotorDrive::SchedulerRun, "void SchedulerRun()"));
@@ -914,11 +915,11 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage)
 				return false;
 			});
 
-#if 0
-			if ((data_.update_counter_ % 13) == 0) {
+#if 1
+			if ((update_counter_ % 1000) == 0) {
 				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Ia+Ib+Ic: %6.3f\r\n",
-						lpf_vbus_.Output(), data_.phase_current_a_, data_.phase_current_b_, data_.phase_current_c_,
-						data_.phase_current_a_ + data_.phase_current_b_ + data_.phase_current_c_);
+						lpf_vbus_.Output(), phase_current_a_, phase_current_b_, phase_current_c_,
+						phase_current_a_ + phase_current_b_ + phase_current_c_);
 			}
 #endif
 		} while (ret && i++ < test_cycles);
@@ -927,6 +928,37 @@ void MotorDrive::AddTaskMeasureResistance(float seconds, float test_voltage)
 		ApplyPhaseVoltage(0, 0);
 	}, seconds, test_voltage));
 }
+
+void MotorDrive::AddTaskApplyVoltage(float seconds, float test_voltage, float angle)
+{
+	sched_.AddTask(std::bind([&](float seconds, float test_voltage, float angle){
+		uint32_t i = 0;
+		uint32_t test_cycles = update_hz_ * seconds;
+		bool ret = false;
+		LowPassFilter<std::complex<float>, float> retIab(0.9);
+		std::stringstream oss;
+
+		ApplyPhaseVoltage(0, 0);
+		do {
+			ret = sched_.RunUpdateHandler([&]()->bool {
+				ApplyPhaseVoltage(test_voltage, std::polar<float>(1, angle));
+				return false;
+			});
+			retIab.DoFilter(Iab_);
+#if 1
+			if ((update_counter_ % 1000) == 0) {
+				fprintf(stderr, "Vbus: %4.2f, Ia: %6.3f, Ib: %6.3f, Ic: %6.3f, Iab: (%6.3f, %6.3f)\r\n",
+						lpf_vbus_.Output(), phase_current_a_, phase_current_b_, phase_current_c_,
+						Iab_.real(), Iab_.imag());
+			}
+#endif
+		} while (ret && i++ < test_cycles);
+		oss << "(" << retIab.Output().real() << ", " << retIab.Output().imag() << ")";
+		returnIab_ = oss.str();
+		ApplyPhaseVoltage(0, 0);
+	}, seconds, test_voltage, angle));
+}
+
 
 void MotorDrive::AddTaskMeasureInductance(float seconds, float test_voltage, uint32_t test_hz)
 {
@@ -974,6 +1006,15 @@ float MotorDrive::RunResistanceMeasurement(float seconds, float test_voltage)
 	AddTaskDisarmMotor();
 	sched_.RunWaitForCompletion();
 	return config_.resistance_;
+}
+
+std::string MotorDrive::RunApplyVoltage(float seconds, float test_voltage, float angle)
+{
+	AddTaskArmMotor();
+	AddTaskApplyVoltage(seconds, test_voltage, angle);
+	AddTaskDisarmMotor();
+	sched_.RunWaitForCompletion();
+	return returnIab_;
 }
 
 float MotorDrive::RunInductanceMeasurement(float seconds, float test_voltage, uint32_t test_hz)
