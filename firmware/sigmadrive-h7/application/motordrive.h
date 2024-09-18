@@ -94,6 +94,7 @@ protected:
 	uint64_t GetEncoderPosition() const;
 
 public:
+	bool InitializeEncoder();
 	uint64_t GetEncoderMaxPosition() const;
 	uint32_t GetEncoderPositionBits() const;
 	uint32_t GetUpdateFrequency() const;

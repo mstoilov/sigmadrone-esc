@@ -371,6 +371,8 @@ class drive:
         return self.call("velocitypts", [])
     def set_resolution_bits(self, resolution_bits):
         return self.call("set_resolution_bits", [resolution_bits])
+    def initialize_encoder(self):
+        return self.call("initialize_encoder", [])
 
 
 class axis:

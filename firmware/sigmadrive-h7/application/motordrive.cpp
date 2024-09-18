@@ -83,6 +83,7 @@ void MotorDrive::RegisterRpcMethods(const std::string& prefix)
 	rpc_server.add(prefix, "drv_get_fault1", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus1, "uint32_t Drv8323::GetFaultStatus1()"));
 	rpc_server.add(prefix, "drv_get_fault2", rexjson::make_rpc_wrapper(drv_, &Drv8323::GetFaultStatus2, "uint32_t Drv8323::GetFaultStatus2()"));
 	rpc_server.add(prefix, "drv_clear_fault", rexjson::make_rpc_wrapper(drv_, &Drv8323::ClearFault, "void Drv8323::ClearFault()"));
+	rpc_server.add(prefix, "initialize_encoder", rexjson::make_rpc_wrapper(this, &MotorDrive::InitializeEncoder, "void MotorDrive::InitializeEncoder()"));
 }
 
 rexjson::property MotorDrive::GetPropertyMap()
@@ -294,6 +295,20 @@ uint32_t MotorDrive::GetEncoderPositionBits() const
 uint64_t MotorDrive::GetEncoderPosition() const
 {
 	return ((encoder_->GetPosition() << enc_position_shiftleft_) >> enc_position_shiftright_);
+}
+
+/**
+ * @brief Re-initialize the encoder. This might be neccessary if the encoder has 
+ * been disconnected or there are connection error.
+ * 
+ * @return true   If the encoder is successfully initialized
+ * @return false  If there is an encoder error.
+ */
+bool MotorDrive::InitializeEncoder()
+{
+	if (sched_.IsDispatching())
+		throw std::runtime_error("Encoder cannot be initialized while the scheduler is dispatching tasks.");
+	return encoder_->Initialize();
 }
 
 /** Get the current encoder position
