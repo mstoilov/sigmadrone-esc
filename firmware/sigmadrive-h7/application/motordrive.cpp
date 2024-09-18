@@ -15,6 +15,7 @@
 #include "uartrpcserver.h"
 #include "sdmath.h"
 #include "pwm_generator.h"
+#include "emergency.h"
 
 
 extern UartRpcServer rpc_server;
@@ -477,11 +478,20 @@ void MotorDrive::UpdateBias()
 	lpf_bias_c.DoFilter(injdata_c);
 }
 
+void MotorDrive::Panic()
+{
+	::Panic();
+	Abort();
+}
+
 void MotorDrive::UpdateCurrent()
 {
 	update_counter_++;
 	if (update_counter_ % (config_.enc_skip_updates_ + 1) == 0) {
-		encoder_->Update();
+		if (!encoder_->Update()) {
+			Abort();
+			error_info_.SetError(e_encoder, "Encoder update error");
+		}
 		UpdateRotor();
 	} else {
 		EstimateRotor();

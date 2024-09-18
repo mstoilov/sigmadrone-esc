@@ -59,6 +59,7 @@ public:
 	void Run();
 	void RunWaitForCompletion();
 	void Abort();
+	void Panic();
 	bool IsStarted();
 
 	MotorDrive(uint32_t axis_idx, Drv8323* drv, Adc* adc, Adc* dma_adc, IEncoder *encoder, IPwmGenerator *pwm, uint32_t update_hz);

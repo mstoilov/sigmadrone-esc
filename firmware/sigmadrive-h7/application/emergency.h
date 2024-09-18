@@ -1,10 +1,10 @@
 #ifndef _EMERGENCY_H_
 #define _EMERGENCY_H_
 
-#include "stm32f745xx.h"
-#include "stm32f7xx.h"
-#include "stm32f7xx_hal_tim.h"
-#include "stm32f7xx_ll_tim.h"
+#include "stm32h743xx.h"
+#include "stm32h7xx.h"
+#include "stm32h7xx_hal_tim.h"
+#include "stm32h7xx_ll_tim.h"
 
 inline static void DisableAllMotors()
 {
@@ -20,5 +20,9 @@ inline static void DisableAllMotors()
 	LL_TIM_OC_SetCompareCH3(TIM8, 0);
 }
 
+inline static void Panic()
+{
+	DisableAllMotors();
+}
 
 #endif

@@ -38,10 +38,12 @@ rexjson::property EncoderMinas::GetPropertyMap()
 		{"counter", rexjson::property(&counter_, rexjson::property_get<decltype(counter_)>, nullptr)},
 		{"revolutions", rexjson::property(&revolutions_, rexjson::property_get<decltype(revolutions_)>, nullptr)},
 		{"counter", rexjson::property(&counter_, rexjson::property_get<decltype(counter_)>, nullptr)},
+		{"id", rexjson::property((void*)&encoder_id_, rexjson::property_get<decltype(encoder_id_)>, nullptr)},
+		{"commandmode", rexjson::property((void*)&commandmode_, rexjson::property_get<decltype(commandmode_)>, rexjson::property_set<decltype(commandmode_)>)},
 		{"position", rexjson::property(nullptr, 
 			[&](void* ctx)->rexjson::value {
 				return GetPosition();
-			}, 
+			},
 			nullptr)},
 		{"time", rexjson::property(nullptr, 
 			[&](void* ctx)->rexjson::value {
@@ -62,7 +64,7 @@ void EncoderMinas::RegisterRpcMethods(const std::string& prefix)
 	rpc_server.add(prefix, "readid", rexjson::make_rpc_wrapper(this, &EncoderMinas::ReadDeviceID, "void EncoderMinas::ReadDeviceId()"));
 	rpc_server.add(prefix, "commandid4", rexjson::make_rpc_wrapper(this, &EncoderMinas::CommandId4, "void EncoderMinas::CommandId4()"));
 	rpc_server.add(prefix, "commandid5", rexjson::make_rpc_wrapper(this, &EncoderMinas::CommandId5, "void EncoderMinas::CommandId5()"));
-
+	rpc_server.add(prefix, "initialize", rexjson::make_rpc_wrapper(this, &EncoderMinas::Initialize, "void EncoderMinas::Initialize()"));
 }
 
 bool EncoderMinas::Attach(UART_HandleTypeDef* huart, DMA_TypeDef* dma, uint32_t rx_stream, uint32_t tx_stream)
@@ -102,12 +104,13 @@ void EncoderMinas::ParseResponse()
 		ParseReply9BEF();
 	} else if (update_.replyF_.ctrl_field_.as_byte == MA4_DATA_ID_F) {
 		ParseReply9BEF();
+	} else {
+		crc_error_count_++;
 	}
 }
 
 bool EncoderMinas::VerifyCrc(uint8_t* data, uint8_t size, uint8_t crc)
 {
-	return true;
 	uint8_t calc_crc = calc_crc_x8_1(data, size);
 	if (crc != calc_crc) {
 		++crc_error_count_;
@@ -137,6 +140,13 @@ uint8_t EncoderMinas::calc_crc_x8_1(uint8_t* data, uint8_t size)
 	return (crc & 0x00FF);
 }
 
+bool EncoderMinas::sendrecv_command_delay(uint8_t command, void* reply, size_t reply_size, size_t delay)
+{
+	bool ret = sendrecv_command(command, reply, reply_size);
+	osDelay(delay);
+	return ret;
+}
+
 bool EncoderMinas::sendrecv_command(uint8_t command, void* reply, size_t reply_size)
 {
 	if (!huart_)
@@ -144,66 +154,60 @@ bool EncoderMinas::sendrecv_command(uint8_t command, void* reply, size_t reply_s
 	if (!LL_USART_IsActiveFlag_TXE(huart_->Instance))
 		return false;
 
+	if (reply_size)
+		*((uint8_t*)reply) = 0;
 	LL_DMA_ConfigAddresses(dma_, rx_stream_, LL_USART_DMA_GetRegAddr(huart_->Instance, LL_USART_DMA_REG_DATA_RECEIVE), (uint32_t)reply, LL_DMA_GetDataTransferDirection(dma_, rx_stream_));
 	LL_DMA_SetDataLength(dma_, rx_stream_, reply_size);
 	LL_USART_EnableDMAReq_RX(huart_->Instance);
 	LL_DMA_EnableIT_TC(dma_, rx_stream_);
 	LL_DMA_EnableStream(dma_, rx_stream_);
 	LL_USART_TransmitData8(huart_->Instance, command);
+	if (crc_error_count_)
+		return false;
 	return true;
 }
 
 bool EncoderMinas::sendrecv_check_incommand(uint8_t command, void* reply, size_t reply_size)
 {
-	if (incommand_)
+	if (commandmode_)
 		return false;
 	return sendrecv_command(command, reply, reply_size);
 }
 
-bool EncoderMinas::sendrecv_set_incommand(uint8_t command, void* reply, size_t reply_size)
-{
-	bool res = false;
-	incommand_ = true;
-	osDelay(1);
-	res =  sendrecv_command(command, reply, reply_size);
-	osDelay(1);
-	incommand_ = false;
-	return res;
-}
 
 bool EncoderMinas::CommandId9()
 {
-	return sendrecv_set_incommand(MA4_DATA_ID_9, &update_.reply9_, sizeof(update_.reply9_));
+	return sendrecv_command_delay(MA4_DATA_ID_9, &update_.reply9_, sizeof(update_.reply9_));
 }
 
 bool EncoderMinas::CommandIdB()
 {
-	return sendrecv_set_incommand(MA4_DATA_ID_B, &update_.replyB_, sizeof(update_.replyB_));
+	return sendrecv_command_delay(MA4_DATA_ID_B, &update_.replyB_, sizeof(update_.replyB_));
 }
 
 bool EncoderMinas::CommandIdE()
 {
-	return sendrecv_set_incommand(MA4_DATA_ID_E, &update_.replyE_, sizeof(update_.replyE_));
+	return sendrecv_command_delay(MA4_DATA_ID_E, &update_.replyE_, sizeof(update_.replyE_));
 }
 
 bool EncoderMinas::CommandIdF()
 {
-	return sendrecv_set_incommand(MA4_DATA_ID_F, &update_.replyF_, sizeof(update_.replyF_));
+	return sendrecv_command_delay(MA4_DATA_ID_F, &update_.replyF_, sizeof(update_.replyF_));
 }
 
 bool EncoderMinas::CommandId4()
 {
-	return sendrecv_set_incommand(MA4_DATA_ID_4, &update_.reply4_, sizeof(update_.reply4_));
+	return sendrecv_command_delay(MA4_DATA_ID_4, &update_.reply4_, sizeof(update_.reply4_));
 }
 
 bool EncoderMinas::CommandId5()
 {
-	return sendrecv_set_incommand(MA4_DATA_ID_5, &update_.reply5_, sizeof(update_.reply5_));
+	return sendrecv_command_delay(MA4_DATA_ID_5, &update_.reply5_, sizeof(update_.reply5_));
 }
 
 bool EncoderMinas::CommandIdA()
 {
-	return sendrecv_set_incommand(MA4_DATA_ID_A, &update_.replyA_, sizeof(update_.replyA_));
+	return sendrecv_command_delay(MA4_DATA_ID_A, &update_.replyA_, sizeof(update_.replyA_));
 }
 
 
@@ -224,14 +228,11 @@ bool EncoderMinas::CommandId5Ex()
  */
 void EncoderMinas::ResetWithCommand(uint8_t command)
 {
-	incommand_ = true;
-	osDelay(1);
 	for (size_t i = 0; i < 10; i++) {
 		osDelay(1);
 		sendrecv_command(command, &update_.reply4_, sizeof(update_.reply4_));
 	}
 	osDelay(1);
-	incommand_ = false;
 }
 
 void EncoderMinas::ResetErrorCode(uint8_t data_id)
@@ -311,15 +312,18 @@ uint32_t EncoderMinas::GetDeviceId()
 	return encoder_id_; 
 }
 
-
 bool EncoderMinas::Initialize()
 {
+	commandmode_ = true;
+	bool ret = true;
+	osDelay(25);
+
+	HAL_RS485Ex_Init(huart_, UART_DE_POLARITY_HIGH, 0, 0);
+
 	status_ = 0;
-	crc_error_count_ = 0;
 	crc_error_count_ = 0;
 	ResetErrorCodeE();
 	uint32_t encoder_id = ReadDeviceID();
-	CommandId5();
 	if (!encoder_id)
 		status_ |= status_e_not_detected;
 	if (encoder_id == 0xa7) {
@@ -328,9 +332,10 @@ bool EncoderMinas::Initialize()
 		cpr_bits_ = 17;
 	} else {
 		status_ |= status_e_not_initialized;
-		return false;
+		ret = false;
 	}
-	return true;
+	commandmode_ = false;
+	return ret;
 }
 
 void EncoderMinas::ResetPosition()

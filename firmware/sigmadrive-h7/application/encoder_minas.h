@@ -194,6 +194,7 @@ public:
 protected:
 	void ParseResponse();
 	bool VerifyCrc(uint8_t* data, uint8_t size, uint8_t crc);
+	bool sendrecv_command_delay(uint8_t command, void* reply, size_t reply_size, size_t delay = 5);
 	bool sendrecv_command(uint8_t command, void* reply, size_t reply_size);
 	bool sendrecv_set_incommand(uint8_t command, void* reply, size_t reply_size);
 	bool sendrecv_check_incommand(uint8_t command, void* reply, size_t reply_size);	
@@ -278,7 +279,7 @@ public:
 	DMA_TypeDef* dma_;
 	uint32_t rx_stream_;
 	uint32_t tx_stream_;
-	uint32_t encoder_id_ = 0;           /**< Cached encoder id, set by the last call to GetDeviceID() */
+	uint32_t encoder_id_ = 0;  /**< Cached encoder id, set by the last call to GetDeviceID() */
 	uint32_t cpr_bits_ = 17;            /**< Counts per rotation (encoder resolution) bits */
 	uint32_t status_ = 0;               /**< Encoder status bits, received from the encoder */
 	uint32_t counter_ = 0;              /**< Encoder counter, defines the encoder position within one revolution  */
@@ -286,11 +287,10 @@ public:
 	uint32_t crc_error_count_ = 0;      /**< The count of the communication errors, seen so far */
 	MA4Almc almc_;                      /**< Holds the alarm bits received from the encoder */
 	MA4Update update_;                  /**< Holds the encoder response */
-	bool incommand_ = false;            /**< Skip updates while this flag is true. sendrecv_command_ex will return false immediately */
+	bool commandmode_ = false;          /**< Skip updates while this flag is true. sendrecv_command_ex will return false immediately */
 
 	volatile uint32_t t1_ = 0;
 	volatile uint32_t t2_ = 0;
-
 };
 
 #endif // ENCODER_MINAS_H_
