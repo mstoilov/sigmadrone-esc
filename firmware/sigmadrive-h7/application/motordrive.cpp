@@ -422,7 +422,7 @@ float MotorDrive::GetBusVoltage() const
 
 /** Get the phase current as a vector (complex value).
  *
- * @return complex valule representing the magnitude
+ * @return complex value representing the magnitude
  * and the direction of the phase current
  */
 std::complex<float> MotorDrive::GetPhaseCurrent() const
@@ -431,7 +431,7 @@ std::complex<float> MotorDrive::GetPhaseCurrent() const
 }
 
 /**
- * @brief Get the magnetude of the phase current.
+ * @brief Get the magnitude of the phase current.
  * 
  * @return float Magnetude of the phase current
  */
