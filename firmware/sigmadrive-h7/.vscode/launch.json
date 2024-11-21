@@ -29,6 +29,47 @@
 			"device": "STM32H743VG",
 			"svdFile": "${workspaceFolder}/STM32H743.svd",
 			"interface": "swd"
+		},
+		{
+			"cwd": "${workspaceRoot}",
+			"executable": "${workspaceFolder}/build/sigmadrive-h7.elf",
+			"name": "Debug with OpenOCD",
+			"request": "launch",
+			"type": "cortex-debug",
+			"servertype": "openocd",
+			"configFiles": ["interface/stlink.cfg", "target/stm32h7x.cfg"],
+			"svdFile": "${workspaceFolder}/STM32H743.svd",
+			"searchDir": [],
+			"showDevDebugOutput": "none"
+		},
+		{
+			"cwd": "${workspaceRoot}",
+			"executable": "${workspaceFolder}/build/sigmadrive-h7.elf",
+			"name": "Debug with OpenOCD (with SWO)",
+			"request": "launch",
+			"type": "cortex-debug",
+			"servertype": "openocd",
+			"configFiles": ["interface/stlink.cfg", "target/stm32h7x.cfg"],
+			"svdFile": "${workspaceFolder}/STM32H743.svd",
+			"searchDir": [],
+			"runToEntryPoint": "main",
+			"showDevDebugOutput": "none",
+			"swoConfig": {
+				"enabled": true,
+				"cpuFrequency": 180000000,
+				"swoFrequency": 1000000,
+				"source": "probe",
+				"decoders":
+				[
+					{
+						"label": "ITM port 0 output",
+						"type": "console",
+						"port": 0,
+						"showOnStartup": true,
+						"encoding": "ascii"
+					}
+				]
+			}
 		}
 	]
 }
